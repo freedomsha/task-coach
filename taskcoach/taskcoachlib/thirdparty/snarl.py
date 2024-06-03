@@ -4,9 +4,13 @@
 # 0.1a: Initial release
 # 0.2a: Added basic command line functions
 # LARGELY UNTESTED REFERENCE IMPLEMENTATION
-import win32gui, win32api, win32con
-import struct, array
+import array
+import struct
 from ctypes import cast, POINTER, c_byte
+
+import win32api
+import win32con
+import win32gui
 
 
 class SNARL_COMMANDS:
@@ -247,7 +251,7 @@ if __name__ == "__main__":
     d = options.__dict__.copy()
     cmd = options.cmd
     for key in options.__dict__:
-        if key not in inspect.getargspec(cmd)[0]:
+        if key not in inspect.getfullargspec(cmd)[0]:
             del d[key]
         elif d[key] is None:
             del d[key]

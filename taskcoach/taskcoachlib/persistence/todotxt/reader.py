@@ -16,9 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re, os, codecs
-from taskcoachlib.domain import task, category, date
+import codecs
+import os
+import re
+
 from taskcoachlib import patterns
+from taskcoachlib.domain import task, category, date
 
 
 class TodoTxtReader(object):

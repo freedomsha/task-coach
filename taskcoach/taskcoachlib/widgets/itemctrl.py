@@ -20,9 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     and TreeListCtrl. """  # pylint: disable=W0105
 
 
-import wx, inspect
-from . import draganddrop, autowidth, tooltip
+import inspect
+
+import wx
 from wx.lib.agw import hypertreelist
+
+from . import draganddrop, autowidth, tooltip
 
 
 class _CtrlWithItemsMixin(object):
@@ -261,7 +264,7 @@ class Column(object):
 
     def __filterArgs(self, func, kwargs):
         actualKwargs = dict()
-        argNames = inspect.getargspec(func).args
+        argNames = inspect.getfullargspec(func).args
         return dict(
             [
                 (name, value)

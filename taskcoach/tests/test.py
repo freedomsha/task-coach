@@ -18,11 +18,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wxversion
+# import wxversion
 
-wxversion.select(["2.8-unicode", "3.0"], optionsRequired=True)
+# wxversion.select(["2.8-unicode", "3.0"], optionsRequired=True)
 
-import sys, unittest, os, time, wx, logging
+import logging
+import os
+import sys
+import time
+import unittest
+
+import wx
 
 projectRoot = os.path.abspath("..")
 if projectRoot not in sys.path:
@@ -138,7 +144,7 @@ class wxTestCase(TestCase):
         self.frame.DestroyChildren()  # Clean up GDI objects on Windows
 
 
-class TestResultWithTimings(unittest._TextTestResult):  # pylint: disable=W0212
+class TestResultWithTimings(unittest.TextTestResult):  # pylint: disable=W0212
     def __init__(self, *args, **kwargs):
         super(TestResultWithTimings, self).__init__(*args, **kwargs)
         self._timings = {}

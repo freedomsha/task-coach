@@ -21,17 +21,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os.path
+
+import wx
+
 from taskcoachlib import widgets, patterns, command, operating_system, render
 from taskcoachlib.domain import task, date, note, attachment
 from taskcoachlib.gui import viewer, uicommand, windowdimensionstracker
 from taskcoachlib.gui.dialog import entry, attributesync
 from taskcoachlib.gui.newid import IdProvider
-from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty.pubsub import pub
-from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
 from taskcoachlib.help.balloontips import BalloonTipManager
-import os.path
-import wx
+from taskcoachlib.i18n import _
+from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
+from taskcoachlib.thirdparty.pubsub import pub
 
 
 class Page(patterns.Observer, widgets.BookPage):
@@ -372,7 +374,7 @@ class AttachmentSubjectPage(SubjectPage):
         if all(item.type_ == "file" for item in self.items):
             button = wx.Button(panel, wx.ID_ANY, _("Browse"))
             sizer.Add(button, 0, wx.ALL, 3)
-            wx.EVT_BUTTON(button, wx.ID_ANY, self.onSelectLocation)
+            button.Bind(wx.EVT_BUTTON, self.onSelectLocation)
         panel.SetSizer(sizer)
         self.addEntry(_("Location"), panel, flags=[None, wx.ALL | wx.EXPAND])
 

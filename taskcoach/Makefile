@@ -215,7 +215,8 @@ thirdpartymodules:
 	cd thirdparty; tar xzf pybonjour-1.1.1.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pybonjour-1.1.1/pybonjour.py
 	# cd thirdparty; tar xzf agw-r70845.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty agw/customtreectrl.py
 	# cd thirdparty; tar xzf agw-r70819.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty agw/hypertreelist.py
-	cd thirdparty; tar xzf gntp-d639fa2e981fe41196a5115ad64320b5061f004b.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty gntp/gntp
+	# cd thirdparty; tar xzf gntp-d639fa2e981fe41196a5115ad64320b5061f004b.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty gntp/gntp
+	cd thirdparty; tar xzf gntp-1.0.3.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty gntp/gntp
 	cd thirdparty; tar xzf pyxdg-0.25.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pyxdg-0.25/xdg
 	# cd taskcoachlib/thirdparty; patch -p1 < ../../thirdparty/patches/customtreectrl.diff
 	# cd taskcoachlib/thirdparty; patch -p1 < ../../thirdparty/patches/hypertreelist-headers.diff

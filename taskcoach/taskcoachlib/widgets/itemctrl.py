@@ -42,7 +42,7 @@ class _CtrlWithItemsMixin(object):
         if not self._itemIsOk(item):
             return None
         try:
-            return self.GetItemPyData(item)  # TreeListCtrl
+            return self.GetItemData(item)  # TreeListCtrl
         except AttributeError:
             return self.getItemWithIndex(item)  # ListCtrl
 

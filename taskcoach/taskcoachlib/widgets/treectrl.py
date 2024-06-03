@@ -16,10 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib import operating_system
-from wx.lib.agw import customtreectrl as customtree, hypertreelist
-from taskcoachlib.widgets import itemctrl, draganddrop
 import wx
+from wx.lib.agw import customtreectrl as customtree, hypertreelist
+
+from taskcoachlib import operating_system
+from taskcoachlib.widgets import itemctrl, draganddrop
 
 
 # pylint: disable=E1101,E1103
@@ -100,7 +101,7 @@ class HyperTreeList(BaseHyperTreeList, draganddrop.TreeCtrlDragAndDropMixin):
 
     def select(self, selection):
         for item in self.GetItemChildren(recursively=True):
-            self.SelectItem(item, self.GetItemPyData(item) in selection)
+            self.SelectItem(item, self.GetItemData(item) in selection)
 
     def clear_selection(self):
         self.UnselectAll()
@@ -226,7 +227,7 @@ class TreeListCtrl(
         return self.ct_type
 
     def curselection(self):
-        return [self.GetItemPyData(item) for item in self.GetSelections()]
+        return [self.GetItemData(item) for item in self.GetSelections()]
 
     def RefreshAllItems(self, count=0):  # pylint: disable=W0613
         self.Freeze()
@@ -257,7 +258,7 @@ class TreeListCtrl(
     def _refreshTargetObjects(self, parent_item, *target_objects):
         child_item, cookie = self.GetFirstChild(parent_item)
         while child_item:
-            item_object = self.GetItemPyData(child_item)
+            item_object = self.GetItemData(child_item)
             if item_object in target_objects:
                 self._refreshObjectCompletely(child_item, item_object)
             self._refreshTargetObjects(child_item, *target_objects)
@@ -382,10 +383,10 @@ class TreeListCtrl(
         drop_item = (
             None
             if drop_item == self.GetRootItem()
-            else self.GetItemPyData(drop_item)
+            else self.GetItemData(drop_item)
         )
         drag_items = list(
-            self.GetItemPyData(drag_item) for drag_item in drag_items
+            self.GetItemData(drag_item) for drag_item in drag_items
         )
         wx.CallAfter(
             self.dragAndDropCommand, drop_item, drag_items, part, column
@@ -395,7 +396,7 @@ class TreeListCtrl(
         event.Skip()
         item = event.GetItem()
         if self.GetChildrenCount(item, recursively=False) == 0:
-            domain_object = self.GetItemPyData(item)
+            domain_object = self.GetItemData(item)
             self._addObjectRecursively(item, domain_object)
 
     def onDoubleClick(self, event):
@@ -445,14 +446,14 @@ class TreeListCtrl(
             event.Skip()
             return
         event.Veto()  # Let us update the tree
-        domain_object = self.GetItemPyData(event.GetItem())
+        domain_object = self.GetItemData(event.GetItem())
         new_value = event.GetLabel()
         column = self._getColumn(event.GetInt())
         column.onEndEdit(domain_object, new_value)
 
     def CreateEditCtrl(self, item, column_index):
         column = self._getColumn(column_index)
-        domain_object = self.GetItemPyData(item)
+        domain_object = self.GetItemData(item)
         return column.editControl(
             self.GetMainWindow(), item, column_index, domain_object
         )

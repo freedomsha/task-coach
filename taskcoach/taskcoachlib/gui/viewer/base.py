@@ -21,10 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import wx
-from taskcoachlib import patterns, widgets, command, render
-from taskcoachlib.i18n import _
-from taskcoachlib.gui import uicommand, toolbar, artprovider
 from wx.lib.agw import hypertreelist
+
+from taskcoachlib import patterns, widgets, command, render
+from taskcoachlib.gui import uicommand, toolbar, artprovider
+from taskcoachlib.i18n import _
 from taskcoachlib.thirdparty.pubsub import pub
 from taskcoachlib.widgets import ToolTipMixin
 from . import mixin
@@ -707,7 +708,7 @@ class TreeViewer(Viewer):  # pylint: disable=W0223
         # If we get an expanded or collapsed event for the root item, ignore it
         if treeItem == self.widget.GetRootItem():
             return
-        item = self.widget.GetItemPyData(treeItem)
+        item = self.widget.GetItemData(treeItem)
         item.expand(expanded, context=self.settingsSection())
 
     def expandAll(self):

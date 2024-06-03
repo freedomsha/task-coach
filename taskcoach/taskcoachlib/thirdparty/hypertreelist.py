@@ -278,11 +278,6 @@ from wx.lib.agw.customtreectrl import (
     ChopText,
 )
 from wx.lib.agw.customtreectrl import TreeEditTimer as TreeListEditTimer
-from wx.lib.agw.customtreectrl import (
-    EVT_TREE_ITEM_CHECKING,
-    EVT_TREE_ITEM_CHECKED,
-    EVT_TREE_ITEM_HYPERLINK,
-)
 
 # Version Info
 __version__ = "1.3"
@@ -4484,7 +4479,7 @@ _methods = [
     "SetStateImageList",
     "GetItemText",
     "GetItemImage",
-    "GetItemPyData",
+    "GetItemData",
     "GetPyData",
     "GetItemTextColour",
     "GetItemBackgroundColour",

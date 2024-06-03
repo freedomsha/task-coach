@@ -21,14 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import wx
+
+import taskcoachlib.gui.menu
 from taskcoachlib import command, widgets
 from taskcoachlib.domain import category
-from taskcoachlib.i18n import _
 from taskcoachlib.gui import uicommand, dialog
-import taskcoachlib.gui.menu
+from taskcoachlib.i18n import _
 from . import base
-from . import mixin
 from . import inplace_editor
+from . import mixin
 
 
 class BaseCategoryViewer(
@@ -269,7 +270,7 @@ class BaseCategoryViewer(
             )
 
     def onCheck(self, event, final):
-        categoryToFilter = self.widget.GetItemPyData(event.GetItem())
+        categoryToFilter = self.widget.GetItemData(event.GetItem())
         categoryToFilter.setFiltered(event.GetItem().IsChecked())
         self.sendViewerStatusEvent()  # Notify status observers like the status bar
 

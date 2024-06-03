@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib import widgets
-from taskcoachlib.help.balloontips import BalloonTipManager
-from taskcoachlib.gui import uicommand
-from taskcoachlib.i18n import _
-from wx.lib.agw import hypertreelist as htl
 import wx
+from wx.lib.agw import hypertreelist as htl
+
+from taskcoachlib import widgets
+from taskcoachlib.gui import uicommand
+from taskcoachlib.help.balloontips import BalloonTipManager
+from taskcoachlib.i18n import _
 
 
 class _AutoWidthTree(
@@ -222,9 +223,7 @@ class _ToolBarEditorInterior(wx.Panel):
             .GetChildren()
             .index(self.__visibleSelection)
         )
-        uiCommand = self.__visibleCommands.GetItemPyData(
-            self.__visibleSelection
-        )
+        uiCommand = self.__visibleCommands.GetItemData(self.__visibleSelection)
         self.__visibleCommands.Delete(self.__visibleSelection)
         self.__visibleSelection = None
         self.__hideButton.Enable(False)
@@ -233,13 +232,13 @@ class _ToolBarEditorInterior(wx.Panel):
             for child in self.__remainingCommands.GetRootItem().GetChildren()[
                 2:
             ]:
-                if self.__remainingCommands.GetItemPyData(child) == uiCommand:
+                if self.__remainingCommands.GetItemData(child) == uiCommand:
                     self.__remainingCommands.EnableItem(child, True)
                     break
         self.__HackPreview()
 
     def __OnShow(self, event):
-        uiCommand = self.__remainingCommands.GetItemPyData(
+        uiCommand = self.__remainingCommands.GetItemData(
             self.__remainingSelection
         )
         if uiCommand is None:

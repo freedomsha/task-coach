@@ -21,19 +21,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os.path
-
-import wx
-
 from taskcoachlib import widgets, patterns, command, operating_system, render
 from taskcoachlib.domain import task, date, note, attachment
 from taskcoachlib.gui import viewer, uicommand, windowdimensionstracker
 from taskcoachlib.gui.dialog import entry, attributesync
 from taskcoachlib.gui.newid import IdProvider
-from taskcoachlib.help.balloontips import BalloonTipManager
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
 from taskcoachlib.thirdparty.pubsub import pub
+from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
+from taskcoachlib.help.balloontips import BalloonTipManager
+import os.path
+import wx
 
 
 class Page(patterns.Observer, widgets.BookPage):
@@ -1009,7 +1007,7 @@ class LocalCategoryViewer(viewer.BaseCategoryViewer):  # pylint: disable=W0223
         """Here we keep track of the items checked by the user so that these
         items remain checked when refreshing the viewer."""
         if final:
-            category = self.widget.GetItemData(event.GetItem())
+            category = self.widget.GetItemPyData(event.GetItem())
             command.ToggleCategoryCommand(
                 None, self.__items, category=category
             ).do()
@@ -1190,7 +1188,7 @@ class LocalPrerequisiteViewer(
         return item not in self.__items
 
     def onCheck(self, event, final):
-        item = self.widget.GetItemData(event.GetItem())
+        item = self.widget.GetItemPyData(event.GetItem())
         is_checked = event.GetItem().IsChecked()
         if is_checked != self.getIsItemChecked(item):
             checked, unchecked = ([item], []) if is_checked else ([], [item])

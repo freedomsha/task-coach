@@ -21,33 +21,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import math
-import struct
-import tempfile
-
-import wx
 import wx.lib.agw.piectrl
-from twisted.internet.defer import inlineCallbacks
-from twisted.internet.threads import deferToThread
-
-import taskcoachlib.gui.menu
+from taskcoachlib import operating_system
 from taskcoachlib import command, widgets, domain, render
 from taskcoachlib.domain import task, date
 from taskcoachlib.gui import uicommand, dialog
+import taskcoachlib.gui.menu
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
 from taskcoachlib.thirdparty.pubsub import pub
 from taskcoachlib.thirdparty.wxScheduler import (
     wxSCHEDULER_TODAY,
     wxFancyDrawer,
 )
+from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
 from taskcoachlib.widgets import (
     CalendarConfigDialog,
     HierarchicalCalendarConfigDialog,
 )
+from twisted.internet.threads import deferToThread
+from twisted.internet.defer import inlineCallbacks
 from . import base
 from . import inplace_editor
 from . import mixin
 from . import refresher
+import wx
+import tempfile
+import struct
 
 
 class DueDateTimeCtrl(inplace_editor.DateTimeCtrl):
@@ -1284,7 +1283,7 @@ class TaskViewer(
             # subject. When the editing ends, we change the item text back into
             # the recursive subject. See onEndEdit.
             treeItem = event.GetItem()
-            editedTask = self.widget.GetItemData(treeItem)
+            editedTask = self.widget.GetItemPyData(treeItem)
             self.widget.SetItemText(treeItem, editedTask.subject())
 
     def onEndEdit(self, event):
@@ -1296,7 +1295,7 @@ class TaskViewer(
             # actually changed the subject. If they did, the subject will
             # be updated via the regular notification mechanism.
             treeItem = event.GetItem()
-            editedTask = self.widget.GetItemData(treeItem)
+            editedTask = self.widget.GetItemPyData(treeItem)
             self.widget.SetItemText(
                 treeItem, editedTask.subject(recursive=True)
             )

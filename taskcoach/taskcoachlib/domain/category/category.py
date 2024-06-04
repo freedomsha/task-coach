@@ -54,43 +54,43 @@ class Category(
         self.__exclusiveSubcategories = exclusiveSubcategories
 
     @classmethod
-    def monitoredAttributes(class_):
+    def monitoredAttributes(cls):
         return base.CompositeObject.monitoredAttributes() + [
             "exclusiveSubcategories"
         ]
 
     @classmethod
-    def filterChangedEventType(class_):
+    def filterChangedEventType(cls):
         """Event type to notify observers that categorizables belonging to
         this category are filtered or not."""
         return "category.filter"
 
     @classmethod
-    def categorizableAddedEventType(class_):
+    def categorizableAddedEventType(cls):
         """Event type to notify observers that categorizables have been added
         to this category."""
         return "category.categorizable.added"
 
     @classmethod
-    def categorizableRemovedEventType(class_):
+    def categorizableRemovedEventType(cls):
         """Event type to notify observers that categorizables have been removed
         from this category."""
         return "category.categorizable.removed"
 
     @classmethod
-    def exclusiveSubcategoriesChangedEventType(class_):
+    def exclusiveSubcategoriesChangedEventType(cls):
         """Event type to notify observers that subcategories have become
         exclusive (or vice versa)."""
         return "category.exclusiveSubcategories"
 
     @classmethod
-    def modificationEventTypes(class_):
-        eventTypes = super(Category, class_).modificationEventTypes()
+    def modificationEventTypes(cls):
+        eventTypes = super(Category, cls).modificationEventTypes()
         return eventTypes + [
-            class_.filterChangedEventType(),
-            class_.categorizableAddedEventType(),
-            class_.categorizableRemovedEventType(),
-            class_.exclusiveSubcategoriesChangedEventType(),
+            cls.filterChangedEventType(),
+            cls.categorizableAddedEventType(),
+            cls.categorizableRemovedEventType(),
+            cls.exclusiveSubcategoriesChangedEventType(),
         ]
 
     def __getstate__(self):

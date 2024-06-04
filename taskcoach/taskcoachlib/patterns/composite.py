@@ -16,8 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from . import observer
 import weakref
+
+from . import observer
 
 
 class Composite(object):
@@ -132,8 +133,8 @@ class ObservableComposite(Composite):
         event.addSource(self, *children, **dict(type=self.addChildEventType()))
 
     @classmethod
-    def addChildEventType(class_):
-        return "composite(%s).child.add" % class_
+    def addChildEventType(cls):
+        return "composite(%s).child.add" % cls
 
     @observer.eventSource
     def removeChild(self, child, event=None):  # pylint: disable=W0221
@@ -146,20 +147,20 @@ class ObservableComposite(Composite):
         )
 
     @classmethod
-    def removeChildEventType(class_):
-        return "composite(%s).child.remove" % class_
+    def removeChildEventType(cls):
+        return "composite(%s).child.remove" % cls
 
     @classmethod
-    def modificationEventTypes(class_):
+    def modificationEventTypes(cls):
         try:
             eventTypes = super(
-                ObservableComposite, class_
+                ObservableComposite, cls
             ).modificationEventTypes()
         except AttributeError:
             eventTypes = []
         return eventTypes + [
-            class_.addChildEventType(),
-            class_.removeChildEventType(),
+            cls.addChildEventType(),
+            cls.removeChildEventType(),
         ]
 
 

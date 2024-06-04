@@ -16,7 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import datetime, re, time
+import datetime
+import re
+import time
+
 from . import timedelta
 from .date import Date
 from .fix import StrftimeFix
@@ -29,7 +32,7 @@ class DateTime(StrftimeFix, datetime.datetime):
     secondsPerHour = minutesPerHour * secondsPerMinute
     secondsPerDay = hoursPerDay * secondsPerHour
 
-    def __new__(class_, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):
         if not args and not kwargs:
             max = datetime.datetime.max  # pylint: disable=W0622
             args = (
@@ -41,7 +44,7 @@ class DateTime(StrftimeFix, datetime.datetime):
                 max.second,
                 max.microsecond,
             )
-        return datetime.datetime.__new__(class_, *args, **kwargs)
+        return datetime.datetime.__new__(cls, *args, **kwargs)
 
     @staticmethod
     def fromDateTime(dateTime):

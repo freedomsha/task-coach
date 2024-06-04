@@ -17,8 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib.thirdparty.pubsub import pub
 import weakref
+
+from taskcoachlib.thirdparty.pubsub import pub
 
 
 class BaseEffort(object):
@@ -68,7 +69,7 @@ class BaseEffort(object):
         return False  # Are we a detail effort or a total effort? For sorting.
 
     @classmethod
-    def trackingChangedEventType(class_):
+    def trackingChangedEventType(cls):
         return "pubsub.effort.track"
 
     def sendDurationChangedMessage(self):
@@ -79,7 +80,7 @@ class BaseEffort(object):
         )
 
     @classmethod
-    def durationChangedEventType(class_):
+    def durationChangedEventType(cls):
         return "pubsub.effort.duration"
 
     def sendRevenueChangedMessage(self):
@@ -90,5 +91,5 @@ class BaseEffort(object):
         )
 
     @classmethod
-    def revenueChangedEventType(class_):
+    def revenueChangedEventType(cls):
         return "pubsub.effort.revenue"

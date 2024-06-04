@@ -17,11 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import weakref
+
 from taskcoachlib import patterns
 from taskcoachlib.domain import date, base, task
 from taskcoachlib.thirdparty.pubsub import pub
 from . import base as baseeffort
-import weakref
 
 
 class Effort(baseeffort.BaseEffort, base.Object):
@@ -56,14 +57,14 @@ class Effort(baseeffort.BaseEffort, base.Object):
     setParent = setTask  # FIXME: should we create a common superclass for Effort and Task?
 
     @classmethod
-    def monitoredAttributes(class_):
+    def monitoredAttributes(cls):
         return base.Object.monitoredAttributes() + ["start", "stop"]
 
     def task(self):
         return None if self._task is None else self._task()
 
     @classmethod
-    def taskChangedEventType(class_):
+    def taskChangedEventType(cls):
         return "pubsub.effort.task"
 
     def __str__(self):
@@ -113,7 +114,7 @@ class Effort(baseeffort.BaseEffort, base.Object):
             self.sendRevenueChangedMessage()
 
     @classmethod
-    def startChangedEventType(class_):
+    def startChangedEventType(cls):
         return "pubsub.effort.start"
 
     def setStop(self, newStop=None):
@@ -145,7 +146,7 @@ class Effort(baseeffort.BaseEffort, base.Object):
             self.sendRevenueChangedMessage()
 
     @classmethod
-    def stopChangedEventType(class_):
+    def stopChangedEventType(cls):
         return "pubsub.effort.stop"
 
     def __updateDurationCache(self):
@@ -170,19 +171,19 @@ class Effort(baseeffort.BaseEffort, base.Object):
         )
 
     @classmethod
-    def periodSortEventTypes(class_):
+    def periodSortEventTypes(cls):
         """The event types that influence the effort sort order."""
         return (
-            class_.startChangedEventType(),
-            class_.taskChangedEventType(),
+            cls.startChangedEventType(),
+            cls.taskChangedEventType(),
             task.Task.subjectChangedEventType(),
         )
 
     @classmethod
-    def modificationEventTypes(class_):
-        eventTypes = super(Effort, class_).modificationEventTypes()
+    def modificationEventTypes(cls):
+        eventTypes = super(Effort, cls).modificationEventTypes()
         return eventTypes + [
-            class_.taskChangedEventType(),
-            class_.startChangedEventType(),
-            class_.stopChangedEventType(),
+            cls.taskChangedEventType(),
+            cls.startChangedEventType(),
+            cls.stopChangedEventType(),
         ]

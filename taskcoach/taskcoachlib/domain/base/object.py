@@ -18,15 +18,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
+import sys
+import uuid
+
 from taskcoachlib import patterns
 from taskcoachlib.domain.attribute import icon
 from taskcoachlib.domain.date import DateTime, Now
 from taskcoachlib.thirdparty.pubsub import pub
 from . import attribute
-import functools
-import sys
-import uuid
-import re
 
 
 class SynchronizedObject(object):
@@ -596,9 +596,9 @@ class CompositeObject(Object, patterns.ObservableComposite):
     # Event types:
 
     @classmethod
-    def modificationEventTypes(class_):
-        return super(CompositeObject, class_).modificationEventTypes() + [
-            class_.expansionChangedEventType()
+    def modificationEventTypes(cls):
+        return super(CompositeObject, cls).modificationEventTypes() + [
+            cls.expansionChangedEventType()
         ]
 
     # Override SynchronizedObject methods to also mark child objects

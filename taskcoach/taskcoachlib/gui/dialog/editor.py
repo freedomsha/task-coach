@@ -1705,8 +1705,8 @@ class EffortEditBook(Page):
         self._stopDateTimeEntry.LoadChoices(
             self._settings.get("feature", "sdtcspans_effort")
         )
-        sdtc.EVT_TIME_CHOICES_CHANGE(
-            self._stopDateTimeEntry, self.__onChoicesChanged
+        self._stopDateTimeEntry.Bind(
+            wx.adv.EVT_TIME_CHANGED, self.__onChoicesChanged
         )
 
         self.addEntry("", self._invalidPeriodMessage)

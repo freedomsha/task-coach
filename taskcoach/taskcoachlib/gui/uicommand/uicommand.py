@@ -19,6 +19,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import operator
+import re
+from functools import reduce
+
+import wx
+from wx.lib.agw import hypertreelist
+
 from taskcoachlib import (
     patterns,
     meta,
@@ -26,7 +33,6 @@ from taskcoachlib import (
     help,
     widgets,
     persistence,
-    thirdparty,
     render,
     operating_system,
 )  # pylint: disable=W0622
@@ -43,7 +49,6 @@ from taskcoachlib.gui import dialog, printer
 from taskcoachlib.gui.wizard import CSVImportWizard
 from taskcoachlib.i18n import _
 from taskcoachlib.mailer import sendMail
-from wx.lib.agw import hypertreelist
 from taskcoachlib.thirdparty.pubsub import pub
 from taskcoachlib.thirdparty.wxScheduler import (
     wxSCHEDULER_NEXT,
@@ -52,11 +57,9 @@ from taskcoachlib.thirdparty.wxScheduler import (
 )
 from taskcoachlib.tools import anonymize, openfile
 from taskcoachlib.workarounds import ExceptionAsUnicode
-import wx, re, operator
 from . import base_uicommand
 from . import mixin_uicommand
 from . import settings_uicommand
-from functools import reduce
 
 
 class IOCommand(base_uicommand.UICommand):  # pylint: disable=W0223

@@ -16,15 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-# for unresolved reference 'cmp':
-from filecmp import cmp
 import os
 import urllib.parse
+# for unresolved reference 'cmp':
+from filecmp import cmp
+
 from taskcoachlib import patterns, mailer
 from taskcoachlib.domain import base
-from taskcoachlib.tools import openfile
-from taskcoachlib.thirdparty.pubsub import pub
 from taskcoachlib.domain.note.noteowner import NoteOwner
+from taskcoachlib.thirdparty.pubsub import pub
+from taskcoachlib.tools import openfile
 
 
 def getRelativePath(path, basePath=os.getcwd()):
@@ -96,11 +97,11 @@ class Attachment(base.Object, NoteOwner):
             )
 
     @classmethod
-    def locationChangedEventType(class_):
+    def locationChangedEventType(cls):
         return "pubsub.attachment.location"
 
     @classmethod
-    def monitoredAttributes(class_):
+    def monitoredAttributes(cls):
         return base.Object.monitoredAttributes() + ["location"]
 
     def open(self, workingDir=None):
@@ -135,9 +136,9 @@ class Attachment(base.Object, NoteOwner):
         return self.subject()
 
     @classmethod
-    def modificationEventTypes(class_):
-        eventTypes = super(Attachment, class_).modificationEventTypes()
-        return eventTypes + [class_.locationChangedEventType()]
+    def modificationEventTypes(cls):
+        eventTypes = super(Attachment, cls).modificationEventTypes()
+        return eventTypes + [cls.locationChangedEventType()]
 
 
 class FileAttachment(Attachment):

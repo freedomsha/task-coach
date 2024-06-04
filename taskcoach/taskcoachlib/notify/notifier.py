@@ -38,28 +38,28 @@ class AbstractNotifier(object):
         raise NotImplementedError
 
     @classmethod
-    def register(klass, notifier):
+    def register(cls, notifier):
         if notifier.isAvailable():
-            klass.notifiers[notifier.getName()] = notifier
+            cls.notifiers[notifier.getName()] = notifier
 
     @classmethod
-    def get(klass, name):
-        return klass.notifiers.get(name, None)
+    def get(cls, name):
+        return cls.notifiers.get(name, None)
 
     @classmethod
-    def getSimple(klass):
+    def getSimple(cls):
         """
         Returns a notifier suitable for simple notifications. This
         defaults to Growl/Snarl depending on their availability.
         """
 
-        if klass._enabled:
+        if cls._enabled:
             if operating_system.isMac():
-                return klass.get("Growl") or klass.get("Task Coach")
+                return cls.get("Growl") or cls.get("Task Coach")
             elif operating_system.isWindows():
-                return klass.get("Snarl") or klass.get("Task Coach")
+                return cls.get("Snarl") or cls.get("Task Coach")
             else:
-                return klass.get("Task Coach")
+                return cls.get("Task Coach")
         else:
 
             class DummyNotifier(AbstractNotifier):
@@ -75,11 +75,11 @@ class AbstractNotifier(object):
             return DummyNotifier()
 
     @classmethod
-    def disableNotifications(klass):
-        klass._enabled = False
+    def disableNotifications(cls):
+        cls._enabled = False
 
     @classmethod
-    def names(klass):
-        names = list(klass.notifiers.keys())
+    def names(cls):
+        names = list(cls.notifiers.keys())
         names.sort()
         return names

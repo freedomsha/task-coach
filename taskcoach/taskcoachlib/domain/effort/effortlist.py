@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib import patterns
-from taskcoachlib.i18n import _
-from taskcoachlib import help
-from taskcoachlib.thirdparty.pubsub import pub
 from pubsub.core import Publisher
+
+from taskcoachlib import help
+from taskcoachlib import patterns
 from taskcoachlib.domain import task
+from taskcoachlib.i18n import _
+from taskcoachlib.thirdparty.pubsub import pub
 from . import effort
 
 
@@ -133,7 +134,7 @@ class EffortList(
             effort.task().addEffort(effort)
 
     @classmethod
-    def sortEventType(class_):
+    def sortEventType(cls):
         return "this event type is not used"
 
 

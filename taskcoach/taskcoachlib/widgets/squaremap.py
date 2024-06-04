@@ -16,13 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import operator
-from functools import reduce
-
-import wx
-
+import wx, operator
 from taskcoachlib.thirdparty.squaremap import squaremap
 from . import tooltip
+from functools import reduce
 
 
 class SquareMap(tooltip.ToolTipMixin, squaremap.SquareMap):

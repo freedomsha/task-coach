@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx
 import datetime
 import math
 
+import wx
 
 wxEVT_EVENT_SELECTION_CHANGED = wx.NewEventType()
 EVT_EVENT_SELECTION_CHANGED = wx.PyEventBinder(wxEVT_EVENT_SELECTION_CHANGED)
@@ -386,7 +386,7 @@ class CalendarCanvas(wx.Panel):
             vw -= self._vScroll.GetClientSize()[0]
             dy = self._vScroll.GetThumbPosition()
 
-        bmp = wx.EmptyBitmap(vw, vh)
+        bmp = wx.Bitmap(vw, vh)
         memDC = wx.MemoryDC()
         memDC.SelectObject(bmp)
         try:

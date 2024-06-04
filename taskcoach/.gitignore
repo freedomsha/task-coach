@@ -17,6 +17,7 @@ taskcoachlib/thirdparty/aui
 taskcoachlib/thirdparty/chardet
 taskcoachlib/thirdparty/dateutil
 taskcoachlib/thirdparty/gntp
+taskcoachlib/thirdparty/gntp-old-0.8
 taskcoachlib/thirdparty/desktop
 taskcoachlib/thirdparty/keyring
 taskcoachlib/thirdparty/lockfile

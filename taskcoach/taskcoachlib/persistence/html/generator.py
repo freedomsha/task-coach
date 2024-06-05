@@ -16,11 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import cgi
-import io
-
-import wx
-
+import wx, cgi, io
 from taskcoachlib.domain import task
 
 # pylint: disable=W0142
@@ -298,7 +294,7 @@ class Viewer2HTMLConverter(object):
         return self.wrap(item, "td", level, oneLine=True, **attributes)
 
     @classmethod
-    def wrap(cls, lines, tagName, level, oneLine=False, **attributes):
+    def wrap(class_, lines, tagName, level, oneLine=False, **attributes):
         """Wrap one or more lines with <tagName [optional attributes]> and
         </tagName>."""
         if attributes:
@@ -313,12 +309,12 @@ class Viewer2HTMLConverter(object):
         openTag = "<%s%s>" % (tagName, attributes)
         closeTag = "</%s>" % tagName
         if oneLine:
-            return cls.indent(openTag + lines + closeTag, level)
+            return class_.indent(openTag + lines + closeTag, level)
         else:
             return (
-                [cls.indent(openTag, level)]
+                [class_.indent(openTag, level)]
                 + lines
-                + [cls.indent(closeTag, level)]
+                + [class_.indent(closeTag, level)]
             )
 
     @staticmethod
@@ -328,13 +324,13 @@ class Viewer2HTMLConverter(object):
         return "  " * level + htmlText
 
     @classmethod
-    def cssColorSyntax(cls, wxColor):
+    def cssColorSyntax(class_, wxColor):
         """Translate the wx-color, either a wx.Colour instance or a tuple,
         into CSS syntax."""
         try:
             return wxColor.GetAsString(wx.C2S_CSS_SYNTAX)
         except AttributeError:  # color is a tuple
-            return cls.cssColorSyntax(wx.Colour(*wxColor))
+            return class_.cssColorSyntax(wx.Colour(*wxColor))
 
     @staticmethod
     def render(item, column, indent=False):

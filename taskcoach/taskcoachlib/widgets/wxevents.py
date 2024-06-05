@@ -129,6 +129,7 @@ class CalendarCanvas(wx.Panel):
         self._hScroll.Hide()
         self._vScroll.Hide()
 
+        # TODO: wxPyDeprecationWarning: Call to deprecated item __call__. Use :meth:`EvtHandler.Bind` instead.
         wx.EVT_SCROLL(self._hScroll, self._OnScroll)
         wx.EVT_SCROLL(self._vScroll, self._OnScroll)
 
@@ -615,7 +616,9 @@ class CalendarCanvas(wx.Panel):
         _, hh = self._hScroll.GetClientSize()
         vw, _ = self._vScroll.GetClientSize()
 
+        # TODO: wxPyDeprecationWarning: Call to deprecated item. Use SetSize instead.
         self._hScroll.SetDimensions(0, h - hh, w - vw, hh)
+        # TODO: wxPyDeprecationWarning: Call to deprecated item. Use SetSize instead.
         self._vScroll.SetDimensions(
             w - vw, self._marginTop, vw, h - hh - self._marginTop
         )

@@ -40,11 +40,11 @@ class SynchronizedObject(object):
         super(SynchronizedObject, self).__init__(*args, **kwargs)
 
     @classmethod
-    def markDeletedEventType(cls):
+    def markDeletedEventType(class_):
         return "object.markdeleted"
 
     @classmethod
-    def markNotDeletedEventType(cls):
+    def markNotDeletedEventType(class_):
         return "object.marknotdeleted"
 
     def __getstate__(self):
@@ -252,7 +252,7 @@ class Object(SynchronizedObject):
         return self.__class__(**self.__getcopystate__())
 
     @classmethod
-    def monitoredAttributes(cls):
+    def monitoredAttributes(class_):
         return ["ordering", "subject", "description", "appearance"]
 
     # Id:
@@ -302,8 +302,8 @@ class Object(SynchronizedObject):
         )
 
     @classmethod
-    def subjectChangedEventType(cls):
-        return "%s.subject" % cls
+    def subjectChangedEventType(class_):
+        return "%s.subject" % class_
 
     @staticmethod
     def subjectSortFunction(**kwargs):
@@ -314,9 +314,9 @@ class Object(SynchronizedObject):
             return lambda item: item.subject().lower()
 
     @classmethod
-    def subjectSortEventTypes(cls):
+    def subjectSortEventTypes(class_):
         """The event types that influence the subject sort order."""
-        return (cls.subjectChangedEventType(),)
+        return (class_.subjectChangedEventType(),)
 
     # Ordering:
 
@@ -332,16 +332,16 @@ class Object(SynchronizedObject):
         )
 
     @classmethod
-    def orderingChangedEventType(cls):
-        return "%s.ordering" % cls
+    def orderingChangedEventType(class_):
+        return "%s.ordering" % class_
 
     @staticmethod
     def orderingSortFunction(**kwargs):
         return lambda item: item.ordering()
 
     @classmethod
-    def orderingSortEventTypes(cls):
-        return (cls.orderingChangedEventType(),)
+    def orderingSortEventTypes(class_):
+        return (class_.orderingChangedEventType(),)
 
     # Description:
 
@@ -357,8 +357,8 @@ class Object(SynchronizedObject):
         )
 
     @classmethod
-    def descriptionChangedEventType(cls):
-        return "%s.description" % cls
+    def descriptionChangedEventType(class_):
+        return "%s.description" % class_
 
     @staticmethod
     def descriptionSortFunction(**kwargs):
@@ -369,9 +369,9 @@ class Object(SynchronizedObject):
             return lambda item: item.description().lower()
 
     @classmethod
-    def descriptionSortEventTypes(cls):
+    def descriptionSortEventTypes(class_):
         """The event types that influence the description sort order."""
-        return (cls.descriptionChangedEventType(),)
+        return (class_.descriptionChangedEventType(),)
 
     # Color:
 
@@ -421,23 +421,23 @@ class Object(SynchronizedObject):
     # Event types:
 
     @classmethod
-    def appearanceChangedEventType(cls):
-        return "%s.appearance" % cls
+    def appearanceChangedEventType(class_):
+        return "%s.appearance" % class_
 
     def appearanceChangedEvent(self, event):
         event.addSource(self, type=self.appearanceChangedEventType())
 
     @classmethod
-    def modificationEventTypes(cls):
+    def modificationEventTypes(class_):
         try:
-            eventTypes = super(Object, cls).modificationEventTypes()
+            eventTypes = super(Object, class_).modificationEventTypes()
         except AttributeError:
             eventTypes = []
         return eventTypes + [
-            cls.subjectChangedEventType(),
-            cls.descriptionChangedEventType(),
-            cls.appearanceChangedEventType(),
-            cls.orderingChangedEventType(),
+            class_.subjectChangedEventType(),
+            class_.descriptionChangedEventType(),
+            class_.appearanceChangedEventType(),
+            class_.orderingChangedEventType(),
         ]
 
 
@@ -452,7 +452,7 @@ class CompositeObject(Object, patterns.ObservableComposite):
         return state
 
     @classmethod
-    def monitoredAttributes(cls):
+    def monitoredAttributes(class_):
         return Object.monitoredAttributes() + ["expandedContexts"]
 
     # Subject:
@@ -528,8 +528,8 @@ class CompositeObject(Object, patterns.ObservableComposite):
 
     # The ChangeMonitor expects this...
     @classmethod
-    def expandedContextsChangedEventType(cls):
-        return cls.expansionChangedEventType()
+    def expandedContextsChangedEventType(class_):
+        return class_.expansionChangedEventType()
 
     # Appearance:
 

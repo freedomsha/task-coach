@@ -204,7 +204,7 @@ class Task(
         return state
 
     @classmethod
-    def monitoredAttributes(cls):
+    def monitoredAttributes(class_):
         return (
             categorizable.CategorizableCompositeObject.monitoredAttributes()
             + [

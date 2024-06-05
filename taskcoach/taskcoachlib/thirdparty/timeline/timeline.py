@@ -1,6 +1,6 @@
 #! /usr/bin/env python
-import wx, wx.lib
-
+import wx
+import wx.lib
 
 TimeLineSelectionEvent, EVT_TIMELINE_SELECTED = wx.lib.newevent.NewEvent()
 TimeLineActivationEvent, EVT_TIMELINE_ACTIVATED = wx.lib.newevent.NewEvent()
@@ -75,7 +75,8 @@ class TimeLine(wx.Panel):
         self.adapter = kwargs.pop("adapter", DefaultAdapter())
         self.selectedNode = None
         self.backgroundColour = wx.WHITE
-        self._buffer = wx.EmptyBitmap(20, 20)  # Have a default buffer ready
+        # wxPyDeprecationWarning: Call to deprecated item EmptyBitmap. Use :class:`wx.Bitmap` instead
+        self._buffer = wx.Bitmap(20, 20)  # Have a default buffer ready
         self.DEFAULT_PEN = wx.Pen(wx.BLACK, 1, wx.SOLID)
         self.SELECTED_PEN = wx.Pen(wx.WHITE, 2, wx.SOLID)
         kwargs["style"] = (
@@ -110,7 +111,8 @@ class TimeLine(wx.Panel):
         # Make new off-screen bitmap: this bitmap will always have the
         # current drawing in it, so it can be used to save the image to
         # a file, or whatever.
-        self._buffer = wx.EmptyBitmap(width, height)
+        # wxPyDeprecationWarning: Call to deprecated item EmptyBitmap. Use :class:`wx.Bitmap` instead
+        self._buffer = wx.Bitmap(width, height)
         self.UpdateDrawing()
 
     def OnClickRelease(self, event):
@@ -202,7 +204,7 @@ class TimeLine(wx.Panel):
     def FontForLabels(self, dc):
         """Return the default GUI font, scaled for printing if necessary."""
         font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        scale = dc.GetPPI()[0] / wx.ScreenDC().GetPPI()[0]
+        scale = dc.GetPPI()[0] // wx.ScreenDC().GetPPI()[0]
         font.SetPointSize(scale * font.GetPointSize())
         return font
 

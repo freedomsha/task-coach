@@ -62,7 +62,7 @@ class CategorizableCompositeObject(base.CompositeObject):
         return result
 
     @classmethod
-    def categoryAddedEventType(cls):
+    def categoryAddedEventType(class_):
         return "categorizable.category.add"
 
     def addCategory(self, *categories, **kwargs):
@@ -110,7 +110,7 @@ class CategorizableCompositeObject(base.CompositeObject):
         )
 
     @classmethod
-    def categoryRemovedEventType(cls):
+    def categoryRemovedEventType(class_):
         return "categorizable.category.remove"
 
     def removeCategory(self, *categories, **kwargs):
@@ -161,11 +161,11 @@ class CategorizableCompositeObject(base.CompositeObject):
         return sortKeyFunction
 
     @classmethod
-    def categoriesSortEventTypes(cls):
+    def categoriesSortEventTypes(class_):
         """The event types that influence the categories sort order."""
         return (
-            cls.categoryAddedEventType(),
-            cls.categoryRemovedEventType(),
+            class_.categoryAddedEventType(),
+            class_.categoryRemovedEventType(),
         )
 
     def foregroundColor(self, recursive=False):
@@ -293,7 +293,7 @@ class CategorizableCompositeObject(base.CompositeObject):
             return ""
 
     @classmethod
-    def categorySubjectChangedEventType(cls):
+    def categorySubjectChangedEventType(class_):
         return "categorizable.category.subject"
 
     def categorySubjectChangedEvent(self, event, subject):
@@ -305,11 +305,11 @@ class CategorizableCompositeObject(base.CompositeObject):
             )
 
     @classmethod
-    def modificationEventTypes(cls):
+    def modificationEventTypes(class_):
         eventTypes = super(
-            CategorizableCompositeObject, cls
+            CategorizableCompositeObject, class_
         ).modificationEventTypes()
         return eventTypes + [
-            cls.categoryAddedEventType(),
-            cls.categoryRemovedEventType(),
+            class_.categoryAddedEventType(),
+            class_.categoryRemovedEventType(),
         ]

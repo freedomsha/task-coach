@@ -112,11 +112,11 @@ class BaseCompositeEffort(base.BaseEffort):  # pylint: disable=W0223
             pub.sendMessage(self.compositeEmptyEventType(), sender=self)
 
     @classmethod
-    def compositeEmptyEventType(cls):
+    def compositeEmptyEventType(class_):
         return "pubsub.effort.composite.empty"
 
     @classmethod
-    def modificationEventTypes(cls):
+    def modificationEventTypes(class_):
         return []  # A composite effort cannot be 'dirty' since its contents
         # are determined by the contained efforts.
 

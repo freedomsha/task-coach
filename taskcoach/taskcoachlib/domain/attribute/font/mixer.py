@@ -21,17 +21,17 @@ import wx
 
 class FontMixer(object):
     @classmethod
-    def mix(cls, *fonts):
+    def mix(class_, *fonts):
         fonts = [font for font in fonts if font]
         if not fonts:
             return None
         elif len(fonts) == 1:
             return fonts[0]
-        pointSize = cls.mixFontSizes(*fonts)
-        family = cls.mixFontFamilies(*fonts)
-        weight = cls.mixFontWeights(*fonts)
-        style = cls.mixFontStyles(*fonts)
-        underlined = cls.mixFontUnderlining(*fonts)
+        pointSize = class_.mixFontSizes(*fonts)
+        family = class_.mixFontFamilies(*fonts)
+        weight = class_.mixFontWeights(*fonts)
+        style = class_.mixFontStyles(*fonts)
+        underlined = class_.mixFontUnderlining(*fonts)
         return wx.Font(pointSize, family, style, weight, underline=underlined)
 
     @staticmethod
@@ -51,12 +51,12 @@ class FontMixer(object):
     )
 
     @classmethod
-    def mixFontFamilies(cls, *fonts):
+    def mixFontFamilies(class_, *fonts):
         families = [font.GetFamily() for font in fonts]
         counts = dict()
-        for family in cls.allFamilies:
+        for family in class_.allFamilies:
             counts[family] = families.count(family)
-        for family in cls.allFamilies:
+        for family in class_.allFamilies:
             countsCopy = counts.copy()
             familyCount = countsCopy.pop(family)
             if familyCount > max(countsCopy.values()):

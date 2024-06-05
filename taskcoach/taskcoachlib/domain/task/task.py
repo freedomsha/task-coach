@@ -19,14 +19,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx
-
 from taskcoachlib import patterns
-from taskcoachlib.domain import date, categorizable, note, attachment
+from taskcoachlib.domain import date, categorizable, note, attachment, base
 from taskcoachlib.domain.attribute.icon import getImageOpen
-from taskcoachlib.thirdparty._weakrefset import WeakSet
 from taskcoachlib.thirdparty.pubsub import pub
+from taskcoachlib.thirdparty._weakrefset import WeakSet
 from . import status
+import weakref
+import wx
 
 
 class Task(
@@ -1792,22 +1792,22 @@ class Task(
             return dateTime.endOfDay()
 
     @classmethod
-    def modificationEventTypes(cls):
-        eventTypes = super(Task, cls).modificationEventTypes()
+    def modificationEventTypes(class_):
+        eventTypes = super(Task, class_).modificationEventTypes()
         return eventTypes + [
-            cls.plannedStartDateTimeChangedEventType(),
-            cls.dueDateTimeChangedEventType(),
-            cls.actualStartDateTimeChangedEventType(),
-            cls.completionDateTimeChangedEventType(),
-            cls.effortsChangedEventType(),
-            cls.budgetChangedEventType(),
-            cls.percentageCompleteChangedEventType(),
-            cls.priorityChangedEventType(),
-            cls.hourlyFeeChangedEventType(),
-            cls.fixedFeeChangedEventType(),
-            cls.reminderChangedEventType(),
-            cls.recurrenceChangedEventType(),
-            cls.prerequisitesChangedEventType(),
-            cls.dependenciesChangedEventType(),
-            cls.shouldMarkCompletedWhenAllChildrenCompletedChangedEventType(),
+            class_.plannedStartDateTimeChangedEventType(),
+            class_.dueDateTimeChangedEventType(),
+            class_.actualStartDateTimeChangedEventType(),
+            class_.completionDateTimeChangedEventType(),
+            class_.effortsChangedEventType(),
+            class_.budgetChangedEventType(),
+            class_.percentageCompleteChangedEventType(),
+            class_.priorityChangedEventType(),
+            class_.hourlyFeeChangedEventType(),
+            class_.fixedFeeChangedEventType(),
+            class_.reminderChangedEventType(),
+            class_.recurrenceChangedEventType(),
+            class_.prerequisitesChangedEventType(),
+            class_.dependenciesChangedEventType(),
+            class_.shouldMarkCompletedWhenAllChildrenCompletedChangedEventType(),
         ]

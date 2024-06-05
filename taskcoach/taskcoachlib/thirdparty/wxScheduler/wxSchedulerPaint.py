@@ -42,6 +42,7 @@ class wxSchedulerSizer(wx.PySizer):
 class wxSchedulerPaint(object):
 
     def __init__(self, *args, **kwds):
+        # TODO: wxPyDeprecationWarning: Using deprecated class. Use Sizer instead.
         super(wxSchedulerPaint, self).__init__(*args, **kwds)
 
         self._resizable = False
@@ -1190,10 +1191,12 @@ class wxSchedulerPaint(object):
         else:
             size = self.GetSize()
 
-        self._bitmap = wx.EmptyBitmap(size.GetWidth(), size.GetHeight())
+        # wxPyDeprecationWarning: Call to deprecated item EmptyBitmap. Use :class:`wx.Bitmap` instead
+        self._bitmap = wx.Bitmap(size.GetWidth(), size.GetHeight())
         memDC = wx.MemoryDC()
         memDC.SelectObject(self._bitmap)
         try:
+            # TODO: AttributeError: 'MemoryDC' object has no attribute 'BeginDrawing'
             memDC.BeginDrawing()
             try:
                 memDC.SetBackground(wx.Brush(SCHEDULER_BACKGROUND_BRUSH()))
@@ -1278,6 +1281,7 @@ class wxSchedulerPaint(object):
             dc = wx.PaintDC(self)
             self.PrepareDC(dc)
 
+        # TODO: AttributeError: 'PaintDC' object has no attribute 'BeginDrawing'
         dc.BeginDrawing()
         try:
             dc.DrawBitmap(self._bitmap, 0, 0, False)

@@ -741,7 +741,7 @@ class SquareTaskViewer(BaseTaskTreeViewer):
             )
         if choice in ("budget", "timeSpent"):
             self.__transformTaskAttribute = (
-                lambda timeSpent: timeSpent.milliseconds() / 1000
+                lambda timeSpent: timeSpent.milliseconds() // 1000
             )
             self.__zero = date.TimeDelta()
         else:
@@ -2183,7 +2183,7 @@ class TaskStatsViewer(BaseTaskViewer):  # pylint: disable=W0223
         counts = tasks.nrOfTasksPerStatus()
         for part, status in zip(series, task.Task.possibleStatuses()):
             nrTasks = counts[status]
-            percentage = round(100.0 * nrTasks / total) if total else 0
+            percentage = round(100.0 * nrTasks // total) if total else 0
             part.SetLabel(status.countLabel % (nrTasks, percentage))
             part.SetValue(nrTasks)
             part.SetColour(self.getFgColor(status))
@@ -2292,12 +2292,13 @@ else:
 
         @staticmethod
         def determine_vertex_weight(budget, priority):
-            budg_h = budget.total_seconds() / 3600
+            budg_h = budget.total_seconds() // 3600
             return (budg_h + priority * (budg_h + 1) + 10) % 200
 
         @staticmethod
         def convert_rgba_to_rgb(rgba):
             rgb = (rgba[0], rgba[1], rgba[2])
+            # unresolved attribute reference encode for class bytes
             return "#" + struct.pack("BBB", *rgb).encode("hex")
 
         def form_depend_graph(self):
@@ -2350,7 +2351,7 @@ else:
             if indegree:
                 max_i_degree = max(indegree)
             visual_style["vertex_size"] = [
-                (i_deg / max_i_degree) * 20 + vert_w
+                (i_deg // max_i_degree) * 20 + vert_w
                 for i_deg, vert_w in zip(indegree, vertices_w)
             ]
 

@@ -42,8 +42,9 @@ from taskcoachlib.powermgt import PowerStateMixin
 from taskcoachlib.help.balloontips import BalloonTipManager
 from taskcoachlib.thirdparty.pubsub import pub
 from taskcoachlib.config.settings import Settings
-import wx.lib.agw.aui as aui
-import wx, ctypes
+import ctypes
+import wx
+from wx.lib.agw import aui
 
 
 def turn_on_double_buffering_on_windows(window):

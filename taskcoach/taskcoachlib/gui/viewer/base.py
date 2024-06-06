@@ -235,7 +235,8 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=ViewerMeta):
     def SetFocus(self, *args, **kwargs):
         try:
             self.widget.SetFocus(*args, **kwargs)
-        except wx.PyDeadObjectError or RuntimeError:
+        except wx.PyDeadObjectError:
+            # make RuntimeError!
             pass
 
     def createSorter(self, collection):
@@ -299,6 +300,7 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=ViewerMeta):
         except RuntimeError:
             # RuntimeError: wrapped C/C++ object of type EffortViewer has been deleted
             # FIXME: It's a bug?
+            # wx.PyDeadObjectError create now RuntimeError !
             pass
 
     def updateSelection(self, sendViewerStatusEvent=True):

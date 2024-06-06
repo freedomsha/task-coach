@@ -162,7 +162,9 @@ class SubjectPage(Page):
         )
         native_info_string = self._settings.get("editor", "descriptionfont")
         font = (
-            wx.FontFromNativeInfoString(native_info_string)
+            wx.FontFromNativeInfoString(
+                native_info_string
+            )  # TODO:try with Font
             if native_info_string
             else None
         )
@@ -698,7 +700,7 @@ class ProgressPage(Page):
     def averagePercentageComplete(items):
         return (
             sum([item.percentageComplete() for item in items])
-            // float(len(items))
+            / float(len(items))  # TODO: try why // not /?
             if items
             else 0
         )
@@ -1806,7 +1808,9 @@ class EffortEditBook(Page):
         )
         native_info_string = self._settings.get("editor", "descriptionfont")
         font = (
-            wx.FontFromNativeInfoString(native_info_string)
+            wx.FontFromNativeInfoString(
+                native_info_string
+            )  # TODO: try with Font
             if native_info_string
             else None
         )
@@ -1897,6 +1901,8 @@ class Editor(BalloonTipManager, widgets.Dialog):
             id_ = IdProvider.get()
             self.__timer = wx.Timer(self, id_)
             wx.EVT_TIMER(self, id_, self.__on_timer)
+            # TODO: tester
+            # self.Bind(wx.EVT_TIMER, id_, self.__on_timer)
             self.__timer.Start(1000, False)
         else:
             self.__timer = None

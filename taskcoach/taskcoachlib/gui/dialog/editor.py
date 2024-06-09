@@ -33,7 +33,7 @@ from taskcoachlib.gui.newid import IdProvider
 from taskcoachlib.help.balloontips import BalloonTipManager
 from taskcoachlib.i18n import _
 from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
-from taskcoachlib.thirdparty.pubsub import pub
+from pubsub import pub
 
 
 class Page(patterns.Observer, widgets.BookPage):

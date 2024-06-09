@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from taskcoachlib import workarounds  # pylint: disable=W0611
 from taskcoachlib import patterns, operating_system
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty.pubsub import pub
 from taskcoachlib.config import Settings
+from pubsub import pub
 import locale
 import os
 import sys

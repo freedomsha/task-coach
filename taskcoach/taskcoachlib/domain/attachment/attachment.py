@@ -18,13 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import urllib.parse
+
 # for unresolved reference 'cmp':
 from filecmp import cmp
 
 from taskcoachlib import patterns, mailer
 from taskcoachlib.domain import base
 from taskcoachlib.domain.note.noteowner import NoteOwner
-from taskcoachlib.thirdparty.pubsub import pub
+from pubsub import pub
 from taskcoachlib.tools import openfile
 
 

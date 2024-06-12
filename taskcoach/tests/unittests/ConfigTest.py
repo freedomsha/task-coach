@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, sys, os, configparser, io
+import sys, os, configparser, io
+from .. import test
 from taskcoachlib import config, meta
 from pubsub import pub
 

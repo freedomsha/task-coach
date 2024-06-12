@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from .. import test
 import wx
 from taskcoachlib import meta, application, config
 

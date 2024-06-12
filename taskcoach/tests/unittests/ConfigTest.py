@@ -323,10 +323,10 @@ class MinimumSettingsTest(SettingsTestCase):
         self.assertEqual(1, self.settings.getint("view", "taskviewercount"))
 
 
-class ApplicationOptionsTest(test.TestCase):
+class ApplicationArgumentsTest(test.TestCase):
     def setUp(self):
-        super(ApplicationOptionsTest, self).setUp()
-        self.parser = config.ApplicationOptionParser()
+        # super(ApplicationArgumentsTest, self).setUp()
+        self.parser = config.ApplicationArgumentParser().parser
 
     def parse(self, *args):
         return self.parser.parse_args(list(args))[0]
@@ -335,21 +335,39 @@ class ApplicationOptionsTest(test.TestCase):
         self.assertEqual("%prog [options] [.tsk file]", self.parser.usage)
 
     def testLanguage(self):
-        options = self.parse("-l", "nl")
+        options = self.parser.parse_args(["-l", "nl"])
         self.assertEqual("nl", options.language)
+
+    def test_language_argument(self):
+        lang = "en"
+        args = self.parser.parse_args(["--language", lang])
+        self.assertEqual(args.language, [lang])
 
     def testLanguageWhenNotChanged(self):
         options = self.parse()
         self.assertEqual(None, options.language)
 
     def testPoFile(self):
-        options = self.parse("-p", "test.po")
+        options = self.parser.parse_args(["-p", "test.po"])
         self.assertEqual("test.po", options.pofile)
 
     def testIniFile(self):
-        options = self.parse("-i", "test.ini")
+        options = self.parser.parse_args(["-i", "test.ini"])
         self.assertEqual("test.ini", options.inifile)
 
+    def test_ini_argument(self):
+        ini_file = "settings.ini"
+        args = self.parser.parse_args(["--ini", ini_file])
+        self.assertEqual(args.inifile, ini_file)
+
     def testProfile(self):
-        options = self.parse("--profile")
+        options = self.parser.parse_args(["--profile"])
         self.assertTrue(options.profile)
+
+    def test_skipstart_argument(self):
+        args = self.parser.parse_args(["--skipstart"])
+        self.assertTrue(args.skipstart)
+
+    def test_version_argument(self):
+        options = self.parser.parse_args(["--version"])
+        self.assertTrue(options.version)

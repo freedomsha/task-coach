@@ -123,7 +123,7 @@ class wxApp(wx.App):
 
 class Application(object, metaclass=patterns.Singleton):
     def __init__(self, options=None, args=None, **kwargs):
-        self._options = options  # finally unused
+        self._options = options
         self._args = args
         self.initTwisted()
         self.__wx_app = wxApp(
@@ -288,8 +288,7 @@ class Application(object, metaclass=patterns.Singleton):
     def __init_config(self, load_settings):
         from taskcoachlib import config
 
-        # ini_file = self._options.inifile if self._options else None
-        ini_file = self._args.inifile if self._args else None
+        ini_file = self._options.inifile if self._options else None
         # pylint: disable=W0201
         self.settings = config.Settings(load_settings, ini_file)
 
@@ -297,22 +296,16 @@ class Application(object, metaclass=patterns.Singleton):
         """Initialize the current translation."""
         from taskcoachlib import i18n
 
-        # i18n.Translator(self.determine_language(self._options, self.settings))
-        i18n.Translator(self.determine_language(self._args, self.settings))
+        i18n.Translator(self.determine_language(self._options, self.settings))
 
     @staticmethod
     def determine_language(
-        # options, settings, locale=locale
-        args,
-        settings,
-        locale=locale,
+        options, settings, locale=locale
     ):  # pylint: disable=W0621
         language = None
-        # if options:
-        if args:
+        if options:
             # User specified language or .po file on command line
-            # language = options.pofile or options.language
-            language = args.pofile or args.language
+            language = options.pofile or options.language
         if not language:
             # Get language as set by the user via the preferences dialog
             language = settings.get("view", "language_set_by_user")

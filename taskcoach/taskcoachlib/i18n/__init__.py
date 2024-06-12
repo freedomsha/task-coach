@@ -29,6 +29,11 @@ from . import po2dict
 
 class Translator(metaclass=patterns.Singleton):
     def __init__(self, language):
+        if isinstance(language, str):
+            pass
+        else:
+            if isinstance(language, list):
+                language = " ".join(language)
         load = (
             self._loadPoFile if language.endswith(".po") else self._loadModule
         )

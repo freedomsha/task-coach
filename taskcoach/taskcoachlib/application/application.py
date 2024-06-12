@@ -14,26 +14,96 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Module: application
+
+This module is part of the Task Coach application and contains
+the main application logic, including initialization, configuration,
+and the main event loop.
+
+Classes:
+    Application: Manages the initialization and running of the Task Coach application.
+
+Functions:
+    start():
+        Starts the Task Coach application.
+
+    showHelp(parser):
+        Displays the help message and exits.
+
+    showVersion():
+        Displays the current version of the Task Coach application and exits.
+
+    __init__(self, options, args):
+        Initializes the application with the given command-line options and arguments.
+
+    init(self, **kwargs):
+        Initializes various components of the application, such as settings,
+        iocontroller, taskfiles, etc.
+
+    __init_config(self, loadSettings):
+        Initializes the configuration settings for the application.
+
+    run(self):
+        Runs the main event loop of the application.
+
+    stop(self):
+        Stops the application and performs necessary cleanup.
+
+Attributes:
+    _instance: Singleton instance of the Application class.
+
+    _options: Command-line options parsed from the arguments.
+
+    _args: Additional arguments passed to the application.
+
+    iocontroller: Manages input/output operations.
+
+    taskfiles: List of task files managed by the application.
+
+    settings: Application settings.
+
+    mainwindow: The main window of the Task Coach application.
+
+Usage:
+    This module is used to initialize and run the Task Coach application.
+    It handles the command-line arguments, sets up the configuration,
+    and starts the main event loop.
+
+    Example:
+        from taskcoachlib.application import application
+        app = application.Application(options, args)
+        app.run()
+
+Dependencies:
+    - wx: wxPython for the GUI components.
+    - taskcoachlib.config: Configuration management.
+    - taskcoachlib.iocontroller: Input/output controller.
+    - taskcoachlib.domain.task: Task domain model.
+    - taskcoachlib.gui.mainwindow: Main window of the application.
 """
 
 # This module works around bugs in third party modules, mostly by
 # monkey-patching so import it first
+import calendar
+import locale
+import os
+import re
+import sys
+import threading
+import time
+from pubsub import pub
+import wx
+
 from taskcoachlib import workarounds  # pylint: disable=W0611
 from taskcoachlib import patterns, operating_system
 from taskcoachlib.i18n import _
 from taskcoachlib.config import Settings
-from pubsub import pub
-import locale
-import os
-import sys
-import time
-import wx
-import calendar
-import re
-import threading
 
 
 class RedirectedOutput(object):
+    """"""
+
     _rx_ignore = [
         re.compile("RuntimeWarning: PyOS_InputHook"),
     ]
@@ -68,7 +138,8 @@ class RedirectedOutput(object):
             if operating_system.isWindows():
                 wx.MessageBox(
                     _(
-                        'Errors have occured. Please see "taskcoachlog.txt" in your "My Documents" folder.'
+                        'Errors have occured. Please see "taskcoachlog.txt" '
+                        'in your "My Documents" folder.'
                     ),
                     _("Error"),
                     wx.OK,
@@ -122,9 +193,9 @@ class wxApp(wx.App):
 
 
 class Application(object, metaclass=patterns.Singleton):
-    def __init__(self, options=None, args=None, **kwargs):
+    def __init__(self, options=None, **kwargs):
         self._options = options
-        self._args = args
+        self._args = options.args
         self.initTwisted()
         self.__wx_app = wxApp(
             self.on_end_session, self.on_reopen_app, redirect=False
@@ -278,7 +349,10 @@ class Application(object, metaclass=patterns.Singleton):
             self.__close_splash(splash)
             self.__warn_user_that_ini_file_was_not_loaded()
         if loadTaskFile:
-            self.iocontroller.openAfterStart(self._args)
+            self.iocontroller.openAfterStart(
+                self._args
+            )  # TODO: verifier si les listes sont prises en compte. Non
+            # TypeError: startswith first arg must be bytes or a tuple of bytes, not str
         self.__register_signal_handlers()
         self.__create_mutex()
         self.__create_task_bar_icon()

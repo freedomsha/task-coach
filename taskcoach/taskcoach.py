@@ -68,9 +68,10 @@ def start():
     # pylint: disable=W0404
     from taskcoachlib import config, application
 
-    options, args = config.ApplicationOptionParser().parse_args()
-    app = application.Application(options, args)
-    if options.profile:
+    args = config.ApplicationArgumentParser().parser.parse_args()
+    print(f"taskcoach.py: {vars(args)}")
+    app = application.Application(args)
+    if args.profile:
         import cProfile
 
         cProfile.runctx(

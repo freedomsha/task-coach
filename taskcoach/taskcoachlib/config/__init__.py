@@ -17,4 +17,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .settings import Settings
-from .options import OptionParser, ApplicationOptionParser, OptionGroup
+from taskcoachlib.config.arguments import ApplicationArgumentParser

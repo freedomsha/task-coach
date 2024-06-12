@@ -195,7 +195,7 @@ class wxApp(wx.App):
 class Application(object, metaclass=patterns.Singleton):
     def __init__(self, options=None, **kwargs):
         self._options = options
-        self._args = options.args
+        self._args = kwargs
         self.initTwisted()
         self.__wx_app = wxApp(
             self.on_end_session, self.on_reopen_app, redirect=False

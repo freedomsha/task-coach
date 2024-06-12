@@ -104,4 +104,6 @@ class ApplicationArgumentParser:
         dest="pofile",
         help="Use the specified POFILE for translation of the GUI.",
     )
-    parser.add_argument("args", help="Name of .tsk File to open.")
+
+
+#    parser.add_argument("args", help="Name of .tsk File to open.")

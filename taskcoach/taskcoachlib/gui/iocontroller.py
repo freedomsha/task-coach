@@ -93,18 +93,18 @@ class IOController(object):
         )
 
     def syncMLConfig(self):
-        """Renvoie la configuration de synchronisation du fichier de tâches.
+        """Returns the task file sync configuration.
 
-        Returns :
-            dict : La configuration de synchronisation du fichier de tâches.
+        Returns:
+            dict: The task file sync configuration.
         """
         return self.__taskFile.syncMLConfig()
 
     def setSyncMLConfig(self, config):
-        """Définit la configuration de synchronisation du fichier de tâches.
+        """Sets the task file synchronization configuration.
 
-        Args :
-            config (dict) : La nouvelle configuration de synchronisation.
+        Args:
+            config (dict): The new synchronization configuration.
 
         Returns :
             None
@@ -112,7 +112,7 @@ class IOController(object):
         self.__taskFile.setSyncMLConfig(config)
 
     def needSave(self):
-        """Renvoie True si le fichier de tâches a été modifié depuis la dernière sauvegarde, False sinon.
+        """Returns True if the task file has been modified since the last backup, False otherwise.
 
         Returns :
             bool
@@ -120,7 +120,7 @@ class IOController(object):
         return self.__taskFile.needSave()
 
     def changedOnDisk(self):
-        """Renvoie True si le fichier de tâches a été modifié sur le disque depuis la dernière ouverture, False sinon.
+        """Returns True if the task file has been modified on disk since the last opening, False otherwise.
 
         Returns :
             bool
@@ -128,7 +128,7 @@ class IOController(object):
         return self.__taskFile.changedOnDisk()
 
     def hasDeletedItems(self):
-        """Renvoie True s'il y a des tâches ou des notes supprimées dans le fichier de tâches, False sinon.
+        """Returns True if there are deleted tasks or notes in the task file, False otherwise.
 
         Returns :
             bool
@@ -139,7 +139,7 @@ class IOController(object):
         )
 
     def purgeDeletedItems(self):
-        """Supprime définitivement les tâches et les notes supprimées du fichier de tâches.
+        """Permanently deletes deleted tasks and notes from the task file.
 
         Returns :
             None
@@ -156,10 +156,11 @@ class IOController(object):
         the user was working on previously, or none at all.
 
         Args :
-            commandLineArgs (list): Liste d'arguments de ligne de commande.
+            commandLineArgs (list): List of command line arguments.
 
         Returns :
-            None"""
+            None
+        """
         if commandLineArgs:
             if isinstance(commandLineArgs, str):
                 filename = commandLineArgs[0]
@@ -182,23 +183,23 @@ class IOController(object):
         breakLock=False,
         lock=True,
     ):
-        """La méthode Ouvre un fichier de tâches.
+        """The method Opens a task file.
 
-        Permet d'ouvrir un fichier de tâches.
+        Allows you to open a task file.
 
-        Si le fichier a été modifié depuis la dernière sauvegarde,
-        l'utilisateur est invité à sauvegarder les modifications.
+        If the file has been modified since the last save,
+        the user is prompted to save changes.
 
-        Si le fichier existe, il est chargé et verrouillé si nécessaire.
+        If the file exists, it is loaded and locked if necessary.
 
-        Si le fichier n'existe pas, une erreur est affichée.
+        If the file does not exist, an error is displayed.
 
-        Args :
-            filename (str) : Le nom du fichier à ouvrir. Si None, l'utilisateur est invité à choisir un fichier.
-            showerror (callable) : La fonction à utiliser pour afficher les messages d'erreur.
-            fileExists (callable) : La fonction à utiliser pour vérifier si le fichier existe.
-            breakLock (bool) : Si True, permet de forcer l'ouverture du fichier même s'il est verrouillé.
-            lock (bool) : Si True, verrouille le fichier après l'ouverture.
+        Args:
+            filename (str): The name of the file to open. If None, the user is prompted to choose a file.
+            showerror (callable): The function to use to display error messages.
+            fileExists (callable): The function to use to check if the file exists.
+            breakLock (bool): If True, allows you to force the opening of the file even if it is locked.
+            lock (bool): If True, locks the file after opening.
 
         Returns :
             None
@@ -269,11 +270,11 @@ class IOController(object):
             self.__removeRecentFile(filename)
 
     def merge(self, filename=None, showerror=wx.MessageBox):
-        """Méthode permet de fusionner un fichier de tâches avec le fichier courant.
+        """Method allows you to merge a task file with the current file.
 
-        Args :
-            filename (str) : Le nom du fichier à fusionner. Si None, l'utilisateur est invité à choisir un fichier.
-            showerror (callable) : La fonction à utiliser pour afficher les messages d'erreur.
+        Args:
+            filename (str): The name of the file to merge. If None, the user is prompted to choose a file.
+            showerror (callable): The function to use to display error messages.
 
         Returns :
             None
@@ -304,16 +305,16 @@ class IOController(object):
             self.__addRecentFile(filename)
 
     def save(self, showerror=wx.MessageBox):
-        """La méthode permet de sauvegarder le fichier de tâches courant.
+        """The method saves the current task file.
 
-        Si le fichier n'a pas encore été enregistré,
-        l'utilisateur est invité à choisir un nom de fichier.
-        Si le fichier a été modifié depuis la dernière sauvegarde,
-        elle affiche une boîte de dialogue pour demander à
-        l'utilisateur de confirmer la sauvegarde.
+        If the file has not yet been saved,
+        the user is prompted to choose a file name.
+        If the file has been modified since the last backup,
+        it displays a dialog box to ask
+        the user to confirm the backup.
 
-        Args :
-            showerror (callable) : La fonction.
+        Args:
+            showerror (callable): The function.
         """
         if self.__taskFile.filename():
             if self._saveSave(self.__taskFile, showerror):
@@ -326,26 +327,26 @@ class IOController(object):
             return False
 
     def mergeDiskChanges(self):
-        """La méthode mergeDiskChanges permet de fusionner les
-        modifications apportées au fichier de tâches sur le disque avec le fichier courant.
+        """The mergeDiskChanges method allows you to merge the
+        modifications made to the task file on the disk with the current file.
 
-                Si le fichier a été modifié depuis la dernière sauvegarde,
-                elle affiche une boîte de dialogue pour demander à l'utilisateur de confirmer la sauvegarde.
+                If the file has been modified since the last backup,
+                it displays a dialog box to ask the user to confirm the backup.
         """
         self.__taskFile.mergeDiskChanges()
 
     def saveas(
         self, filename=None, showerror=wx.MessageBox, fileExists=os.path.exists
     ):
-        """La méthode permet de sauvegarder le fichier de tâches courant sous un nouveau nom.
+        """The method saves the current task file under a new name.
 
-        Sauvegarder le fichier de tâches actuellement ouvert dans l'application sous un nouveau nom de fichier.
+        Save the task file currently open in the application under a new file name.
 
-        Si aucun nom de fichier n'est spécifié, elle affiche une boîte de dialogue pour
-        demander à l'utilisateur de sélectionner un nom de fichier.
+        If no file name is specified, it displays a dialog box to
+        ask the user to select a file name.
 
-        Si le fichier existe déjà, elle affiche une boîte de dialogue pour demander à l'utilisateur
-        de confirmer l'écrasement du fichier existant."""
+        If the file already exists, it displays a dialog box to ask the user
+        to confirm overwriting the existing file."""
         if not filename:
             filename = self.__askUserForFile(
                 _("Save as"),
@@ -386,27 +387,27 @@ class IOController(object):
             )  # Try again
 
     def _createSelectionFile(self, tasks, TaskFileClass):
-        """Crée un nouveau fichier de tâches à partir d'une sélection de tâches.
+        """Creates a new task file from a selection of tasks.
 
-        Cette méthode est une méthode interne de la classe IOController.
-        Elle permet de créer un nouveau fichier de tâches (TaskFile)
-        à partir d'une sélection de tâches.
+        This method is an internal method of the IOController class.
+        It allows you to create a new task file (TaskFile)
+        from a selection of tasks.
 
-        La méthode prend en paramètre une liste de tâches sélectionnées
-        et une classe TaskFileClass qui permet de créer
-        une instance de la classe TaskFile.
+        The method takes as parameter a list of selected tasks
+        and a class TaskFileClass which allows you to create
+        an instance of the TaskFile class.
 
-        La méthode crée un nouveau fichier de tâches vide,
-        puis y ajoute les tâches sélectionnées.
-        Elle ajoute également les catégories utilisées par les tâches sélectionnées,
-        ainsi que les catégories parentes de ces catégories.
+        The method creates a new empty task file,
+        then adds the selected tasks to it.
+        It also adds the categories used by the selected tasks,
+        as well as the parent categories of these categories.
 
-        Args :
-            tasks (list) : La liste des tâches sélectionnées.
-            TaskFileClass (class) : La classe à utiliser pour créer le nouveau fichier de tâches.
+        Args:
+            tasks (list): The list of selected tasks.
+            TaskFileClass (class): The class to use to create the new task file.
 
-        Returns :
-            TaskFile : Le nouveau fichier de tâches créé à partir de la sélection de tâches.
+        Returns:
+            TaskFile: The new task file created from the task selection.
         """
         selectionFile = TaskFileClass()
         # Add the selected tasks:
@@ -447,7 +448,7 @@ class IOController(object):
             return False
 
     def saveastemplate(self, task):
-        """Cette méthode permet de sauvegarder une tâche sous forme de modèle dans le répertoire des modèles."""
+        """This method allows you to save a task as a template in the templates directory."""
         templates = persistence.TemplateList(
             self.__settings.pathToTemplatesDir()
         )
@@ -455,25 +456,25 @@ class IOController(object):
         templates.save()
 
     def importTemplate(self, showerror=wx.MessageBox):
-        """Cette fonction permet d'importer un modèle de tâche à partir d'un fichier.
+        """This function allows you to import a task template from a file.
 
-        -La première ligne définit la fonction "importTemplate"
-        avec un paramètre "showerror" qui est une fonction de boîte de dialogue d'erreur.
+        - The first line defines the function "importTemplate"
+        with a parameter "showerror" which is a dialog function error.
 
-        -La deuxième ligne demande à l'utilisateur de sélectionner un fichier à importer
-        en utilisant la fonction "__askUserForFile" qui est définie ailleurs dans le code.
+        - The second line asks the user to select a file to import
+        using the "__askUserForFile" function which is defined elsewhere in the code.
 
-        -Si l'utilisateur sélectionne un fichier, la troisième ligne
-        crée une instance de la classe "TemplateList" qui est définie ailleurs dans le code
-        et qui représente une liste de modèles de tâches.
+        - If the user selects a file, the third line
+        creates an instance of the "TemplateList" class which is defined elsewhere in the code
+        and which represents a list of task templates.
 
-        -La quatrième ligne essaie de copier le modèle de tâche sélectionné
-        dans le répertoire des modèles de tâches en utilisant la méthode "copyTemplate"
-        de la classe "TemplateList".
+        - The fourth line tries to copy the selected task template
+        to the task template directory using the "copyTemplate"
+        method of the "TemplateList" class.
 
-        -Si une exception est levée pendant la copie, la cinquième ligne
-        crée un message d'erreur avec le nom du fichier et la raison de l'exception,
-        puis affiche la boîte de dialogue d'erreur en utilisant la fonction "showerror" passée en paramètre.
+        - If an exception is thrown during copying, the fifth line
+        creates an error message with the file name and the reason for the exception,
+        then displays the error dialog box using the "showerror" function passed as a parameter.
         """
         filename = self.__askUserForFile(
             _("Import template"),
@@ -497,33 +498,34 @@ class IOController(object):
                 showerror(errorMessage, **self.__errorMessageOptions)
 
     def close(self, force=False):
-        """Cette fonction permet de fermer la tâche en cours d'édition.
+        """This function allows you to close the task currently being edited.
 
-        -La première ligne définit la fonction "close" avec un paramètre optionnel "force"
-        qui est un booléen indiquant si la fermeture doit être forcée
-        sans demander à l'utilisateur de sauvegarder les modifications en cours.
+        - The first line defines the "close" function with an optional parameter "force"
+        which is a boolean indicating whether the closure must be forced
+        without asking the user to save the current changes.
 
-        -La deuxième ligne vérifie si le fichier de tâche en cours d'édition
-        a besoin d'être sauvegardé en appelant la méthode "needSave" de l'objet "taskFile"
-        qui est défini ailleurs dans le code.
+        - The second line checks if the task file currently being edited
+        needs to be saved by calling the method "needSave" of the "taskFile" object
+        which is defined elsewhere in the code.
 
-        -Si le fichier a besoin d'être sauvegardé et que la fermeture doit être forcée,
-        la troisième ligne sauvegarde le fichier sans demander à l'utilisateur
-        en utilisant la méthode "_saveSave" de l'objet "taskFile"
-        et une fonction lambda qui ne fait rien (elle vide les arguments).
+        - If the file needs to be saved and the close must be forced,
+        the third line saves the file without asking the user
+        using the "_saveSave" method of the "taskFile"
+        object and a lambda function which does nothing (it empties the arguments).
 
-        -Si le fichier a besoin d'être sauvegardé mais que la fermeture n'est pas forcée,
-        la cinquième ligne appelle la méthode "__saveUnsavedChanges" qui
-        demande à l'utilisateur s'il veut sauvegarder les modifications en cours.
-        Si l'utilisateur choisit de ne pas sauvegarder, la fonction retourne "False"
-        et la tâche n'est pas fermée.
+        - If the file needs to be saved but closing is not forced,
+        the fifth line calls the "__saveUnsavedChanges" method which
+        asks the user if they want to save the changes in course.
+        If the user chooses not to save, the function returns "False"
+        and the task is not closed.
 
-        -Si le fichier n'a pas besoin d'être sauvegardé ou
-        si l'utilisateur a choisi de sauvegarder les modifications,
-        la septième ligne appelle la méthode "__closeUnconditionally" qui ferme la tâche sans condition.
+        - If the file does not need be saved or
+        if the user chose to save the changes,
+        the seventh line calls the "__closeUnconditionally" method
+        which closes the task unconditionally.
 
-        -Enfin, la dernière ligne retourne "True" pour indiquer que
-        la tâche a été fermée avec succès.
+        - Finally, the last line returns " True" to indicate that
+        the task was closed successfully.
         """
         if self.__taskFile.needSave():
             if force:
@@ -553,41 +555,43 @@ class IOController(object):
         fileExists=os.path.exists,
         **kwargs
     ):
-        """Cette fonction ouvre le fichier filename pour écriture et renvoie si tout s'est bien passé.
+        """This function opens the file filename for writing and returns
+        whether everything went well.
 
-        Plusieurs paramètres optionnels :
-        Args :
-            "title" : qui est le titre de la boîte de dialogue de sauvegarde,
-            "fileDialogOpts" : qui sont les options de la boîte de dialogue de sauvegarde,
-            "writerClass" : qui est la classe qui écrit les données exportées dans le fichier,
-            "viewer" : qui est l'objet qui fournit les données à exporter,
-            "selectionOnly" : qui est un booléen indiquant si seules les données sélectionnées doivent être exportées,
-            "openfile" : qui est la fonction utilisée pour ouvrir le fichier en écriture,
-            "showerror" : qui est la fonction de boîte de dialogue d'erreur,
-            "filename" : qui est le nom de fichier à utiliser pour l'export,
-            "fileExists" : qui est la fonction utilisée pour vérifier si le fichier existe déjà, et
-            "**kwargs" : qui permet de passer des arguments supplémentaires à la méthode d'écriture.
+        Several optional parameters:
+        Args:
+            "title": which is the title of the dialog box backup,
+            "fileDialogOpts": which are the options of the backup dialog box,
+            "writerClass": which is the class that writes the exported data to the file,
+            "viewer": which is the object which provides the data to export,
+            "selectionOnly": which is a boolean indicating whether only
+             the selected data must be exported,
+            "openfile": which is the function used to open the file for writing,
+            "showerror": which is the error dialog box function,
+            "filename": which is the file name to use for export,
+            "fileExists": which is the function used to check if the file already exists, and
+            "**kwargs": which allows additional arguments to be passed to the write method.
 
-        La deuxième ligne utilise le nom de fichier fourni en paramètre
-        ou demande à l'utilisateur de sélectionner un fichier en utilisant la méthode "__askUserForFile"
-        qui est définie ailleurs dans le code.
+        The second line uses the file name provided as a parameter
+        or asks the user to select a file using the "__askUserForFile"
+        method which is defined elsewhere in the code.
 
-        Si l'utilisateur sélectionne un fichier, la troisième ligne ouvre le fichier en écriture
-        en utilisant la méthode "__openFileForWriting" qui est définie ailleurs dans le code.
-        Si l'ouverture du fichier échoue, la fonction retourne "False".
+        If the user selects a file, the third line opens the file for writing
+        using the "__openFileForWriting" method which is defined elsewhere in the code.
+        If opening the file fails, the function returns "False".
 
-        Si le fichier est ouvert avec succès, la quatrième ligne utilise la classe "writerClass"
-        pour écrire les données exportées dans le fichier en appelant la méthode "write"
-        avec les paramètres "viewer", "self.__settings", "selectionOnly" et "**kwargs".
-        La méthode "write" est définie dans la classe "writerClass".
+        If the file is opened successfully, the fourth line uses the "writerClass"
+        class to write the exported data to the file by calling the "write"
+        method with the parameters "viewer", "self.__settings", "selectionOnly" and "**kwargs".
+        The "write" method is defined in the "writerClass" class.
 
-        La cinquième ligne ferme le fichier et affiche un message de confirmation
-        en utilisant la méthode "__messageCallback" qui est définie ailleurs dans le code.
+        The fifth line closes the file and displays a confirmation message
+        using the "__messageCallback" method " which is defined elsewhere in the code.
 
-        Enfin, la dernière ligne
+        Finally, the last line
 
-        Returns :
-            bool : retourne "True" si l'export a réussi et "False" sinon.
+        Returns:
+            bool: returns "True" if the export was successful and "False" otherwise.
         """
         filename = filename or self.__askUserForFile(
             title,
@@ -622,20 +626,20 @@ class IOController(object):
         filename=None,
         fileExists=os.path.exists,
     ):
-        """Exporte les données de la tâche en cours d'édition au format HTML.
+        """Exports the data of the currently edited task in HTML format.
 
-        Les données sont fournies par l'objet "viewer".
+        The data is provided by the "viewer" object.
 
-        Si "selectionOnly" est True, seules les données sélectionnées sont exportées.
+        If "selectionOnly" is True, only the selected data are exported.
 
-        Si "separateCSS" est True, le CSS est écrit dans un fichier séparé.
+        If "separateCSS" is True, the CSS is written to a separate file.
 
-        "columns" est une liste de noms de colonnes à exporter.
+        "columns" is a list of column names to export.
 
-        Si "filename" est fourni, le fichier est enregistré sous ce nom.
-        Sinon, l'utilisateur est invité à sélectionner un nom de fichier.
+        If "filename" is provided, the file is saved under that name.
+        Otherwise, the user is prompted to select a file name.
 
-        Si le fichier existe déjà, l'utilisateur est invité à confirmer l'écrasement.
+        If the file already exists, the user is prompted to confirm overwriting.
         """
         return self.export(
             _("Export as HTML"),
@@ -659,23 +663,23 @@ class IOController(object):
         columns=None,
         fileExists=os.path.exists,
     ):
-        """Exporte les données de la tâche en cours d'édition au format CSV.
+        """Exports the data of the currently edited task in CSV format.
 
-        Les données sont fournies par l'objet "viewer".
+        The data is provided by the "viewer" object.
 
-        Si "selectionOnly" est True, seules les données sélectionnées sont exportées.
+        If "selectionOnly" is True, only the selected data are exported.
 
-        Si "separateDateAndTimeColumns" est True, les dates et heures sont exportées dans des colonnes séparées.
+        If "separateDateAndTimeColumns" is True, dates and times are exported in separate columns.
 
-        "columns" est une liste de noms de colonnes à exporter.
+        "columns" is a list of column names to export.
 
-        Si "fileExists" est fourni, il est utilisé pour vérifier si le fichier existe déjà.
+        If "fileExists" is provided, it is used to check if the file already exists.
 
-        Si "filename" est fourni, le fichier est enregistré sous ce nom.
+        If "filename" is provided, the file is saved under that name.
 
-        Sinon, l'utilisateur est invité à sélectionner un nom de fichier.
+        Otherwise, the The user is prompted to select a file name.
 
-        Si le fichier existe déjà, l'utilisateur est invité à confirmer l'écrasement.
+        If the file already exists, the user is prompted to confirm overwriting.
         """
         return self.export(
             _("Export as CSV"),
@@ -691,19 +695,19 @@ class IOController(object):
     def exportAsICalendar(
         self, viewer, selectionOnly=False, fileExists=os.path.exists
     ):
-        """Exporte les données de la tâche en cours d'édition au format iCalendar.
+        """Exports the data of the currently edited task in iCalendar format.
 
-        Les données sont fournies par l'objet "viewer".
+                The data is provided by the "viewer" object.
 
-        Si "selectionOnly" est True, seules les données sélectionnées sont exportées.
+                If "selectionOnly" is True, only the selected data are exported.
 
-        Si "fileExists" est fourni, il est utilisé pour vérifier si le fichier existe déjà.
+                If "fileExists" is provided, it is used to check if the file already exists.
 
-        Si "filename" est fourni, le fichier est enregistré sous ce nom.
+                If "filename" is provided, the file is saved under that name.
+        )
+                Otherwise, the user is prompted to select a file name.
 
-        Sinon, l'utilisateur est invité à sélectionner un nom de fichier.
-
-        Si le fichier existe déjà, l'utilisateur est invité à confirmer l'écrasement.
+                If the file already exists, the user is prompted to confirm overwriting.
         """
         return self.export(
             _("Export as iCalendar"),
@@ -717,19 +721,19 @@ class IOController(object):
     def exportAsTodoTxt(
         self, viewer, selectionOnly=False, fileExists=os.path.exists
     ):
-        """Exporte les données de la tâche en cours d'édition au format Todo.txt.
+        """Exports the data of the currently edited task in Todo.txt format.
 
-        Les données sont fournies par l'objet "viewer".
+        The data is provided by the "viewer" object.
 
-        Si "selectionOnly" est True, seules les données sélectionnées sont exportées.
+        If "selectionOnly" is True, only the selected data is exported.
 
-        Si "fileExists" est fourni, il est utilisé pour vérifier si le fichier existe déjà.
+        If "fileExists" is provided, it is used to check if the file already exists.
 
-        Si "filename" est fourni, le fichier est enregistré sous ce nom.
+        If "filename" is provided, the file is saved under that name.
 
-        Sinon, l'utilisateur est invité à sélectionner un nom de fichier.
+        Otherwise, the user is prompted to select a file name.
 
-        Si le fichier existe déjà, l'utilisateur est invité à confirmer l'écrasement.
+        If the file already exists, the user is prompted to confirm overwriting.
         """
         return self.export(
             _("Export as Todo.txt"),
@@ -741,49 +745,49 @@ class IOController(object):
         )
 
     def importCSV(self, **kwargs):
-        """Importe des données au format CSV dans la tâche en cours d'édition.
+        """Imports data in CSV format into the task being edited.
 
-        Les données sont lues à partir d'un fichier CSV en utilisant la classe "CSVReader" de l'objet "persistence".
+        Data is read from a CSV file using the "CSVReader" class of the "persistence" object.
 
-        Les tâches et les catégories sont stockées dans l'objet "self.__taskFile".
+        Tasks and categories are stored in the "self.__taskFile" object.
 
-        Les paramètres supplémentaires peuvent être passés à la méthode "read" de la classe "CSVReader".
+        Additional parameters can be passed to the "read" method of the "CSVReader" class.
         """
         persistence.CSVReader(
             self.__taskFile.tasks(), self.__taskFile.categories()
         ).read(**kwargs)
 
     def importTodoTxt(self, filename):
-        """Importe des données au format Todo.txt dans la tâche en cours d'édition.
+        """Imports data in Todo.txt format into the task being edited.
 
-        Les données sont lues à partir d'un fichier Todo.txt
-        en utilisant la classe "TodoTxtReader" de l'objet "persistence".
+        Data is read from a Todo.txt
+        file using the object's "TodoTxtReader" class "persistence".
 
-        Les tâches et les catégories sont stockées dans l'objet "self.__taskFile".
+        Tasks and categories are stored in the "self.__taskFile" object.
 
-        Le nom de fichier doit être fourni en paramètre.
+        The file name must be provided as a parameter.
         """
         persistence.TodoTxtReader(
             self.__taskFile.tasks(), self.__taskFile.categories()
         ).read(filename)
 
     def synchronize(self):
-        """Synchronise les données de la tâche en cours d'édition avec un serveur SyncML.
+        """Synchronizes data from the currently editing task with a SyncML server.
 
-         L'utilisateur est invité à entrer un mot de passe pour l'authentification.
+         The user is prompted for a password for authentication.
 
-        Si l'authentification échoue, l'utilisateur peut choisir de réinitialiser le mot de passe.
+        If authentication fails, the user can choose to reset the password.
 
-        Les informations de synchronisation sont stockées
-        dans l'objet "synchronizer" de la classe "Synchronizer" de l'objet "sync".
+        The synchronization information is stored
+        in the "synchronizer" object of the "Synchronizer" class of the "sync" object.
 
-        Les résultats de la synchronisation sont affichés
-        dans la boîte de dialogue de rapport de synchronisation "self.__syncReport".
+        The synchronization results are displayed
+        in the synchronization report dialog box "self.__syncReport".
 
-        Si la synchronisation réussit, un message de confirmation est affiché.
+        If the synchronization is successful, a confirmation message is displayed.
 
-        Si la synchronisation échoue, une exception "AuthenticationFailure" est levée et
-        l'utilisateur peut choisir de réessayer ou d'annuler.
+        If the synchronization fails, an "AuthenticationFailure" exception is thrown and
+        the user can choose to retry or cancel.
         """
         doReset = False
         while True:
@@ -805,19 +809,19 @@ class IOController(object):
                 synchronizer.Destroy()
 
     def filename(self):
-        """Retourne le nom de fichier de tâche en cours d'édition.
+        """Returns the file name of the task currently being edited.
 
-        Le nom de fichier est stocké dans l'objet "self.__taskFile".
+        The file name is stored in the "self.__taskFile" object.
         """
         return self.__taskFile.filename()
 
     def __syncReport(self, msg):
-        """Affiche un message d'erreur dans une boîte de dialogue de rapport de synchronisation.
+        """Displays an error message in a synchronization report dialog box.
 
-         Le message est fourni en paramètre "msg".
+         The message is provided as parameter "msg".
 
-        La boîte de dialogue est créée avec le titre "Synchronization status"
-        et le style "wx.OK | wx.ICON_ERROR".
+        The dialog box is created with the title "Synchronization status "
+        and style "wx.OK | wx.ICON_ERROR".
         """
         wx.MessageBox(
             msg, _("Synchronization status"), style=wx.OK | wx.ICON_ERROR
@@ -826,19 +830,19 @@ class IOController(object):
     def __openFileForWriting(
         self, filename, openfile, showerror, mode="w", encoding="utf-8"
     ):
-        """Ouvre un fichier en écriture avec le nom de fichier "filename" en utilisant la fonction "openfile".
+        """Opens a file for writing with filename "filename" using the "openfile" function.
 
-        Le mode d'ouverture est "mode" et l'encodage est "encoding".
+        Open mode is "mode" and encoding is "encoding".
 
-        Si l'ouverture du fichier échoue, un message d'erreur est créé avec
-        le nom de fichier et la raison de l'exception, puis affiché dans une boîte de dialogue d'erreur
-        en utilisant la fonction "showerror".
+        ) If opening the file fails, an error message is created with
+        the file name and the reason for the exception, then displayed in an error dialog box
+        using the function " showerror".
 
-        Les options de la boîte de dialogue d'erreur sont stockées dans l'objet "self.__errorMessageOptions".
+        The error dialog box options are stored in the "self.__errorMessageOptions" object.
 
-        Si l'ouverture du fichier réussit, le fichier ouvert est retourné.
+        If the file opening is successful, the open file is returned .
 
-        Si l'ouverture du fichier échoue, la fonction retourne "None".
+        If opening the file fails, the function returns "None".
         """
         try:
             return openfile(filename, mode, encoding)
@@ -851,17 +855,17 @@ class IOController(object):
             return None
 
     def __addRecentFile(self, fileName):
-        """Ajoute le nom de fichier "fileName" à la liste des fichiers récents.
+        """Adds the file name "fileName" to the list of recent files.
 
-        La liste des fichiers récents est stockée dans les paramètres de l'objet "self.__settings".
+        The list of recent files is stored in the settings of the "self.__settings" object.
 
-        Si le fichier est déjà dans la liste, il est déplacé en haut de la liste.
+        If the file is already in the list, it is moved to the top of the list.
 
-        La liste est ensuite tronquée pour ne pas dépasser
-        le nombre maximum de fichiers récents défini dans les paramètres "maxrecentfiles".
+        The list is then truncated so as not to exceed
+        the maximum number of recent files defined in the "maxrecentfiles" parameters.
 
-        Les fichiers récents sont stockés dans la section "file" des paramètres
-        de l'objet "self.__settings" sous la clé "recentfiles".
+        Recent files are stored in the "file" section of the settings
+        of the "self.__settings" object under the "recentfiles" key.
         """
         recentFiles = self.__settings.getlist("file", "recentfiles")
         if fileName in recentFiles:
@@ -874,14 +878,14 @@ class IOController(object):
         self.__settings.setlist("file", "recentfiles", recentFiles)
 
     def __removeRecentFile(self, fileName):
-        """Supprime le nom de fichier "fileName" de la liste des fichiers récents.
+        """Removes the file name "fileName" from the recent file list.
 
-         La liste des fichiers récents est stockée dans les paramètres de l'objet "self.__settings".
+         The recent file list is stored in the settings of the "self.__settings" object.
 
-        Si le fichier est dans la liste, il est supprimé de la liste.
+        If the file is in the list, it is removed from the list.
 
-        Les fichiers récents sont stockés dans la section "file" des paramètres
-        de l'objet "self.__settings" sous la clé "recentfiles".
+        Recent files are stored in the "file" section of the settings
+        of the "self.__settings" object under the "recentfiles" key.
         """
         recentFiles = self.__settings.getlist("file", "recentfiles")
         if fileName in recentFiles:
@@ -891,25 +895,25 @@ class IOController(object):
     def __askUserForFile(
         self, title, fileDialogOpts, flag=wx.FD_OPEN, fileExists=os.path.exists
     ):
-        """Ouvre une boîte de dialogue de sélection de fichier pour demander à l'utilisateur de sélectionner un fichier.
+        """Opens a file selection dialog box to ask the user to select a file.
 
-        Le titre de la boîte de dialogue est "title".
+        The title of the dialog box is "title".
 
-        Les options de la boîte de dialogue sont fournies dans le dictionnaire "fileDialogOpts".
+        The box options dialog box are provided in the "fileDialogOpts" dictionary.
 
-        Le drapeau "flag" indique si la boîte de dialogue doit être utilisée pour ouvrir ou enregistrer un fichier.
+        The "flag" flag indicates whether the dialog box should be used to open or save a file.
 
-        La fonction "fileExists" est utilisée pour vérifier si le fichier existe déjà.
+        The "fileExists" function is used to check if the file already exists.
 
-        Si le fichier sélectionné pour l'enregistrement n'a pas l'extension par défaut,
-        l'extension est ajoutée automatiquement.
+        If the file selected for saving does not have the default extension,
+        the extension is added automatically.
 
-        Si le fichier existe déjà, l'utilisateur est invité à confirmer l'écrasement
-        en appelant la méthode "__askUserForOverwriteConfirmation".
+        If the file already exists, the user is prompted to confirm the overwrite
+        by calling the "__askUserForOverwriteConfirmation" method.
 
-        Si l'utilisateur confirme l'écrasement, le nom de fichier est retourné.
+        If the user confirms the overwrite, the file name is returned.
 
-        Sinon, la fonction retourne "None".
+        Otherwise, the function returns "None".
         """
         filename = wx.FileSelector(
             title, flags=flag, **fileDialogOpts
@@ -929,23 +933,23 @@ class IOController(object):
     def __askUserForOverwriteConfirmation(
         self, filename, title, fileDialogOpts
     ):
-        """Affiche une boîte de dialogue de confirmation pour demander à l'utilisateur
-        s'il veut écraser le fichier existant "filename".
+        """Displays a confirmation dialog box to ask the user
+        if they want to overwrite the existing file "filename".
 
-        Le titre de la boîte de dialogue est "title".
+        The title of the dialog box is "title".
 
-        Les options de la boîte de dialogue sont fournies dans le dictionnaire "fileDialogOpts".
+        The dialog box options are provided in the dictionary "fileDialogOpts".
 
-        Si l'utilisateur confirme l'écrasement, la fonction retourne le nom de fichier "filename".
+        If the user confirms overwriting, the function returns the file name "filename".
 
-        Si l'utilisateur ne veut pas écraser le fichier,
-        la fonction appelle la méthode "__askUserForFile" pour
-        demander à l'utilisateur de sélectionner un autre nom de fichier.
+        If the user does not want to overwrite the file,
+        the function calls the "__askUserForFile" method to
+        ask the user to select another file name.
 
-        Si l'utilisateur annule, la fonction retourne "None".
+        If the user cancels , the function returns "None".
 
-        Si le fichier à écraser est utilisé pour l'import ou l'export automatique,
-        les fichiers correspondants sont supprimés s'ils existent.
+        If the file to be overwritten is used for automatic import or export,
+        the corresponding files are deleted if they exist.
         """
         result = wx.MessageBox(
             _("A file named %s already exists.\n" "Do you want to replace it?")
@@ -973,21 +977,21 @@ class IOController(object):
             return None
 
     def __saveUnsavedChanges(self):
-        """Demande à l'utilisateur s'il veut sauvegarder les modifications
-        en cours avant de fermer la tâche en cours d'édition.
+        """Asks the user if they want to save the current changes
+        before closing the currently editing task.
 
-        Si des modifications non sauvegardées sont détectées,
-        une boîte de dialogue de confirmation est affichée avec
-        le message "You have unsaved changes. Save before closing?".
+        If unsaved changes are detected,
+        a dialog box confirmation is displayed with
+        the message "You have unsaved changes. Save before closing?".
 
-        Si l'utilisateur choisit de sauvegarder les modifications,
-        la fonction appelle la méthode "save".
+        If the user chooses to save the changes,
+        the function calls the "save" method.
 
-        Si la sauvegarde échoue, la fonction retourne "False".
+        If the save fails, the function returns "False".
 
-        Si l'utilisateur annule, la fonction retourne "False".
+        If the user cancels, the function returns "False".
 
-        Si l'utilisateur choisit de fermer sans sauvegarder ou si la sauvegarde réussit, la fonction retourne "True".
+        If the user chooses to close without save or if the save succeeds, the function returns "True".
         """
         result = wx.MessageBox(
             _("You have unsaved changes.\n" "Save before closing?"),
@@ -1002,13 +1006,13 @@ class IOController(object):
         return True
 
     def __askBreakLock(self, filename):
-        """Demande à l'utilisateur s'il veut casser le verrouillage du fichier "filename".
+        """Asks the user if they want to break the lock on the file "filename".
 
-        Si le fichier est verrouillé, une boîte de dialogue de confirmation est affichée.
+        If the file is locked, a confirmation dialog box is displayed.
 
-        Si l'utilisateur choisit de casser le verrouillage, la fonction retourne "True".
+        If the user chooses to break the lock, the function returns "True".
 
-        Sinon, la fonction retourne "False".
+        Otherwise, the function returns "False".
         """
         result = wx.MessageBox(
             _(
@@ -1028,14 +1032,14 @@ Break the lock?"""
         return result == wx.YES
 
     def __askOpenUnlocked(self, filename):
-        """Demande à l'utilisateur s'il veut ouvrir le fichier "filename" sans verrouillage.
+        """Asks the user if they want to open the file "filename" without locking.
 
-        Si le verrouillage n'est pas pris en charge pour l'emplacement du fichier,
-        une boîte de dialogue de confirmation est affichée.
+        If locking is not supported for the file location,
+        a confirmation dialog box is displayed.
 
-        Si l'utilisateur choisit d'ouvrir le fichier sans verrouillage, la fonction retourne "True".
+        If the user chooses to open the file without locking, the function returns "True".
 
-        Sinon, la fonction retourne "False".
+        Otherwise, the function returns "False".
         """
         result = wx.MessageBox(
             _(
@@ -1050,15 +1054,15 @@ Break the lock?"""
         return result == wx.YES
 
     def __closeUnconditionally(self):
-        """Ferme la tâche en cours d'édition sans condition.
+        """Closes the currently edited task unconditionally.
 
-        Un message de confirmation est affiché avec le nom de fichier de la tâche en cours d'édition.
+        A confirmation message is displayed with the file name of the currently edited task.
 
-        L'objet "self.__taskFile" est fermé.
+        The "self.__taskFile" object " is closed.
 
-        L'historique des commandes est effacé.
+        The command history is cleared.
 
-        La mémoire est nettoyée avec la fonction "gc.collect()".
+        The memory is cleaned with the "gc.collect()" function.
         """
         self.__messageCallback(_("Closed %s") % self.__taskFile.filename())
         self.__taskFile.close()
@@ -1066,11 +1070,11 @@ Break the lock?"""
         gc.collect()
 
     def __showSaveMessage(self, savedFile):
-        """Affiche un message de confirmation pour indiquer que la tâche en cours d'édition a été sauvegardée avec succès.
+        """Displays a confirmation message to indicate that the job being edited has been saved successfully.
 
-        Le message contient le nombre de tâches sauvegardées et le nom de fichier de la tâche en cours d'édition.
+        The message contains the number of jobs being saved and the file name of the job being edited.
 
-        Le message est affiché en appelant la méthode "__messageCallback".
+        The message is displayed by calling the "__messageCallback" method.
         """
         self.__messageCallback(
             _("Saved %(nrtasks)d tasks to %(filename)s")
@@ -1081,14 +1085,14 @@ Break the lock?"""
         )
 
     def __showTooNewErrorMessage(self, filename, showerror):
-        """Affiche un message d'erreur pour indiquer que le fichier "filename" a été créé
-        par une version plus récente de l'application.
+        """Displays an error message to indicate that the file "filename" was created
+        by a newer version of the application.
 
-        Le message d'erreur est affiché en utilisant la fonction "showerror" passée en paramètre.
+        The error message is displayed using the "showerror" function passed as a parameter.
 
-        Les options de la boîte de dialogue d'erreur sont stockées dans l'objet "self.__errorMessageOptions".
+        The options for the error dialog box are stored in the "self.__errorMessageOptions" object.
 
-        Le nom de l'application est obtenu à partir de l'objet "meta".
+        The application name is obtained from the 'meta' object.
         """
         showerror(
             _(
@@ -1103,14 +1107,14 @@ Break the lock?"""
     def __showGenericErrorMessage(
         self, filename, showerror, showBackups=False
     ):
-        """Affiche un message d'erreur générique pour la lecture d'un fichier donné.
+        """Displays a generic error message for reading a given file.
 
-        :param filename: Le nom du fichier qui a causé l'erreur
+        :param filename: The name of the file that caused the error
         :type filename: str
-        :param showerror: la fonction à utiliser pour afficher l'erreur
-        :type showerror: function
-        :param showBackups: indique si le gestionnaire de sauvegardes doit être ouvert pour permettre la restauration d'une version antérieure du fichier
-        :type showBackups: bool
+        :param showerror : the function to use to display the error
+        : type showerror: function
+        : param showBackups: indicates whether the backup manager must be opened to allow the restoration of an earlier version of the file
+        : type showBackups: bool
         """
         sys.stderr.write("".join(traceback.format_exception(*sys.exc_info())))
         limitedException = "".join(
@@ -1133,9 +1137,9 @@ Break the lock?"""
                 dlg.Destroy()
 
     def __updateDefaultPath(self, filename):
-        """Met à jour les chemins par défaut.
+        """Updates default paths.
 
-        Pour chaque option dans ..., définit l'option du chemin par défaut pour le fichier .tsk à ouvrir.
+        For each option in ..., sets the default path option for the .tsk file to open.
         """
         for options in [
             self.__tskFileOpenDialogOpts,

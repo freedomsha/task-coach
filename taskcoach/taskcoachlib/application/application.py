@@ -101,7 +101,7 @@ from taskcoachlib.i18n import _
 from taskcoachlib.config import Settings
 
 
-class RedirectedOutput(object):
+class RedirectedOutput:
     """Output redirection object class."""
 
     _rx_ignore = [
@@ -138,7 +138,9 @@ class RedirectedOutput(object):
             self.__handle = None
 
     def summary(self):
-        """Function-method to display information about what has just been written in taskcoachlog.txt"""
+        """Function-method to display information about what has just been
+        written in taskcoachlog.txt.
+        """
         if self.__handle is not None:
             self.close()
             if operating_system.isWindows():

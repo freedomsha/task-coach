@@ -891,11 +891,11 @@ class ObservableList(ObservableCollection, List):
     @eventSource
     def clear(self, event=None):
         """
-                Clears all items from the ObservableList.
+        Clears all items from the ObservableList.
 
-                Args:
-                    event: Optional event associated with the operation.
-                """
+        Args:
+            event: Optional event associated with the operation.
+        """
         if not self:
             return
         items = tuple(self)

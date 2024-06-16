@@ -102,37 +102,43 @@ from taskcoachlib.config import Settings
 
 
 class RedirectedOutput(object):
-    """"""
+    """Output redirection object class."""
 
     _rx_ignore = [
         re.compile("RuntimeWarning: PyOS_InputHook"),
     ]
 
     def __init__(self):
+        """Function that initializes the file-argument to use and
+        the path argument of the taskcoachlog.txt file.
+        """
         self.__handle = None
         self.__path = os.path.join(
             Settings.pathToDocumentsDir(), "taskcoachlog.txt"
         )
 
     def write(self, bf):
+        """Function-method to open then write current Date and Time and bf to taskcoachlog.txt"""
         for rx in self._rx_ignore:
             if rx.search(bf):
                 return
 
         if self.__handle is None:
             self.__handle = open(self.__path, "a+")
-            self.__handle.write("============= %s\n" % time.ctime())
+            self.__handle.write(f"============= {time.ctime()}\n")
         self.__handle.write(bf)
 
     def flush(self):
         pass
 
     def close(self):
+        """Function-method to close taskcoachlig.txt"""
         if self.__handle is not None:
             self.__handle.close()
             self.__handle = None
 
     def summary(self):
+        """Function-method to display information about what has just been written in taskcoachlog.txt"""
         if self.__handle is not None:
             self.close()
             if operating_system.isWindows():
@@ -163,9 +169,11 @@ class wxApp(wx.App):
         super(wxApp, self).__init__(*args, **kwargs)
 
     def MacReopenApp(self):
+        """Function - method to reopen the application on Mac."""
         self.reopenCallback()
 
     def OnInit(self):
+        """Function-method that handles standard output returns true on initialization."""
         if operating_system.isWindows():
             self.Bind(wx.EVT_QUERY_END_SESSION, self.onQueryEndSession)
 
@@ -193,9 +201,23 @@ class wxApp(wx.App):
 
 
 class Application(object, metaclass=patterns.Singleton):
+    """Main class of the TaskCoach application.
+
+        Manages the launch and shutdown of the application,
+        as well as the initialization of its various components.
+
+    The initTwisted method initializes and launches the Twisted reactor,
+    which allows you to manage the asynchronous events of the application.
+
+    The start method launches the application by displaying the main window
+    and starting the event loop of Twisted.
+
+    The quitApplication method allows you to quit the application
+    while saving the settings and state of the application."""
+
     def __init__(self, options=None, args=None, **kwargs):
         self._options = options
-        self._args = " ".join(args)
+        self._args = "".join(args)
         self.initTwisted()
         self.__wx_app = wxApp(
             self.on_end_session, self.on_reopen_app, redirect=False
@@ -246,6 +268,10 @@ class Application(object, metaclass=patterns.Singleton):
         )
 
     def initTwisted(self):
+        """Function-method to initialize and launch Twisted.
+
+        Initializes and launches the Twisted reactor, which allows you to manage asynchronous events in the application.
+        """
         from twisted.internet import wxreactor
 
         wxreactor.install()
@@ -265,6 +291,7 @@ class Application(object, metaclass=patterns.Singleton):
                 wxreactor.WxReactor.stop = stopFromThread
 
     def stopTwisted(self):
+        """Function-method to stop twisted-reactor."""
         from twisted.internet import reactor, error
 
         try:
@@ -274,12 +301,18 @@ class Application(object, metaclass=patterns.Singleton):
             pass
 
     def registerApp(self):
+        """Register the App instance with Twisted:"""
         from twisted.internet import reactor
 
         reactor.registerWxApp(self.__wx_app)
 
     def start(self):
-        """Call this to start the Application."""
+        """Call this to start the Application.
+
+        Function-Call method to start the application.
+        Launches the application by displaying the main window
+        and starting the Twisted event loop.
+        """
         # pylint: disable=W0201
         from taskcoachlib import meta
 
@@ -376,6 +409,7 @@ class Application(object, metaclass=patterns.Singleton):
     def determine_language(
         options, settings, locale=locale
     ):  # pylint: disable=W0621
+        """Determines the local language used."""
         language = None
         if options:
             # User specified language or .po file on command line
@@ -388,7 +422,9 @@ class Application(object, metaclass=patterns.Singleton):
             language = settings.get("view", "language")
         if not language:
             # Use the user's locale
-            language = locale.getdefaultlocale()[0]
+            language = locale.getdefaultlocale()[
+                0
+            ]  # TODO: getdefaultlocale Deprecated since version 3.11, will be removed in version 3.15.
             if language == "C":
                 language = None
         if not language:
@@ -404,6 +440,7 @@ class Application(object, metaclass=patterns.Singleton):
         attachment.Attachment.settings = self.settings
 
     def __init_application(self):
+        """Method function that sets the application name and authors parameters."""
         from taskcoachlib import meta
 
         self.__wx_app.SetAppName(meta.name)
@@ -418,15 +455,17 @@ class Application(object, metaclass=patterns.Singleton):
         )
 
     def on_spell_checking(self, value):
+        """SystemOptions stores option/value pairs that wxWidgets itself or applications can use to alter behaviour at run-time."""
         if (
             operating_system.isMac()
             and not operating_system.isMacOsXMountainLion_OrNewer()
         ):
-            wx.SystemOptions.SetOptionInt(
+            wx.SystemOptions.SetOption(
                 "mac.textcontrol-use-spell-checker", value
             )
 
     def __register_signal_handlers(self):
+        """Function-method to exit due to a signal."""
         if operating_system.isWindows():
             import win32api  # pylint: disable=F0401
 
@@ -470,6 +509,7 @@ class Application(object, metaclass=patterns.Singleton):
             ctypes.windll.kernel32.CreateMutexA(None, False, meta.filename)
 
     def __create_task_bar_icon(self):
+        """Function-Method that creates an icon with menu in the taskbar."""
         if self.__can_create_task_bar_icon():
             from taskcoachlib.gui import taskbaricon, menu
 
@@ -488,6 +528,11 @@ class Application(object, metaclass=patterns.Singleton):
             )
 
     def __can_create_task_bar_icon(self):
+        """Function that defines whether a taskbar icon can be created.
+
+        Returns :
+            bool
+        """
         try:
             from taskcoachlib.gui import taskbaricon  # pylint: disable=W0612
 
@@ -518,16 +563,27 @@ class Application(object, metaclass=patterns.Singleton):
         self.settings.setboolean("file", "inifileloaded", True)  # Reset
 
     def displayMessage(self, message):
+        """Function-method to display the message."""
         self.mainwindow.displayMessage(message)
 
     def on_end_session(self):
+        """End-of-session function-method."""
         self.mainwindow.setShutdownInProgress()
         self.quitApplication(force=True)
 
     def on_reopen_app(self):
+        """Function-method to re-open the application."""
         self.taskBarIcon.onTaskbarClick(None)
 
     def quitApplication(self, force=False):
+        """Function-method to exit the application while saving the settings and application state.
+
+        Args:
+            force (bool) : If True, forces the application to be stopped without asking for confirmation.
+
+        Returns:
+            bool: True if the application was stopped successfully, False otherwise.
+        """
         if not self.iocontroller.close(force=force):
             return False
         # Remember what the user was working on:

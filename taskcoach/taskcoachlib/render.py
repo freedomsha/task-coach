@@ -18,13 +18,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-""" render.py - functions to render various objects, like date, time, 
-etc. """  # pylint: disable=W0105
+"""
+render.py - functions to render various objects, like date, time, etc.
+"""
 
 from taskcoachlib.domain import date as datemodule
-
-# from taskcoachlib.thirdparty import desktop
-import desktop
+from taskcoachlib.thirdparty import desktop
 from taskcoachlib.i18n import _
 from taskcoachlib import operating_system
 import datetime
@@ -36,14 +35,32 @@ import re
 
 
 def priority(priority):
-    """Render an (integer) priority"""
+    """
+    Render an (integer) priority.
+
+    Args:
+        priority (int): The priority value.
+
+    Returns:
+        str: The rendered priority as a string.
+    """
     return str(priority)
 
 
 def timeLeft(time_left, completed_task):
-    """Render time left as a text string. Returns an empty string for
-    completed tasks and for tasks without planned due date. Otherwise it
-    returns the number of days, hours, and minutes left."""
+    """
+    Render time left as a text string.
+
+    Returns an empty string for completed tasks and for tasks without planned due date.
+    Otherwise, it returns the number of days, hours, and minutes left.
+
+    Args:
+        time_left (datetime.timedelta): The time left.
+        completed_task (bool): Whether the task is completed.
+
+    Returns:
+        str: The rendered time left.
+    """
     if completed_task or time_left == datemodule.TimeDelta.max:
         return ""
     sign = "-" if time_left.days < 0 else ""
@@ -62,8 +79,17 @@ def timeLeft(time_left, completed_task):
 
 
 def timeSpent(timeSpent, showSeconds=True, decimal=False):
-    """Render time spent (of type date.TimeDelta) as
-    "<hours>:<minutes>:<seconds>" or "<hours>:<minutes>" """
+    """
+    Render time spent (of type date.TimeDelta) as "<hours>:<minutes>:<seconds>" or "<hours>:<minutes>".
+
+    Args:
+        timeSpent (date.TimeDelta): The time spent.
+        showSeconds (bool, optional): Whether to show seconds. Defaults to True.
+        decimal (bool, optional): Whether to show the time in decimal format. Defaults to False.
+
+    Returns:
+        str: The rendered time spent.
+    """
     if decimal:
         return timeSpentDecimal(timeSpent)
 
@@ -81,8 +107,15 @@ def timeSpent(timeSpent, showSeconds=True, decimal=False):
 
 
 def timeSpentDecimal(timeSpent):
-    """Render time spent (of type date.TimeDelta) as
-    "<hours>.<fractional hours>"""
+    """
+    Render time spent (of type date.TimeDelta) as "<hours>.<fractional hours>".
+
+    Args:
+        timeSpent (date.TimeDelta): The time spent.
+
+    Returns:
+        str: The rendered time spent in decimal format.
+    """
     zero = datemodule.TimeDelta()
     if timeSpent == zero:
         return ""
@@ -94,8 +127,15 @@ def timeSpentDecimal(timeSpent):
 
 
 def recurrence(recurrence):
-    """Render the recurrence as a short string describing the frequency of
-    the recurrence."""
+    """
+    Render the recurrence as a short string describing the frequency of the recurrence.
+
+    Args:
+        recurrence: The recurrence object.
+
+    Returns:
+        str: The rendered recurrence description.
+    """
     if not recurrence:
         return ""
     if recurrence.amount > 2:
@@ -119,8 +159,15 @@ def recurrence(recurrence):
 
 
 def budget(aBudget):
-    """Render budget (of type date.TimeDelta) as
-    "<hours>:<minutes>:<seconds>"."""
+    """
+    Render budget (of type date.TimeDelta) as "<hours>:<minutes>:<seconds>".
+
+    Args:
+        aBudget (date.TimeDelta): The budget.
+
+    Returns:
+        str: The rendered budget.
+    """
     return timeSpent(aBudget)
 
 
@@ -139,6 +186,17 @@ else:
 
 
 def rawTimeFunc(dt, minutes=True, seconds=False):
+    """
+    Render time according to the system's time format.
+
+    Args:
+        dt (datetime.datetime): The datetime object to render.
+        minutes (bool, optional): Whether to include minutes. Defaults to True.
+        seconds (bool, optional): Whether to include seconds. Defaults to False.
+
+    Returns:
+        str: The rendered time.
+    """
     if seconds:
         fmt = timeWithSecondsFormat
     else:
@@ -153,12 +211,31 @@ dateFormat = "%x"
 
 
 def rawDateFunc(dt=None):
+    """
+    Render date according to the system's date format.
+
+    Args:
+        dt (datetime.datetime, optional): The datetime object to render. Defaults to None.
+
+    Returns:
+        str: The rendered date.
+    """
     return operating_system.decodeSystemString(
         datetime.datetime.strftime(dt, dateFormat)
     )
 
 
 def dateFunc(dt=None, humanReadable=False):
+    """
+    Render date, optionally in a human-readable format (e.g., "Today", "Yesterday").
+
+    Args:
+        dt (datetime.datetime, optional): The datetime object to render. Defaults to None.
+        humanReadable (bool, optional): Whether to render in a human-readable format. Defaults to False.
+
+    Returns:
+        str: The rendered date.
+    """
     if humanReadable:
         theDate = dt.date()
         if theDate == datemodule.Now().date():
@@ -175,6 +252,17 @@ if operating_system.isWindows():
     import pywintypes, win32api
 
     def rawTimeFunc(dt, minutes=True, seconds=False):
+        """
+        Render time using Windows API.
+
+        Args:
+            dt (datetime.datetime): The datetime object to render.
+            minutes (bool, optional): Whether to include minutes. Defaults to True.
+            seconds (bool, optional): Whether to include seconds. Defaults to False.
+
+        Returns:
+            str: The rendered time.
+        """
         if seconds:
             # You can't include seconds without minutes
             flags = 0x0
@@ -190,6 +278,15 @@ if operating_system.isWindows():
         )
 
     def rawDateFunc(dt):
+        """
+        Render date using Windows API.
+
+        Args:
+            dt (datetime.datetime): The datetime object to render.
+
+        Returns:
+            str: The rendered date.
+        """
         return operating_system.decodeSystemString(
             win32api.GetDateFormat(
                 0x400, 0, None if dt is None else pywintypes.Time(dt), None
@@ -256,6 +353,17 @@ elif operating_system.isMac():
         return fmt.stringFromDate_(dt_native)
 
     def rawTimeFunc(dt, minutes=True, seconds=False):
+        """
+        Render time using macOS API.
+
+        Args:
+            dt (datetime.datetime): The datetime object to render.
+            minutes (bool, optional): Whether to include minutes. Defaults to True.
+            seconds (bool, optional): Whether to include seconds. Defaults to False.
+
+        Returns:
+            str: The rendered time.
+        """
         if minutes:
             if seconds:
                 return _applyFormatter(dt, _mediumFormatter)
@@ -263,6 +371,15 @@ elif operating_system.isMac():
         return _applyFormatter(dt, _hourFormatter)
 
     def rawDateFunc(dt):
+        """
+        Render date using macOS API.
+
+        Args:
+            dt (datetime.datetime): The datetime object to render.
+
+        Returns:
+            str: The rendered date.
+        """
         return _applyFormatter(
             datetime.datetime.combine(dt, datetime.time(0, 0, 0, 0)),
             _dateFormatter,
@@ -282,12 +399,32 @@ elif desktop.get_desktop() == "KDE4":
             _localeCopy.setTimeFormat("%H")
 
         def rawTimeFunc(dt, minutes=True, seconds=False):
+            """
+            Render time using KDE API.
+
+            Args:
+                dt (datetime.datetime): The datetime object to render.
+                minutes (bool, optional): Whether to include minutes. Defaults to True.
+                seconds (bool, optional): Whether to include seconds. Defaults to False.
+
+            Returns:
+                str: The rendered time.
+            """
             qtdt = QTime(dt.hour, dt.minute, dt.second)
             if minutes:
                 return str(KGlobal.locale().formatTime(qtdt, seconds))
             return str(_localeCopy.formatTime(qtdt))
 
         def rawDateFunc(dt):
+            """
+            Render date using KDE API.
+
+            Args:
+                dt (datetime.datetime): The datetime object to render.
+
+            Returns:
+                str: The rendered date.
+            """
             qtdt = QDate(dt.year, dt.month, dt.day)
             return str(KGlobal.locale().formatDate(qtdt, 0))
 
@@ -303,7 +440,16 @@ dateTimeFunc = lambda dt=None, humanReadable=False: "%s %s" % (
 
 
 def date(aDateTime, humanReadable=False):
-    """Render a date/time as date."""
+    """
+    Render a date/time as date.
+
+    Args:
+        aDateTime (datetime.datetime): The datetime object to render.
+        humanReadable (bool, optional): Whether to render in a human-readable format. Defaults to False.
+
+    Returns:
+        str: The rendered date.
+    """
     if str(aDateTime) == "":
         return ""
     year = aDateTime.year
@@ -318,6 +464,16 @@ def date(aDateTime, humanReadable=False):
 
 
 def dateTime(aDateTime, humanReadable=False):
+    """
+    Render a date/time as date and time.
+
+    Args:
+        aDateTime (datetime.datetime): The datetime object to render.
+        humanReadable (bool, optional): Whether to render in a human-readable format. Defaults to False.
+
+    Returns:
+        str: The rendered date and time.
+    """
     if (
         not aDateTime
         or aDateTime == datemodule.DateTime()
@@ -340,6 +496,17 @@ def dateTime(aDateTime, humanReadable=False):
 
 
 def dateTimePeriod(start, stop, humanReadable=False):
+    """
+    Render a period between two datetimes.
+
+    Args:
+        start (datetime.datetime): The start datetime.
+        stop (datetime.datetime): The stop datetime.
+        humanReadable (bool, optional): Whether to render in a human-readable format. Defaults to False.
+
+    Returns:
+        str: The rendered period.
+    """
     if stop is None:
         return "%s - %s" % (
             dateTime(start, humanReadable=humanReadable),
@@ -359,6 +526,17 @@ def dateTimePeriod(start, stop, humanReadable=False):
 
 
 def time(dateTime, seconds=False, minutes=True):
+    """
+    Render time from a datetime object.
+
+    Args:
+        dateTime (datetime.datetime): The datetime object to render.
+        seconds (bool, optional): Whether to include seconds. Defaults to False.
+        minutes (bool, optional): Whether to include minutes. Defaults to True.
+
+    Returns:
+        str: The rendered time.
+    """
     try:
         # strftime doesn't handle years before 1900, be prepared:
         dateTime = dateTime.replace(year=2000)
@@ -370,17 +548,43 @@ def time(dateTime, seconds=False, minutes=True):
 
 
 def month(dateTime):
+    """
+    Render the month from a datetime object.
+
+    Args:
+        dateTime (datetime.datetime): The datetime object to render.
+
+    Returns:
+        str: The rendered month.
+    """
     return dateTime.strftime("%Y %B")
 
 
 def weekNumber(dateTime):
+    """
+    Render the week number from a datetime object.
+
+    Args:
+        dateTime (datetime.datetime): The datetime object to render.
+
+    Returns:
+        str: The rendered week number.
+    """
     # Would have liked to use dateTime.strftime('%Y-%U'), but the week number
     # is one off in 2004
     return "%d-%d" % (dateTime.year, dateTime.weeknumber())
 
 
 def monetaryAmount(aFloat):
-    """Render a monetary amount, using the user's locale."""
+    """
+    Render a monetary amount, using the user's locale.
+
+    Args:
+        aFloat (float): The monetary amount.
+
+    Returns:
+        str: The rendered monetary amount.
+    """
     return (
         ""
         if round(aFloat, 2) == 0
@@ -389,13 +593,29 @@ def monetaryAmount(aFloat):
 
 
 def percentage(aFloat):
-    """Render a percentage."""
+    """
+    Render a percentage.
+
+    Args:
+        aFloat (float): The percentage value.
+
+    Returns:
+        str: The rendered percentage.
+    """
     return "" if round(aFloat, 0) == 0 else "%.0f%%" % aFloat
 
 
 def exception(exception, instance):
-    """Safely render an exception, being prepared for new exceptions."""
+    """
+    Safely render an exception, being prepared for new exceptions.
 
+    Args:
+        exception (Exception): The exception class.
+        instance (Exception): The exception instance.
+
+    Returns:
+        str: The rendered exception message.
+    """
     try:
         # In this order. Python 2.6 fixed the unicode exception problem.
         try:

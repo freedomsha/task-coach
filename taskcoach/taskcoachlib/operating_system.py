@@ -25,22 +25,56 @@ import wx, sys, platform
 
 
 def isMac():
+    """
+    Check if the current platform is macOS.
+
+    Returns:
+        bool: True if the current platform is macOS, False otherwise.
+    """
     return isPlatform("MAC")
 
 
 def isWindows():
+    """
+    Check if the current platform is Windows.
+
+    Returns:
+        bool: True if the current platform is Windows, False otherwise.
+    """
     return isPlatform("MSW")
 
 
 def isGTK():
+    """
+    Check if the current platform is GTK.
+
+    Returns:
+        bool: True if the current platform is GTK, False otherwise.
+    """
     return isPlatform("GTK")
 
 
 def isPlatform(threeLetterPlatformAbbreviation, wxPlatform=wx.Platform):
+    """
+    Check if the current platform matches the given three-letter abbreviation.
+
+    Args:
+        threeLetterPlatformAbbreviation (str): The three-letter platform abbreviation (e.g., "MAC", "MSW", "GTK").
+        wxPlatform (str, optional): The wxPython platform string. Defaults to wx.Platform.
+
+    Returns:
+        bool: True if the current platform matches the given abbreviation, False otherwise.
+    """
     return "__WX%s__" % threeLetterPlatformAbbreviation == wxPlatform
 
 
 def isWindows7_OrNewer():  # pragma: no cover
+    """
+    Check if the current platform is Windows 7 or newer.
+
+    Returns:
+        bool: True if the current platform is Windows 7 or newer, False otherwise.
+    """
     if isWindows():
         major, minor = sys.getwindowsversion()[:2]  # pylint: disable=E1101
         return (major, minor) >= (6, 1)
@@ -49,10 +83,22 @@ def isWindows7_OrNewer():  # pragma: no cover
 
 
 def _platformVersion():
+    """
+    Get the platform version as a tuple of integers.
+
+    Returns:
+        tuple: The platform version.
+    """
     return tuple(map(int, platform.release().split(".")))
 
 
 def isMacOsXLion_OrNewer():  # pragma: no cover
+    """
+    Check if the current platform is macOS Lion (10.7) or newer.
+
+    Returns:
+        bool: True if the current platform is macOS Lion or newer, False otherwise.
+    """
     if isMac():
         return _platformVersion() >= (11, 1)
     else:
@@ -60,6 +106,12 @@ def isMacOsXLion_OrNewer():  # pragma: no cover
 
 
 def isMacOsXTiger_OrOlder():  # pragma no cover
+    """
+    Check if the current platform is macOS Tiger (10.4) or older.
+
+    Returns:
+        bool: True if the current platform is macOS Tiger or older, False otherwise.
+    """
     if isMac():
         return _platformVersion() <= (
             8,
@@ -71,6 +123,12 @@ def isMacOsXTiger_OrOlder():  # pragma no cover
 
 
 def isMacOsXMountainLion_OrNewer():  # pragma no cover
+    """
+    Check if the current platform is macOS Mountain Lion (10.8) or newer.
+
+    Returns:
+        bool: True if the current platform is macOS Mountain Lion or newer, False otherwise.
+    """
     if isMac():
         return _platformVersion() >= (12,)
     else:
@@ -78,6 +136,12 @@ def isMacOsXMountainLion_OrNewer():  # pragma no cover
 
 
 def isMacOsXMavericks_OrNewer():  # pragma no cover
+    """
+    Check if the current platform is macOS Mavericks (10.9) or newer.
+
+    Returns:
+        bool: True if the current platform is macOS Mavericks or newer, False otherwise.
+    """
     if isMac():
         return _platformVersion() >= (13,)
     else:
@@ -85,10 +149,25 @@ def isMacOsXMavericks_OrNewer():  # pragma no cover
 
 
 def defaultEncodingName():
+    """
+    Get the default system encoding name.
+
+    Returns:
+        str: The default system encoding name.
+    """
     return wx.Locale.GetSystemEncodingName() or "utf-8"
 
 
 def decodeSystemString(s):
+    """
+    Decode a system string using the default system encoding.
+
+    Args:
+        s (str or bytes): The string to decode.
+
+    Returns:
+        str: The decoded string.
+    """
     if isinstance(s, str):
         return s
     encoding = defaultEncodingName()

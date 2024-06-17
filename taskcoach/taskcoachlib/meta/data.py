@@ -31,7 +31,8 @@ release_status = "stable"  # One of 'alpha', 'beta', 'stable'
 
 # No editing needed below this line for doing a release.
 
-import re, datetime
+import datetime
+import re
 
 try:
     from taskcoachlib.meta.revision import (
@@ -76,28 +77,27 @@ if revision:  # Buildbot sets revision
     version += "." + revision
 
 assert release_month in months  # Try to prevent typo's
-release_month_nr = "%02d" % (months.index(release_month) + 1)
-release_day_nr = "%02d" % int(release_day)
-date = release_month + " " + release_day + ", " + release_year
+release_month_nr = f"{months.index(release_month) + 1:02d}"
+release_day_nr = f"{int(release_day):02d}"
+date = f"{release_month} {release_day}, {release_year}"
 
 name = "Task Coach"
 description = "Your friendly task manager"
 long_description = (
-    "%(name)s is a free open source todo manager. It grew "
+    "{name} is a free open source todo manager. It grew "
     "out of frustration about other programs not handling composite tasks well. "
-    "In addition to flexible composite tasks, %(name)s has grown to include "
+    "In addition to flexible composite tasks, {name} has grown to include "
     "prerequisites, prioritizing, effort tracking, category tags, budgets, "
     "notes, and many other features. However, users are not forced to use all "
-    "these features; %(name)s can be as simple or complex as you need it to be. "
-    "%(name)s is available for Windows, Mac OS X, and GNU/Linux; and there is a "
-    "companion iOS app." % dict(name=name)
+    "these features; {name} can be as simple or complex as you need it to be. "
+    "{name} is available for Windows, Mac OS X, and GNU/Linux; and there is a "
+    "companion iOS app.".format(name=name)
 )
 keywords = "task manager, todo list, pim, time registration, track effort"
 author_first, author_last = "Frank", "Niessink"  # Needed for PAD file
-author = "%s %s, Jerome Laheurte, and Aaron Wolf" % (author_first, author_last)
-author_unicode = "%s %s, Jérôme Laheurte, and Aaron Wolf" % (
-    author_first,
-    author_last,
+author = f"{author_first} {author_last}, Jerome Laheurte, and Aaron Wolf"
+author_unicode = (
+    f"{author_first} {author_last}, Jérôme Laheurte, and Aaron Wolf"
 )
 author_email = "developers@taskcoach.org"
 
@@ -105,59 +105,55 @@ filename = name.replace(" ", "")
 filename_lower = filename.lower()
 
 url = "http://taskcoach.org/"  # Don't remove the trailing slash, other code is assuming it will be there
-screenshot = (
-    url
-    + "screenshots/Windows/0.71.2-Windows_XP-Tasks_categories_and_effort.png"
-)
-icon = url + "taskcoach.png"
-pad = url + "pad.xml"
-version_url = url + "version.txt"
-message_url = url + "messages.txt"
-download = url + "download.html"
-dist_download_prefix = "http://downloads.sourceforge.net/%s" % filename_lower
+screenshot = f"{url}screenshots/Windows/0.71.2-Windows_XP-Tasks_categories_and_effort.png"
+icon = f"{url}taskcoach.png"
+pad = f"{url}pad.xml"
+version_url = f"{url}version.txt"
+message_url = f"{url}messages.txt"
+download = f"{url}download.html"
+dist_download_prefix = f"http://downloads.sourceforge.net/{filename_lower}"
 faq_url = "https://answers.launchpad.net/taskcoach/+faqs"
 sf_tracker_url = "https://sourceforge.net/tracker/"
-bug_report_url = sf_tracker_url + "?func=add&group_id=130831&atid=719134"
-known_bugs_url = sf_tracker_url + "?group_id=130831&atid=719134&status=1"
-support_request_url = sf_tracker_url + "?group_id=130831&atid=719135"
+bug_report_url = f"{sf_tracker_url}?func=add&group_id=130831&atid=719134"
+known_bugs_url = f"{sf_tracker_url}?group_id=130831&atid=719134&status=1"
+support_request_url = f"{sf_tracker_url}?group_id=130831&atid=719135"
 feature_request_url = "http://taskcoach.uservoice.com"
 translations_url = "https://translations.launchpad.net/taskcoach"
-donate_url = url + "givesupport.html"
-i18n_url = url + "i18n.html"
+donate_url = f"{url}givesupport.html"
+i18n_url = f"{url}i18n.html"
 
 announcement_addresses = (
     "taskcoach@yahoogroups.com, python-announce-list@python.org"
 )
 bcc_announcement_addresses = "johnhaller@portableapps.com"
 
-copyright = "Copyright (C) 2004-%s %s" % (
-    release_year,
-    author,
-)  # pylint: disable=W0622
+copyright = (
+    f"Copyright (C) 2004-{release_year} {author}"  # pylint: disable=W0622
+)
 license_title = "GNU General Public License"
 license_version = "3"
-license_title_and_version = "%s version %s" % (license_title, license_version)
-license = (
-    "%s or any later version" % license_title_and_version
-)  # pylint: disable=W0622
-license_title_and_version_abbrev = "GPLv%s" % license_version
-license_abbrev = "%s+" % license_title_and_version_abbrev
-license_notice = """%(name)s is free software: you can redistribute it and/or modify
+license_title_and_version = f"{license_title} version {license_version}"
+license = f"{license_title_and_version} or any later version"  # pylint: disable=W0622
+license_title_and_version_abbrev = f"GPLv{license_version}"
+license_abbrev = f"{license_title_and_version_abbrev}+"
+license_notice = """{name} is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-%(name)s is distributed in the hope that it will be useful,
+{name} is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.""" % dict(
+along with this program.  If not, see <http://www.gnu.org/licenses/>.""".format(
     name=name
 )
 
-license_notice_html = "<p>%s</p>" % license_notice.replace("\n\n", "</p><p>")
+license_notice_html = "<p>{}</p>".format(
+    license_notice.replace("\n\n", "</p><p>")
+)
 license_notice_html = re.sub(
     r"<http([^>]*)>",
     r'<a href="http\1" target="_blank">http\1</a>',
@@ -167,7 +163,7 @@ license_notice_html = re.sub(
 platform = "Any"
 pythonversion = "2.6"
 wxpythonversionnumber = "3.0.0.0"
-wxpythonversion = "%s-unicode" % wxpythonversionnumber
+wxpythonversion = f"{wxpythonversionnumber}-unicode"
 twistedversionnumber = "10.0"
 igraphversionnumber = "0.7"
 

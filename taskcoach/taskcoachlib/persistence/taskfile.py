@@ -1038,6 +1038,7 @@ class LockedTaskFile(TaskFile):
 
     A TaskFile class with cooperative locking to prevent concurrent access.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the LockedTaskFile.

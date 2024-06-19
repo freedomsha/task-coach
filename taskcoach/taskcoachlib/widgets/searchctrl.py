@@ -121,7 +121,7 @@ class SearchCtrl(tooltip.ToolTipMixin, wx.SearchCtrl):
         # handler for those menu item ids. It's no problem that the actual menu
         # items don't exist yet.
         self.__recentSearchMenuItemIds = [
-            wx.NewId() for dummy in range(self.__maxRecentSearches)
+            wx.NewIdRef() for dummy in range(self.__maxRecentSearches)
         ]
         self.Bind(
             wx.EVT_MENU_RANGE,

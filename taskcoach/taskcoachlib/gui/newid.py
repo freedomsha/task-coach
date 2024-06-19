@@ -23,7 +23,7 @@ class IdProvider(set):
     def get(self):
         if self:
             return self.pop()
-        return wx.NewId()
+        return wx.NewIdRef()
 
     def put(self, id_):
         if id_ > 0:

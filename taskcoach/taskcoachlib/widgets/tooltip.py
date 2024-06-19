@@ -29,14 +29,16 @@ class ToolTipMixin(object):
         self.__enabled = kwargs.pop("tooltipsEnabled", True)
         super(ToolTipMixin, self).__init__(*args, **kwargs)
 
-        self.__timer = wx.Timer(self, wx.NewId())
+        self.__timer = wx.Timer(self, wx.NewIdRef())
 
         self.__tip = None
         self.__position = (0, 0)
         self.__text = None
         self.__frozen = True
 
-        self.GetMainWindow().Bind(wx.EVT_MOTION, self.__OnMotion)
+        self.GetMainWindow().Bind(
+            wx.EVT_MOTION, self.__OnMotion
+        )  # GetMainWindow is in wx.Window ?
         self.GetMainWindow().Bind(wx.EVT_LEAVE_WINDOW, self.__OnLeave)
         self.Bind(wx.EVT_TIMER, self.__OnTimer, id=self.__timer.GetId())
 

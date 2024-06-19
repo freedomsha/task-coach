@@ -26,7 +26,7 @@ except NameError:
     _ = lambda x: x
 
 
-# On Windows, using wx.NewId() in __Populate leads to errors after some time
+# On Windows, using wx.NewIdRef() in __Populate leads to errors after some time
 # (only 2^16 possible values). Keep a cache of them and reuse them. No clash
 # because they're used in a popup, so there should only be one instance of it
 # at a time.
@@ -407,7 +407,7 @@ class Entry(wx.Panel):
 
         self.__SetFocus(self.__widgets[0][0])
 
-        timerId = wx.NewId()
+        timerId = wx.NewIdRef()
         self.__timer = wx.Timer(self, timerId)
         self.Bind(wx.EVT_TIMER, self.OnTimer, id=timerId)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
@@ -2073,7 +2073,7 @@ class _RelativeChoicePopup(_PopupWindow):
         self.__lines = list()
         for line, delta in enumerate(self.__choices):
             if line >= len(_POPUPIDCACHE):
-                _POPUPIDCACHE.append((wx.NewId(), wx.NewId()))
+                _POPUPIDCACHE.append((wx.NewIdRef(), wx.NewIdRef()))
             idSpan, idDel = _POPUPIDCACHE[line]
 
             btn = pbtn.PlateButton(

@@ -47,7 +47,11 @@ class VersionDialog(sized_controls.SizedDialog):  # pylint: disable=R0904,R0901
         buttonSizer = self.CreateStdDialogButtonSizer(wx.OK)
         self.SetButtonSizer(buttonSizer)
         self.Fit()
+        # when ask check update, attributeError:
         buttonSizer.GetAffirmativeButton().Bind(wx.EVT_BUTTON, self.onClose)
+        # 'StdDialogButtonSizer' object has no attribute 'GetAffirmativeButton'. Did you mean: 'SetAffirmativeButton' or 'GetAffirmativeButton'?
+        # TypeError: StdDialogButtonSizer.SetAffirmativeButton(): not enough arguments
+        # AttributeError: 'StdDialogButtonSizer' object has no attribute 'GetAffirmativeId'
         self.Bind(wx.EVT_CLOSE, self.onClose)
 
     def createInterior(self, pane):

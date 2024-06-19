@@ -283,7 +283,7 @@ class Event(object):
         for type, source in typesAndSources:
             sourcesToAdd = self.sources(type)
             if source is not None:
-                sourcesToAdd &= set([source])
+                sourcesToAdd &= {source}
             kwargs = dict(
                 type=type
             )  # Python doesn't allow type=type after *values
@@ -571,7 +571,7 @@ class Publisher(object, metaclass=singleton.Singleton):
         observers = dict()  # {observer: set([(type, source), ...])}
         types = event.types()
         # Include observers not registered for a specific event source:
-        sources = event.sources() | set([None])
+        sources = event.sources() | {None}
         eventTypesAndSources = [
             (type, source) for source in sources for type in types
         ]

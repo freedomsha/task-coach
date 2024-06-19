@@ -38,7 +38,7 @@ class AnimatedShow(wx.Timer):
             self.__step = 0
             self.__show = show
 
-            id_ = wx.NewId()
+            id_ = wx.NewIdRef()
             self.SetOwner(self, id_)
             wx.EVT_TIMER(self, id_, self.__OnTick)
             self.Start(100)
@@ -85,7 +85,7 @@ class AnimatedMove(wx.Timer):
         self.__destination = destination
         self.__step = 0
 
-        id_ = wx.NewId()
+        id_ = wx.NewIdRef()
         self.SetOwner(self, id_)
         wx.EVT_TIMER(self, id_, self.__OnTick)
         self.Start(100)
@@ -289,7 +289,7 @@ class _NotificationCenter(wx.EvtHandler):
         self.notificationMargin = 5
 
         self.__tmr = wx.Timer()
-        id_ = wx.NewId()
+        id_ = wx.NewIdRef()
         self.__tmr.SetOwner(self, id_)
         wx.EVT_TIMER(self, id_, self.__OnTick)
         self.__tmr.Start(1000)

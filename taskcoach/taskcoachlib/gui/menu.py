@@ -456,8 +456,8 @@ class SelectMenu(Menu):
         )
 
 
-activateNextViewerId = wx.NewId()
-activatePreviousViewerId = wx.NewId()
+activateNextViewerId = wx.NewIdRef()
+activatePreviousViewerId = wx.NewIdRef()
 
 
 class ViewMenu(Menu):

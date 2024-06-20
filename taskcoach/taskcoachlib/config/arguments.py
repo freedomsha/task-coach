@@ -49,11 +49,14 @@ class ApplicationArgumentParser:
             kwargs["usage"] (str): Custom usage message describing
             the program's usage.
         """
-        kwargs["usage"] = "usage='%(prog)s [options] [.tsk file]'"
+        # kwargs["usage"] = "usage='%(prog)s [options] [.tsk file]'"
         # super().__init__(*args, **kwargs)
 
     # Initialize the ArgumentParser with a description
-    parser = argparse.ArgumentParser(description="Your friendly task manager")
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s [options] [.tsk file]",
+        description="Your friendly task manager",
+    )
 
     # Define the command-line arguments
     parser.add_argument(

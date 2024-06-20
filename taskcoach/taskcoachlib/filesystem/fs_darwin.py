@@ -255,7 +255,8 @@ class FilesystemNotifier(base.NotifierBase):
             if self._filename:
                 self.monitor = FileMonitor(self._filename, self._onFileChanged)
                 self.thread = threading.Thread(target=self._run)
-                self.thread.setDaemon(True)
+                # self.thread.setDaemon(True) is obsolete
+                self.thread.daemon = True
                 self.thread.start()
         finally:
             self.lock.release()

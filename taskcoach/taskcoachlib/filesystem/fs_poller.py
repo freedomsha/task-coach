@@ -43,7 +43,8 @@ class FilesystemPollerNotifier(base.NotifierBase, threading.Thread):
         self.cancelled = False
         self.evt = threading.Event()
 
-        self.setDaemon(True)
+        # self.setDaemon(True) is obsolete
+        self.daemon = True
         self.start()
 
     def setFilename(self, filename):

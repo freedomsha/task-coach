@@ -98,7 +98,8 @@ class FilesystemNotifier(base.NotifierBase):
             if self._filename:
                 self.watcher = DirectoryWatcher(self._path)
                 self.thread = threading.Thread(target=self._run)
-                self.thread.setDaemon(True)
+                # self.thread.setDaemon(True) is obsolete
+                self.thread.daemon = True
                 self.thread.start()
         finally:
             self.lock.release()

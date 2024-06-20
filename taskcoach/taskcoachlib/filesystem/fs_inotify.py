@@ -27,13 +27,28 @@ import os
 
 
 class FilesystemNotifier(base.NotifierBase):
-    def __init__(self):
-        super(FilesystemNotifier, self).__init__()
+    """
+    A notifier class that uses inotify to monitor filesystem changes.
 
+    This class is a wrapper around the INotify class from the Twisted framework.
+    It monitors a specific file and triggers an event when the file is changed.
+    """
+
+    def __init__(self):
+        """
+        Initialize the FilesystemNotifier.
+        """
+        super(FilesystemNotifier, self).__init__()
         self.notifier = INotify()
         self.notifier.startReading()
 
     def setFilename(self, filename):
+        """
+        Set the filename to be monitored.
+
+        Args:
+            filename (str): The filename to monitor.
+        """
         if self._path is not None:
             self.notifier.ignore(FilePath(self._path))
         super(FilesystemNotifier, self).setFilename(filename)
@@ -43,11 +58,22 @@ class FilesystemNotifier(base.NotifierBase):
             )
 
     def stop(self):
+        """
+        Stop the notifier from reading filesystem events.
+        """
         if self.notifier is not None:
             self.notifier.stopReading()
             self.notifier = None
 
     def __notify(self, handle, filepath, mask):
+        """
+        Callback function for inotify events.
+
+        Args:
+            handle: The inotify handle.
+            filepath (FilePath): The path of the file that triggered the event.
+            mask (int): The event mask.
+        """
         myName = self._filename
         if myName is not None:
             if filepath.basename() == os.path.split(myName)[-1]:
@@ -56,4 +82,7 @@ class FilesystemNotifier(base.NotifierBase):
                     self.onFileChanged()
 
     def onFileChanged(self):
+        """
+        Event handler for file change events. This method should be implemented by subclasses.
+        """
         raise NotImplementedError

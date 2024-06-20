@@ -16,11 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib.widgets import balloontip
 import wx
+from taskcoachlib.widgets import balloontip
 
 
 class BalloonTipManager(balloontip.BalloonTipManager):
+    # Signature of method 'BalloonTipManager.AddBalloonTip()'
+    # does not match signature of the base method in class 'BalloonTipManager'
+    # settings, name are not in signature of the base method
     def AddBalloonTip(
         self, settings, name, target, message=None, title=None, getRect=None
     ):

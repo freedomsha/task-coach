@@ -233,24 +233,24 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=ViewerMeta):
         return self.widget
 
     def SetFocus(self, *args, **kwargs):
-        # try:
-        self.widget.SetFocus(*args, **kwargs)
-        # except RuntimeError as e:
-        #    if (
-        #        "wrapped C/C++ object of type SquareMap has been deleted"
-        #        in str(e)
-        #    ):
-        #        # if wx.IsDestroyed(self.widget): remplacé par wx.Object.IsBeingDeleted or wx.Object.IsDead
-        #        if self.widget.IsBeingDeleted:
-        #            print("The object has been deleted.")
-        #        else:
-        #            print(
-        #                "The object has not been deleted but an error is append."
-        #            )
-        #        pass
-        #    else:
-        #        raise e
-        # pass
+        try:
+            self.widget.SetFocus(*args, **kwargs)
+        except RuntimeError as e:
+            if (
+                "wrapped C/C++ object of type SquareMap has been deleted"
+                in str(e)
+            ):
+                # if wx.IsDestroyed(self.widget): remplacé par wx.Object.IsBeingDeleted or wx.Object.IsDead
+                if self.widget.IsBeingDeleted:
+                    print("The object has been deleted.")
+                else:
+                    print(
+                        "The object has not been deleted but an error is append."
+                    )
+                pass
+            else:
+                raise e
+        pass
 
     def createSorter(self, collection):
         """This method can be overridden to decorate the presentation with a

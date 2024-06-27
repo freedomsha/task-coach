@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .wxSchedulerCore import *
-import wx.lib.scrolledpanel as scrolled
 import time
+import wx
+import wx.lib.scrolledpanel as scrolled
+from taskcoachlib.widgets import calendarwidget
+from .wxSchedulerCore import wxSchedulerCore
 
 
 class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
@@ -38,30 +40,59 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
 
         self.SetScrollRate(10, 10)
 
+        # Initialize Calendar
+        self.calendar = calendarwidget.Calendar(
+            self, [], None, self.OnCalendarDateChange
+        )
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.calendar, 1, wx.EXPAND)
+        self.SetSizer(self.sizer)
+        self.Layout()
+
     # Events
+    def OnCalendarDateChange(self, event):
+        # Handle date change event from calendar
+        selected_date = self.calendar.GetDate()
+        self.RefreshTasksForDate(selected_date)
+
+    def RefreshTasksForDate(self, date):
+        # Implement task refreshing logic for the given date
+        pass
+
+    def OnPaint(self, event):
+        # Handle paint event
+        pass
+
     def OnClick(self, evt):
+        # Handle click event
         self._doClickControl(
             self._getEventCoordinates(evt), shiftDown=evt.ShiftDown()
         )
 
     def OnClickEnd(self, evt):
+        # Handle click end event
         self._doEndClickControl(self._getEventCoordinates(evt))
 
     def OnMotion(self, evt):
+        # Handle motion event
         self._doMove(self._getEventCoordinates(evt))
 
     def OnRightClick(self, evt):
+        # Handle right-click event
         self._doRightClickControl(self._getEventCoordinates(evt))
 
     def OnDClick(self, evt):
+        # Handle double-click event
         self._doDClickControl(self._getEventCoordinates(evt))
 
     def OnSize(self, evt):
+        # Handle size event
         if not self._refreshing:
             self._sizeTimer.Start(250, True)
         evt.Skip()
 
     def OnSizeTimer(self, evt):
+        # Handle size timer event
         self._refreshing = True
         try:
             self.InvalidateMinSize()
@@ -74,31 +105,38 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
             self._refreshing = False
 
     def OnRefreshTimer(self, evt):
+        # Handle refresh timer event
         self.Refresh()
         self._refreshTimer.Start(60000, True)
 
     def Add(self, *args, **kwds):
+        # Implement add functionality
         wxSchedulerCore.Add(self, *args, **kwds)
         self._controlBindSchedules()
 
     def Refresh(self):
+        # Implement refresh functionality
         if self._frozen:
             self._dirty = True
         else:
             self.DrawBuffer()
-            self.GetSizer().FitInside(self)
+            # Adjust the window's size to sizer
+            self.GetSizer().Fit(self)
             super(wxScheduler, self).Refresh()
             self._dirty = False
 
     def Freeze(self):
+        # Implement freeze functionality
         self._frozen = True
 
     def Thaw(self):
+        # Implement thaw functionality
         self._frozen = False
         if self._dirty:
             self.Refresh()
 
     def SetResizable(self, value):
+        # Implement resizable setting
         """
         Call derived method and force wxDC refresh
         """
@@ -107,6 +145,7 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
         self.Refresh()
 
     def OnScheduleChanged(self, event):
+        # Handle schedule changed event
         if self._frozen:
             self._dirty = True
         else:

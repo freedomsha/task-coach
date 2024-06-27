@@ -114,10 +114,10 @@ class DynamicMenu(Menu):
     def onUpdateMenu(self, newValue, sender):
         """This event handler should be called at the right times so that
         the menu has a chance to update itself."""
-        try:  # Prepare for menu or window to be destroyed
-            self.updateMenu()
-        except wx.PyDeadObjectError or RuntimeError:
-            pass
+        # try:  # Prepare for menu or window to be destroyed
+        self.updateMenu()
+        # except wx.PyDeadObjectError or RuntimeError:
+        #    pass
 
     def onUpdateMenu_Deprecated(self, event=None):
         """This event handler should be called at the right times so that
@@ -201,11 +201,11 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
 
     def updateMenuItems(self):
         newCommands = self.getUICommands()
-        try:
-            if newCommands == self._uiCommands:
-                return
-        except wx._core.PyDeadObjectError:  # pylint: disable=W0212
-            pass  # Old viewer was closed
+        # try:
+        if newCommands == self._uiCommands:
+            return
+        # except wx._core.PyDeadObjectError:  # pylint: disable=W0212
+        #    pass  # Old viewer was closed
         self.clearMenu()
         self.fillMenu(newCommands)
         self._uiCommands = newCommands
@@ -1196,10 +1196,10 @@ class ColumnPopupMenu(ColumnPopupMenuMixin, Menu):
 
     def appendUICommands(self, *args, **kwargs):
         # Prepare for PyDeadObjectError since we're called from wx.CallAfter
-        try:
-            super(ColumnPopupMenu, self).appendUICommands(*args, **kwargs)
-        except wx.PyDeadObjectError or RuntimeError:
-            pass
+        # try:
+        super(ColumnPopupMenu, self).appendUICommands(*args, **kwargs)
+        # except wx.PyDeadObjectError or RuntimeError:
+        #    pass
 
 
 class EffortViewerColumnPopupMenu(

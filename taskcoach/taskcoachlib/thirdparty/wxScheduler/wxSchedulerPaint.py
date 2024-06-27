@@ -1485,10 +1485,7 @@ class wxSchedulerPaint(object):
     def _OnMoveHeaders(self, evt):
         if self._headerDragOrigin is None:
             for x, y, h in self._headerBounds:
-                if (
-                        abs(evt.GetX() - x) < 5
-                        and y <= evt.GetY() < y + h
-                ):
+                if abs(evt.GetX() - x) < 5 and y <= evt.GetY() < y + h:
                     if self._headerCursorState == 0:
                         self._headerCursorState = 1
                         self._headerPanel.SetCursor(

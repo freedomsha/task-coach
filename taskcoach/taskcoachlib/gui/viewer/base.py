@@ -166,11 +166,11 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=ViewerMeta):
                 pass  # Ignore observables that are not an observer themselves
 
         for popupMenu in self._popupMenus:
-            try:
-                popupMenu.clearMenu()
-                popupMenu.Destroy()
-            except wx.PyDeadObjectError or RuntimeError:
-                pass
+            # try:
+            popupMenu.clearMenu()
+            popupMenu.Destroy()
+            # except wx.PyDeadObjectError or RuntimeError:
+            # pass
 
         pub.unsubscribe(self.onBeginIO, "taskfile.aboutToRead")
         pub.unsubscribe(self.onBeginIO, "taskfile.aboutToClear")
@@ -233,11 +233,24 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=ViewerMeta):
         return self.widget
 
     def SetFocus(self, *args, **kwargs):
-        try:
-            self.widget.SetFocus(*args, **kwargs)
-        except wx.PyDeadObjectError:
-            # make RuntimeError!
-            pass
+        # try:
+        self.widget.SetFocus(*args, **kwargs)
+        # except RuntimeError as e:
+        #    if (
+        #        "wrapped C/C++ object of type SquareMap has been deleted"
+        #        in str(e)
+        #    ):
+        #        # if wx.IsDestroyed(self.widget): remplacé par wx.Object.IsBeingDeleted or wx.Object.IsDead
+        #        if self.widget.IsBeingDeleted:
+        #            print("The object has been deleted.")
+        #        else:
+        #            print(
+        #                "The object has not been deleted but an error is append."
+        #            )
+        #        pass
+        #    else:
+        #        raise e
+        # pass
 
     def createSorter(self, collection):
         """This method can be overridden to decorate the presentation with a
@@ -288,20 +301,20 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=ViewerMeta):
         """The selection of items in the widget has been changed. Notify
         our observers."""
 
-        try:
-            if self.IsBeingDeleted() or self.__selectingAllItems:
-                # Some widgets change the selection and send selection events when
-                # deleting all items as part of the Destroy process. Ignore.
-                return
+        # try:
+        if self.IsBeingDeleted() or self.__selectingAllItems:
+            # Some widgets change the selection and send selection events when
+            # deleting all items as part of the Destroy process. Ignore.
+            return
 
-            # Be sure all wx events are handled before we update our selection
-            # cache and notify our observers:
-            wx.CallAfter(self.updateSelection)
-        except RuntimeError:
-            # RuntimeError: wrapped C/C++ object of type EffortViewer has been deleted
-            # FIXME: It's a bug?
-            # wx.PyDeadObjectError create now RuntimeError !
-            pass
+        # Be sure all wx events are handled before we update our selection
+        # cache and notify our observers:
+        wx.CallAfter(self.updateSelection)
+        # except RuntimeError:
+        # RuntimeError: wrapped C/C++ object of type EffortViewer has been deleted
+        # FIXME: It's a bug?
+        # wx.PyDeadObjectError create now RuntimeError !
+        #    pass
 
     def updateSelection(self, sendViewerStatusEvent=True):
         newSelection = self.widget.curselection()

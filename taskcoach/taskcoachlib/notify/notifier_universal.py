@@ -328,7 +328,9 @@ class _NotificationCenter(wx.EvtHandler):
         else:
             x = dx + dw - w - self.notificationMargin
 
-        frm.SetDimensions(x, bottom - h - self.notificationMargin, w, h)
+        # frm.SetDimensions(x, bottom - h - self.notificationMargin, w, h)
+        # use SetSize ?
+        frm.SetSize(x, bottom - h - self.notificationMargin, w, h)
         self.displayedFrames.append((frm, h, timeout))
 
         frm.Layout()

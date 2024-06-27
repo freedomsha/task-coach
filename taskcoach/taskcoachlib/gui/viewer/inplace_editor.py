@@ -31,16 +31,17 @@ class KillFocusAcceptsEditsMixin(object):
     clicks outside the edit control instead of cancelling the changes."""
 
     def StopEditing(self):
-        try:
-            if self.__has_focus():
-                # User hit Escape
-                super(KillFocusAcceptsEditsMixin, self).StopEditing()
-            else:
-                # User clicked outside edit window
-                self.AcceptChanges()
-                self.Finish()
-        except wx.PyDeadObjectError or RuntimeError:
-            pass
+        # try:
+        if self.__has_focus():
+            # User hit Escape
+            super(KillFocusAcceptsEditsMixin, self).StopEditing()
+        else:
+            # User clicked outside edit window
+            self.AcceptChanges()
+            self.Finish()
+
+    # except wx.PyDeadObjectError or RuntimeError:
+    #    pass
 
     def __has_focus(self):
         """Return whether this control has the focus."""

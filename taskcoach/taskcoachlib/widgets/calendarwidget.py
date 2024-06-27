@@ -329,6 +329,7 @@ class _CalendarContent(tooltip.ToolTipMixin, wxScheduler):
             else:
                 return None
 
+    # @Property
     def GetMainWindow(self):
         return self
 
@@ -567,7 +568,7 @@ class TaskSchedule(wxSchedule):
                 dateTime.second,
             )
         )
-        return wx.DateTimeFromDMY(*args)  # pylint: disable=W0142
+        return wx.DateTime.FromDMY(*args)  # pylint: disable=W0142
 
     @staticmethod
     def tcDateTime(dateTime):

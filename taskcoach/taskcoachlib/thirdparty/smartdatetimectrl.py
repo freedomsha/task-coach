@@ -15,7 +15,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with smartdatetimectrl.  If not, see <http://www.gnu.org/licenses/>.
 
-import wx, math, time, re, datetime, calendar, io, platform
+import calendar
+import datetime
+import io
+import math
+import platform
+import re
+import time
+import wx
 import wx.lib.platebtn as pbtn
 
 
@@ -446,15 +453,15 @@ class Entry(wx.Panel):
 
     def Cleanup(self):
         # It's complicated.
-        try:
-            self.DismissPopup()
-        except wx.PyDeadObjectError or RuntimeError:
-            pass
+        # try:
+        self.DismissPopup()
+        # except wx.PyDeadObjectError or RuntimeError:
+        #    pass
 
     def Format(self):
         bf = io.StringIO()
         for field, x, margin, w, h in self.__widgets:
-            if isinstace(field, (str, str)):
+            if isinstance(field, (str, str)):
                 bf.write(field)
             else:
                 bf.write("%s" % field.GetValue())
@@ -685,12 +692,7 @@ class Entry(wx.Panel):
 
     def OnLeftUp(self, event):
         for widget, x, y, w, h in self.__widgets:
-            if (
-                event.GetX() >= x
-                and event.GetX() < x + w
-                and event.GetY() >= y
-                and event.GetY() < y + h
-            ):
+            if x <= event.GetX() < x + w and y <= event.GetY() < y + h:
                 if not isinstance(widget, str):
                     oldFocus = self.__focus
                     self.__SetFocus(widget)
@@ -793,15 +795,12 @@ class NumericField(Field):
             self.SetValue(value)
             return True
 
-        if (
-            event.GetKeyCode() >= wx.WXK_NUMPAD0
-            and event.GetKeyCode() <= wx.WXK_NUMPAD9
-        ):
+        if wx.WXK_NUMPAD0 <= event.GetKeyCode() <= wx.WXK_NUMPAD9:
             number = event.GetKeyCode() - wx.WXK_NUMPAD0
         else:
             number = event.GetKeyCode() - ord("0")
 
-        if number >= 0 and number <= 9:
+        if 0 <= number <= 9:
             if self.__state == 0:
                 self.__state = 1
                 self.SetValue(number, notify=True)
@@ -831,7 +830,7 @@ class EnumerationField(NumericField):
 
     def PopupChoices(self, widget):
         if self.__enablePopup:
-            super(EnumerationField, self).PopupChoices(widget)
+            super().PopupChoices(widget)
 
     def GetExtent(self, dc):
         dc.SetFont(wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT))

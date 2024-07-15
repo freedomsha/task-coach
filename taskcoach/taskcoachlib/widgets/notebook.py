@@ -80,7 +80,9 @@ class BookPage(wx.Panel):
     def __determineFlags(self, controls, flagsPassed):
         """Return a merged list of flags by overriding the default
         flags with flags passed by the caller."""
-        flagsPassed = flagsPassed or [None] * len(controls)
+        # flagsPassed = flagsPassed or [None] * len(controls)
+        if not isinstance(flagsPassed, list):
+            flagsPassed = [flagsPassed] * len(controls)
         defaultFlags = self.__defaultFlags(controls)
         return [
             defaultFlag if flagPassed is None else flagPassed
@@ -136,9 +138,20 @@ class BookPage(wx.Panel):
 
     def __addControl(self, columnIndex, control, flag, lastColumn):
         colspan = max(self._columns - columnIndex, 1) if lastColumn else 1
+        position = self._position.next(colspan)
+
+        # Debug output to check the values being passed
+        print(
+            f"Adding control: {control}, Position: {position}, Span: {(1, colspan)}, Flag: {flag}, Border: {self._borderWidth}"
+        )
+
+        # Ensure flag is an integer
+        if isinstance(flag, tuple):
+            flag = flag[0]  # Extract the first element if it's a tuple
+
         self._sizer.Add(
             control,
-            self._position.next(colspan),
+            position,
             span=(1, colspan),
             flag=flag,
             border=self._borderWidth,

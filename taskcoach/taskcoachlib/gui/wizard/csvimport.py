@@ -42,7 +42,7 @@ class CSVDialect(csv.Dialect):
 
 class CSVImportOptionsPage(wiz.WizardPageSimple):
     def __init__(self, filename, *args, **kwargs):
-        super(CSVImportOptionsPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.delimiter = wx.Choice(self, wx.ID_ANY)
         self.delimiter.Append(_("Comma"))
@@ -154,15 +154,22 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
         self.encoding = chardet.detect(open(filename, "rb").read())["encoding"]
         self.OnOptionChanged(None)
 
-        wx.EVT_CHOICE(self.delimiter, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_CHOICE(self.quoteChar, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_CHECKBOX(
-            self.importSelectedRowsOnly, wx.ID_ANY, self.OnOptionChanged
-        )
-        wx.EVT_CHECKBOX(self.hasHeaders, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_RADIOBUTTON(self.doubleQuote, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_RADIOBUTTON(self.escapeQuote, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_TEXT(self.escapeChar, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_CHOICE(self.delimiter, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_CHOICE(self.quoteChar, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_CHECKBOX(
+        #     self.importSelectedRowsOnly, wx.ID_ANY, self.OnOptionChanged
+        # )
+        # wx.EVT_CHECKBOX(self.hasHeaders, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_RADIOBUTTON(self.doubleQuote, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_RADIOBUTTON(self.escapeQuote, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_TEXT(self.escapeChar, wx.ID_ANY, self.OnOptionChanged)
+        self.delimiter.Bind(wx.EVT_CHOICE, self.OnOptionChanged)
+        self.quoteChar.Bind(wx.EVT_CHOICE, self.OnOptionChanged)
+        self.importSelectedRowsOnly.Bind(wx.EVT_CHECKBOX, self.OnOptionChanged)
+        self.hasHeaders.Bind(wx.EVT_CHECKBOX, self.OnOptionChanged)
+        self.doubleQuote.Bind(wx.EVT_RADIOBUTTON, self.OnOptionChanged)
+        self.escapeQuote.Bind(wx.EVT_RADIOBUTTON, self.OnOptionChanged)
+        self.escapeChar.Bind(wx.EVT_TEXT, self.OnOptionChanged)
 
     def OnOptionChanged(self, event):  # pylint: disable=W0613
         self.escapeChar.Enable(self.escapeQuote.GetValue())
@@ -271,7 +278,7 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
 
 class CSVImportMappingPage(wiz.WizardPageSimple):
     def __init__(self, *args, **kwargs):
-        super(CSVImportMappingPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # (field name, multiple values allowed)
 
@@ -401,7 +408,7 @@ class CSVImportMappingPage(wiz.WizardPageSimple):
 class CSVImportWizard(wiz.Wizard):
     def __init__(self, filename, *args, **kwargs):
         kwargs["style"] = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE
-        super(CSVImportWizard, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.optionsPage = CSVImportOptionsPage(filename, self)
         self.mappingPage = CSVImportMappingPage(self)
@@ -427,7 +434,7 @@ class CSVImportWizard(wiz.Wizard):
             pass  # XXXTODO
 
     def RunWizard(self):
-        return super(CSVImportWizard, self).RunWizard(self.optionsPage)
+        return super().RunWizard(self.optionsPage)
 
     def GetOptions(self):
         return self.mappingPage.GetOptions()

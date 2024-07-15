@@ -18,12 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib import gui, config, persistence
 from taskcoachlib.domain import task, note, category
-from taskcoachlib.thirdparty import lockfile
-from unittests import dummy
+from ...unittests import dummy
+
+# from taskcoachlib.thirdparty import lockfile
+import lockfile
 import os
 import shutil
 import wx
-import test
+from ... import test
 
 
 class IOControllerTest(test.TestCase):
@@ -46,7 +48,7 @@ class IOControllerTest(test.TestCase):
                 shutil.rmtree(filename + ".lock")  # pragma: no cover
             if os.path.exists(filename + ".delta"):
                 os.remove(filename + ".delta")
-        super(IOControllerTest, self).tearDown()
+        super().tearDown()
 
     def doIOAndCheckRecentFiles(
         self,
@@ -326,7 +328,7 @@ class IOControllerTest(test.TestCase):
 
 class IOControllerOverwriteExistingFileTest(test.TestCase):
     def setUp(self):
-        super(IOControllerOverwriteExistingFileTest, self).setUp()
+        super().setUp()
         self.originalFileSelector = wx.FileSelector
         wx.FileSelector = (
             lambda *args, **kwargs: "filename without extension to trigger our own overwrite warning"
@@ -349,7 +351,7 @@ class IOControllerOverwriteExistingFileTest(test.TestCase):
         self.taskFile.stop()
         wx.FileSelector = self.originalFileSelector
         wx.MessageBox = self.originalMessageBox
-        super(IOControllerOverwriteExistingFileTest, self).tearDown()
+        super().tearDown()
 
     def testCancelSaveAsExistingFile(self):
         self.iocontroller.saveas(fileExists=lambda filename: True)

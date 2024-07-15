@@ -17,10 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 # import imp  # Obsolète
+import gettext
 import locale
 import tempfile
 from importlib.machinery import SourceFileLoader as load_source
 import os
+import sys
 import wx
 
 from taskcoachlib import patterns, operating_system

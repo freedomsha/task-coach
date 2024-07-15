@@ -13,7 +13,7 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
     def __init__(self, *args, **kwds):
         kwds["style"] = wx.TAB_TRAVERSAL | wx.FULL_REPAINT_ON_RESIZE
 
-        super(wxScheduler, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
 
         timerId = wx.NewIdRef()
         self._sizeTimer = wx.Timer(self, timerId)
@@ -42,8 +42,16 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
 
         # Initialize Calendar
         self.calendar = calendarwidget.Calendar(
-            self, [], None, self.OnCalendarDateChange
-        )
+            self,
+            [],
+            None,
+            self.OnCalendarDateChange,
+            onEdit=None,
+            OnCreate=None,
+            popupMenu=None,
+        )  # TypeError: Calendar.__init__() missing 3 required positional arguments: 'onEdit', 'onCreate', and 'popupMenu'
+        # TODO: to change
+
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.calendar, 1, wx.EXPAND)
         self.SetSizer(self.sizer)
@@ -121,8 +129,8 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
         else:
             self.DrawBuffer()
             # Adjust the window's size to sizer
-            self.GetSizer().Fit(self)
-            super(wxScheduler, self).Refresh()
+            self.GetSizer().FitInside(self)
+            super().Refresh()
             self._dirty = False
 
     def Freeze(self):
@@ -140,7 +148,7 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
         """
         Call derived method and force wxDC refresh
         """
-        super(wxScheduler, self).SetResizable(value)
+        super().SetResizable(value)
         self.InvalidateMinSize()
         self.Refresh()
 
@@ -183,7 +191,7 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
         return coords
 
     def SetViewType(self, view=None):
-        super(wxScheduler, self).SetViewType(view)
+        super().SetViewType(view)
         self.InvalidateMinSize()
         self.Refresh()
 

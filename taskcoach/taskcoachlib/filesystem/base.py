@@ -35,7 +35,7 @@ class NotifierBase(object):
     """
 
     def __init__(self):
-        super(NotifierBase, self).__init__()
+        super().__init__()
 
         self._filename = None
         self._path = None
@@ -52,7 +52,7 @@ class NotifierBase(object):
 
         This method should be overridden by subclasses if needed.
         """
-        pass
+        pass  # Should be overloaded if needed
 
     def _check(self, filename):
         """

@@ -25,7 +25,7 @@ class IPhoneSyncFrame(NotificationFrameBase):
     def __init__(self, settings, *args, **kwargs):
         self.settings = settings
 
-        super(IPhoneSyncFrame, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def AddInnerContent(self, sizer, panel):
         self.text = wx.StaticText(panel, wx.ID_ANY, _("Synchronizing..."))
@@ -44,7 +44,7 @@ class IPhoneSyncFrame(NotificationFrameBase):
             self.btn = wx.Button(panel, wx.ID_ANY, _("OK"))
             sizer.Add(self.btn, 0, wx.ALIGN_CENTRE | wx.ALL, 3)
             self.btn.Enable(False)
-            wx.EVT_BUTTON(self.btn, wx.ID_ANY, self.OnOK)
+            self.btn.Bind(wx.EVT_BUTTON, self.OnOK)
 
     def CloseButton(self, panel):
         return None

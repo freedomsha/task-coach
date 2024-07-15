@@ -18,9 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib import persistence, config
 from taskcoachlib.domain import task, date
-import test
+from ... import test
 import os
-from unittests import dummy
+from ...unittests import dummy
 
 
 class AutoExporterTestCase(test.TestCase):
@@ -33,7 +33,7 @@ class AutoExporterTestCase(test.TestCase):
         self.taskFile.setFilename(self.tskFilename)
 
     def tearDown(self):
-        super(AutoExporterTestCase, self).tearDown()
+        super().tearDown()
         del self.exporter
         for filename in (
             self.tskFilename,

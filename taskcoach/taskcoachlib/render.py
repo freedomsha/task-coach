@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 render.py - functions to render various objects, like date, time, etc.
-"""
+"""  # pylint: disable=W0105
 
 from taskcoachlib.domain import date as datemodule
 from taskcoachlib.thirdparty import desktop
@@ -78,7 +78,9 @@ def timeLeft(time_left, completed_task):
     return sign + days + hours_and_minutes
 
 
-def timeSpent(timeSpent, showSeconds=True, decimal=False):
+def timeSpent(
+    timeSpent: datemodule.TimeDelta, showSeconds=True, decimal=False
+):
     """
     Render time spent (of type date.TimeDelta) as "<hours>:<minutes>:<seconds>" or "<hours>:<minutes>".
 
@@ -106,7 +108,7 @@ def timeSpent(timeSpent, showSeconds=True, decimal=False):
         )
 
 
-def timeSpentDecimal(timeSpent):
+def timeSpentDecimal(timeSpent: datemodule.TimeDelta):
     """
     Render time spent (of type date.TimeDelta) as "<hours>.<fractional hours>".
 

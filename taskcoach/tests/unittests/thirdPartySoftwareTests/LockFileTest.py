@@ -16,8 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, tempfile
-from taskcoachlib.thirdparty import lockfile
+import tempfile
+from ... import test
+
+# from taskcoachlib.thirdparty import lockfile
+import lockfile
 
 
 class LockFileTest(test.TestCase):
@@ -26,7 +29,7 @@ class LockFileTest(test.TestCase):
         self.lock = lockfile.FileLock(self.tmpfile.name)
 
     def tearDown(self):
-        super(LockFileTest, self).tearDown()
+        super().tearDown()
         self.tmpfile.close()  # Temp files are deleted when closed
 
     def testFileIsNotLockedInitially(self):

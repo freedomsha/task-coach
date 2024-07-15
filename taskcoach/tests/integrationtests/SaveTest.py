@@ -16,8 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import mock
 import os
-import test, mock
+from .. import test
 
 
 class SaveTest(test.TestCase):
@@ -34,7 +35,7 @@ class SaveTest(test.TestCase):
             if os.path.isfile(filename):
                 os.remove(filename)
         mock.App.deleteInstance()
-        super(SaveTest, self).tearDown()
+        super().tearDown()
 
     def assertTasksLoaded(self, nrTasks):
         self.assertEqual(nrTasks, len(self.mockApp.taskFile.tasks()))

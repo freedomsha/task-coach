@@ -55,10 +55,20 @@ install_requires = [
     "pypubsub",
     "twisted",
     "chardet>=5.2.0",
-    "python-dateutil>2.9.0",
+    "python-dateutil>=2.9.0",
     "pyparsing>=3.1.2",
     "lxml",
+    "SquareMap>=1.0.5",
+    "pyxdg",
+    "keyring",
+    # FIXME: It's been replaced by new library "fasteners"
+    "lockfile>=0.12.2",
+    "gntp>=1.0.3",
 ]
+
+system = platform.system()
+if system == "Windows":
+    install_requires.append("WMI>=1.5.1")
 
 setup_requires = ["distro"]
 
@@ -87,6 +97,11 @@ setupOptions = {
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Office/Business",
     ],
 }

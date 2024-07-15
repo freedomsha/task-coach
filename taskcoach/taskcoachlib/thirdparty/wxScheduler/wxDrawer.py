@@ -475,7 +475,7 @@ class wxDrawer(object):
         width = width * size // total - 2 * SCHEDULE_OUTSIDE_MARGIN
 
         # Height is variable
-        height = self._DrawSchedule(schedule, x, y, width, 0)
+        height = self._DrawSchedule(schedule, x, y, width, None)
         self._DrawSchedule(schedule, x, y, width, height)
 
         return (
@@ -662,7 +662,7 @@ class wxDrawer(object):
         textlist = list()  # List returned by this method
         words = list()  # Wordlist for intermediate elaboration
 
-        # Split text in single words and split words when their width is over
+        # Split text in single words and split words when their(yours) width is over
         # available width
         text = text.replace("\n", " ").split()
 
@@ -691,7 +691,7 @@ class wxDrawer(object):
 
                 # Break if there's no vertical space available
                 if (len(textlist) * dc.GetTextExtent(SEPARATOR)[0]) > height:
-                    # Must exist at least one line of description
+                    # Must exist at least(almost) one line of description
                     if len(textlist) > 1:
                         textlist = textlist[:-1]
 
@@ -996,14 +996,14 @@ class HeaderDrawerGCMixin(object):
 
             if alignRight:
                 self.context.DrawText(
-                    text, x + w - 1.5 * textW, y + textH * 0.25
+                    text, int(x + w - 1.5 * textW), int(y + textH * 0.25)
                 )
             else:
                 self.context.DrawText(
-                    text, x + (w - textW) / 2, y + textH * 0.25
+                    text, x + (w - textW) // 2, int(y + textH * 0.25)
                 )
 
-            return w, textH * 1.5
+            return w, int(textH * 1.5)
         finally:
             font.SetPointSize(fsize)
             font.SetWeight(fweight)
@@ -1116,7 +1116,7 @@ class HeaderDrawerGCMixin(object):
                         (
                             schedule,
                             wx.Point(x, y),
-                            wx.Point(x + width, y + textH * 1.2),
+                            wx.Point(x + width, int(y + textH * 1.2)),
                         )
                     )
 
@@ -1438,7 +1438,7 @@ class wxFancyDrawer(
         self.context.SetBrush(brush)
 
         path = self.context.CreatePath()
-        path.AddArc(x, y, 5, -math.pi / 2, math.pi / 2, True)
+        path.AddArc(x, y, 5, int(-math.pi / 2), int(math.pi / 2), True)
         self.context.FillPath(path)
 
     def DrawNowVertical(self, x, y, h):

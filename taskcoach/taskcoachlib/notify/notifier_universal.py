@@ -31,7 +31,7 @@ class AnimatedShow(wx.Timer):
     """
 
     def __init__(self, frame, show=True):
-        super(AnimatedShow, self).__init__()
+        super().__init__()
 
         if frame.CanSetTransparent():
             self.__frame = frame
@@ -40,9 +40,9 @@ class AnimatedShow(wx.Timer):
 
             id_ = wx.NewIdRef()
             self.SetOwner(self, id_)
-            wx.EVT_TIMER(self, id_, self.__OnTick)
+            self.Bind(wx.EVT_TIMER, self.__OnTick, id=id_)
             self.Start(100)
-            wx.EVT_CLOSE(frame, self.__OnClose)
+            frame.Bind(wx.EVT_CLOSE, self.__OnClose)
 
             frame.SetTransparent(0)
 
@@ -78,7 +78,7 @@ class AnimatedMove(wx.Timer):
     """
 
     def __init__(self, frame, destination):
-        super(AnimatedMove, self).__init__()
+        super().__init__()
 
         self.__frame = frame
         self.__origin = frame.GetPosition()
@@ -87,9 +87,9 @@ class AnimatedMove(wx.Timer):
 
         id_ = wx.NewIdRef()
         self.SetOwner(self, id_)
-        wx.EVT_TIMER(self, id_, self.__OnTick)
+        self.Bind(wx.EVT_TIMER, self.__OnTick, id=id_)
         self.Start(100)
-        wx.EVT_CLOSE(frame, self.__OnClose)
+        frame.Bind(wx.EVT_CLOSE, self.__OnClose)
 
     def __OnTick(self, event):  # pylint: disable=W0613
         x0, y0 = self.__origin
@@ -123,11 +123,11 @@ elif operating_system.isGTK():
         def __init__(
             self, parent, id_, title, style=0
         ):  # pylint: disable=W0613,E1003
-            super(_NotifyBase, self).__init__(parent, id_)  # No style
+            super().__init__(parent, id_)  # No style
 
         def Close(self):  # pylint: disable=W0221,E1003
             # Strange...
-            super(_NotifyBase, self).Close()
+            super().Close()
             self.Destroy()
 
 else:
@@ -152,9 +152,7 @@ class NotificationFrameBase(_NotifyBase):
         style = self.Style() | (
             wx.STAY_ON_TOP if parent is None else wx.FRAME_FLOAT_ON_PARENT
         )
-        super(NotificationFrameBase, self).__init__(
-            parent, wx.ID_ANY, "", style=style
-        )
+        super().__init__(parent, wx.ID_ANY, "", style=style)
         self.Populate()
 
     def Populate(self):
@@ -185,7 +183,8 @@ class NotificationFrameBase(_NotifyBase):
         btn = self.CloseButton(panel)
         if btn is not None:
             hsz.Add(btn, 0, wx.ALL, 2)
-            wx.EVT_BUTTON(btn, wx.ID_ANY, self.DoClose)
+            # wx.EVT_BUTTON(btn, wx.ID_ANY, self.DoClose)
+            btn.Bind(wx.EVT_BUTTON, self.DoClose)
 
         vsz.Add(hsz, 0, wx.ALL | wx.EXPAND, 2)
 
@@ -262,7 +261,7 @@ class NotificationFrame(NotificationFrameBase):
     def __init__(self, message, *args, **kwargs):
         self.message = message
 
-        super(NotificationFrame, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def AddInnerContent(self, sizer, panel):
         sizer.Add(
@@ -281,7 +280,7 @@ class _NotificationCenter(wx.EvtHandler):
     framePool = []
 
     def __init__(self):
-        super(_NotificationCenter, self).__init__()
+        super().__init__()
 
         self.displayedFrames = []
         self.waitingFrames = []
@@ -291,7 +290,7 @@ class _NotificationCenter(wx.EvtHandler):
         self.__tmr = wx.Timer()
         id_ = wx.NewIdRef()
         self.__tmr.SetOwner(self, id_)
-        wx.EVT_TIMER(self, id_, self.__OnTick)
+        self.Bind(wx.EVT_TIMER, self.__OnTick, id=id_)
         self.__tmr.Start(1000)
 
     def NotifyFrame(self, frm, timeout=None):
@@ -474,7 +473,7 @@ if __name__ == "__main__":
 
     class TestFrame(wx.Frame):
         def __init__(self):
-            super(TestFrame, self).__init__(None, wx.ID_ANY, "Test frame")
+            super().__init__(None, wx.ID_ANY, "Test frame")
             # pylint: disable=E1101
             NotificationCenter().Notify(
                 "Sample title", "Sample content", timeout=3
@@ -498,7 +497,7 @@ if __name__ == "__main__":
             )
             NotificationCenter().Notify("Last sample", "Foobar!")
 
-            wx.EVT_CLOSE(self, self.OnClose)
+            self.Bind(wx.EVT_CLOSE, self.OnClose)
 
         def OnClose(self, evt):
             NotificationCenter().HideAll()  # pylint: disable=E1101

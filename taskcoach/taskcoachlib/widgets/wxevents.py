@@ -114,9 +114,10 @@ def total_seconds(td):  # Method new in 2.7
     Returns:
         float: The total number of seconds.
     """
-    return (
-        1.0 * td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6
-    ) / 10**6
+    return int(
+        (1.0 * td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6)
+        // 10**6
+    )
 
 
 def shortenText(gc, text, maxW):
@@ -173,9 +174,7 @@ class CalendarCanvas(wx.Panel):
             datetime.datetime.now().date(), datetime.time(0, 0, 0)
         )
         self._end = end or self._start + datetime.timedelta(days=7)
-        super(CalendarCanvas, self).__init__(
-            parent, wx.ID_ANY, style=wx.FULL_REPAINT_ON_RESIZE
-        )
+        super().__init__(parent, wx.ID_ANY, style=wx.FULL_REPAINT_ON_RESIZE)
 
         self._coords = (
             dict()
@@ -186,11 +185,14 @@ class CalendarCanvas(wx.Panel):
         # Drawing attributes
         self._precision = 1  # Minutes
         self._gridSize = 15  # Minutes
-        self._eventHeight = 32.0
+        # self._eventHeight = 32.0
+        self._eventHeight = 32
         self._eventWidthMin = 0.1
         self._eventWidth = 0.1
-        self._margin = 5.0
-        self._marginTop = 22.0
+        # self._margin = 5.0
+        self._margin = 5
+        # self._marginTop = 22.0
+        self._marginTop = 22
         self._outlineColorDark = wx.Colour(180, 180, 180)
         self._outlineColorLight = wx.Colour(210, 210, 210)
         self._headerSpans = []
@@ -408,7 +410,7 @@ class CalendarCanvas(wx.Panel):
         Args:
             height (float): The event height.
         """
-        self._eventHeight = 1.0 * height
+        self._eventHeight = int(1.0 * height)
         self._Invalidate()
         self.Refresh()
 
@@ -448,7 +450,7 @@ class CalendarCanvas(wx.Panel):
         Args:
             margin (float): The margin size.
         """
-        self._margin = 1.0 * margin
+        self._margin = int(1.0 * margin)
         self._Invalidate()
         self.Refresh()
 
@@ -800,10 +802,10 @@ class CalendarCanvas(wx.Panel):
                     x0,
                     0,
                     x1 - x0,
-                    self._marginTop - 2.0,
+                    int(self._marginTop - 2.0),
                 )
             )
-            gc.DrawRectangle(x0, 0, x1 - x0, self._marginTop - 2.0)
+            gc.DrawRectangle(x0, 0, x1 - x0, int(self._marginTop - 2.0))
             text = shortenText(
                 gc,
                 self.FormatDateTime(
@@ -816,7 +818,9 @@ class CalendarCanvas(wx.Panel):
             result = gc.GetFullTextExtent(text)
             tw, th = result[0], result[1]
             gc.DrawText(
-                text, x0 + (x1 - x0 - tw) / 2, (self._marginTop - 2.0 - th) / 2
+                text,
+                int(x0 + (x1 - x0 - tw) // 2),
+                int((self._marginTop - 2.0 - th) // 2),
             )
 
     def _DrawNow(self, gc, h):
@@ -841,11 +845,11 @@ class CalendarCanvas(wx.Panel):
         gc.SetBrush(wx.Brush(wx.Colour(0, 128, 0)))
 
         path = gc.CreatePath()
-        path.MoveToPoint(x - 4.0, self._marginTop)
-        path.AddLineToPoint(x + 4.0, self._marginTop)
-        path.AddLineToPoint(x, self._marginTop + 4.0)
+        path.MoveToPoint(int(x - 4.0), self._marginTop)
+        path.AddLineToPoint(int(x + 4.0), self._marginTop)
+        path.AddLineToPoint(x, int(self._marginTop + 4.0))
         path.AddLineToPoint(x, h + self._marginTop)
-        path.AddLineToPoint(x, self._marginTop + 4.0)
+        path.AddLineToPoint(x, int(self._marginTop + 4.0))
         path.CloseSubpath()
         gc.DrawPath(path)
 
@@ -1028,7 +1032,7 @@ class CalendarCanvas(wx.Panel):
             self._vScroll.Hide()
 
         self._eventWidth = max(
-            self._eventWidthMin, 1.0 * max(w, minW) / self._maxIndex
+            self._eventWidthMin, int(1.0 * max(w, minW) // self._maxIndex)
         )
 
         if event is not None:
@@ -1181,7 +1185,7 @@ class CalendarCanvas(wx.Panel):
                         if result.position == result.HIT_START
                         else self.MS_HOVER_RIGHT
                     )
-                    wx.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+                    wx.SetCursor(wx.Cursor(wx.CURSOR_SIZEWE))
             elif self._mouseState in [self.MS_HOVER_LEFT, self.MS_HOVER_RIGHT]:
                 if result.event is None or result.position not in [
                     result.HIT_START,
@@ -1238,7 +1242,7 @@ class CalendarCanvas(wx.Panel):
                     or dy > wx.SystemSettings.GetMetric(wx.SYS_DRAG_Y) / 2
                 ):
                     self.CaptureMouse()
-                    wx.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+                    wx.SetCursor(wx.Cursor(wx.CURSOR_HAND))
                     self._mouseState = self.MS_DRAGGING
                     self.Refresh()
         elif self._mouseState == self.MS_DRAGGING:
@@ -1704,7 +1708,7 @@ class CalendarPrintout(wx.Printout):
             calendar (CalendarCanvas): The calendar canvas to print.
             settings (dict): The print settings.
         """
-        super(CalendarPrintout, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._calendar = calendar
         self._settings = settings
         self._count = None
@@ -1721,7 +1725,7 @@ class CalendarPrintout(wx.Printout):
             dc = self.GetDC()
             dcw, dch = dc.GetSize()
             cw = minW
-            ch = minW * dch / dcw
+            ch = int(minW * dch // dcw)
             cells = int(
                 math.ceil(
                     1.0
@@ -1796,7 +1800,7 @@ class CalendarPrintout(wx.Printout):
             * (page - 1)
         )
 
-        bmp = wx.EmptyBitmap(cw, ch)
+        bmp = wx.Bitmap(cw, ch)
         memDC = wx.MemoryDC()
         memDC.SelectObject(bmp)
         try:
@@ -1810,7 +1814,7 @@ class CalendarPrintout(wx.Printout):
                 self._calendar._Draw(gc, cw, ch, 0, dy)
             finally:
                 self._calendar._eventWidth = oldWidth
-            dc.SetUserScale(1.0 * dcw / cw, 1.0 * dch / ch)
+            dc.SetUserScale(int(1.0 * dcw / cw), int(1.0 * dch / ch))
             dc.Blit(0, 0, cw, ch, memDC, 0, 0)
         finally:
             memDC.SelectObject(wx.NullBitmap)

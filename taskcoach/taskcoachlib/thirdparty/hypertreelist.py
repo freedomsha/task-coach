@@ -626,8 +626,8 @@ class TreeListHeaderWindow(wx.Window):
         wx.Window.__init__(self, parent, id, pos, size, style, name=name)
 
         self._owner = owner
-        self._currentCursor = wx.StockCursor(wx.CURSOR_DEFAULT)
-        self._resizeCursor = wx.StockCursor(wx.CURSOR_SIZEWE)
+        self._currentCursor = wx.Cursor(wx.CURSOR_DEFAULT)
+        self._resizeCursor = wx.Cursor(wx.CURSOR_SIZEWE)
         self._isDragging = False
         self._dirty = False
         self._total_col_width = 0
@@ -1775,7 +1775,7 @@ class TreeListItem(GenericTreeItem):
                 % column
             )
 
-        return self._wnd[column].IsEnabled()
+        return self._wnd[column].IsThisEnabled()
 
     def SetWindowEnabled(self, enable=True, column=None):
         """
@@ -2692,7 +2692,7 @@ class TreeListMainWindow(CustomTreeCtrl):
         :param `torefresh`: whether to redraw the item or not.
         """
 
-        if item.IsEnabled() == enable:
+        if item.IsThisEnabled() == enable:
             return
 
         if not enable and item.IsSelected():
@@ -2720,7 +2720,7 @@ class TreeListMainWindow(CustomTreeCtrl):
         :param `item`: an instance of L{TreeListItem}.
         """
 
-        return item.IsEnabled()
+        return item.IsThisEnabled()
 
     def GetCurrentItem(self):
         """Returns the current item."""
@@ -3227,7 +3227,7 @@ class TreeListMainWindow(CustomTreeCtrl):
                 if wcheck:
                     x += wcheck
 
-                if item.IsEnabled():
+                if item.IsThisEnabled():
                     imglist = self._imageListNormal
                 else:
                     imglist = self._grayedImageList
@@ -3235,7 +3235,7 @@ class TreeListMainWindow(CustomTreeCtrl):
                 imglist.Draw(image, dc, x, y, wx.IMAGELIST_DRAW_TRANSPARENT)
 
             if wcheck:
-                if item.IsEnabled():
+                if item.IsThisEnabled():
                     imglist = self._imageListCheck
                 else:
                     imglist = self._grayedCheckList
@@ -3272,7 +3272,7 @@ class TreeListMainWindow(CustomTreeCtrl):
 
                 text = ChopText(dc, text, maxsize)
 
-            if not item.IsEnabled():
+            if not item.IsThisEnabled():
                 foreground = dc.GetTextForeground()
                 dc.SetTextForeground(self._disabledColour)
                 _paintText(text, textrect, alignment)
@@ -3850,13 +3850,13 @@ class TreeListMainWindow(CustomTreeCtrl):
                 if (
                     hoverItem.IsHyperText()
                     and (flags & wx.TREE_HITTEST_ONITEMLABEL)
-                    and hoverItem.IsEnabled()
+                    and hoverItem.IsThisEnabled()
                 ):
-                    self.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+                    self.SetCursor(wx.Cursor(wx.CURSOR_HAND))
                     self._isonhyperlink = True
                 else:
                     if self._isonhyperlink:
-                        self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+                        self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
                         self._isonhyperlink = False
 
         # we only process dragging here

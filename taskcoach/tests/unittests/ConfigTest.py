@@ -18,7 +18,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys, os, configparser, io
+import configparser
+import io
+import os
+import sys
 from .. import test
 from taskcoachlib import config, meta
 from pubsub import pub
@@ -29,7 +32,7 @@ class SettingsTestCase(test.TestCase):
         self.settings = config.Settings(load=False)
 
     def tearDown(self):
-        super(SettingsTestCase, self).tearDown()
+        super().tearDown()
         del self.settings
 
 
@@ -138,7 +141,7 @@ class SettingsTest(SettingsTestCase):
 
 class SettingsIOTest(SettingsTestCase):
     def setUp(self):
-        super(SettingsIOTest, self).setUp()
+        super().setUp()
         self.fakeFile = io.StringIO()
 
     def testSave(self):
@@ -196,7 +199,7 @@ class SettingsIOTest(SettingsTestCase):
 
 class SettingsObservableTest(SettingsTestCase):
     def setUp(self):
-        super(SettingsObservableTest, self).setUp()
+        super().setUp()
         self.events = []
         pub.subscribe(self.onEvent, "settings.view.toolbar")
 
@@ -327,6 +330,7 @@ class MinimumSettingsTest(SettingsTestCase):
 class ApplicationArgumentsTest(test.TestCase):
     def setUp(self):
         # super(ApplicationArgumentsTest, self).setUp()
+        super().setUp()
         self.parser = config.ApplicationArgumentParser().parser
 
     def parse(self, *args):

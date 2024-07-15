@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import datetime, math
+import datetime
+import math
 
 
 class TimeDelta(datetime.timedelta):
@@ -24,7 +25,7 @@ class TimeDelta(datetime.timedelta):
     millisecondsPerDay = 24 * 60 * 60 * millisecondsPerSecond
     millisecondsPerMicroSecond = 1 / 1000.0
 
-    def hoursMinutesSeconds(self):
+    def hoursMinutesSeconds(self) -> tuple[int, int, int]:
         """Return a tuple (hours, minutes, seconds). Note that the caller
         is responsible for checking whether the TimeDelta instance is
         positive or negative."""
@@ -34,8 +35,8 @@ class TimeDelta(datetime.timedelta):
         else:
             seconds = self.seconds
             days = self.days
-        hours, seconds = seconds / 3600, seconds % 3600
-        minutes, seconds = seconds / 60, seconds % 60
+        hours, seconds = seconds // 3600, seconds % 3600
+        minutes, seconds = seconds // 60, seconds % 60
         hours += days * 24
         return hours, minutes, seconds
 
@@ -45,17 +46,17 @@ class TimeDelta(datetime.timedelta):
     def hours(self):
         """Timedelta expressed in number of hours."""
         hours, minutes, seconds = self.hoursMinutesSeconds()
-        return self.sign() * (hours + (minutes / 60.0) + (seconds / 3600.0))
+        return self.sign() * int(hours + (minutes / 60.0) + (seconds / 3600.0))
 
     def minutes(self):
         """Timedelta expressed in number of minutes."""
         hours, minutes, seconds = self.hoursMinutesSeconds()
-        return self.sign() * (hours * 60 + minutes + (seconds / 60.0))
+        return self.sign() * int(hours * 60 + minutes + (seconds / 60.0))
 
     def totalSeconds(self):
         """Timedelta expressed in number of seconds."""
         hours, minutes, seconds = self.hoursMinutesSeconds()
-        return self.sign() * (hours * 3600 + minutes * 60 + seconds)
+        return self.sign() * int(hours * 3600 + minutes * 60 + seconds)
 
     def milliseconds(self):
         """Timedelta expressed in number of milliseconds."""
@@ -85,13 +86,13 @@ class TimeDelta(datetime.timedelta):
     def __add__(self, other):
         """Make sure we return a TimeDelta instance and not a
         datetime.timedelta instance"""
-        timeDelta = super(TimeDelta, self).__add__(other)
+        timeDelta = super().__add__(other)
         return self.__class__(
             timeDelta.days, timeDelta.seconds, timeDelta.microseconds
         )
 
     def __sub__(self, other):
-        timeDelta = super(TimeDelta, self).__sub__(other)
+        timeDelta = super().__sub__(other)
         return self.__class__(
             timeDelta.days, timeDelta.seconds, timeDelta.microseconds
         )

@@ -27,6 +27,7 @@ from taskcoachlib.domain import base
 from taskcoachlib.domain.note.noteowner import NoteOwner
 from pubsub import pub
 from taskcoachlib.tools import openfile
+from functools import total_ordering
 
 
 def getRelativePath(path, basePath=os.getcwd()):
@@ -67,6 +68,7 @@ def getRelativePath(path, basePath=os.getcwd()):
     return os.path.join(*path1).replace("\\", "/")  # pylint: disable=W0142
 
 
+@total_ordering
 class Attachment(base.Object, NoteOwner):
     """Abstract base class for attachments."""
 
@@ -75,7 +77,7 @@ class Attachment(base.Object, NoteOwner):
     def __init__(self, location, *args, **kwargs):
         if "subject" not in kwargs:
             kwargs["subject"] = location
-        super(Attachment, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__location = location
 
     def data(self):
@@ -108,15 +110,30 @@ class Attachment(base.Object, NoteOwner):
     def open(self, workingDir=None):
         raise NotImplementedError
 
+    def __hash__(self) -> int:
+        return hash(self.location())
+
     def __cmp__(self, other):
         try:
             return cmp(self.location(), other.location())
         except AttributeError:
             return 1
 
+    def __eq__(self, other):
+        try:
+            return self.location() == other.location()
+        except AttributeError:
+            return False
+
+    def __lt__(self, other):
+        try:
+            return self.location() < other.location()
+        except AttributeError:
+            return False
+
     def __getstate__(self):
         try:
-            state = super(Attachment, self).__getstate__()
+            state = super().__getstate__()
         except AttributeError:
             state = dict()
         state.update(dict(location=self.location()))
@@ -125,7 +142,7 @@ class Attachment(base.Object, NoteOwner):
     @patterns.eventSource
     def __setstate__(self, state, event=None):
         try:
-            super(Attachment, self).__setstate__(state, event=event)
+            super().__setstate__(state, event=event)
         except AttributeError:
             pass
         self.setLocation(state["location"])
@@ -173,7 +190,7 @@ class URIAttachment(Attachment):
                     kwargs["subject"] = subject
             else:
                 kwargs["subject"] = _("Mail.app message")
-        super(URIAttachment, self).__init__(location, *args, **kwargs)
+        super().__init__(location, *args, **kwargs)
 
     def open(self, workingDir=None):
         return openfile.openFile(self.location())
@@ -189,7 +206,7 @@ class MailAttachment(Attachment):
         kwargs.setdefault("subject", subject)
         kwargs.setdefault("description", content)
 
-        super(MailAttachment, self).__init__(location, *args, **kwargs)
+        super().__init__(location, *args, **kwargs)
 
     def open(self, workingDir=None):
         return mailer.openMail(self.location())

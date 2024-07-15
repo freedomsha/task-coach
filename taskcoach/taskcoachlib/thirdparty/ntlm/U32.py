@@ -15,6 +15,7 @@
 # License along with this library.  If not, see <http://www.gnu.org/licenses/> or <http://www.gnu.org/licenses/lgpl.txt>.
 
 import six
+from functools import total_ordering
 
 C = 0x1000000000
 
@@ -23,6 +24,7 @@ def norm(n):
     return n & 0xFFFFFFFF
 
 
+@total_ordering
 class U32:
     v = 0
 
@@ -134,13 +136,13 @@ class U32:
             return 0
 
     def __lt__(self, other):
-        return self.v < other.v
+        return norm(self.v) < norm(other.v)
 
     def __gt__(self, other):
         return self.v > other.v
 
     def __eq__(self, other):
-        return self.v == other.v
+        return norm(self.v) == norm(other.v)
 
     def __le__(self, other):
         return self.v <= other.v

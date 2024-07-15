@@ -30,12 +30,16 @@ EVT_PERIODWIDTH_CHANGED = wx.PyEventBinder(wxEVT_COMMAND_PERIODWIDTH_CHANGED)
 # class wxSchedulerSizer(wx.PySizer): Deprecated
 class wxSchedulerSizer(wx.Sizer):
     def __init__(self, minSizeCallback):
-        super(wxSchedulerSizer, self).__init__()
+        super().__init__()
 
         self._minSizeCallback = minSizeCallback
 
     def CalcMin(self):
         return self._minSizeCallback()
+
+    def RepositionChildren(self, minSize):
+        # FIXME: How to implement it ?
+        pass
 
 
 # Main class
@@ -43,7 +47,7 @@ class wxSchedulerPaint(object):
 
     def __init__(self, *args, **kwds):
         # DID: wxPyDeprecationWarning: Using deprecated class. Use Sizer instead.
-        super(wxSchedulerPaint, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
 
         self._resizable = False
         self._style = wxSCHEDULER_VERTICAL
@@ -156,10 +160,10 @@ class wxSchedulerPaint(object):
         if self._scheduleDraggingState in [0, 3, 4]:
             for sched, pointMin, pointMax in self._schedulesCoords:
                 if self._style == wxSCHEDULER_VERTICAL:
-                    if point.x > pointMin.x and point.x < pointMax.x:
+                    if pointMin.x < point.x < pointMax.x:
                         if abs(point.y - pointMin.y) < 4:
                             self._scheduleDraggingState = 3
-                            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+                            self.SetCursor(wx.Cursor(wx.CURSOR_SIZENS))
                             self._scheduleDragged = (
                                 pointMin,
                                 pointMax,
@@ -168,7 +172,7 @@ class wxSchedulerPaint(object):
                             return
                         if abs(point.y - pointMax.y) < 4:
                             self._scheduleDraggingState = 4
-                            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+                            self.SetCursor(wx.Cursor(wx.CURSOR_SIZENS))
                             self._scheduleDragged = (
                                 pointMin,
                                 pointMax,
@@ -179,7 +183,7 @@ class wxSchedulerPaint(object):
                     if point.y > pointMin.y and point.y < pointMax.y:
                         if abs(point.x - pointMin.x) < 4:
                             self._scheduleDraggingState = 3
-                            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+                            self.SetCursor(wx.Cursor(wx.CURSOR_SIZEWE))
                             self._scheduleDragged = (
                                 pointMin,
                                 pointMax,
@@ -188,7 +192,7 @@ class wxSchedulerPaint(object):
                             return
                         if abs(point.x - pointMax.x) < 4:
                             self._scheduleDraggingState = 4
-                            self.SetCursor(wx.StockCursor(wx.CURSOR_SIZEWE))
+                            self.SetCursor(wx.Cursor(wx.CURSOR_SIZEWE))
                             self._scheduleDragged = (
                                 pointMin,
                                 pointMax,
@@ -759,9 +763,9 @@ class wxSchedulerPaint(object):
                 w, h = self._paintDailyHeaders(
                     drawer,
                     theDay,
-                    x + 1.0 * width / self._periodCount * idx,
+                    int(x + 1.0 * width // self._periodCount * idx),
                     y,
-                    1.0 * width / self._periodCount,
+                    int(1.0 * width // self._periodCount),
                     height,
                 )
                 maxDY = max(maxDY, h)
@@ -774,9 +778,9 @@ class wxSchedulerPaint(object):
                 self._paintDailyHeaders(
                     drawer,
                     theDay,
-                    x + 1.0 * width / self._periodCount * idx,
+                    int(x + 1.0 * width // self._periodCount * idx),
                     y,
-                    1.0 * width / self._periodCount,
+                    int(1.0 * width // self._periodCount),
                     height,
                     includeText=False,
                 )
@@ -793,9 +797,9 @@ class wxSchedulerPaint(object):
                 maxDY = 0
                 for idx in range(self._periodCount):
                     _, h = drawer.DrawHours(
-                        x + 1.0 * width / self._periodCount * idx,
+                        int(x + 1.0 * width // self._periodCount * idx),
                         y,
-                        1.0 * width / self._periodCount,
+                        int(1.0 * width // self._periodCount),
                         height,
                         self._style,
                     )
@@ -827,9 +831,9 @@ class wxSchedulerPaint(object):
                 dw, dh = self._paintDay(
                     drawer,
                     theDay,
-                    x + 1.0 * width / self._periodCount * idx,
+                    int(x + 1.0 * width // self._periodCount * idx),
                     y,
-                    1.0 * width / self._periodCount,
+                    int(1.0 * width // self._periodCount),
                     height,
                 )
                 w += dw
@@ -859,14 +863,14 @@ class wxSchedulerPaint(object):
                 color = None
             w, h = drawer.DrawDayHeader(
                 theDay,
-                x + weekday * 1.0 * width / 7,
+                int(x + weekday * 1.0 * width // 7),
                 y,
-                1.0 * width / 7,
+                int(1.0 * width // 7),
                 height,
                 highlight=color,
             )
             self._headerBounds.append(
-                (int(x + (weekday + 1) * 1.0 * width / 7), y, height)
+                (int(x + (weekday + 1) * 1.0 * width // 7), y, height)
             )
             maxDY = max(maxDY, h)
 
@@ -898,9 +902,9 @@ class wxSchedulerPaint(object):
                     self._paintWeeklyHeaders(
                         drawer,
                         theDay,
-                        x + 1.0 * width / self._periodCount * idx,
+                        int(x + 1.0 * width // self._periodCount * idx),
                         y,
-                        1.0 * width / self._periodCount,
+                        int(1.0 * width // self._periodCount),
                         height,
                     ),
                 )
@@ -931,14 +935,16 @@ class wxSchedulerPaint(object):
                     self._paintDay(
                         drawer,
                         theDay,
-                        x
-                        + (weekday + 7 * idx)
-                        * 1.0
-                        * width
-                        / 7
-                        / self._periodCount,
+                        int(
+                            x
+                            + (weekday + 7 * idx)
+                            * 1.0
+                            * width
+                            // 7
+                            / self._periodCount
+                        ),
                         y,
-                        1.0 * width / 7 / self._periodCount,
+                        int(1.0 * width // 7 // self._periodCount),
                         height,
                     )
                 day = day.Add(wx.DateSpan(weeks=1))
@@ -990,14 +996,18 @@ class wxSchedulerPaint(object):
                     color = None
                 w, h = drawer.DrawSimpleDayHeader(
                     theDay,
-                    x + 1.0 * idx * width / daysCount,
+                    int(x + 1.0 * idx * width // daysCount),
                     y + h,
-                    1.0 * width / daysCount,
+                    int(1.0 * width // daysCount),
                     height,
                     highlight=color,
                 )
                 self._headerBounds.append(
-                    (x + 1.0 * (idx + 1) * width / daysCount, y + h, height)
+                    (
+                        int(x + 1.0 * (idx + 1) * width // daysCount),
+                        y + h,
+                        height,
+                    )
                 )
                 maxDY = max(maxDY, h)
 
@@ -1023,7 +1033,9 @@ class wxSchedulerPaint(object):
 
             for w, monthWeek in enumerate(month):
                 for d, monthDay in enumerate(monthWeek):
-                    cellW, cellH = 1.0 * width / 7, 1.0 * height / len(month)
+                    cellW, cellH = int(1.0 * width // 7), int(
+                        1.0 * height // len(month)
+                    )
 
                     if monthDay == 0:
                         theDay = None
@@ -1370,9 +1382,14 @@ class wxSchedulerPaint(object):
 
     def Refresh(self):
         self.DrawBuffer()
-        super(wxSchedulerPaint, self).Refresh()
+        super().Refresh()
         if self._headerPanel is not None:
             self._headerPanel.Refresh()
+
+    def SetCursor(self, param):
+        pass
+
+    # Headers stuff
 
     def SetHeaderPanel(self, panel):
         """
@@ -1442,9 +1459,9 @@ class wxSchedulerPaint(object):
                 _, h = self._paintDailyHeaders(
                     drawer,
                     theDay,
-                    x + 1.0 * width / self._periodCount * idx,
+                    int(x + 1.0 * width / self._periodCount * idx),
                     y,
-                    1.0 * width / self._periodCount,
+                    int(1.0 * width / self._periodCount),
                     36,
                 )
                 maxDY = max(maxDY, h)
@@ -1460,9 +1477,9 @@ class wxSchedulerPaint(object):
                 h = self._paintWeeklyHeaders(
                     drawer,
                     theDay,
-                    x + 1.0 * width / self._periodCount * idx,
+                    int(x + 1.0 * width / self._periodCount * idx),
                     y,
-                    1.0 * width / self._periodCount,
+                    int(1.0 * width / self._periodCount),
                     36,
                 )
                 maxDY = max(maxDY, h)
@@ -1489,7 +1506,7 @@ class wxSchedulerPaint(object):
                     if self._headerCursorState == 0:
                         self._headerCursorState = 1
                         self._headerPanel.SetCursor(
-                            wx.StockCursor(wx.CURSOR_SIZEWE)
+                            wx.Cursor(wx.CURSOR_SIZEWE)
                         )
                     break
             else:

@@ -61,9 +61,7 @@ class _CalendarContent(tooltip.ToolTipMixin, wxScheduler):
             self.OnDropURL, self.OnDropFiles, self.OnDropMail
         )
 
-        super(_CalendarContent, self).__init__(
-            parent, wx.ID_ANY, *args, **kwargs
-        )
+        super().__init__(parent, wx.ID_ANY, *args, **kwargs)
 
         self.SetDropTarget(self.dropTarget)
 
@@ -87,10 +85,10 @@ class _CalendarContent(tooltip.ToolTipMixin, wxScheduler):
         self.taskList = taskList
         self.RefreshAllItems(0)
 
-        EVT_SCHEDULE_ACTIVATED(self, self.OnActivation)
-        EVT_SCHEDULE_RIGHT_CLICK(self, self.OnPopup)
-        EVT_SCHEDULE_DCLICK(self, self.OnEdit)
-        EVT_PERIODWIDTH_CHANGED(self, self.OnChangeConfig)
+        self.Bind(EVT_SCHEDULE_ACTIVATED, self.OnActivation)
+        self.Bind(EVT_SCHEDULE_RIGHT_CLICK, self.OnPopup)
+        self.Bind(EVT_SCHEDULE_DCLICK, self.OnEdit)
+        self.Bind(EVT_PERIODWIDTH_CHANGED, self.OnChangeConfig)
 
         wxTimeFormat.SetFormatFunction(self.__formatTime)
 
@@ -354,7 +352,7 @@ class Calendar(wx.Panel):
     ):
         self.getItemTooltipData = parent.getItemTooltipData
 
-        super(Calendar, self).__init__(parent)
+        super().__init__(parent)
 
         self._headers = wx.Panel(self)
         self._content = _CalendarContent(
@@ -422,7 +420,7 @@ class Calendar(wx.Panel):
 
 class TaskSchedule(wxSchedule):
     def __init__(self, task, iconProvider):
-        super(TaskSchedule, self).__init__()
+        super().__init__()
 
         self.__selected = False
 
@@ -535,8 +533,8 @@ class TaskSchedule(wxSchedule):
             if self.task.percentageComplete(recursive=True):
                 # If 0, just let the default None value so the progress bar isn't drawn
                 # at all
-                self.complete = (
-                    1.0 * self.task.percentageComplete(recursive=True) / 100
+                self.complete = int(
+                    1.0 * self.task.percentageComplete(recursive=True) // 100
                 )
             else:
                 self.complete = None

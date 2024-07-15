@@ -38,7 +38,7 @@ class Command(object):
             *args: Variable length argument list.
             **kwargs: Arbitrary keyword arguments.
         """
-        super(Command, self).__init__()  # object.__init__ takes no arguments
+        super().__init__()  # object.__init__ takes no arguments
 
     def do(self):
         """

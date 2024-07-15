@@ -37,7 +37,7 @@ class Composite(object):
             children (list, optional): List of child composites.
             parent (Composite, optional): Parent composite.
         """
-        super(Composite, self).__init__()
+        super().__init__()
         self.__parent = parent if parent is None else weakref.ref(parent)
         self.__children = children or []
         for child in self.__children:
@@ -72,7 +72,7 @@ class Composite(object):
             dict: The state of the composite for copying.
         """
         try:
-            state = super(Composite, self).__getcopystate__()
+            state = super().__getcopystate__()
         except AttributeError:
             state = dict()
         state.update(
@@ -130,6 +130,9 @@ class Composite(object):
         Returns:
             list: The list of children.
         """
+        # Warning: this must satisfy the same condition as
+        # allItemsSorted() below.
+
         if recursive:
             result = self.__children[:]
             for child in self.__children:
@@ -217,9 +220,10 @@ class ObservableComposite(Composite):
             event (Event, optional): The event to notify.
         """
         oldChildren = set(self.children())
-        super(ObservableComposite, self).__setstate__(state)
+        super().__setstate__(state)
         newChildren = set(self.children())
         childrenRemoved = oldChildren - newChildren
+        # pylint: disable=W0142
         if childrenRemoved:
             self.removeChildEvent(event, *childrenRemoved)
         childrenAdded = newChildren - oldChildren
@@ -235,7 +239,7 @@ class ObservableComposite(Composite):
             child (Composite): The child composite to add.
             event (Event, optional): The event to notify.
         """
-        super(ObservableComposite, self).addChild(child)
+        super().addChild(child)
         self.addChildEvent(event, child)
 
     def addChildEvent(self, event, *children):
@@ -267,7 +271,7 @@ class ObservableComposite(Composite):
             child (Composite): The child composite to remove.
             event (Event, optional): The event to notify.
         """
-        super(ObservableComposite, self).removeChild(child)
+        super().removeChild(child)
         self.removeChildEvent(event, child)
 
     def removeChildEvent(self, event, *children):
@@ -332,7 +336,7 @@ class CompositeCollection(object):
         Args:
             initList (list, optional): Initial list of composites.
         """
-        super(CompositeCollection, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.extend(initList or [])
 
     def append(self, composite, event=None):
@@ -357,9 +361,7 @@ class CompositeCollection(object):
         if not composites:
             return
         compositesAndAllChildren = self._compositesAndAllChildren(composites)
-        super(CompositeCollection, self).extend(
-            compositesAndAllChildren, event=event
-        )
+        super().extend(compositesAndAllChildren, event=event)
         self._addCompositesToParent(composites, event)
 
     def _compositesAndAllChildren(self, composites):
@@ -420,9 +422,7 @@ class CompositeCollection(object):
         if not composites:
             return
         compositesAndAllChildren = self._compositesAndAllChildren(composites)
-        super(CompositeCollection, self).removeItems(
-            compositesAndAllChildren, event=event
-        )
+        super().removeItems(compositesAndAllChildren, event=event)
         self._removeCompositesFromParent(composites, event)
 
     def _removeCompositesFromParent(self, composites, event):
@@ -454,6 +454,10 @@ class CompositeCollection(object):
     def allItemsSorted(self):
         """
         Get all items sorted by hierarchy.
+
+        Returns a list of items and their children, so that if B is
+        a child, direct or not, of A, then A will come first in the
+        list.
 
         Returns:
             list: The list of all items sorted by hierarchy.

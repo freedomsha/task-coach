@@ -51,19 +51,19 @@ Functions:
         Stops the application and performs necessary cleanup.
 
 Attributes:
-    _instance: Singleton instance of the Application class.
+    :_instance: Singleton instance of the Application class.
 
-    _options: Command-line options parsed from the arguments.
+    :_options: Command-line options parsed from the arguments.
 
-    _args: Additional arguments passed to the application.
+    :_args: Additional arguments passed to the application.
 
-    iocontroller: Manages input/output operations.
+    :iocontroller: Manages input/output operations.
 
-    taskfiles: List of task files managed by the application.
+    :taskfiles: List of task files managed by the application.
 
-    settings: Application settings.
+    :settings: Application settings.
 
-    mainwindow: The main window of the Task Coach application.
+    :mainwindow: The main window of the Task Coach application.
 
 Usage:
     This module is used to initialize and run the Task Coach application.
@@ -398,6 +398,7 @@ class Application(object, metaclass=patterns.Singleton):
         from taskcoachlib import config
 
         ini_file = self._options.inifile if self._options else None
+        # est-ce qu'il existe un fichier inifile ? si non load_settings is False !
         # pylint: disable=W0201
         self.settings = config.Settings(load_settings, ini_file)
 

@@ -20,7 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib import meta, persistence, patterns, operating_system
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty import lockfile
+
+# from taskcoachlib.thirdparty import lockfile
 from taskcoachlib.widgets import GetPassword
 from taskcoachlib.workarounds import ExceptionAsUnicode
 from taskcoachlib.gui.dialog import BackupManagerDialog
@@ -30,6 +31,7 @@ import gc
 import sys
 import codecs
 import traceback
+import lockfile
 
 try:
     from taskcoachlib.syncml import sync
@@ -44,7 +46,7 @@ class IOController(object):
     to let the user specify what file to load/save/etc."""
 
     def __init__(self, taskFile, messageCallback, settings, splash=None):
-        super(IOController, self).__init__()
+        super().__init__()
         self.__taskFile = taskFile
         self.__messageCallback = messageCallback
         self.__settings = settings
@@ -162,12 +164,13 @@ class IOController(object):
             None
         """
         if commandLineArgs:
-            if isinstance(commandLineArgs, str):
-                filename = commandLineArgs[0]
-            else:
-                filename = commandLineArgs[0].decode(
-                    sys.getfilesystemencoding()
-                )
+            # if isinstance(commandLineArgs, str):
+            #    filename = commandLineArgs[0]
+            # else:
+            #    filename = commandLineArgs[0].decode(
+            #        sys.getfilesystemencoding()
+            #    )
+            filename = commandLineArgs[0].decode(sys.getfilesystemencoding())
         else:
             filename = self.__settings.get("file", "lastfile")
         if filename:

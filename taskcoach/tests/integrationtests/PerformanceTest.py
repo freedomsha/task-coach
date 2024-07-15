@@ -16,8 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import time, os
-import test, mock
+import mock
+import os
+import time
+from .. import test
 from taskcoachlib import persistence, config
 from taskcoachlib.domain import task, category, note
 from taskcoachlib.syncml.config import createDefaultSyncConfig
@@ -47,7 +49,7 @@ class PerformanceTest(test.TestCase):
 
     def tearDown(self):
         os.remove(self.taskfilename)
-        super(PerformanceTest, self).tearDown()
+        super().tearDown()
 
     def testRead(self):
         mockApp = mock.App()

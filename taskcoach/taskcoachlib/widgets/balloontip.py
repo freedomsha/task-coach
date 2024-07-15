@@ -38,7 +38,7 @@ class BalloonTip(wx.Frame):
     ):
         """Baloon tip."""
 
-        super(BalloonTip, self).__init__(
+        super().__init__(
             parent,
             style=wx.NO_BORDER
             | wx.FRAME_FLOAT_ON_PARENT
@@ -194,7 +194,7 @@ class BalloonTip(wx.Frame):
         self.Layout()
 
 
-class BalloonTipManager:
+class BalloonTipManager(object):
     """
     Use this as a mixin in the top-level window that hosts balloon tip targets, to
     avoid them appearing all at once.
@@ -205,7 +205,7 @@ class BalloonTipManager:
         self.__displaying = None
         self.__kwargs = dict()
         self.__shutdown = False
-        super(BalloonTipManager, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.Bind(wx.EVT_CLOSE, self.__OnClose)
 
@@ -264,10 +264,11 @@ if __name__ == "__main__":
 
     class Frame(wx.Frame):
         def __init__(self):
-            super(Frame, self).__init__(None, wx.ID_ANY, "Test")
+            super().__init__(None, wx.ID_ANY, "Test")
 
             self.btn = wx.Button(self, wx.ID_ANY, "Show balloon")
-            wx.EVT_BUTTON(self.btn, wx.ID_ANY, self.OnClick)
+            # wx.EVT_BUTTON(self.btn, wx.ID_ANY, self.OnClick)
+            self.btn.Bind(wx.EVT_BUTTON, self.OnClick)
             s = wx.BoxSizer()
             s.Add(self.btn, 1, wx.EXPAND)
             self.SetSizer(s)

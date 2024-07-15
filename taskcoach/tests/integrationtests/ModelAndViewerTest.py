@@ -16,13 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, mock
+import mock
+from .. import test
 from taskcoachlib.domain import task, category
 
 
 class TaskViewerAndCategoryFilterIntegrationTestFixture(test.wxTestCase):
     def setUp(self):
-        super(TaskViewerAndCategoryFilterIntegrationTestFixture, self).setUp()
+        super().setUp()
         self.app = mock.App()
         parent = task.Task("parent")
         child = task.Task("child")

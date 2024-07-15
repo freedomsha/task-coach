@@ -67,7 +67,8 @@ class List(list):
         for item in items:
             list.remove(
                 self, item
-            )  # No super() to prevent overridden remove method
+            )  # No super() to prevent overridden remove method from being invoked
+            list.remove(self, item)
 
 
 class Set(set):
@@ -478,7 +479,7 @@ class Publisher(object, metaclass=singleton.Singleton):
         """
         Initialize the Publisher.
         """
-        super(Publisher, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.clear()
 
     def clear(self):
@@ -571,7 +572,8 @@ class Publisher(object, metaclass=singleton.Singleton):
         observers = dict()  # {observer: set([(type, source), ...])}
         types = event.types()
         # Include observers not registered for a specific event source:
-        sources = event.sources() | {None}
+        # sources = event.sources() | {None}
+        sources = event.sources() | set([None])
         eventTypesAndSources = [
             (type, source) for source in sources for type in types
         ]
@@ -613,8 +615,8 @@ class Observer(object):
         """
         Initialize the Observer.
         """
-        self.__observers = set()
         super().__init__(*args, **kwargs)
+        self.__observers = set()
 
     def registerObserver(self, observer, *args, **kwargs):
         """
@@ -668,7 +670,7 @@ class Decorator(Observer):
             observable (object): The observable instance to wrap.
         """
         self.__observable = observable
-        super(Decorator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def observable(self, recursive=False):
         """
@@ -752,7 +754,7 @@ class ObservableSet(ObservableCollection, Set):
         if isinstance(other, self.__class__):
             result = self is other
         else:
-            result = list(self) == other
+            result = set(self) == set(other)
         return result
 
     # FIXME: Only for satisfying registerObserver()
@@ -800,7 +802,7 @@ class ObservableSet(ObservableCollection, Set):
             item: The item to remove.
             event: Optional event associated with the operation.
         """
-        super(ObservableSet, self).remove(item)
+        super().remove(item)
         event.addSource(self, item, type=self.removeItemEventType())
 
     @eventSource
@@ -828,7 +830,7 @@ class ObservableSet(ObservableCollection, Set):
         if not self:
             return
         items = tuple(self)
-        super(ObservableSet, self).clear()
+        super().clear()
         event.addSource(self, *items, **dict(type=self.removeItemEventType()))
 
 
@@ -845,7 +847,7 @@ class ObservableList(ObservableCollection, List):
             item: The item to append.
             event: Optional event associated with the operation.
         """
-        super(ObservableList, self).append(item)
+        super().append(item)
         event.addSource(self, item, type=self.addItemEventType())
 
     @eventSource
@@ -859,7 +861,7 @@ class ObservableList(ObservableCollection, List):
         """
         if not items:
             return
-        super(ObservableList, self).extend(items)
+        super().extend(items)
         event.addSource(self, *items, **dict(type=self.addItemEventType()))
 
     @eventSource
@@ -871,7 +873,7 @@ class ObservableList(ObservableCollection, List):
             item: The item to remove.
             event: Optional event associated with the operation.
         """
-        super(ObservableList, self).remove(item)
+        super().remove(item)
         event.addSource(self, item, type=self.removeItemEventType())
 
     @eventSource
@@ -885,7 +887,7 @@ class ObservableList(ObservableCollection, List):
         """
         if not items:
             return
-        super(ObservableList, self).removeItems(items)
+        super().removeItems(items)
         event.addSource(self, *items, **dict(type=self.removeItemEventType()))
 
     @eventSource
@@ -911,9 +913,7 @@ class CollectionDecorator(Decorator, ObservableCollection):
     original collection or a decorated version."""
 
     def __init__(self, observedCollection, *args, **kwargs):
-        super(CollectionDecorator, self).__init__(
-            observedCollection, *args, **kwargs
-        )
+        super().__init__(observedCollection, *args, **kwargs)
         self.__freezeCount = 0
         observable = self.observable()
         self.registerObserver(
@@ -931,7 +931,7 @@ class CollectionDecorator(Decorator, ObservableCollection):
     def __repr__(self):  # pragma: no cover
         return "%s(%s)" % (
             self.__class__,
-            super(CollectionDecorator, self).__repr__(),
+            super().__repr__(),
         )
 
     def freeze(self):
@@ -951,7 +951,7 @@ class CollectionDecorator(Decorator, ObservableCollection):
         self.removeObserver(self.onAddItem)
         self.removeObserver(self.onRemoveItem)
         self.observable().detach()
-        super(CollectionDecorator, self).detach()
+        super().detach()
 
     def onAddItem(self, event):
         """The default behaviour is to simply add the items that are
@@ -968,12 +968,12 @@ class CollectionDecorator(Decorator, ObservableCollection):
     def extendSelf(self, items, event=None):
         """Provide a method to extend this collection without delegating to
         the observed collection."""
-        return super(CollectionDecorator, self).extend(items, event=event)
+        return super().extend(items, event=event)
 
     def removeItemsFromSelf(self, items, event=None):
         """Provide a method to remove items from this collection without
         delegating to the observed collection."""
-        return super(CollectionDecorator, self).removeItems(items, event=event)
+        return super().removeItems(items, event=event)
 
     # Delegate changes to the observed collection
 

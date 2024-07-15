@@ -16,8 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import mock
+import os
+from .. import test
 import weakref
-import test, mock, os
 
 
 class LeakTest(test.TestCase):
@@ -30,7 +32,7 @@ class LeakTest(test.TestCase):
         os.remove("Test.tsk")
         self.mockApp.quitApplication()
         mock.App.deleteInstance()
-        super(LeakTest, self).tearDown()
+        super().tearDown()
 
     def testClear(self):
         """taskRef = weakref.ref(self.mockApp.task)

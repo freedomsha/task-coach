@@ -19,7 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ These tests actually assume a fresh configuration (new .ini file, 
 nothing changed). """  # pylint: disable=W0105
 
-import sys, os, time, re, shutil, unittest
+import os
+import re
+import shutil
+import sys
+import time
+import unittest
 import win32process, win32event, win32gui, win32con
 
 sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "sendinput"))

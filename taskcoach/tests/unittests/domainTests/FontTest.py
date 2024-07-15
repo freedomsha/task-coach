@@ -16,13 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, wx
+from ... import test
+import wx
 from taskcoachlib.domain.attribute import font
 
 
 class MixFontsTest(test.TestCase):
     def setUp(self):
-        super(MixFontsTest, self).setUp()
+        super().setUp()
         self.mixFonts = font.FontMixer.mix
         self.font = wx.Font(
             10,

@@ -55,7 +55,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
         self.__drawNow = True
         self.__adapter = parent
         self.getItemTooltipData = parent.getItemTooltipData
-        super(HierarchicalCalendar, self).__init__(parent, **kwargs)
+        super().__init__(parent, **kwargs)
         self.SetCalendarFormat(
             self.__calFormat
         )  # This calls _Invalidate() so no need to call SetHeaderFormat
@@ -66,10 +66,14 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
         )
         self.SetDropTarget(self.__dropTarget)
 
-        EVT_EVENT_SELECTION_CHANGED(self, self._OnSelectionChanged)
-        EVT_EVENT_DATES_CHANGED(self, self._OnDatesChanged)
-        wx.EVT_LEFT_DCLICK(self, self._OnLeftDClick)
-        wx.EVT_RIGHT_UP(self, self._OnRightUp)
+        # EVT_EVENT_SELECTION_CHANGED(self, self._OnSelectionChanged)
+        self.Bind(EVT_EVENT_SELECTION_CHANGED, self._OnSelectionChanged)
+        # EVT_EVENT_DATES_CHANGED(self, self._OnDatesChanged)
+        self.Bind(EVT_EVENT_DATES_CHANGED, self._OnDatesChanged)
+        # wx.EVT_LEFT_DCLICK(self, self._OnLeftDClick)
+        self.Bind(wx.EVT_LEFT_DCLICK, self._OnLeftDClick)
+        # wx.EVT_RIGHT_UP(self, self._OnRightUp)
+        self.Bind(wx.EVT_RIGHT_UP, self._OnRightUp)
 
     def _OnSelectionChanged(self, event):
         self.__onSelect()
@@ -176,10 +180,10 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
 
     def SetTodayColor(self, xxx_todo_changeme):
         (r, g, b) = xxx_todo_changeme
-        super(HierarchicalCalendar, self).SetTodayColor(wx.Colour(r, g, b))
+        super().SetTodayColor(wx.Colour(r, g, b))
 
     def TodayColor(self):
-        color = super(HierarchicalCalendar, self).TodayColor()
+        color = super().TodayColor()
         return color.Red(), color.Green(), color.Blue()
 
     # Navigation
@@ -236,7 +240,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
 
     def _DrawNow(self, gc, h):
         if self.__drawNow:
-            super(HierarchicalCalendar, self)._DrawNow(gc, h)
+            super()._DrawNow(gc, h)
 
     def GetRootEvents(self):
         return self.__adapter.getRootItems()
@@ -266,7 +270,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
     def GetProgress(self, task):
         p = task.percentageComplete(recursive=True)
         if p:
-            return 1.0 * p / 100
+            return int(1.0 * p // 100)
         return None
 
     def GetIcons(self, task):
@@ -290,7 +294,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
         self.__Drop(x, y, filenames, self.__onDropFilesCallback)
 
     def OnDropMail(self, x, y, mail):
-        self.__Drop(x, y, filenames, self.__onDropMailCallback)
+        self.__Drop(x, y, mail, self.__onDropMailCallback)
 
     def __Drop(self, x, y, objects, callback):
         if callback is not None:

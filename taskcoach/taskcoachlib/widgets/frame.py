@@ -23,9 +23,7 @@ from taskcoachlib import operating_system
 
 class AuiManagedFrameWithDynamicCenterPane(wx.Frame):
     def __init__(self, *args, **kwargs):
-        super(AuiManagedFrameWithDynamicCenterPane, self).__init__(
-            *args, **kwargs
-        )
+        super().__init__(*args, **kwargs)
         agwStyle = aui.AUI_MGR_DEFAULT | aui.AUI_MGR_ALLOW_ACTIVE_PANE
         if not operating_system.isWindows():
             # With this style on Windows, you can't dock back floating frames
@@ -56,8 +54,10 @@ class AuiManagedFrameWithDynamicCenterPane(wx.Frame):
                 dockedPanes[0].Center()
 
     def addPane(self, window, caption, name, floating=False):
-        x, y = window.GetPosition()
-        x, y = window.ClientToScreen(x, y)
+        x, y = 0, 0
+        if self.GetTopLevelParent().IsShown():
+            x, y = window.GetPosition()
+            x, y = window.ClientToScreen(x, y)
         paneInfo = aui.AuiPaneInfo()
         paneInfo = (
             paneInfo.CloseButton(True)

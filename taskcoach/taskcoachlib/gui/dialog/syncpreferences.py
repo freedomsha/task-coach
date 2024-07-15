@@ -26,7 +26,7 @@ from taskcoachlib.i18n import _
 
 class SyncMLBasePage(SettingsPageBase):
     def __init__(self, iocontroller=None, *args, **kwargs):
-        super(SyncMLBasePage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.iocontroller = iocontroller
         self.config = iocontroller.syncMLConfig()
@@ -89,14 +89,14 @@ class SyncMLBasePage(SettingsPageBase):
                     break
 
     def ok(self):
-        super(SyncMLBasePage, self).ok()
+        super().ok()
 
         self.iocontroller.setSyncMLConfig(self.config)
 
 
 class SyncMLAccessPage(SyncMLBasePage):
     def __init__(self, *args, **kwargs):
-        super(SyncMLAccessPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         choice = self.addChoiceSetting(
             None,
@@ -109,7 +109,8 @@ class SyncMLAccessPage(SyncMLBasePage):
                 ("2", _("Horde-based")),
             ],
         )[0]
-        wx.EVT_CHOICE(choice, wx.ID_ANY, self.OnPresetChanged)
+        # wx.EVT_CHOICE(choice, wx.ID_ANY, self.OnPresetChanged)
+        choice.Bind(wx.EVT_CHOICE, self.OnPresetChanged)
 
         self.addTextSetting("access", "syncUrl", _("SyncML server URL"))
         self.addTextSetting("access", "username", _("User name/ID"))
@@ -117,7 +118,8 @@ class SyncMLAccessPage(SyncMLBasePage):
         checkBox = self.addBooleanSetting(
             "task", "dosync", _("Enable tasks synchronization")
         )
-        wx.EVT_CHECKBOX(checkBox, wx.ID_ANY, self.OnSyncTaskChanged)
+        # wx.EVT_CHECKBOX(checkBox, wx.ID_ANY, self.OnSyncTaskChanged)
+        checkBox.Bind(wx.EVT_CHECKBOX, self.OnSyncTaskChanged)
         self.addTextSetting("task", "uri", _("Tasks database name"))
         self.addChoiceSetting(
             "task",
@@ -143,7 +145,8 @@ class SyncMLAccessPage(SyncMLBasePage):
         checkBox = self.addBooleanSetting(
             "note", "dosync", _("Enable notes synchronization")
         )
-        wx.EVT_CHECKBOX(checkBox, wx.ID_ANY, self.OnSyncNoteChanged)
+        # wx.EVT_CHECKBOX(checkBox, wx.ID_ANY, self.OnSyncNoteChanged)
+        checkBox.Bind(wx.EVT_CHECKBOX, self.OnSyncNoteChanged)
         self.addTextSetting("note", "uri", _("Notes database name"))
         self.addChoiceSetting(
             "note",
@@ -198,9 +201,7 @@ class SyncMLAccessPage(SyncMLBasePage):
 class SyncMLPreferences(widgets.NotebookDialog):
     def __init__(self, iocontroller=None, *args, **kwargs):
         self.iocontroller = iocontroller
-        super(SyncMLPreferences, self).__init__(
-            bitmap="wrench_icon", *args, **kwargs
-        )
+        super().__init__(bitmap="wrench_icon", *args, **kwargs)
         self.SetSize((700, -1))
         if operating_system.isMac():
             self.CentreOnParent()

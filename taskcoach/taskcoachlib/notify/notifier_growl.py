@@ -22,14 +22,15 @@ import sys
 import tempfile
 import wx
 
-import taskcoachlib.thirdparty.gntp.notifier as Growl
+# import taskcoachlib.thirdparty.gntp.notifier as Growl
+import gntp.notifier as Growl
 from taskcoachlib import meta
 from .notifier import AbstractNotifier
 
 
 class GrowlNotifier(AbstractNotifier):
     def __init__(self):
-        super(GrowlNotifier, self).__init__()
+        super().__init__()
         try:
             # pylint: disable=E1101
             self._notifier = Growl.GrowlNotifier(

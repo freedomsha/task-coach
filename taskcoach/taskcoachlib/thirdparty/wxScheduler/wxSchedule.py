@@ -37,7 +37,7 @@ class wxSchedule(wx.EvtHandler):
         If both start and end datetime have time set to 00:00 the schedule is
         relative on entire day/days.
         """
-        super(wxSchedule, self).__init__()
+        super().__init__()
 
         self._color = self.SCHEDULE_DEFAULT_COLOR
         self._font = wx.NORMAL_FONT
@@ -70,6 +70,14 @@ class wxSchedule(wx.EvtHandler):
             return getattr(self, name)
 
         raise AttributeError(name)
+
+    def __eq__(self, other):
+        if isinstance(other, wxSchedule):
+            return id(other) == id(self)
+        return False
+
+    def __hash__(self):
+        return id(self)
 
     # Global methods
     def Freeze(self):

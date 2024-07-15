@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, time, base
+import base
+import os
+import time
 
 
 class TestLaunch(base.Win32TestCase):
@@ -28,7 +30,7 @@ class TestLaunch(base.Win32TestCase):
 class TestWithTaskFile(base.Win32TestCase):
     def setUp(self):
         self.args = ['"%s"' % os.path.join(self.basepath, "testfile.tsk")]
-        super(TestWithTaskFile, self).setUp()
+        super().setUp()
 
     def test_launch(self):
         self.assertTrue(

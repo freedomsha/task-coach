@@ -16,8 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, wx
-import test, mock
+import mock
+import os
+import wx
+from .. import test
 
 
 class LoadTest(test.TestCase):
@@ -41,7 +43,7 @@ class LoadTest(test.TestCase):
         if os.path.isfile(self.filename):
             os.remove(self.filename)
         mock.App.deleteInstance()
-        super(LoadTest, self).tearDown()
+        super().tearDown()
 
     def mockErrorDialog(self, *args, **kwargs):  # pylint: disable=W0613
         self.errorDialogCalled = True

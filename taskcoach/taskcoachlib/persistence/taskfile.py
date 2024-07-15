@@ -17,12 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import lockfile
 from . import xml
 from taskcoachlib import patterns, operating_system
 from taskcoachlib.domain import base, task, category, note, effort, attachment
 from taskcoachlib.syncml.config import createDefaultSyncConfig
 from taskcoachlib.thirdparty.guid import generate
-from taskcoachlib.thirdparty import lockfile
+
+# from taskcoachlib.thirdparty import lockfile
 from taskcoachlib.changes import ChangeMonitor, ChangeSynchronizer
 from taskcoachlib.filesystem import (
     FilesystemNotifier,
@@ -64,7 +66,7 @@ class TaskCoachFilesystemNotifier(FilesystemNotifier):
             taskFile (TaskFile): The TaskFile instance to notify.
         """
         self.__taskFile = taskFile
-        super(TaskCoachFilesystemNotifier, self).__init__()
+        super().__init__()
 
     def onFileChanged(self):
         """
@@ -86,7 +88,7 @@ class TaskCoachFilesystemPollerNotifier(FilesystemPollerNotifier):
             taskFile (TaskFile): The TaskFile instance to notify.
         """
         self.__taskFile = taskFile
-        super(TaskCoachFilesystemPollerNotifier, self).__init__()
+        super().__init__()
 
     def onFileChanged(self):
         """
@@ -231,7 +233,7 @@ class TaskFile(patterns.Observer):
             attachment.MailAttachment,
         ]:
             self.__monitor.monitorClass(domainClass)
-        super(TaskFile, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Register for tasks, categories, efforts and notes being changed so we
         # can monitor when the task file needs saving (i.e. is 'dirty'):
         for container in self.tasks(), self.categories(), self.notes():
@@ -1047,7 +1049,7 @@ class LockedTaskFile(TaskFile):
             *args: Additional arguments.
             **kwargs: Additional keyword arguments.
         """
-        super(LockedTaskFile, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__lock = None
 
     def __isFuse(self, path):
@@ -1155,7 +1157,7 @@ class LockedTaskFile(TaskFile):
         if self.filename() and os.path.exists(self.filename()):
             self.acquire_lock(self.filename())
         try:
-            super(LockedTaskFile, self).close()
+            super().close()
         finally:
             self.release_lock()
 
@@ -1177,7 +1179,7 @@ class LockedTaskFile(TaskFile):
                 if breakLock:
                     self.break_lock(filename)
                 self.acquire_lock(filename)
-            return super(LockedTaskFile, self).load(filename)
+            return super().load(filename)
         finally:
             self.release_lock()
 
@@ -1191,7 +1193,7 @@ class LockedTaskFile(TaskFile):
         """
         self.acquire_lock(self.filename())
         try:
-            return super(LockedTaskFile, self).save(**kwargs)
+            return super().save(**kwargs)
         finally:
             self.release_lock()
 
@@ -1201,6 +1203,6 @@ class LockedTaskFile(TaskFile):
         """
         self.acquire_lock(self.filename())
         try:
-            super(LockedTaskFile, self).mergeDiskChanges()
+            super().mergeDiskChanges()
         finally:
             self.release_lock()

@@ -25,7 +25,7 @@ class HotMap(object):
         self.nodes = []
         self.rects = {}
         self.children = {}
-        super(HotMap, self).__init__()
+        super().__init__()
 
     def append(self, node, rect):
         """
@@ -182,7 +182,7 @@ class TimeLine(wx.Panel):
             | wx.FULL_REPAINT_ON_RESIZE
             | wx.WANTS_CHARS
         )
-        super(TimeLine, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_LEFT_UP, self.OnClickRelease)
@@ -502,7 +502,8 @@ class TimeLine(wx.Panel):
             len(recursiveChildren)
             for recursiveChildren in recursiveChildrenList
         ]
-        recursiveChildHeight = h / float(
+        # recursiveChildHeight = h / float(
+        recursiveChildHeight = h // (
             len(children) + sum(recursiveChildrenCounts)
         )
         for child, numberOfRecursiveChildren in zip(
@@ -571,7 +572,7 @@ class TimeLine(wx.Panel):
         Returns:
             float: The scaled width.
         """
-        return (width / self.length) * self.width
+        return int((width / self.length) * self.width)
 
     def textForegroundForNode(self, node, depth=0):
         """
@@ -854,7 +855,7 @@ class TestApp(wx.App):
             size (int): The size of the model.
         """
         self.size = size
-        super(TestApp, self).__init__(0)
+        super().__init__(0)
 
     def OnInit(self):
         """

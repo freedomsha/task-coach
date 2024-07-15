@@ -64,7 +64,7 @@ class DropTarget(wx.DropTarget):
         onDropMailCallback,
         onDragOverCallback=None,
     ):
-        super(DropTarget, self).__init__()
+        super().__init__()
         self.__onDropURLCallback = onDropURLCallback
         self.__onDropFileCallback = onDropFileCallback
         self.__onDropMailCallback = onDropMailCallback
@@ -253,6 +253,9 @@ class TreeCtrlDragAndDropMixin(TreeHelperMixin):
         )
         self._validateDragCallback = kwargs.pop("validateDrag", None)
         super().__init__(*args, **kwargs)
+        wx.CallAfter(self._lateInit)
+
+    def _lateInit(self):
         self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.OnBeginDrag)
         self._dragStartPos = None
         self.GetMainWindow().Bind(wx.EVT_LEFT_DOWN, self._OnLeftDown)
@@ -364,10 +367,10 @@ class TreeCtrlDragAndDropMixin(TreeHelperMixin):
         self.selectDraggedItems()
 
     def SetCursorToDragging(self):
-        self.GetMainWindow().SetCursor(wx.StockCursor(wx.CURSOR_HAND))
+        self.GetMainWindow().SetCursor(wx.Cursor(wx.CURSOR_HAND))
 
     def SetCursorToDroppingImpossible(self):
-        self.GetMainWindow().SetCursor(wx.StockCursor(wx.CURSOR_NO_ENTRY))
+        self.GetMainWindow().SetCursor(wx.Cursor(wx.CURSOR_NO_ENTRY))
 
     def ResetCursor(self):
         self.GetMainWindow().SetCursor(wx.NullCursor)

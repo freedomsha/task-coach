@@ -28,7 +28,8 @@ import shutil
 from . import defaults
 
 
-class UnicodeAwareConfigParser(configparser.RawConfigParser):
+# class UnicodeAwareConfigParser(configparser.RawConfigParser):
+class UnicodeAwareConfigParser(configparser.ConfigParser):
     """
     A custom ConfigParser that handles Unicode strings.
 
@@ -44,9 +45,18 @@ class UnicodeAwareConfigParser(configparser.RawConfigParser):
             setting (str): The setting name.
             value: The value to set.
         """
-        configparser.RawConfigParser.set(self, section, setting, value)
+        # configparser.RawConfigParser.set(self, section, setting, value)
+        super().set(section, setting, value)
 
-    def get(self, section, setting):  # pylint: disable=W0221
+    def get(
+        self,
+        section,
+        option,
+        raw=False,
+        vars=None,
+        fallback=configparser._UNSET,
+        **kwargs,
+    ):  # pylint: disable=W0221
         """
         Get a configuration value from the specified section.
 
@@ -57,7 +67,17 @@ class UnicodeAwareConfigParser(configparser.RawConfigParser):
         Returns:
             The configuration value.
         """
-        return configparser.RawConfigParser.get(self, section, setting)
+        # return configparser.RawConfigParser.get(self, section, setting)
+        return super().get(
+            section,
+            option,
+            raw=raw,
+            vars=vars,
+            fallback=fallback,
+            **kwargs,
+        )
+
+    # pass
 
 
 class CachingConfigParser(UnicodeAwareConfigParser):
@@ -79,7 +99,8 @@ class CachingConfigParser(UnicodeAwareConfigParser):
             **kwargs: Additional keyword arguments.
         """
         self.__cachedValues = dict()
-        UnicodeAwareConfigParser.__init__(self, *args, **kwargs)
+        # UnicodeAwareConfigParser.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def read(self, *args, **kwargs):
         """
@@ -93,9 +114,11 @@ class CachingConfigParser(UnicodeAwareConfigParser):
             bool: True if successful, False otherwise.
         """
         self.__cachedValues = dict()
-        return UnicodeAwareConfigParser.read(self, *args, **kwargs)
+        # return UnicodeAwareConfigParser.read(self, *args, **kwargs)
+        return super().read(*args, **kwargs)
 
-    def set(self, section, setting, value):
+    # def set(self, section, setting, value):
+    def set(self, section, option, value=None):
         """
         Set a configuration value and cache it.
 
@@ -104,10 +127,14 @@ class CachingConfigParser(UnicodeAwareConfigParser):
             setting (str): The setting name.
             value: The value to set.
         """
-        self.__cachedValues[(section, setting)] = value
-        UnicodeAwareConfigParser.set(self, section, setting, value)
+        # self.__cachedValues[(section, setting)] = value
+        self.__cachedValues[(section, option)] = value
+        # UnicodeAwareConfigParser.set(self, section, setting, value)
+        # super().set(self, section, option, value)
+        super().set(section, option, value)
 
-    def get(self, section, setting):
+    # def get(self, section, setting):
+    def get(self, section, option, **kwargs):
         """
         Get a configuration value from cache or read it if not cached.
 
@@ -118,10 +145,15 @@ class CachingConfigParser(UnicodeAwareConfigParser):
         Returns:
             The configuration value.
         """
-        cache, key = self.__cachedValues, (section, setting)
+        # cache, key = self.__cachedValues, (section, setting)
+        cache, key = self.__cachedValues, (section, option)
         if key not in cache:
-            cache[key] = UnicodeAwareConfigParser.get(
-                self, *key
+            # cache[key] = UnicodeAwareConfigParser.get(
+            #    self, *key
+            # )  # pylint: disable=W0142
+            # cache[key] = super().get(*key, **kwargs)  # pylint: disable=W0142
+            cache[key] = super().get(
+                section, option, **kwargs
             )  # pylint: disable=W0142
         return cache[key]
 
@@ -146,18 +178,26 @@ class Settings(CachingConfigParser):
         """
         # Sigh, ConfigParser.SafeConfigParser is an old-style class, so we
         # have to call the superclass __init__ explicitly:
-        CachingConfigParser.__init__(self, *args, **kwargs)
+        # CachingConfigParser.__init__(self, *args, **kwargs)
+        # super().__init__(self, *args, **kwargs)
+        print("Initializing Settings")
+        super().__init__(*args, **kwargs)
 
         self.initializeWithDefaults()
         self.__loadAndSave = load
         self.__iniFileSpecifiedOnCommandLine = iniFile
         self.migrateConfigurationFiles()
+        # Other initialization code
+        self.__cachedValues = {}
+        # self.setLoadStatus(ExceptionAsUnicode(errorMessage))
         if load:
             # First, try to load the settings file from the program directory,
             # if that fails, load the settings file from the settings directory
             try:
-                if not self.read(self.filename(forceProgramDir=True)):
-                    self.read(self.filename())
+                if not self.read(
+                    self.filename(forceProgramDir=True), encoding="utf-8"
+                ):
+                    self.read(self.filename(), encoding="utf-8")
                 errorMessage = ""
             except configparser.ParsingError as errorMessage:
                 # Ignore exceptions and simply use default values.
@@ -197,7 +237,8 @@ class Settings(CachingConfigParser):
             self.add_section(section)
             for key, value in list(settings.items()):
                 # Don't notify observers while we are initializing
-                super(Settings, self).set(section, key, value)
+                super().set(section, key, value)
+                # why section=ballontips and key customizabletoolbars ?
 
     def setLoadStatus(self, message):
         """
@@ -221,23 +262,18 @@ class Settings(CachingConfigParser):
         for section, setting, value in noisySettings:
             self.set(section, setting, value)
 
-    def add_section(
-        self, section, copyFromSection=None
-    ):  # pylint: disable=W0221
+    # def add_section(self, section, copyFromSection=None):  # pylint: disable=W0221
+    def add_section(self, section):  # pylint: disable=W0221
         """
-        Add a new section to the settings.
+        Add a section to the configuration.
 
         Args:
             section (str): The section name.
-            copyFromSection (str, optional): The section to copy values from. Defaults to None.
-
-        Returns:
-            bool: True if the section was added successfully.
         """
-        result = super(Settings, self).add_section(section)
-        if copyFromSection:
-            for name, value in self.items(copyFromSection):
-                super(Settings, self).set(section, name, value)
+        result = super().add_section(section)
+        # if copyFromSection:
+        #    for name, value in self.items(copyFromSection):
+        #        super().set(section, name, value)
         return result
 
     def getRawValue(self, section, option):
@@ -251,7 +287,7 @@ class Settings(CachingConfigParser):
         Returns:
             str: The raw value.
         """
-        return super(Settings, self).get(section, option)
+        return super().get(section, option)
 
     def init(self, section, option, value):
         """
@@ -265,9 +301,9 @@ class Settings(CachingConfigParser):
         Returns:
             bool: True if the value was set successfully.
         """
-        return super(Settings, self).set(section, option, value)
+        return super().set(section, option, value)
 
-    def get(self, section, option):
+    def get(self, section, option, **kwargs):
         """
         Get a value from the settings, handling defaults and old .ini file formats.
 
@@ -279,7 +315,7 @@ class Settings(CachingConfigParser):
             The value of the setting.
         """
         try:
-            result = super(Settings, self).get(section, option)
+            result = super().get(section, option, **kwargs)
         except (configparser.NoOptionError, configparser.NoSectionError):
             return self.getDefault(section, option)
         result = self._fixValuesFromOldIniFiles(section, option, result)
@@ -307,7 +343,31 @@ class Settings(CachingConfigParser):
         except KeyError:
             raise configparser.NoOptionError((option, defaultSection))
 
-    def _ensureMinimum(self, section, option, result):
+    def _fixValuesFromOldIniFiles(self, section, option, value):
+        """
+        Fix values from old .ini files.
+
+        Args:
+            section (str): The section name.
+            option (str): The option name.
+            value: The value to fix.
+
+        Returns:
+            The fixed value.
+        """
+        fixes = {
+            ("feature", "notes"): value.lower(),
+            ("view", "toolbarlabels"): value.lower(),
+            ("view", "viewer-widths"): [
+                int(width) if width.isdigit() else -1
+                for width in value.split(",")
+            ],
+            ("file", "inifileloaded"): "True",
+        }
+        return fixes.get((section, option), value)
+
+    # def _ensureMinimum(self, section, option, result):
+    def _ensureMinimum(self, section, option, value):
         """
         Ensure that a setting value meets the minimum requirements.
 
@@ -319,114 +379,103 @@ class Settings(CachingConfigParser):
         Returns:
             The value, ensuring it meets the minimum requirements.
         """
-        if section in defaults.minimum and option in defaults.minimum[section]:
-            result = max(result, defaults.minimum[section][option])
-        return result
+        # Some settings may have a minimum value, make sure we return at
+        # least that minimum value:
+        # if section in defaults.minimum and option in defaults.minimum[section]:
+        #    result = max(result, defaults.minimum[section][option])
+        # return result
+        minimums = {
+            "behavior.missedtasks": 1,
+            "behavior.dueonweekendstasklist": 1,
+            "behavior.dueonweekendscalendar": 1,
+            "behavior.recurrencefieldcolumnwidth": 1,
+            "view.gantt.periodpixels": 1,
+        }
+        return max(minimums.get(f"{section}.{option}", value), value)
 
-    def _fixValuesFromOldIniFiles(self, section, option, result):
-        """
-        Fix settings from old TaskCoach.ini files that are no longer valid.
+    # def _fixValuesFromOldIniFiles(self, section, option, result):
+    #    """
+    #    Fix settings from old TaskCoach.ini files that are no longer valid.
 
-        Args:
-            section (str): The section name.
-            option (str): The option name.
-            result: The value to fix.
+    #    Args:
+    #        section (str): The section name.
+    #        option (str): The option name.
+    #        result: The value to fix.
 
-        Returns:
-            The fixed value.
-        """
-        original = result
-        # Starting with release 1.1.0, the date properties of tasks (startDate,
-        # dueDate and completionDate) are datetimes:
-        taskDateColumns = ("startDate", "dueDate", "completionDate")
-        orderingViewers = [
-            "taskviewer",
-            "categoryviewer",
-            "noteviewer",
-            "noteviewerintaskeditor",
-            "noteviewerincategoryeditor",
-            "noteviewerinattachmenteditor",
-            "categoryviewerintaskeditor",
-            "categoryviewerinnoteeditor",
-        ]
-        if option == "sortby":
-            if result in taskDateColumns:
-                result += "Time"
-            try:
-                eval(result)
-            except:
-                sortKeys = [result]
-                try:
-                    ascending = self.getboolean(section, "sortascending")
-                except:
-                    ascending = True
-                result = '["%s%s"]' % (("" if ascending else "-"), result)
-        elif option == "columns":
-            columns = [
-                (col + "Time" if col in taskDateColumns else col)
-                for col in eval(result)
-            ]
-            result = str(columns)
-        elif option == "columnwidths":
-            widths = dict()
-            try:
-                columnWidthMap = eval(result)
-            except SyntaxError:
-                columnWidthMap = dict()
-            for column, width in list(columnWidthMap.items()):
-                if column in taskDateColumns:
-                    column += "Time"
-                widths[column] = width
-            if section in orderingViewers and "ordering" not in widths:
-                widths["ordering"] = 28
-            result = str(widths)
-        elif (
-            section == "feature"
-            and option == "notifier"
-            and result == "Native"
-        ):
-            result = "Task Coach"
-        elif section == "editor" and option == "preferencespages":
-            result = result.replace("colors", "appearance")
-        elif section in orderingViewers and option == "columnsalwaysvisible":
-            try:
-                columns = eval(result)
-            except SyntaxError:
-                columns = ["ordering"]
-            else:
-                if "ordering" in columns:
-                    columns.remove("ordering")
-            result = str(columns)
-        if result != original:
-            super(Settings, self).set(section, option, result)
-        return result
-
-    def set(self, section, option, value, new=False):  # pylint: disable=W0221
-        """
-        Set a value in the settings.
-
-        Args:
-            section (str): The section name.
-            option (str): The option name.
-            value: The value to set.
-            new (bool, optional): Whether this is a new option. Defaults to False.
-
-        Returns:
-            bool: True if the value was set successfully.
-        """
-        if new:
-            currentValue = (
-                "a new option, so use something as current value"
-                " that is unlikely to be equal to the new value"
-            )
-        else:
-            currentValue = self.get(section, option)
-        if value != currentValue:
-            super(Settings, self).set(section, option, value)
-            patterns.Event("%s.%s" % (section, option), self, value).send()
-            return True
-        else:
-            return False
+    #    Returns:
+    #        The fixed value.
+    #    """
+    #    original = result
+    #    # Starting with release 1.1.0, the date properties of tasks (startDate,
+    #    # dueDate and completionDate) are datetimes:
+    #    taskDateColumns = ("startDate", "dueDate", "completionDate")
+    #    orderingViewers = [
+    #        "taskviewer",
+    #        "categoryviewer",
+    #        "noteviewer",
+    #        "noteviewerintaskeditor",
+    #        "noteviewerincategoryeditor",
+    #        "noteviewerinattachmenteditor",
+    #        "categoryviewerintaskeditor",
+    #        "categoryviewerinnoteeditor",
+    #    ]
+    #    if option == "sortby":
+    #        if result in taskDateColumns:
+    #            result += "Time"
+    #        try:
+    #            eval(result)
+    #        except:
+    #            sortKeys = [result]
+    #            try:
+    #                ascending = self.getboolean(section, "sortascending")
+    #            except:
+    #                ascending = True
+    #            result = '["%s%s"]' % (("" if ascending else "-"), result)
+    #    elif option == "columns":
+    #        columns = [
+    #            (col + "Time" if col in taskDateColumns else col)
+    #            for col in eval(result)
+    #        ]
+    #        result = str(columns)
+    #    elif option == "columnwidths":
+    #        widths = dict()
+    #        try:
+    #            columnWidthMap = eval(result)
+    #        except SyntaxError:
+    #            columnWidthMap = dict()
+    #        for column, width in list(columnWidthMap.items()):
+    #            if column in taskDateColumns:
+    #                column += "Time"
+    #            widths[column] = width
+    #        if section in orderingViewers and "ordering" not in widths:
+    #            widths["ordering"] = 28
+    #        result = str(widths)
+    #    elif (
+    #        section == "feature"
+    #        and option == "notifier"
+    #        and result == "Native"
+    #    ):
+    #        result = "Task Coach"
+    #    elif section == "editor" and option == "preferencespages":
+    #        result = result.replace("colors", "appearance")
+    #    elif section in orderingViewers and option == "columnsalwaysvisible":
+    #        # XXX: remove 'ordering' from always visible columns. This wasn't in any official release
+    #        # but I need it so that people can test without resetting their .ini file...
+    #        # Remove this after the 1.3.38 release.
+    #        # XXX : supprimez le « classement » des colonnes toujours visibles. Cela ne figurait dans aucune version officielle
+    #        # mais j'en ai besoin pour que les gens puissent tester sans réinitialiser leur fichier .ini...
+    #        # Supprimez ceci après la version 1.3.38.
+    #        try:
+    #            columns = eval(result)
+    #        except SyntaxError:
+    #            columns = ["ordering"]
+    #        else:
+    #            if "ordering" in columns:
+    #                columns.remove("ordering")
+    #        result = str(columns)
+    #    if result != original:
+    #        super().set(section, option, result)
+    #    return result
 
     def setboolean(self, section, option, value):
         """
@@ -600,7 +649,7 @@ class Settings(CachingConfigParser):
             path = self.path()
             if not os.path.exists(path):
                 os.mkdir(path)
-            tmpFile = open(self.filename() + ".tmp", "w")
+            tmpFile = open(self.filename() + ".tmp", "w", encoding="utf-8")
             self.write(tmpFile)
             tmpFile.close()
             if os.path.exists(self.filename()):
@@ -624,10 +673,18 @@ class Settings(CachingConfigParser):
         Returns:
             str: The filename of the .ini file.
         """
-        if self.__iniFileSpecifiedOnCommandLine:
-            return self.__iniFileSpecifiedOnCommandLine
+        # if self.__iniFileSpecifiedOnCommandLine:
+        #    return self.__iniFileSpecifiedOnCommandLine
+        # else:
+        #    return self.generatedIniFilename(forceProgramDir)
+        if forceProgramDir or self.__iniFileSpecifiedOnCommandLine:
+            if self.__iniFileSpecifiedOnCommandLine:
+                iniFile = self.__iniFileSpecifiedOnCommandLine
+            else:
+                iniFile = self.generatedIniFilename(forceProgramDir=True)
         else:
-            return self.generatedIniFilename(forceProgramDir)
+            iniFile = self.generatedIniFilename()
+        return iniFile
 
     def path(
         self, forceProgramDir=False, environ=os.environ
@@ -675,7 +732,7 @@ class Settings(CachingConfigParser):
                         None, shellcon.CSIDL_PERSONAL, None, 0
                     )  # SHGFP_TYPE_CURRENT not in shellcon
                 except:
-                    return os.getcwd()
+                    return os.getcwd()  # Fuck this
         elif operating_system.isMac():
             import Carbon.Folder, Carbon.Folders, Carbon.File
 
@@ -692,6 +749,7 @@ class Settings(CachingConfigParser):
                 pass
             else:
                 return str(KGlobalSettings.documentPath())
+        # Assuming Unix-like
         return os.path.expanduser("~")
 
     def pathToProgramDir(self):
@@ -900,76 +958,126 @@ class Settings(CachingConfigParser):
                 pass
         return operating_system.decodeSystemString(path)
 
-    def pathToIniFileSpecifiedOnCommandLine(self):
-        """
-        Get the path to the .ini file specified on the command line.
+    # def pathToIniFileSpecifiedOnCommandLine(self):
+    #     """
+    #     Get the path to the .ini file specified on the command line.
+    #
+    #     Returns:
+    #         str: The path to the .ini file specified on the command line.
+    #     """
+    #     return os.path.dirname(self.__iniFileSpecifiedOnCommandLine) or "."
 
-        Returns:
-            str: The path to the .ini file specified on the command line.
-        """
-        return os.path.dirname(self.__iniFileSpecifiedOnCommandLine) or "."
-
-    def generatedIniFilename(self, forceProgramDir):
+    # def generatedIniFilename(self, forceProgramDir):
+    def generatedIniFilename(self, forceProgramDir=False):
         """
         Generate the filename of the .ini file.
 
         Args:
-            forceProgramDir (bool): Whether to force saving in the program directory.
+            forceProgramDir (bool, optional): Whether to force saving in the program directory.
 
         Returns:
             str: The generated filename of the .ini file.
         """
-        return os.path.join(
-            self.path(forceProgramDir), "%s.ini" % meta.filename
-        )
+        # return os.path.join(
+        #    self.path(forceProgramDir), "%s.ini" % meta.filename
+        # )
+        if forceProgramDir:
+            return os.path.join(os.path.dirname(sys.argv[0]), "taskcoach.ini")
+        else:
+            return os.path.join(
+                wx.StandardPaths.Get().GetUserLocalDataDir(), "taskcoach.ini"
+            )
 
     def migrateConfigurationFiles(self):
         """
         Migrate configuration files to new locations if necessary.
         """
         # Templates. Extra care for Windows shortcut.
-        oldPath = self.pathToTemplatesDir_deprecated(doCreate=False)
-        newPath, exists = self._pathToTemplatesDir()
-        if self.__iniFileSpecifiedOnCommandLine:
-            globalPath = os.path.join(
-                self.pathToDataDir(forceGlobal=True), "templates"
-            )
-            if os.path.exists(globalPath) and not os.path.exists(oldPath):
-                # Upgrade from fresh installation of 1.3.24 Portable
-                oldPath = globalPath
-                if exists and not os.path.exists(newPath + "-old"):
-                    # WTF?
-                    os.rename(newPath, newPath + "-old")
-                exists = False
-        if exists:
-            return
-        if oldPath != newPath:
-            if operating_system.isWindows() and os.path.exists(
-                oldPath + ".lnk"
-            ):
-                shutil.move(oldPath + ".lnk", newPath + ".lnk")
-            elif os.path.exists(oldPath):
-                # pathToTemplatesDir() has created the directory
-                try:
-                    os.rmdir(newPath)
-                except:
-                    pass
-                shutil.move(oldPath, newPath)
-        # Ini file
-        oldPath = os.path.join(
-            self.pathToConfigDir_deprecated(environ=os.environ),
-            "%s.ini" % meta.filename,
-        )
-        newPath = os.path.join(
-            self.pathToConfigDir(environ=os.environ), "%s.ini" % meta.filename
-        )
-        if newPath != oldPath and os.path.exists(oldPath):
-            shutil.move(oldPath, newPath)
-        # Cleanup
-        try:
-            os.rmdir(self.pathToConfigDir_deprecated(environ=os.environ))
-        except:
-            pass
+        # oldPath = self.pathToTemplatesDir_deprecated(doCreate=False)
+        # newPath, exists = self._pathToTemplatesDir()
+        # if self.__iniFileSpecifiedOnCommandLine:
+        #    globalPath = os.path.join(
+        #        self.pathToDataDir(forceGlobal=True), "templates"
+        #    )
+        #    if os.path.exists(globalPath) and not os.path.exists(oldPath):
+        #        # Upgrade from fresh installation of 1.3.24 Portable
+        #        oldPath = globalPath
+        #        if exists and not os.path.exists(newPath + "-old"):
+        #            # WTF?
+        #            os.rename(newPath, newPath + "-old")
+        #        exists = False
+        # if exists:
+        #    return
+        # if oldPath != newPath:
+        #    if operating_system.isWindows() and os.path.exists(
+        #        oldPath + ".lnk"
+        #    ):
+        #        shutil.move(oldPath + ".lnk", newPath + ".lnk")
+        #    elif os.path.exists(oldPath):
+        #        # pathToTemplatesDir() has created the directory
+        #        try:
+        #            os.rmdir(newPath)
+        #        except:
+        #            pass
+        #        shutil.move(oldPath, newPath)
+        # # Ini file
+        # oldPath = os.path.join(
+        #    self.pathToConfigDir_deprecated(environ=os.environ),
+        #    "%s.ini" % meta.filename,
+        # )
+        # newPath = os.path.join(
+        #    self.pathToConfigDir(environ=os.environ), "%s.ini" % meta.filename
+        # )
+        # if newPath != oldPath and os.path.exists(oldPath):
+        #    shutil.move(oldPath, newPath)
+        # # Cleanup
+        # try:
+        #    os.rmdir(self.pathToConfigDir_deprecated(environ=os.environ))
+        # except:
+        #    pass
+        oldConfigFiles = [
+            os.path.join(
+                # operating_system.applicationDataDirectory(), "TaskCoach.ini"
+                wx.StandardPaths.Get().GetUserConfigDir(),
+                "TaskCoach.ini",
+            ),
+            os.path.join(os.path.dirname(sys.argv[0]), "TaskCoach.ini"),
+        ]
+        newConfigFile = self.generatedIniFilename()
+        for oldConfigFile in oldConfigFiles:
+            if os.path.isfile(oldConfigFile):
+                shutil.copyfile(oldConfigFile, newConfigFile)
+                os.remove(oldConfigFile)
+
+    # def set(self, section, option, value, new=False):  # pylint: disable=W0221
+    def set(self, section, key, value=None):
+        """
+        Set a value in the settings.
+
+        Args:
+            section (str): The section name.
+            option (str): The option name.
+            value: The value to set.
+            new (bool, optional): Whether this is a new option. Defaults to False.
+
+        Returns:
+            bool: True if the value was set successfully.
+        """
+        # if new:
+        #     currentValue = (
+        #         "a new option, so use something as current value"
+        #         " that is unlikely to be equal to the new value"
+        #     )
+        # else:
+        #     currentValue = self.get(section, option)
+        # if value != currentValue:
+        #     super().set(section, option, value)
+        #     patterns.Event("%s.%s" % (section, option), self, value).send()
+        #     return True
+        # else:
+        #     return False
+        self.__cachedValues[(section, key)] = value
+        super().set(section, key, value)
 
     def __hash__(self) -> int:
         """
@@ -978,4 +1086,5 @@ class Settings(CachingConfigParser):
         Returns:
             int: The hash of the Settings object.
         """
+        # assert isinstance(self, object)
         return id(self)

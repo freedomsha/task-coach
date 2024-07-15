@@ -44,7 +44,8 @@ class SplashScreen(wx.adv.SplashScreen):
             # the splash image is not internationalized, we have to mirror it
             # (back). Unfortunately using SetLayoutDirection() on the
             # SplashWindow doesn't work.
-            bitmap = wx.BitmapFromImage(splash.GetBitmap().Mirror())
+            # bitmap = wx.BitmapFromImage(splash.GetBitmap().Mirror())
+            bitmap = wx.Bitmap(splash.GetBitmap().Mirror())
         else:
             bitmap = splash.GetBitmap()
         super().__init__(

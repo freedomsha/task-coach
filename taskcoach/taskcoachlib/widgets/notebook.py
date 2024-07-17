@@ -234,9 +234,9 @@ class BookPage(wx.Panel):
         position = self._position.next(colspan)
 
         # Debug output to check the values being passed
-        print(
-            f"Adding control: {control}, Position: {position}, Span: {(1, colspan)}, Flag: {flag}, Border: {self._borderWidth}"
-        )
+        # print(
+        #     f"notebook.py:Adding control: {control}, Position: {position}, Span: {(1, colspan)}, Flag: {flag}, Border: {self._borderWidth}"
+        # )
 
         # Ensure flag is an integer
         if isinstance(flag, tuple):

@@ -136,7 +136,10 @@ class Attachment(base.Object, NoteOwner):
             state = super().__getstate__()
         except AttributeError:
             state = dict()
-        state.update(dict(location=self.location()))
+        state.update(
+            dict(location=self.location())
+        )  # TypeError: 'str' object is not callable
+
         return state
 
     @patterns.eventSource

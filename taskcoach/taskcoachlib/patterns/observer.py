@@ -68,7 +68,7 @@ class List(list):
             list.remove(
                 self, item
             )  # No super() to prevent overridden remove method from being invoked
-            list.remove(self, item)
+            # list.remove(self, item)  # ValueError: list.remove(x): x not in list
 
 
 class Set(set):

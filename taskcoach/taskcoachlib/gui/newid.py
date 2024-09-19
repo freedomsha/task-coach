@@ -23,7 +23,12 @@ class IdProvider(set):
     def get(self):
         if self:
             return self.pop()
-        return wx.NewIdRef()
+        # new_id = wx.NewIdRef().GetId()
+        # print(
+        #    f"tclib.gui.newid.py IdProvider.get add: new_id = {new_id} for self: {self}"
+        # )  # Ajout de journalisation
+        # return wx.NewIdRef()  # ne fonctionne pas
+        return wx.ID_ANY
 
     def put(self, id_):
         if id_ > 0:

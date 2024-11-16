@@ -190,6 +190,7 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
             )
 
             fp = tempfile.TemporaryFile()
+            # TODO : a revoir unicode/byte lecture/écriture.
             try:
                 fp.write(
                     open(self.filename, "r")

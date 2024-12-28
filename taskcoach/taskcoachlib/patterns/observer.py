@@ -725,9 +725,7 @@ class ObservableCollection(object):
     @classmethod
     def modificationEventTypes(class_):
         try:
-            eventTypes = super(
-                ObservableCollection, class_
-            ).modificationEventTypes()
+            eventTypes = super().modificationEventTypes()
         except AttributeError:
             eventTypes = []
         return eventTypes + [

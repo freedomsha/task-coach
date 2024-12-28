@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys, os, struct
+import sys
+import os
+import struct
 
 _BINBASE = os.path.join(os.path.split(__file__)[0], "..", "bin.in")
 
@@ -25,10 +27,10 @@ if len(struct.pack("L", 0)) == 8:
 else:
     arch = "IA32"
 
-if sys.platform == "linux2":
+if sys.platform.startswith("linux"):
     # The user should install the binary packages
     pass
-elif sys.platform == "darwin":
+elif sys.platform.startswith("darwin"):
     sys.path.insert(0, os.path.join(_BINBASE, "macos", arch))
 else:
     sys.path.insert(
@@ -40,4 +42,4 @@ else:
         ),
     )
 
-from _pysyncml import *
+from _pysyncml import *  # Unresolved reference '_pysyncml'

@@ -1025,11 +1025,7 @@ class Task(
         nativeInfoString = class_.settings.get(
             "font", "%stasks" % taskStatus
         )  # pylint: disable=E1101
-        return (
-            wx.FontFromNativeInfoString(nativeInfoString)
-            if nativeInfoString
-            else None
-        )
+        return wx.Font(nativeInfoString) if nativeInfoString else None
 
     # Icon
 

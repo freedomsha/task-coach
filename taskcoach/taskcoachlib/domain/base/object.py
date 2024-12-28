@@ -840,8 +840,10 @@ class Object(SynchronizedObject):
             list: The list of event types.
         """
         try:
-            eventTypes = super(Object, class_).modificationEventTypes()
+            eventTypes = super().modificationEventTypes()
         except AttributeError:
+            eventTypes = []
+        if eventTypes is None:
             eventTypes = []
         return eventTypes + [
             class_.subjectChangedEventType(),

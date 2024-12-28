@@ -18,13 +18,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import data
 import threading
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import sys
 import traceback
 
 
 class VersionChecker(threading.Thread):
     def __init__(self, settings, verbose=False):
+        """
+
+        @rtype: object
+        """
         self.settings = settings
         self.verbose = verbose
         super().__init__()
@@ -42,7 +48,7 @@ class VersionChecker(threading.Thread):
                 self.getLastVersionNotified()
             )
             currentVersion = self.tupleVersion(data.version)
-        except:
+        except Exception:
             if self.verbose:
                 self.notifyUser(
                     version.NoVersionDialog,

@@ -85,7 +85,7 @@ class Category(
 
     @classmethod
     def modificationEventTypes(class_):
-        eventTypes = super(Category, class_).modificationEventTypes()
+        eventTypes = super().modificationEventTypes()
         return eventTypes + [
             class_.filterChangedEventType(),
             class_.categorizableAddedEventType(),

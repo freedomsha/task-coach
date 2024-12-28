@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx, sys, platform
+import wx
+import sys
+import platform
 
 # This module is meant to be imported like this:
 #   from taskcoachlib import operating_system

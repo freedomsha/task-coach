@@ -20,19 +20,41 @@ import wx
 
 
 class IdProvider(set):
+    """
+    Identifier provider for user interface elements in wxPython.
+
+    This class manages the unique identifiers needed for user interface elements,
+    avoiding conflicts and ensuring identifier availability.
+    """
+
     def get(self):
+        """
+        Get a new unique identifier.
+
+        This method generates a new unique identifier using wx.ID_ANY (not wx.NewIdRef()) and adds it
+        to the set of identifiers managed by this class.
+
+        Returns:
+            int: A new unique identifier.
+        """
         if self:
             return self.pop()
-        # new_id = wx.NewIdRef().GetId()
-        # print(
-        #    f"tclib.gui.newid.py IdProvider.get add: new_id = {new_id} for self: {self}"
-        # )  # Ajout de journalisation
-        # return wx.NewIdRef()  # ne fonctionne pas
+
         return wx.ID_ANY
 
     def put(self, id_):
+        """
+        Release identifier.
+
+        This method removes the specified identifier from the set of identifiers managed by
+        this class, making it available for future reuse.
+
+        Args:
+            id_ (int): The identifier to release.
+        """
         if id_ > 0:
             self.add(id_)
 
 
+# Create a single instance of IdProvider for use in the application.
 IdProvider = IdProvider()

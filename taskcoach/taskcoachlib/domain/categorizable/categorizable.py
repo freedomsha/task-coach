@@ -298,9 +298,7 @@ class CategorizableCompositeObject(base.CompositeObject):
 
     @classmethod
     def modificationEventTypes(class_):
-        eventTypes = super(
-            CategorizableCompositeObject, class_
-        ).modificationEventTypes()
+        eventTypes = super().modificationEventTypes()
         return eventTypes + [
             class_.categoryAddedEventType(),
             class_.categoryRemovedEventType(),

@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
-import test
+from ... import test
 from taskcoachlib.domain import attachment
 from pubsub import pub
 

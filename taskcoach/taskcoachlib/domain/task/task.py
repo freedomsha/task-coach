@@ -1791,7 +1791,7 @@ class Task(
 
     @classmethod
     def modificationEventTypes(class_):
-        eventTypes = super(Task, class_).modificationEventTypes()
+        eventTypes = super().modificationEventTypes()
         return eventTypes + [
             class_.plannedStartDateTimeChangedEventType(),
             class_.dueDateTimeChangedEventType(),

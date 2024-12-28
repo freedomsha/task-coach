@@ -16,7 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx, os, re, tempfile, urllib.request, urllib.parse, urllib.error, email, email.header
+import wx
+import os
+import re
+import tempfile
+from urllib import error, parse, request
+import email
+import email.header
 import chardet
 from taskcoachlib.tools import openfile
 from taskcoachlib.mailer.macmail import getSubjectOfMail
@@ -126,7 +132,7 @@ def sendMail(to, subject, body, cc=None, openURL=openfile.openFile):
     def unicode_quote(s):
         # This is like urllib.quote but leaves out Unicode characters,
         # which urllib.quote does not support.
-        chars = [c if ord(c) >= 128 else urllib.parse.quote(c) for c in s]
+        chars = [c if ord(c) >= 128 else parse.quote(c) for c in s]
         return "".join(chars)
 
     cc = cc or []

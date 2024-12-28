@@ -6,6 +6,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 from taskcoachlib.widgets import calendarwidget
 from .wxSchedulerCore import wxSchedulerCore
+from .wxSchedule import EVT_SCHEDULE_CHANGE
 
 
 class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
@@ -107,7 +108,7 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
             self.Refresh()
             try:
                 wx.Yield()
-            except:
+            except Exception:
                 pass
         finally:
             self._refreshing = False
@@ -171,7 +172,9 @@ class wxScheduler(wxSchedulerCore, scrolled.ScrolledPanel):
         bindSc = set(self._schBind)
 
         for sc in currentSc - bindSc:
-            sc.Bind(EVT_SCHEDULE_CHANGE, self.OnScheduleChanged)
+            sc.Bind(
+                EVT_SCHEDULE_CHANGE, self.OnScheduleChanged
+            )  # EVT_SCHEDULE_CHANGE is in wxSchedule.py
             self._schBind.append(sc)
 
     def _getEventCoordinates(self, event):

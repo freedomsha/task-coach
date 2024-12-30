@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import wx
 from .wxSchedule import *
 from .wxSchedulerConstants import *

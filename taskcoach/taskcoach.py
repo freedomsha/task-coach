@@ -66,16 +66,26 @@ for more information and possible resolutions.
 
 
 def start():
-    """Process command line options and start the application."""
+    """Process command line options and start the application.
+
+    This function processes command line options, initializes the application,
+    and starts the main loop. It also handles profiling if the --profile option
+    is specified.
+    """
 
     # pylint: disable=W0404
     from taskcoachlib import config, application
 
+    # Parse command line options
     options, args = (
         config.ApplicationArgumentParser().parser.parse_known_args()
     )
     print(f"taskcoach.py: options:{vars(options)} args:{args}")
+
+    # Initialize the application
     app = application.Application(options, args)
+
+    # Start the application with or without profiling
     if options.profile:
         import cProfile
 

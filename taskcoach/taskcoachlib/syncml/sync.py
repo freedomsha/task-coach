@@ -24,7 +24,8 @@ from taskcoachlib.syncml.core import *
 from taskcoachlib.i18n import _
 from taskcoachlib.meta import data
 
-import sys, wx
+import sys
+import wx
 
 
 class AuthenticationFailure(Exception):

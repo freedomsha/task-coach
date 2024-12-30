@@ -109,7 +109,11 @@ class RedirectedOutput:
     ]
 
     def __init__(self):
-        """Function that initializes the file-argument to use and
+        """Initialize the RedirectedOutput instance.
+
+        Sets up the file handle and path for logging output to a file.
+
+        Function that initializes the file-argument to use and
         the path argument of the taskcoachlog.txt file.
         """
         self.__handle = None
@@ -118,7 +122,13 @@ class RedirectedOutput:
         )
 
     def write(self, bf):
-        """Function-method to open then write current Date and Time and bf to taskcoachlog.txt"""
+        """Write the output to the log file.
+
+        Function-method to open then write current Date and Time and bf to taskcoachlog.txt
+
+        Args:
+            bf (str): The output to write.
+        """
         for rx in self._rx_ignore:
             if rx.search(bf):
                 return
@@ -129,17 +139,26 @@ class RedirectedOutput:
         self.__handle.write(bf)
 
     def flush(self):
+        """Flush the output (no-op for file-based output)."""
         pass
 
     def close(self):
-        """Function-method to close taskcoachlig.txt"""
+        """Close the log file.
+
+        Function-method to close taskcoachlig.txt
+        """
         if self.__handle is not None:
             self.__handle.close()
             self.__handle = None
 
     def summary(self):
-        """Function-method to display information about what has just been
+        """
+        Display a summary message about the log file.
+
+        Function-method to display information about what has just been
         written in taskcoachlog.txt.
+
+        Displays an error message with the location of the log file.
         """
         if self.__handle is not None:
             self.close()
@@ -164,7 +183,20 @@ class RedirectedOutput:
 
 
 class wxApp(wx.App):
+    """
+    Custom wx.App class for handling application-specific events.
+    """
+
     def __init__(self, sessionCallback, reopenCallback, *args, **kwargs):
+        """
+        Initialize the wxApp instance.
+
+        Args:
+            sessionCallback (callable): Callback for session end events.
+            reopenCallback (callable): Callback for application reopen events.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+        """
         self.sessionCallback = sessionCallback
         self.reopenCallback = reopenCallback
         self.__shutdownInProgress = False
@@ -194,6 +226,7 @@ class wxApp(wx.App):
         return True
 
     def onQueryEndSession(self, event=None):
+        """Handle session end queries."""
         if not self.__shutdownInProgress:
             self.__shutdownInProgress = True
             self.sessionCallback()
@@ -218,6 +251,24 @@ class Application(object, metaclass=patterns.Singleton):
     while saving the settings and state of the application."""
 
     def __init__(self, options=None, args=None, **kwargs):
+        """
+        Initialize the Application instance.
+
+        Args:
+            options (argparse.Namespace, optional): Command-line options.
+            args (list, optional): Additional arguments.
+            **kwargs: Arbitrary keyword arguments.
+        """
+        # news attributs :
+        self.mainwindow = None
+        self.iocontroller = None
+        self.__auto_backup = None
+        self.__auto_exporter = None
+        self.__auto_saver = None
+        self.taskFile = None
+        self.__message_checker = None
+        self.__version_checker = None
+        ###
         self._options = options
         self._args = "".join(args)
         self.initTwisted()
@@ -232,7 +283,17 @@ class Application(object, metaclass=patterns.Singleton):
                 from taskcoachlib.powermgt import xsm
 
                 class LinuxSessionMonitor(xsm.SessionMonitor):
+                    """
+                    Monitor for session management on Linux.
+                    """
+
                     def __init__(self, callback):
+                        """
+                        Initialize the LinuxSessionMonitor instance.
+
+                        Args:
+                            callback (callable): Callback for session end events.
+                        """
                         super(LinuxSessionMonitor, self).__init__()
                         self._callback = callback
                         self.setProperty(xsm.SmCloneCommand, sys.argv)
@@ -246,17 +307,29 @@ class Application(object, metaclass=patterns.Singleton):
                     def saveYourself(
                         self, saveType, shutdown, interactStyle, fast
                     ):  # pylint: disable=W0613
+                        """
+                        Handle save yourself events.
+
+                        Args:
+                            saveType: The save type.
+                            shutdown (bool): Whether to shut down.
+                            interactStyle: The interaction style.
+                            fast (bool): Whether to save quickly.
+                        """
                         if shutdown:
                             wx.CallAfter(self._callback)
                         self.saveYourselfDone(True)
 
                     def die(self):
+                        """Handle die events."""
                         pass
 
                     def saveComplete(self):
+                        """Handle save complete events."""
                         pass
 
                     def shutdownCancelled(self):
+                        """Handle shutdown cancelled events."""
                         pass
 
                 self.sessionMonitor = LinuxSessionMonitor(
@@ -395,6 +468,12 @@ class Application(object, metaclass=patterns.Singleton):
         wx.CallAfter(self.__show_tips)
 
     def __init_config(self, load_settings):
+        """
+        Initialize the application configuration.
+
+        Args:
+            load_settings (bool): Whether to load settings.
+        """
         from taskcoachlib import config
 
         ini_file = self._options.inifile if self._options else None
@@ -412,7 +491,17 @@ class Application(object, metaclass=patterns.Singleton):
     def determine_language(
         options, settings, locale=locale
     ):  # pylint: disable=W0621
-        """Determines the local language used."""
+        """
+        Determine the local language used.
+
+        Args:
+            options: Command-line options.
+            settings: Application settings.
+            locale: Locale module.
+
+        Returns:
+            str: The determined language.
+        """
         language = None
         if options:
             # User specified language or .po file on command line
@@ -450,6 +539,7 @@ class Application(object, metaclass=patterns.Singleton):
         self.__wx_app.SetVendorName(meta.author)
 
     def __init_spell_checking(self):
+        """Initialize spell checking."""
         self.on_spell_checking(
             self.settings.getboolean("editor", "maccheckspelling")
         )
@@ -458,7 +548,14 @@ class Application(object, metaclass=patterns.Singleton):
         )
 
     def on_spell_checking(self, value):
-        """SystemOptions stores option/value pairs that wxWidgets itself or applications can use to alter behaviour at run-time."""
+        """
+        Set the spell checking option.
+
+        SystemOptions stores option/value pairs that wxWidgets itself or applications can use to alter behaviour at run-time.
+
+        Args:
+            value (bool): Whether to enable spell checking.
+        """
         if (
             operating_system.isMac()
             and not operating_system.isMacOsXMountainLion_OrNewer()
@@ -468,7 +565,10 @@ class Application(object, metaclass=patterns.Singleton):
             )
 
     def __register_signal_handlers(self):
-        """Function-method to exit due to a signal."""
+        """Function-method to exit due to a signal.
+
+        Register signal handlers for application exit.
+        """
         if operating_system.isWindows():
             import win32api  # pylint: disable=F0401
 
@@ -500,6 +600,7 @@ class Application(object, metaclass=patterns.Singleton):
                 signal.signal(
                     signal.SIGHUP, forced_quit
                 )  # pylint: disable=E1101
+                # Sous Windows, signal() ne peut être appelé qu'avec SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM ou SIGBREAK.
 
     @staticmethod
     def __create_mutex():
@@ -531,30 +632,34 @@ class Application(object, metaclass=patterns.Singleton):
             )
 
     def __can_create_task_bar_icon(self):
-        """Function that defines whether a taskbar icon can be created.
+        """Method that defines whether a taskbar icon can be created.
 
         Returns :
-            bool
+            bool: True if a taskbar icon can be created, False otherwise.
         """
         try:
             from taskcoachlib.gui import taskbaricon  # pylint: disable=W0612
 
             return True
-        except:
+        except Exception:
             return False  # pylint: disable=W0702
+
 
     @staticmethod
     def __close_splash(splash):
+        """Close the splash screen."""
         if splash:
             splash.Destroy()
 
     def __show_tips(self):
+        """Show application tips if enabled in the settings."""
         if self.settings.getboolean("window", "tips"):
             from taskcoachlib import help  # pylint: disable=W0622
 
             help.showTips(self.mainwindow, self.settings)
 
     def __warn_user_that_ini_file_was_not_loaded(self):
+        """Warn the user if the settings file could not be loaded."""
         from taskcoachlib import meta
 
         reason = self.settings.get("file", "inifileloaderror")
@@ -566,7 +671,14 @@ class Application(object, metaclass=patterns.Singleton):
         self.settings.setboolean("file", "inifileloaded", True)  # Reset
 
     def displayMessage(self, message):
-        """Function-method to display the message."""
+        """Function-method to display the message.
+
+        Display a message to the user.
+
+        Args:
+            message (str): The message to display.
+        """
+
         self.mainwindow.displayMessage(message)
 
     def on_end_session(self):

@@ -16,9 +16,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
 
-"""
 render.py - functions to render various objects, like date, time, etc.
 """  # pylint: disable=W0105
 
@@ -251,7 +249,8 @@ def dateFunc(dt=None, humanReadable=False):
 
 # OS-specific time formatting
 if operating_system.isWindows():
-    import pywintypes, win32api
+    import pywintypes
+    import win32api
 
     def rawTimeFunc(dt, minutes=True, seconds=False):
         """
@@ -296,7 +295,8 @@ if operating_system.isWindows():
         )
 
 elif operating_system.isMac():
-    import Cocoa, calendar
+    import Cocoa
+    import calendar
 
     # We don't actually respect the 'seconds' parameter; this assumes that the short time format does
     # not include them, but the medium format does.

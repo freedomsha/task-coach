@@ -477,7 +477,7 @@ class Application(object, metaclass=patterns.Singleton):
         from taskcoachlib import config
 
         ini_file = self._options.inifile if self._options else None
-        # est-ce qu'il existe un fichier inifile ? si non load_settings is False !
+        # is there an inifile file? otherwise load_settings is False!
         # pylint: disable=W0201
         self.settings = config.Settings(load_settings, ini_file)
 
@@ -597,6 +597,9 @@ class Application(object, metaclass=patterns.Singleton):
             signal.signal(signal.SIGTERM, quit_adapter)
             if hasattr(signal, "SIGHUP"):
                 forced_quit = lambda *args: self.quitApplication(force=True)
+                # def forced_quit(*args):
+                #     self.quitApplication(force=True)
+
                 signal.signal(
                     signal.SIGHUP, forced_quit
                 )  # pylint: disable=E1101
@@ -643,7 +646,6 @@ class Application(object, metaclass=patterns.Singleton):
             return True
         except Exception:
             return False  # pylint: disable=W0702
-
 
     @staticmethod
     def __close_splash(splash):

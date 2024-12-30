@@ -34,7 +34,7 @@ class SettingsCommand(base_uicommand.UICommand):  # pylint: disable=W0223
 
 
 class BooleanSettingsCommand(SettingsCommand):  # pylint: disable=W0223
-    """Bae class for commands that change a boolean setting.
+    """Base class for commands that change a boolean setting.
     Whenever the setting is changed, the user interface
     representation is changed as well. E.g. a menu gets
     a checkmark."""

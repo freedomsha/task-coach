@@ -21,22 +21,39 @@ class Singleton(type):
     """Singleton metaclass. Use by defining the metaclass of a class Singleton,
     e.g.: class ThereCanBeOnlyOne:
               __metaclass__ = Singleton
+
+    Called when the instance is "called" in function;
+    if this method is defined,
+    x(arg1, arg2, ...) roughly translates to type(x).__call__(x, arg1, . ..).
+    The object class itself does not provide this method.
+
+        :param *args: Variable length argument list.
+        :param **kwargs: Arbitrary keyword arguments.
+        :return:
     """
 
+    # instance = None  # Singleton attribute containing the instance
+    # hasInstance = None  # Singleton attribute containing the instance
+
+    # is it a @classmethod ?
+    # @classmethod
     def __call__(class_, *args, **kwargs):
         if not class_.hasInstance():
             # pylint: disable=W0201
             class_.instance = super(Singleton, class_).__call__(
                 *args, **kwargs
             )
+            # class_.instance = super().__call__(*args, **kwargs)
         return class_.instance
 
-    def deleteInstance(class_):
+    # @classmethod
+    def deleteInstance(class_) -> None:
         """Delete the (only) instance. This method is mainly for unittests so
         they can start with a clean slate."""
         if class_.hasInstance():
             del class_.instance
 
-    def hasInstance(class_):
+    # @classmethod
+    def hasInstance(class_) -> bool:
         """Has the (only) instance been created already?"""
         return "instance" in class_.__dict__

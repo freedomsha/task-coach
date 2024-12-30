@@ -25,7 +25,10 @@ import shutil
 import sys
 import time
 import unittest
-import win32process, win32event, win32gui, win32con
+import win32process
+import win32event
+import win32gui
+import win32con
 
 sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "sendinput"))
 from . import sendinput as si
@@ -57,7 +60,7 @@ class Window(object):
 
         try:
             win32gui.EnumChildWindows(self.hwnd, cb, None)
-        except:
+        except Exception:
             result = []  # pylint: disable=W0702
         return result
 

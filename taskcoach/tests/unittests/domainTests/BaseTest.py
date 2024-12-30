@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import wx
-import test
+from ... import test
 import weakref
 from taskcoachlib import patterns
 from taskcoachlib.domain import base, date

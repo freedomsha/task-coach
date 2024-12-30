@@ -246,6 +246,14 @@ class SynchronizedObject(object):
         """
         return self.__status == self.STATUS_DELETED
 
+    # TODO : need to uncomment ?
+    # @classmethod
+    # def modificationEventTypes(class_):
+    #     pass
+    #
+    # def __getcopystate__(self):
+    #     pass
+
 
 class Object(SynchronizedObject):
     """
@@ -1171,7 +1179,7 @@ class CompositeObject(Object, patterns.ObservableComposite):
         Returns:
             list: The list of event types.
         """
-        return super(CompositeObject, class_).modificationEventTypes() + [
+        return super().modificationEventTypes() + [
             class_.expansionChangedEventType()
         ]
 

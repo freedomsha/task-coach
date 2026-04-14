@@ -267,6 +267,14 @@ class BaseTaskViewer(
                 ),
             )
 
+    def to_wx_color(rgb):
+        """
+        Convertit (r, g, b) en wx.Colour.
+        """
+        import wx
+
+        return wx.Colour(*rgb)
+
     def __registerForAppearanceChanges(self):
         """
         C’est important pour les mises à jour de l’interface utilisateur !

@@ -35,6 +35,7 @@ Fonctions :
 Les fonctions internes telles que `convertAlphaToMask` gèrent des détails spécifiques à l'affichage, comme la conversion des canaux alpha en masques pour certaines plateformes comme GTK.
 """
 
+print("ARTPROVIDER IMPORT")
 # from __future__ import division
 
 # from builtins import chr
@@ -62,7 +63,13 @@ class ArtProvider(wx.ArtProvider):
     # Penser à Retirer le fournisseur d'images de la pile avec :
     # wx.ArtProvider.Pop()
     def CreateBitmap(self, artId, artClient, size):
+        """Création de bitmap avec import wx différé."""
+        # import wx  # Import local obligatoire
+
         # La méthode CreateIconBundle est similaire à CreateBitmap mais peut être utilisée lorsqu'un bitmap (ou une icône) existe en plusieurs tailles.
+        if not wx.GetApp():
+            return wx.NullBitmap  # sécurité anti crash
+
         # bitmap = wx.Bitmap(size[0], size[1])
         # dc = wx.MemoryDC(bitmap)
         # dc.SetBackground(wx.Brush(wx.Colour(0, 0, 0, 0)))  # Transparent
@@ -180,7 +187,11 @@ class ArtProvider(wx.ArtProvider):
             return self._CreateBitmap(artId, artClient, size)
 
     def _CreateBitmap(self, artId, artClient, size) -> wx.Bitmap:
-        """"""
+        """Création interne de bitmap."""
+
+        # import wx  # Import local
+        # from taskcoachlib.gui import icons  # Import différé
+
         # print("DEBUG: _CreateBitmap called")
         if not artId:
             # return wx.EmptyBitmap(*size)
@@ -208,6 +219,10 @@ class ArtProvider(wx.ArtProvider):
 
     @staticmethod
     def convertAlphaToMask(bitmap):
+        """Convertit alpha en masque."""
+
+        # import wx  # Import local
+
         # Conversion des bitmaps:
         # image = wx.ImageFromBitmap(bitmap)
         image = bitmap.ConvertToImage()
@@ -260,6 +275,8 @@ class IconProvider(object, metaclass=patterns.Singleton):
         car il contient plusieurs tailles (16, 32, 48...)
         pour que Windows/Linux choisisse la meilleure selon le contexte.
         """
+        # import wx
+
         bundle = wx.IconBundle()
         for size in (16, 22, 32, 48, 64, 128):
             bundle.AddIcon(self.getIconFromArtProvider(iconTitle, size))
@@ -276,6 +293,8 @@ class IconProvider(object, metaclass=patterns.Singleton):
         Returns:
 
         """
+        # import wx
+
         size = iconSize or self.__iconSizeOnCurrentPlatform
         # I just spent two hours trying to get rid of garbage in the icon
         # background on KDE. I give up.
@@ -318,6 +337,14 @@ def init():
     """Initialise l'ArtProvider avec certaines options spécifiques à la plateforme,
     notamment sous Windows pour désactiver certains remappages d'icônes avec corrections GTK.
     """
+    # import wx  # Import local pour éviter effets de bord
+
+    app = wx.GetApp()  # Récupère l'application wx
+    if not app:  # Si aucune application wx n'existe
+        app = wx.App(
+            False
+        )  # Création sécurisée d'une application wx sans interface graphique
+
     # wx.ArtProvider.PushProvider() était une méthode utilisée pour temporairement
     # remplacer le fournisseur d'images par défaut par un autre,
     # ce qui permettait de personnaliser l'apparence des éléments de l'interface.
@@ -335,6 +362,7 @@ def init():
     #     # wx.ArtProvider.PushBack(ArtProvider())
     # except AttributeError:
     #     # Nouvelle méthode Python3:
+    # Push du provider seulement après wx prêt à l'utiliser, sinon wx.ArtProvider n'existe pas encore.
     wx.ArtProvider.Push(ArtProvider())
     # wx.ArtProvider.PushBack(ArtProvider())
 

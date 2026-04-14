@@ -97,7 +97,8 @@ from lxml import etree as ET
 
 # from xml.etree import ElementTree as ET
 
-from taskcoachlib.domain.task.task import GUI_NAME
+# from taskcoachlib.domain.task.task import GUI_NAME
+from taskcoachlib.config.gui import GUI_NAME
 from taskcoachlib.persistence import sessiontempfile  # pylint: disable=F0401
 from taskcoachlib import meta, patterns
 from taskcoachlib.changes import ChangeMonitor

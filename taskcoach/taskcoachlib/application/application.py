@@ -135,9 +135,16 @@ def detect_dark_theme():
     Returns True if dark theme detected, False otherwise.
     Requires wxApp to be initialized.
     """
+    # import wx  # Import local
+    app = wx.GetApp()  # Récupère l'application wx actuelle
+    if not app:  # Si aucune application wx n'existe
+        return False  # On évite tout appel dangereux
+
     try:
-        appearance = wx.SystemSettings.GetAppearance()
-        return appearance.IsDark()
+        appearance = (
+            wx.SystemSettings.GetAppearance()
+        )  # Accès au thème système
+        return appearance.IsDark()  # Retourne True si sombre
     except AttributeError:
         # Older wxPython without GetAppearance()
         # Fallback: check if window background is dark
@@ -150,6 +157,8 @@ def detect_dark_theme():
             return luminance < 128
         except Exception:
             return False
+    except Exception:  # En cas de problème (wx pas prêt)
+        return False  # Valeur par défaut sécurisée
 
 
 class RedirectedOutput(object):
@@ -365,6 +374,10 @@ class Application(object, metaclass=patterns.Singleton):
     """
 
     def __init__(self, options=None, args=None, **kwargs):
+        # !!! fait TROP de choses !!!
+        # crée GUI, charge fichiers, appelle wx, etc.
+        # Un constructeur doit être léger, sinon:
+        # impossible de mock, impossible de tester sans GUI, crash wx
         """La méthode init est appelée avant le démarrage de l'application.
 
         Elle configure divers aspects de l'application, notamment la langue, le correcteur orthographique,
@@ -383,6 +396,7 @@ class Application(object, metaclass=patterns.Singleton):
         self.__auto_exporter = None
         self.__auto_saver = None
         self.taskFile = None
+        self.__early_lock_result = None
 
         self._options = options
         self._args = args
@@ -403,101 +417,110 @@ class Application(object, metaclass=patterns.Singleton):
         # # 1. Log environment info first (no dependencies)
         # _log_environment()
 
-        # 2. Load settings
-        self.__init_config(kwargs.get("loadSettings", True))
+        # Ne pas lancer le GUI dans __init__ -> anti-pattern
+        # # 1. wx-1-Create a new app FIRST to initialize traits (StandardPaths, etc.)
+        # self.__wx_app = wx.GetApp()
+        # if not self.__wx_app:
+        #     self.__wx_app = wxApp(
+        #         self.on_end_session, self.on_reopen_app, redirect=False
+        #     )
+        # Cette section est déplacée dans init()
+        # Pas de wx ici
+        self.__wx_app = None
+        #
+        # # 2. Load settings AFTER wxApp is initialized
+        # self.__init_config(kwargs.get("loadSettings", True))
+        #
+        # # myapp = MyApp() # functions normally. Stdio is redirected to its own window
+        # # myapp = MyApp(0) #does not redirect stdout. Tracebacks will show up at the console.
+        # # myapp = MyApp(1, 'filespec') #redirects stdout to the file 'filespec'
+        # # # NOTE: These are named parameters, so you can do this for improved readability:
+        # # myapp = MyApp(redirect = 1, filename = 'filespec') # will redirect stdout to 'filespec'
+        # # myapp = MyApp(redirect = 0) #stdio will stay at the console...
+        # # self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=1, filename=RedirectedOutput().__path)
+        # # Après cela, wx-2-création d'une Frame !(-> voir Dans init)
+        #
+        # # print("application.Application.__init__: self.__wx_app défini !")
+        # # log.debug("Application wxApp créée.")
+        #
+        # # # Twisted (4/5) Enregistrement de l'application dans Twisted
+        # # self.registerApp()
+        # # # print("application.Application.__init__: self.registerApp() !")
+        # # Expose settings on wxApp so wx.GetApp().settings works everywhere
+        # self.__wx_app.settings = self.settings
+        self.settings = None  # sera initialisé plus tard
+        #
+        # # # 4. Log wx-specific info (needs wxApp)
+        # # _log_wx_info()
+        #
+        # # 5. Acquire INI lock (needs wxApp for error dialog)
+        # self.settings.acquire_ini_lock()
+        # # wx-2 :
+        # # log.debug("Appel de la Méthode init().")
+        # self.init(**kwargs)  # passe mais n'atteint pas la suite ! goto l540
+        # # print("application.Application.__init__: self.init() !")
+        # # log.debug("Méthode init() appelée.")
+        #
+        # # self est Application (tclib.application.application.Application)
+        # # # Attributs d'instance définis en dehors de __init__ , nécessaires dans start:
+        # # # __version_checker, __message_checker
+        # # # taskFile, __auto_saver, __auto_exporter, __auto_backup, iocontroller, mainwindow
+        # # # 6 nouveaux paramètres nécessaires dans init
+        # # self.__version_checker = None
+        # # self.__message_checker = None
+        # # # Instance attribute taskFile, __auto_saver, __auto_exporter, __auto_backup, iocontroller, mainwindow
+        # # # defined outside __init__
+        # # # 6 nouveaux paramètres nécessaires dans init :
+        # # self.taskFile = None
+        # # self.__auto_saver = None
+        # # self.__auto_exporter = None
+        # # self.__auto_backup = None
+        # # self.iocontroller = None
+        # # self.mainwindow = None
 
-        # wx-1-Create a new app, don't redirect stdout/stderr to a window.
-        self.__wx_app = wxApp(
-            self.on_end_session, self.on_reopen_app, redirect=False
-        )
-        # myapp = MyApp() # functions normally. Stdio is redirected to its own window
-        # myapp = MyApp(0) #does not redirect stdout. Tracebacks will show up at the console.
-        # myapp = MyApp(1, 'filespec') #redirects stdout to the file 'filespec'
-        # # NOTE: These are named parameters, so you can do this for improved readability:
-        # myapp = MyApp(redirect = 1, filename = 'filespec') # will redirect stdout to 'filespec'
-        # myapp = MyApp(redirect = 0) #stdio will stay at the console...
-        # self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=1, filename=RedirectedOutput().__path)
-        # Après cela, wx-2-création d'une Frame !(-> voir Dans init)
-
-        # print("application.Application.__init__: self.__wx_app défini !")
-        # log.debug("Application wxApp créée.")
-
-        # # Twisted (4/5) Enregistrement de l'application dans Twisted
-        # self.registerApp()
-        # # print("application.Application.__init__: self.registerApp() !")
-        # Expose settings on wxApp so wx.GetApp().settings works everywhere
-        self.__wx_app.settings = self.settings
-
-        # # 4. Log wx-specific info (needs wxApp)
-        # _log_wx_info()
-
-        # 5. Acquire INI lock (needs wxApp for error dialog)
-        self.settings.acquire_ini_lock()
-        # wx-2 :
-        # log.debug("Appel de la Méthode init().")
-        self.init(**kwargs)  # passe mais n'atteint pas la suite ! goto l540
-        # print("application.Application.__init__: self.init() !")
-        # log.debug("Méthode init() appelée.")
-
-        # self est Application (tclib.application.application.Application)
-        # # Attributs d'instance définis en dehors de __init__ , nécessaires dans start:
-        # # __version_checker, __message_checker
-        # # taskFile, __auto_saver, __auto_exporter, __auto_backup, iocontroller, mainwindow
-        # # 6 nouveaux paramètres nécessaires dans init
-        # self.__version_checker = None
-        # self.__message_checker = None
-        # # Instance attribute taskFile, __auto_saver, __auto_exporter, __auto_backup, iocontroller, mainwindow
-        # # defined outside __init__
-        # # 6 nouveaux paramètres nécessaires dans init :
-        # self.taskFile = None
-        # self.__auto_saver = None
-        # self.__auto_exporter = None
-        # self.__auto_backup = None
-        # self.iocontroller = None
-        # self.mainwindow = None
-
-        if operating_system.isGTK():
-            if self.settings.getboolean("feature", "usesm2"):
-                from taskcoachlib.powermgt import xsm
-
-                class LinuxSessionMonitor(xsm.SessionMonitor):
-                    def __init__(self, callback):
-                        super().__init__()
-                        self._callback = callback
-                        self.setProperty(xsm.SmCloneCommand, sys.argv)
-                        self.setProperty(xsm.SmRestartCommand, sys.argv)
-                        self.setProperty(xsm.SmCurrentDirectory, os.getcwd())
-                        self.setProperty(xsm.SmProgram, sys.argv[0])
-                        self.setProperty(
-                            xsm.SmRestartStyleHint, xsm.SmRestartNever
-                        )
-
-                    def saveYourself(
-                        self, saveType, shutdown, interactStyle, fast
-                    ):  # pylint: disable=W0613
-                        if shutdown:
-                            wx.CallAfter(self._callback)
-                        self.saveYourselfDone(True)
-
-                    def die(self):
-                        pass
-
-                    def saveComplete(self):
-                        pass
-
-                    def shutdownCancelled(self):
-                        pass
-
-                self.sessionMonitor = LinuxSessionMonitor(
-                    self.on_end_session
-                )  # pylint: disable=W0201
-            else:
-                self.sessionMonitor = None
-
-        # print("application.Application.__init__: isGTK? !")
-        calendar.setfirstweekday(
-            dict(monday=0, sunday=6)[self.settings.get("view", "weekstart")]
-        )
+        # if operating_system.isGTK():
+        #     if self.settings.getboolean("feature", "usesm2"):
+        #         from taskcoachlib.powermgt import xsm
+        #
+        #         class LinuxSessionMonitor(xsm.SessionMonitor):
+        #             def __init__(self, callback):
+        #                 super().__init__()
+        #                 self._callback = callback
+        #                 self.setProperty(xsm.SmCloneCommand, sys.argv)
+        #                 self.setProperty(xsm.SmRestartCommand, sys.argv)
+        #                 self.setProperty(xsm.SmCurrentDirectory, os.getcwd())
+        #                 self.setProperty(xsm.SmProgram, sys.argv[0])
+        #                 self.setProperty(
+        #                     xsm.SmRestartStyleHint, xsm.SmRestartNever
+        #                 )
+        #
+        #             def saveYourself(
+        #                 self, saveType, shutdown, interactStyle, fast
+        #             ):  # pylint: disable=W0613
+        #                 if shutdown:
+        #                     wx.CallAfter(self._callback)
+        #                 self.saveYourselfDone(True)
+        #
+        #             def die(self):
+        #                 pass
+        #
+        #             def saveComplete(self):
+        #                 pass
+        #
+        #             def shutdownCancelled(self):
+        #                 pass
+        #
+        #         self.sessionMonitor = LinuxSessionMonitor(
+        #             self.on_end_session
+        #         )  # pylint: disable=W0201
+        #     else:
+        #         self.sessionMonitor = None
+        #
+        # # print("application.Application.__init__: isGTK? !")
+        # calendar.setfirstweekday(
+        #     dict(monday=0, sunday=6)[self.settings.get("view", "weekstart")]
+        # )
+        self.sessionMonitor = None
 
     # # NOTE: initTwisted(), stopTwisted(), and registerApp() methods removed.
     # # Previously used Twisted's wxreactor for event loop integration.
@@ -821,6 +844,24 @@ class Application(object, metaclass=patterns.Singleton):
             "Application.init: Initialisation des composants de l'application."
         )
 
+        # 1. Initialiser wx AVANT tout appel GUI, autrefois dans __init__
+        # import wx
+        self.__wx_app = wx.GetApp()
+        if not wx.GetApp():
+            self.__wx_app = wxApp(
+                self.on_end_session, self.on_reopen_app, redirect=False
+            )
+
+        # 2. Charger config APRÈS wx
+        self.__init_config(loadSettings)
+
+        # 3. Exposer settings à wx
+        self.__wx_app.settings = self.settings
+
+        # 4. Lock fichier
+        self.settings.acquire_ini_lock()
+        # fin du changement de __init__
+
         # try:
         # Attributs d'instance:
         # self.__init_config(loadSettings)  # Recréation de self.settings déjà appelé dans __init__. -> erreur
@@ -831,6 +872,48 @@ class Application(object, metaclass=patterns.Singleton):
         self.__init_application()  # Réglage des paramètres nom et auteurs de l'application.
         # Problème de doublon d'image ! : réglé, double entrée de .mainwindow dans gui/init.py
         # print("application.Application.init : attributs ok !")
+        if operating_system.isGTK():
+            if self.settings.getboolean("feature", "usesm2"):
+                from taskcoachlib.powermgt import xsm
+
+                class LinuxSessionMonitor(xsm.SessionMonitor):
+                    def __init__(self, callback):
+                        super().__init__()
+                        self._callback = callback
+                        self.setProperty(xsm.SmCloneCommand, sys.argv)
+                        self.setProperty(xsm.SmRestartCommand, sys.argv)
+                        self.setProperty(xsm.SmCurrentDirectory, os.getcwd())
+                        self.setProperty(xsm.SmProgram, sys.argv[0])
+                        self.setProperty(
+                            xsm.SmRestartStyleHint, xsm.SmRestartNever
+                        )
+
+                    def saveYourself(
+                        self, saveType, shutdown, interactStyle, fast
+                    ):  # pylint: disable=W0613
+                        if shutdown:
+                            wx.CallAfter(self._callback)
+                        self.saveYourselfDone(True)
+
+                    def die(self):
+                        pass
+
+                    def saveComplete(self):
+                        pass
+
+                    def shutdownCancelled(self):
+                        pass
+
+                self.sessionMonitor = LinuxSessionMonitor(
+                    self.on_end_session
+                )  # pylint: disable=W0201
+            else:
+                self.sessionMonitor = None
+
+        # print("application.Application.__init__: isGTK? !")
+        calendar.setfirstweekday(
+            dict(monday=0, sunday=6)[self.settings.get("view", "weekstart")]
+        )
 
         # Check file lock BEFORE creating main window to avoid dialog/focus issues
         # This is done early because showing dialogs after main window creation
@@ -885,6 +968,8 @@ class Application(object, metaclass=patterns.Singleton):
         self.mainwindow = gui.mainwindow.MainWindow(
             self.iocontroller, self.taskFile, self.settings, splash=splash
         )  # A Frame is a top-level window.
+        # Initialisation GUI tardive (wx prêt)
+        wx.CallAfter(self.__post_gui_init)
         log.info("Application.init: TASKS: %s", len(self.taskFile.tasks()))
         log.info(
             "Application.init: VIEWER: %s",
@@ -1102,6 +1187,10 @@ Break the lock?""") % filename,
                 "Application.__init_language : Erreur lors de l'initialisation de la langue: %s",
                 str(e),
             )
+
+    def __post_gui_init(self):
+        """Initialisation dépendante du GUI (appelée après wx prêt)."""
+        self.is_dark_theme = detect_dark_theme()
 
     @staticmethod
     def determine_language(
@@ -1805,5 +1894,10 @@ Break the lock?""") % filename,
         # Des threads Python ou des timers wx peuvent garder le process vivant. Vérifie si tu utilises des threads, timers, ou des callbacks récurrents dans Task Coach.
         return True  # This code is unreachable
 
-    def delete_instance(self):
-        pass
+    @classmethod
+    def delete_instance(cls):
+        """Réinitialise proprement le singleton pour les tests unitaires."""
+        if cls in cls._instances:
+            del cls._instances[cls]
+        if wx.GetApp():
+            wx.GetApp().ExitMainLoop()

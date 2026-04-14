@@ -15,9 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from taskcoachlib.domain.task.task import GUI_NAME
+
+# from taskcoachlib.domain.task.task import GUI_NAME
+"""
+Initialisation des tests selon le backend GUI.
+"""
+
+from taskcoachlib.config.gui import GUI_NAME  # Import SAFE
 
 if GUI_NAME == "wx":
     from . import tctest as tctest
-elif GUI_NAME =="tk":
+elif GUI_NAME == "tk":
     from . import tctktest as tctktest

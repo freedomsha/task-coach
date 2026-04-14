@@ -58,7 +58,19 @@ Les développeurs de tests héritent généralement de `TestCase` ou `wxTestCase
 fournies et implémentent des méthodes de test individuelles pour vérifier le comportement attendu du code.
 """
 
+print("IMPORT tctest START")
 import os
+
+os.environ["DISPLAY"] = ":0"
+
+os.environ["WX_USE_NATIVE_BACKEND"] = "0"
+
+import wx
+
+# ⚠️ CRITIQUE : créer wx.App AVANT tout le reste
+if not wx.GetApp():
+    app = wx.App(False)
+# import os
 import sys
 import unittest
 import logging
@@ -66,11 +78,17 @@ import gettext
 import platform
 
 from pubsub import pub
-import wx
+
+# import wx
 
 from taskcoachlib import patterns
 
 gettext.NullTranslations().install()
+
+# Empêcher wx de planter sans DISPLAY
+if "DISPLAY" not in os.environ:
+    # Si l'environnement est sans GUI (ou PyCHarm mal configuré) :
+    os.environ["DISPLAY"] = ":0"
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -78,7 +96,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # TMP: compat to map wx platform strings
 _PLATFORM_MAP = {
     "__WXGTK__": "Linux",
-    }
+}
 
 
 def skipOnPlatform(*platforms):
@@ -98,11 +116,17 @@ def skipOnPlatform(*platforms):
         Callable: Fonction qui ignore le test ou exécute la méthode de test d'origine
         , en fonction de la plateforme actuelle.
     """
+
     def wrapper(func):
+        # import wx
+
         if platform.system() in [_PLATFORM_MAP[name] for name in platforms]:
             # return lambda self, *args, **kwargs: self.skipTest("platform is %s" % wx.Platform)
-            return lambda self, *args, **kwargs: self.skipTest(f"platform is {wx.Platform}")
+            return lambda self, *args, **kwargs: self.skipTest(
+                f"platform is {wx.Platform}"
+            )
         return func
+
     return wrapper
 
 
@@ -153,19 +177,46 @@ class TestCase(unittest.TestCase):
         app (wx.App): An instance of `wx.App`, which is required for initializing
             wxPython objects that depend on an application context.
     """
+
     # Some non-UI stuff also needs the app to be constructed (like
     # wx.BLACK et al)
-    app = wx.App(0)
+    # app = wx.App(0)  # Cette ligne pose un problème pour passer les tests !
+    # # PyCharm lance tctest.py
+    # # Python importe le fichier
+    # # 👉 wx.App(0) est exécuté immédiatement
+    # # wx n’est pas prêt (DISPLAY, thread, contexte…)
+    # # 💥 crash C++ → traits failed + SIGSEGV
+    # # Solution :
+    app = None  # initialisation différée
+
+    @classmethod
+    def setUpClass(cls):
+        """Initialise wx.App une seule fois pour tous les tests."""
+        import wx  # Import local
+
+        cls.app = wx.GetApp()  # Récupère l'app existante
+        if not cls.app:  # Si aucune app wx n'existe
+            cls.app = wx.App(False)  # Création propre sans redirection
+        if not wx.App.IsMainLoopRunning():
+            cls.app = wx.App(False)  # Assure que l'app est prête
 
     def tearDown(self):
-        self.app.Disconnect(wx.ID_ANY)
+        """Nettoyage après chaque test."""
+        import wx  # Import wx local pour éviter les problèmes d'importation
 
-        patterns.Publisher().clear()
-        patterns.NumberedInstances.count = dict()
+        # self.app.Disconnect(wx.ID_ANY)
+        if self.app:  # Vérifie que l'app existe
+            try:
+                self.app.Disconnect(wx.ID_ANY)  # Déconnecte événements wx
+            except Exception:
+                pass  # Ignore erreurs wx
+
+        patterns.Publisher().clear()  # Reset pubsub
+        patterns.NumberedInstances.count = dict()  # Reset IDs
         if hasattr(self, "events"):
-            del self.events
-        pub.unsubAll()
-        super().tearDown()
+            del self.events  # Nettoyage attribut
+        pub.unsubAll()  # Désinscription pubsub
+        super().tearDown()  # Appel parent
 
     # Pourrais être remplacé par assertListEqual :
     def assertEqualLists(self, expectedList, actualList):
@@ -179,8 +230,9 @@ class TestCase(unittest.TestCase):
     def registerObserver(self, eventType, eventSource=None):
         if not hasattr(self, "events"):
             self.events = []  # pylint: disable=W0201
-        patterns.Publisher().registerObserver(self.onEvent, eventType=eventType,
-                                              eventSource=eventSource)
+        patterns.Publisher().registerObserver(
+            self.onEvent, eventType=eventType, eventSource=eventSource
+        )
 
     def onEvent(self, event):
         self.events.append(event)
@@ -198,6 +250,7 @@ class TestCaseFrame(wx.Frame):
     Attributes:
         toolbarPerspective (str): Stores the perspective of the toolbar.
     """
+
     def __init__(self):
         super().__init__(None, wx.ID_ANY, "Frame")
         self.toolbarPerspective = ""
@@ -223,10 +276,31 @@ class wxTestCase(TestCase):
     Attributes:
         frame (TestCaseFrame): A frame used for testing GUI components.
     """
-    # pylint: disable=W0404
-    frame = TestCaseFrame()
-    from taskcoachlib import gui
-    gui.init()
+
+    # # pylint: disable=W0404
+    # frame = TestCaseFrame()
+    # from taskcoachlib import gui
+    #
+    # gui.init()  # appelé trop tôt
+    # # Remplacer par :
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        import wx  # Import local
+
+        # 🔒 S'assurer que wx est prêt AVANT gui
+        app = wx.GetApp()
+        if not app:
+            app = wx.App(False)
+
+        # ⚠️ Import différé CRUCIAL pour éviter les problèmes d'importation et de contexte wx
+        from taskcoachlib import gui
+
+        print("AVANT GUI INIT")
+        # ⚠️ Initialisation GUI seulement après wx.App
+        gui.init()
+
+        cls.frame = TestCaseFrame()
 
     def tearDown(self):
         super().tearDown()

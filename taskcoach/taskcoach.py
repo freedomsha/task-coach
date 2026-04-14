@@ -295,6 +295,10 @@ def start():
         # print("taskcoach.py: options.profile:", options.profile)  # is False !
     log.debug("Option --profile active : %s", options.profile)
     # Lancement de l'application :
+    # Il est impératif d'appeler explicitement app.init() avant de démarrer l'application,
+    # car c'est cette méthode qui charge les préférences utilisateur et prépare l'interface.
+    app.init()  # logique
+
     if options.profile:
         # if options["profile"]:
         import cProfile

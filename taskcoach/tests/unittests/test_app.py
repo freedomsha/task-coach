@@ -31,13 +31,28 @@ class DummyOptions(object):
 class DummyLocale(object):
     def __init__(self, language="C"):
         self.language = language
+        self.LC_MESSAGES = 1
 
-    def getdefaultlocale(self):
+    # def getdefaultlocale(self):
+    def getdefaultlocale(self, category=None):
         return self.language, None
 
 
 class AppTests(tctest.TestCase):
     def setUp(self):
+        # On s'assure qu'aucune instance résiduelle ne pollue le test
+        application.Application.delete_instance()
+
+        # Pour les tests unitaires qui n'instancient pas Application,
+        # on crée une wx.App minimale pour éviter le crash "traits".
+        # self.wx_app = wx.GetApp() or wx.App()
+        self.wx_app = wx.GetApp()
+        if not self.wx_app:
+            self.wx_app = wx.App(
+                False
+            )  # important: False = pas de redirection
+            self.wx_app.SetAppName("TestApp")
+
         super(AppTests, self).setUp()
         self.settings = config.Settings(load=False)
         self.options = DummyOptions()
@@ -46,7 +61,12 @@ class AppTests(tctest.TestCase):
         import locale
 
         # if locale.getdefaultlocale()[0] != "en_US":
-        if locale.getlocale()[0] != "en_US":
+        # if locale.getlocale()[0] != "en_US":
+        try:
+            loc = locale.getdefaultlocale(locale.LC_MESSAGES)[0]
+        except (IndexError, TypeError, AttributeError):
+            loc = None
+        if loc != "en_US" and loc != "en" and loc is not None:
             # Somehow wx displays an error dialog box if en_US is not installed, when
             # quitApplication() calls ProcessIdle and I don't know how to get rid of it.
             # I don't know how to find out if en_US is installed either, so skip if
@@ -55,14 +75,25 @@ class AppTests(tctest.TestCase):
         else:
             # Normally I prefer one assert per test, but creating the app is
             # expensive, so we do all the queries in one test method.
-            app = application.Application(loadSettings=False, loadTaskFile=False)
+
+            # On supprime l'instance de l'application précédente (dummy) pour
+            # permettre au singleton Application de se réinitialiser proprement.
+            application.Application.delete_instance()
+
+            # app = application.Application(
+            #     loadSettings=False, loadTaskFile=False
+            # )
+            app = application.Application()
+            app.init(loadSettings=False, loadTaskFile=False)
             wxApp = wx.GetApp()
             self.assertEqual(meta.name, wxApp.GetAppName())
             self.assertEqual(meta.author, wxApp.GetVendorName())
-            app.mainwindow._idleController.stop()
-            app.quitApplication()
-            app.mainwindow.Destroy()
-            application.Application.delete_instance()
+            if hasattr(app, "mainwindow") and app.mainwindow:
+                app.mainwindow._idleController.stop()
+                # app.quitApplication()
+                app.mainwindow.Destroy()
+            # application.Application.delete_instance()
+            app.delete_instance()
 
     def assertLanguage(self, expectedLanguage, locale=None):
         args = [self.options, self.settings]

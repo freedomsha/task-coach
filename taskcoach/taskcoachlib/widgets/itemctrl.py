@@ -69,6 +69,8 @@ from taskcoachlib.widgets import tooltip
 # from taskcoachlib.thirdparty.customtreectrl import *
 from wx.lib.agw import hypertreelist
 
+# from wx.lib.agw.hypertreelist import *
+
 log = logging.getLogger(__name__)
 
 
@@ -696,6 +698,10 @@ class Column(object):
         return self.__parse(value)
 
     def value(self, domainObject):
+        """Récupère la valeur de la colonne pour un objet métier donné.
+
+        Par défaut appelle l'attribut/méthode nommée comme la colonne sur domainObject.
+        """
         return getattr(domainObject, self.name())()
 
     def __eq__(self, other):

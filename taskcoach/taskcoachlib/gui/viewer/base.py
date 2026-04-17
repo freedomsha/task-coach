@@ -228,7 +228,8 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
 
         # création du filtre appliqué aux objets
         filtered_collection = self.createFilter(
-            self.domainObjectsToView()
+            # self.domainObjectsToView()
+            domain_objects
         )  # construit la collection filtrée
         log.debug(
             f"Viewer.__init__ : après filtre : {len(filtered_collection)}"
@@ -347,7 +348,9 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         )
         self.__freezeCount += 1
         self.__presentation.freeze()
-        log.debug(f"Viewer.onBeginIO : Freeze terminé !")
+        log.debug(
+            f"Viewer.onBeginIO : Freeze terminé ! self.__freezeCount={self.__freezeCount}"
+        )
 
     def onEndIO(
         self, taskFile
@@ -371,10 +374,11 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
                 f"Viewer.onEndIO : Recréation de la présentation pour {self.__class__.__name__} après thaw."
             )
             # Supprimer la recréation — elle cause des bugs:
-            # self.__presentation = self.createSorter(
-            #     self.createFilter(self.domainObjectsToView())
-            # )  # Recréation de self.__presentation ! DANGER ! Nous devons recréer la présentation après le chargement pour refléter les nouvelles données du fichier de tâches. Cependant, cela peut entraîner des problèmes si d'autres parties du code conservent des références à l'ancienne présentation. Nous devons nous assurer que toutes les références à l'ancienne présentation sont mises à jour ou que nous utilisons une approche qui ne nécessite pas de recréer la présentation.
+            self.__presentation = self.createSorter(
+                self.createFilter(self.domainObjectsToView())
+            )  # Recréation de self.__presentation ! DANGER ! Nous devons recréer la présentation après le chargement pour refléter les nouvelles données du fichier de tâches. Cependant, cela peut entraîner des problèmes si d'autres parties du code conservent des références à l'ancienne présentation. Nous devons nous assurer que toutes les références à l'ancienne présentation sont mises à jour ou que nous utilisons une approche qui ne nécessite pas de recréer la présentation.
             # Non, pas besoin, self.__presentation.thaw() s'en occupe déjà.
+            log.error(f"observable: {self.__presentation.observable()}")
             log.debug(
                 f"Viewer.onEndIO : Appel de refresh pour {self.__class__.__name__} après thaw, self.__freezeCount={self.__freezeCount}."
             )
@@ -794,13 +798,16 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
 
     # def refresh(self):
     def refresh(self, *args, **kwargs):
-        """Rafraîchir les éléments affichés dans la visionneuse."""
+        """Rafraîchir les éléments affichés dans la visionneuse.
+        On n'affiche que les racines. La hiérarchie est gérée par le widget
+        via les appels récursifs à children()."""
         log.debug(
             f"Viewer.refresh : Appel de refresh pour {self.__class__.__name__} !"
         )
-        log.debug(
+        log.error(
             f"Viewer.refresh - tasks in model: {len(self.taskFile.tasks())}"
         )
+        log.error(f"PRESENTATION TASKS: {len(self.presentation())}")
         log.debug(f"Viewer.refresh - self.taskFile id : {id(self.taskFile)}")
         # !!! Important : self.presentation() est une collection décorée (ex: Sorter) qui observe la collection de base (ex: self.taskFile.tasks()).
         # Si self.presentation() n'observe pas correctement la collection de base, ou si la collection de base n'est pas correctement initialisée, alors self.presentation() peut être vide ou ne pas refléter les éléments attendus, ce qui entraînera un rafraîchissement avec 0 éléments.
@@ -819,7 +826,11 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
             f"Viewer.refresh DEBUG id presentation.observable(): {id(self.presentation().observable())}"
         )
         if self and not self.__freezeCount:
-            count = len(self.presentation())
+            # On vérifie si laméthode existe pour éviter le plantage sur ListViewer
+            if self.isTreeViewer() and self.getRootItems():
+                count = len(self.getRootItems())
+            else:
+                count = len(self.presentation())
             # log.debug(
             #     f"Viewer.refresh : Rafraîchissement de la visionneuse {self.__class__.__name__} avec {len(self.presentation())} éléments."
             # )
@@ -866,6 +877,15 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
     #     self.after(1, doRefresh)
 
     def refreshItems(self, *items):
+        """
+        Rafraîchit les éléments spécifiés dans la visionneuse.
+
+        Args:
+            *items: Liste d'éléments à rafraîchir dans la visionneuse.
+
+        Returns:
+
+        """
         log.debug(
             f"Viewer.refreshItems : Appel de refreshItems pour {self.__class__.__name__} avec items={items}."
         )
@@ -1760,10 +1780,22 @@ class TreeViewer(Viewer):  # pylint: disable=W0223
         if parent is None:
             # # result = list(presentation)
             # result = self.getRootItems()
+            # Return only the root items from the presentation. Using the
+            # presentation iterable directly may yield all items (flattened)
+            # which causes a flat list instead of a hierarchical tree. Use
+            # getRootItems() which delegates to presentation.rootItems()
+            # and therefore returns only true root elements (parent() is None).
             log.debug(
                 f"TreeViewer.children : parent est None, retourne les éléments racines de la présentation {presentation}."
             )
-            result = presentation
+            # result = presentation
+            # retourner presentation peut renvoyer tous les éléments (flatten), (c'est qu'il y a une erreur dans la construction de presentation puisque l'on est dans un TreeViewer !)
+            # ce qui fait que tous les objets apparaissent
+            # comme enfants directs de la racine et donne un affichage aplati.
+            # rootItems() renvoie uniquement les éléments dont parent() is None
+            # (les vrais racines), ce qui permet ensuite la récursivité correcte
+            # (les vrais enfants seront retournés par parent.children() plus bas).
+            result = self.getRootItems()
         else:
             # result = list(presentation.childrenOf(parent))
             result = parent.children()

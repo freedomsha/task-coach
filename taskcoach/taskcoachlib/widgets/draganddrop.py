@@ -340,7 +340,9 @@ class TreeHelperMixin(object):
 
     def GetItemChildren(self, item=None, recursively=False):
         """Return the children of item as a list."""
+        # Si pas d'item:
         if not item:
+            #
             item = self.GetRootItem()
             if not item:
                 return []

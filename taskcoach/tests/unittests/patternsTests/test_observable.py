@@ -27,7 +27,9 @@ class EventTest(tctest.TestCase):
         self.event = patterns.Event("eventtype", self, "some value")
 
     def testEqualWhenAllValuesAreEqual(self):
-        self.assertEqual(self.event, patterns.Event("eventtype", self, "some value"))
+        self.assertEqual(
+            self.event, patterns.Event("eventtype", self, "some value")
+        )
 
     def testUnequalWhenValuesAreDifferent(self):
         self.assertNotEqual(
@@ -40,7 +42,9 @@ class EventTest(tctest.TestCase):
         )
 
     def testUnequalWhenSourcesAreDifferent(self):
-        self.assertNotEqual(self.event, patterns.Event("eventtype", None, "some value"))
+        self.assertNotEqual(
+            self.event, patterns.Event("eventtype", None, "some value")
+        )
 
     def testEventWithoutType(self):
         event = patterns.Event()
@@ -57,7 +61,12 @@ class EventTest(tctest.TestCase):
         self.assertEqual("some value", self.event.value())
 
     def testEventValues(self):
-        self.assertEqual(["some value",], list(self.event.values()))
+        self.assertEqual(
+            [
+                "some value",
+            ],
+            list(self.event.values()),
+        )
 
     def testEventValueForSpecificSource(self):
         self.assertEqual("some value", self.event.value(self))
@@ -79,25 +88,33 @@ class EventTest(tctest.TestCase):
 
     def testAddSourceAndValues(self):
         self.event.addSource("source", "value1", "value2")
-        self.assertEqual(set(["value1", "value2"]), set(self.event.values("source")))
+        self.assertEqual(
+            set(["value1", "value2"]), set(self.event.values("source"))
+        )
 
     def testExistingSourceAndValue(self):
         self.event.addSource(self, "new value")
-        self.assertEqual(set(["some value", "new value"]), set(self.event.values()))
+        self.assertEqual(
+            set(["some value", "new value"]), set(self.event.values())
+        )
 
     def testEventTypes(self):
         self.assertEqual(set(["eventtype"]), self.event.types())
 
     def testAddSourceForSpecificType(self):
         self.event.addSource(self, type="another eventtype")
-        self.assertEqual(set(["eventtype", "another eventtype"]), self.event.types())
+        self.assertEqual(
+            set(["eventtype", "another eventtype"]), self.event.types()
+        )
 
     def testGetSourcesForSpecificType(self):
         self.assertEqual(set([self]), self.event.sources("eventtype"))
 
     def testGetSourcesForSpecificTypes(self):
         self.event.addSource("source", type="another eventtype")
-        self.assertEqual(set([self, "source"]), self.event.sources(*self.event.types()))
+        self.assertEqual(
+            set([self, "source"]), self.event.sources(*self.event.types())
+        )
 
     def testGetSourcesForNonExistingEventType(self):
         self.assertEqual(set(), self.event.sources("unused eventType"))
@@ -108,10 +125,14 @@ class EventTest(tctest.TestCase):
 
     def testAddSourceAndValueForSpecificType(self):
         self.event.addSource("source", "value", type="another eventtype")
-        self.assertEqual("value", self.event.value("source", "another eventtype"))
+        self.assertEqual(
+            "value", self.event.value("source", "another eventtype")
+        )
 
     def testAddSourceAndValuesForSpecificType(self):
-        self.event.addSource("source", "value1", "value2", type="another eventtype")
+        self.event.addSource(
+            "source", "value1", "value2", type="another eventtype"
+        )
         self.assertEqual(
             set(["value1", "value2"]),
             set(self.event.values("source", "another eventtype")),
@@ -121,11 +142,15 @@ class EventTest(tctest.TestCase):
         self.event.addSource(self, type="another eventtype")
         self.assertEqual(set([self]), self.event.sources())
 
-    def testAddExistingSourceWithValueToTypeDoesNotRemoveValueForEarlierType(self):
+    def testAddExistingSourceWithValueToTypeDoesNotRemoveValueForEarlierType(
+        self,
+    ):
         self.event.addSource(
             self, "value for another eventtype", type="another eventtype"
         )
-        self.assertEqual("some value", self.event.value(self, type="eventtype"))
+        self.assertEqual(
+            "some value", self.event.value(self, type="eventtype")
+        )
 
     def testAddExistingSourceWithValueToType(self):
         self.event.addSource(
@@ -137,12 +162,16 @@ class EventTest(tctest.TestCase):
         )
 
     def testSubEventForOneTypeWhenEventHasOneType(self):
-        self.assertEqual(self.event, self.event.subEvent((self.event.type(), self)))
+        self.assertEqual(
+            self.event, self.event.subEvent((self.event.type(), self))
+        )
 
     def testSubEventForOneTypeWhenEventHasTwoTypes(self):
         self.event.addSource("source", type="another eventtype")
         expectedEvent = patterns.Event("eventtype", self, "some value")
-        self.assertEqual(expectedEvent, self.event.subEvent(("eventtype", self)))
+        self.assertEqual(
+            expectedEvent, self.event.subEvent(("eventtype", self))
+        )
 
     def testSubEventForTwoTypesWhenEventHasTwoTypes(self):
         self.event.addSource("source", type="another eventtype")
@@ -163,18 +192,33 @@ class EventTest(tctest.TestCase):
         self.assertEqual(self.event, self.event.subEvent(("eventtype", None)))
 
     def testSubEventForUnspecifiedSourceAndSpecifiedSources(self):
+        """
+
+        Dans le test, vous passez deux arguments à subEvent :
+
+            ("eventtype", self) : Demande d'ajouter la source self pour le type eventtype.
+
+            ["eventtype", None] : Demande d'ajouter toutes les sources (car la source est None) pour le type eventtype.
+
+        Returns:
+
+        """
         self.assertEqual(
-            self.event, self.event.subEvent(("eventtype", self), ["eventtype", None])
+            self.event,
+            self.event.subEvent(("eventtype", self), ["eventtype", None]),
         )
 
     def testSubEventForSourceThatIsNotPresent(self):
         self.assertEqual(
-            patterns.Event(), self.event.subEvent(("eventtype", "missing source"))
+            patterns.Event(),
+            self.event.subEvent(("eventtype", "missing source")),
         )
 
     def testSubEventForSourceThatIsNotPresentForSpecifiedType(self):
         self.event.addSource("source", type="another eventtype")
-        self.assertEqual(patterns.Event(), self.event.subEvent(("eventtype", "source")))
+        self.assertEqual(
+            patterns.Event(), self.event.subEvent(("eventtype", "source"))
+        )
 
 
 class ObservableCollectionFixture(tctest.TestCase):
@@ -278,7 +322,9 @@ class ObservableCollectionTestsMixin(object):
     def testClear_Notification(self):
         self.collection.extend([1, 2, 3])
         self.collection.clear()
-        self.assertEqual([1, 2, 3], list(self.receivedRemoveEvents[0].values()))
+        self.assertEqual(
+            [1, 2, 3], list(self.receivedRemoveEvents[0].values())
+        )
 
     def testClear_NoNotificationWhenNoItems(self):
         self.collection.clear()
@@ -286,12 +332,17 @@ class ObservableCollectionTestsMixin(object):
 
     def testModificationEventTypes(self):
         self.assertEqual(
-            [self.collection.addItemEventType(), self.collection.removeItemEventType()],
+            [
+                self.collection.addItemEventType(),
+                self.collection.removeItemEventType(),
+            ],
             self.collection.modificationEventTypes(),
         )
 
 
-class ObservableListTest(ObservableCollectionFixture, ObservableCollectionTestsMixin):
+class ObservableListTest(
+    ObservableCollectionFixture, ObservableCollectionTestsMixin
+):
     def createObservableCollection(self):
         return patterns.ObservableList()
 
@@ -301,7 +352,9 @@ class ObservableListTest(ObservableCollectionFixture, ObservableCollectionTestsM
         self.assertEqual(2, len(self.collection))
 
 
-class ObservableSetTest(ObservableCollectionFixture, ObservableCollectionTestsMixin):
+class ObservableSetTest(
+    ObservableCollectionFixture, ObservableCollectionTestsMixin
+):
     def createObservableCollection(self):
         return patterns.ObservableSet()
 
@@ -511,7 +564,9 @@ class PublisherTest(tctest.TestCase):
             [self.onEvent], self.publisher.observers(eventType="eventType")
         )
 
-    def testGetObserversForSpecificEventType_WhenDifferentTypesRegistered(self):
+    def testGetObserversForSpecificEventType_WhenDifferentTypesRegistered(
+        self,
+    ):
         self.publisher.registerObserver(self.onEvent, eventType="eventType1")
         self.publisher.registerObserver(self.onEvent, eventType="eventType2")
         self.assertEqual(
@@ -613,7 +668,9 @@ class PublisherTest(tctest.TestCase):
         event.send()
         self.assertFalse(self.events)
 
-    def testRemoveObserverForSpecificEventType_RegisteredForSpecificSource(self):
+    def testRemoveObserverForSpecificEventType_RegisteredForSpecificSource(
+        self,
+    ):
         self.publisher.registerObserver(
             self.onEvent, eventType="eventType", eventSource="observable1"
         )
@@ -650,7 +707,9 @@ class PublisherTest(tctest.TestCase):
         patterns.Event("eventType2", "observable1").send()
         self.assertTrue(self.events)
 
-    def testRemoveObserverForSpecificEventTypeAndSourceDoesNotRemoveOtherSources(self):
+    def testRemoveObserverForSpecificEventTypeAndSourceDoesNotRemoveOtherSources(
+        self,
+    ):
         self.publisher.registerObserver(
             self.onEvent, eventType="eventType1", eventSource="observable1"
         )

@@ -337,7 +337,17 @@ class Event(object):
         Returns :
             Event : L'événement de sous-ensemble.
         """
+        # Il faut s'assurer que subEvent ne traite pas plusieurs fois la même combinaison de (type, source).
+        # On utilise un ensemble (set) pour suivre les combinaisons déjà ajoutées au nouvel événement.
+        # Unicité : En suivant les couples (type_s, eachSource) dans l'ensemble added,
+        # le code ignore la deuxième requête du test car ('eventtype', self)
+        # a déjà été inséré lors de la première itération.
+        #
+        # Conformité au test : L'événement résultant ne contiendra qu'une seule fois la valeur,
+        # correspondant ainsi à self.event et faisant passer l'assertion assertEqual.
         subEvent = self.__class__()
+        added = set()  # Pour suivre les (type, source) déjà traités
+
         for type_s, source in typesAndSources:
             sourcesToAdd = self.sources(type_s)
             if source is not None:
@@ -349,9 +359,15 @@ class Event(object):
                 type=type_s  # TODO : type=type ou type=source ?
             )  # Python doesn't allow type=type after *values
             for eachSource in sourcesToAdd:
-                subEvent.addSource(
-                    eachSource, *self.values(eachSource, type_s), **kwargs
-                )  # pylint: disable=W0142
+                # subEvent.addSource(
+                #     eachSource, *self.values(eachSource, type_s), **kwargs
+                # )  # pylint: disable=W0142
+                # On vérifie si on a déjà ajouté cette source pour ce type
+                if (type_s, eachSource) not in added:
+                    subEvent.addSource(
+                        eachSource, *self.values(eachSource, type_s), **kwargs
+                    )
+                    added.add((type_s, eachSource))
         return subEvent
 
     def send(self):
@@ -1175,7 +1191,7 @@ class CollectionDecorator(Decorator, ObservableCollection):
         elle appelle également la méthode freeze sur cette collection.
         """
         log.debug(
-            f"CollectionDecorator.freeze : {self.__class__.__name__}.freeze() - Entrée"
+            f"CollectionDecorator.freeze : {self.__class__.__name__}.freeze() - Entrée, compteur = {self.__freezeCount}."
         )
         # if isinstance(self.observable(), CollectionDecorator):
         #     self.observable().freeze()
@@ -1192,7 +1208,6 @@ class CollectionDecorator(Decorator, ObservableCollection):
         """
         Désactive le gel de l'objet, ce qui permet à nouveau les notifications.
 
-
         Dégèle la collection, permettant de reprendre les notifications de changements aux observateurs.
 
         Si la collection observée est elle-même un CollectionDecorator,
@@ -1205,7 +1220,7 @@ class CollectionDecorator(Decorator, ObservableCollection):
         # (qui est retourné par self.observable()) est None
         # lorsque CollectionDecorator.thaw() est appelée.
         log.debug(
-            f"CollectionDecorator.thaw : {self.__class__.__name__}.thaw() - Entrée"
+            f"CollectionDecorator.thaw : {self.__class__.__name__}.thaw() - Entrée, compteur freeze = {self.__freezeCount}."
         )
         # # if self.isFrozen():
         # self.__freezeCount -= 1
@@ -1222,7 +1237,7 @@ class CollectionDecorator(Decorator, ObservableCollection):
         # AJOUTER LA VÉRIFICATION :
         observable = self.observable()
         log.debug(
-            f"CollectionDecorator.thaw : observable = {type(observable).__name__}"
+            f"CollectionDecorator.thaw : observable de type {type(observable).__name__}."
         )
         if hasattr(observable, "thaw"):
             observable.thaw()  # Boucle entre ici et domain.base.filter.Filter.thaw()

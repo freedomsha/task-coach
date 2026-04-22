@@ -231,8 +231,12 @@ import wx.lib.mixins.listctrl
 log = logging.getLogger(__name__)
 
 
-class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin,
-                      itemctrl.CtrlWithToolTipMixin, wx.ListCtrl):
+class VirtualListCtrl(
+    itemctrl.CtrlWithItemsMixin,
+    itemctrl.CtrlWithColumnsMixin,
+    itemctrl.CtrlWithToolTipMixin,
+    wx.ListCtrl,
+):
     """
     Contrôle de liste virtuel personnalisé pour Task Coach.
 
@@ -261,9 +265,19 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
         *args : Arguments supplémentaires transmis à `wx.ListCtrl`.
         **kwargs : Arguments nommés supplémentaires transmis à `wx.ListCtrl`.
     """
-    def __init__(self, parent, columns, selectCommand=None, editCommand=None,
-                 itemPopupMenu=None, columnPopupMenu=None, resizeableColumn=0,
-                 *args, **kwargs):
+
+    def __init__(
+        self,
+        parent,
+        columns,
+        selectCommand=None,
+        editCommand=None,
+        itemPopupMenu=None,
+        columnPopupMenu=None,
+        resizeableColumn=0,
+        *args,
+        **kwargs,
+    ):
         """
         Initialise le contrôle virtuel et lie les événements nécessaires.
 
@@ -279,11 +293,25 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
             columnPopupMenu (wx.Menu, optionnel) : Menu contextuel pour les colonnes.
             resizeableColumn (int) : Colonne redimensionnable par défaut.
         """
-        super().__init__(parent,
-                         style=wx.LC_REPORT | wx.LC_VIRTUAL, columns=columns,
-                         resizeableColumn=resizeableColumn, itemPopupMenu=itemPopupMenu,
-                         columnPopupMenu=columnPopupMenu, *args, **kwargs)
+        super().__init__(
+            parent,
+            style=wx.LC_REPORT | wx.LC_VIRTUAL,
+            columns=columns,
+            resizeableColumn=resizeableColumn,
+            itemPopupMenu=itemPopupMenu,
+            columnPopupMenu=columnPopupMenu,
+            *args,
+            **kwargs,
+        )
         self.__parent = parent
+        # On ne refresh PAS immédiatement.
+        #
+        # On planifie un refresh unique via wx.CallAfter
+        # et on empêche toute replanification tant qu’il n’est pas exécuté.
+        self.__refresh_scheduled = False
+        self.__refreshing = (
+            False  # Flag to suppress selection events during refresh
+        )
         self.bindEventHandlers(selectCommand, editCommand)
 
     def bindEventHandlers(self, selectCommand, editCommand):
@@ -348,7 +376,9 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
         """
         # return self.__parent.getItemText(domainObject, columnIndex)
         return_itemText = self.__parent.getItemText(domainObject, columnIndex)
-        log.debug(f"VirtualListCtrl.getItemText : renvoie {return_itemText} pour {domainObject} colonne {columnIndex}")
+        log.debug(
+            f"VirtualListCtrl.getItemText : renvoie {return_itemText} pour {domainObject} colonne {columnIndex}"
+        )
         return return_itemText
 
     def getItemTooltipData(self, domainObject):
@@ -374,8 +404,9 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
         Returns:
             int: Index de l’image dans la `wx.ImageList`.
         """
-        return self.__parent.getItemImages(domainObject,
-                                           columnIndex)[wx.TreeItemIcon_Normal]
+        return self.__parent.getItemImages(domainObject, columnIndex)[
+            wx.TreeItemIcon_Normal
+        ]
 
     def OnGetItemText(self, rowIndex, columnIndex):
         """
@@ -468,11 +499,13 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
             # otherwise the item was activated from the menu or by double
             # clicking on a portion of the tree view not containing an item.
             column = max(0, column)  # FIXME: Why can the column be -1?
-            event.columnName = self._getColumn(column).name()  # pylint: disable=E1101
+            event.columnName = self._getColumn(
+                column
+            ).name()  # pylint: disable=E1101
         self.editCommand(event)
 
     def RefreshAllItems(self, count):
-        """ Mettre à jour tous les éléments de la liste. """
+        """Mettre à jour tous les éléments de la liste."""
         self.SetItemCount(count)
         if count == 0:
             self.DeleteAllItems()
@@ -482,7 +515,7 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
         self.selectCommand()
 
     def RefreshItems(self, *items):
-        """ Actualisez des éléments spécifiques. """
+        """Actualisez des éléments spécifiques."""
         if len(items) <= 7:
             for item in items:
                 self.RefreshItem(self.__parent.getIndexOfItem(item))
@@ -490,14 +523,17 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
             self.RefreshAllItems(self.GetItemCount())
 
     def HitTest(self, xxx_todo_changeme, *args, **kwargs):
-        """ Always return a three-tuple (item, flag, column). """
-        (x, y) = xxx_todo_changeme
-        index, flags = super().HitTest((x, y), *args, **kwargs)
+        """Always return a three-tuple (item, flag, column)."""
+        x, y = xxx_todo_changeme
+        index, flags = super().HitTest((x, y), *args, **kwargs)  # TODO
         column = 0
         if self.InReportView():
             # Determine the column in which the user clicked
             cumulative_column_width = 0
             for column_index in range(self.GetColumnCount()):
+                # # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+                # # ListCtrl a GetColumnCount()
+                # for column_index in range(len(self._columns)):
                 cumulative_column_width += self.GetColumnWidth(column_index)
                 if x <= cumulative_column_width:
                     column = column_index
@@ -505,12 +541,14 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
         return index, flags, column
 
     def curselection(self):
-        """ Retourne la liste des éléments sélectionnés. """
-        return [self.getItemWithIndex(index)
-                for index in self.__curselection_indices()]
+        """Retourne la liste des éléments sélectionnés."""
+        return [
+            self.getItemWithIndex(index)
+            for index in self.__curselection_indices()
+        ]
 
     def select(self, items):
-        """ Sélectionnez les éléments spécifiés. """
+        """Sélectionnez les éléments spécifiés."""
         indices = [self.__parent.getIndexOfItem(item) for item in items]
         for index in range(self.GetItemCount()):
             self.Select(index, index in indices)
@@ -518,15 +556,85 @@ class VirtualListCtrl(itemctrl.CtrlWithItemsMixin, itemctrl.CtrlWithColumnsMixin
             self.Focus(self.GetFirstSelected())
 
     def clear_selection(self):
-        """ Désélectionnez tous les éléments sélectionnés. """
+        """Désélectionnez tous les éléments sélectionnés."""
         for index in self.__curselection_indices():
             self.Select(index, False)
 
     def select_all(self):
-        """ Sélectionnez tous les éléments. """
+        """Sélectionnez tous les éléments."""
         for index in range(self.GetItemCount()):
             self.Select(index)
 
     def __curselection_indices(self):
-        """ Renvoie les indices des éléments actuellement sélectionnés. """
+        """Renvoie les indices des éléments actuellement sélectionnés."""
         return wx.lib.mixins.listctrl.getListCtrlSelection(self)
+
+    def scheduleRefresh(self, count=0):
+        """Programme un rafraîchissement différé pour éviter les multiples appels à RefreshAllItems().
+
+        Planifie un rafraîchissement différé (coalescing) pour éviter les rebuilds multiples.
+
+        La méthode évite les rafraîchissements redondants
+        en gardant un flag __refresh_scheduled.
+        Lors de l'ordonnancement, elle posera le flag,
+        et exécutera finalement RefreshAllItems pour reconstruire l'arbre.
+        forceRefresh() réinitialise le flag et force la replanification.
+        """
+        log.debug(
+            f"TreeListCtrl.scheduleRefresh : début du rafraîchissement différé."
+        )
+        if self.__refresh_scheduled:
+            log.debug(f"TreeListCtrl.scheduleRefresh : déjà planifié !")
+            return  # ← RETOUR IMMÉDIAT si déjà planifié
+        self.__refresh_scheduled = True
+
+        # def doRefresh():
+        #     # C'est la seule correction nécessaire :
+        #     # remettre __refresh_scheduled = False dans tous les chemins de sortie de doRefresh,
+        #     # pas seulement dans le chemin nominal.
+        #
+        #     # Protection contre la destruction de l'objet
+        #     # if not self:
+        #     try:
+        #         if not self:
+        #             log.debug(f"TreeListCtrl.doRefresh : objet déjà supprimé.")
+        #             # solution :
+        #             self.__refresh_scheduled = (
+        #                 False  # ← remettre le flag même en cas d'abort
+        #             )
+        #             return
+        #     except RuntimeError:
+        #         # L'objet C++ a été supprimé
+        #         log.warning(
+        #             f"TreeListCtrl.doRefresh : erreur de suppression de l'objet déjà supprimé."
+        #         )
+        #         self.__refresh_scheduled = False  # ← idem
+        #         return
+        #     self.__refresh_scheduled = False
+        #     log.debug(
+        #         f"TreeListCtrl.doRefresh : exécution du rafraîchissement planifié."
+        #     )
+        #     # self.RefreshAllItems(count)  # Faux, RefreshAllItems() ne prend aucun argument.
+        #     self.RefreshAllItems()
+        #     # Le problème est le suivant :
+        #     # lors du thaw, refresh() est appelé 3 fois (on le voit dans le log :
+        #     # 3 × "Rafraîchissement de la visionneuse CategoryViewer avec 8 éléments").
+        #     # La première appelle scheduleRefresh qui pose __refresh_scheduled = True.
+        #     # Les 2 suivantes retournent immédiatement car le flag est déjà posé.
+        #     # Puis doRefresh s'exécute via wx.CallAfter — mais à ce moment
+        #     # le widget est encore à 20×20 pixels,
+        #     # donc RefreshAllItems s'exécute mais le widget n'est pas encore dans sa taille finale.
+        #     # Quand la fenêtre s'agrandit après, aucun nouveau refresh n'est planifié.
+
+        # # Important : ici after doit être celui de ton widget Tkinter.
+        # self.after(1, doRefresh)
+        # Utilisation de wx.CallAfter pour wxPython
+        # wx.CallAfter(doRefresh)
+        log.debug(
+            "TreeListCtrl.doRefresh : exécution du rafraîchissement planifié."
+        )
+        self.__refresh_scheduled = False
+        self.RefreshAllItems(count)
+        log.debug(
+            f"TreeListCtrl.scheduleRefresh : fin du rafraîchissement planifié différé !"
+        )

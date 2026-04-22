@@ -855,14 +855,23 @@ class _CtrlWithHideableColumnsMixin(_BaseCtrlWithColumnsMixin):
         #     f"_CtrlWithHideableColumnsMixin._getColumnIndex : renvoie l'index {self.GetColumnCount()} de la colonne {column} !"
         # )
         log.debug(
-            f"_CtrlWithHideableColumnsMixin._getColumnIndex : la colonne {column.name()} n'est pas visible, renvoie l'index {self._getColumnIndex(column)} !"
-        )
+            # f"_CtrlWithHideableColumn/sMixin._getColumnIndex : la colonne {column.name()} n'est pas visible, renvoie l'index {self._getColumnIndex(column)} !"
+            f"_CtrlWithHideableColumnsMixin._getColumnIndex : la colonne {column.name()} n'est pas visible."
+        )  # Boucle sur _getColumnIndex !
         return self.GetColumnCount()  # Column header not found
+        # len(self._columns) ou self.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # return (
+        #     self._getHeaderWindow().GetColumnCount()
+        # )  # Column header not found
 
     def _visibleColumns(self):
         return [
             self._getColumn(columnIndex)
-            for columnIndex in range(self.GetColumnCount())
+            for columnIndex in range(
+                self.GetColumnCount()
+            )  # ListCtrl a GetColumnCount()
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # for columnIndex in range(len(self._columns))
         ]
 
 
@@ -883,15 +892,28 @@ class _CtrlWithSortableColumnsMixin(_BaseCtrlWithColumnsMixin):
         )
 
     def onColumnClick(self, event):
+        """
+        Méthode de clic sur une colonne.
+
+        Args:
+            event: Événement de clic sur une colonne.
+
+        Returns:
+            None
+        """
         event.Skip(False)
         # Assurez-vous que la fenêtre dans laquelle se trouve ce contrôle a le focus :
         try:
+            # Définir la fenêtre principale
             window = event.GetEventObject().GetMainWindow()
         except AttributeError:
             window = event.GetEventObject()
+        # Régler le focus sur la fenêtre principale
         window.SetFocus()
         columnIndex = event.GetColumn()
         if 0 <= columnIndex < self.GetColumnCount():
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # if 0 <= columnIndex < len(self._columns):
             column = self._getColumn(columnIndex)
             # Utilisez CallAfter pour vous assurer que la fenêtre dans laquelle se trouve ce contrôle est
             # activée avant de traiter le clic sur la colonne :

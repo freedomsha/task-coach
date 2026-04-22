@@ -39,6 +39,7 @@ class CtrlWithColumnsTestCase(tctest.wxTestCase):
         control: Une instance du contrôle en cours de test. Ceci est censé être
             instancié dans les classes dérivées en remplaçant la méthode `createControl`.
     """
+
     def setUp(self):
         super().setUp()
         self.column1 = widgets.Column("Column 1", "eventType1")
@@ -50,7 +51,8 @@ class CtrlWithColumnsTestCase(tctest.wxTestCase):
 
 
 class CtrlWithHideableColumnsUnderTest(
-    widgets.itemctrl._CtrlWithHideableColumnsMixin, wx.ListCtrl  # pylint: disable=W0212
+    widgets.itemctrl._CtrlWithHideableColumnsMixin,
+    wx.ListCtrl,  # pylint: disable=W0212
 ):
     """
     Cette classe représente un contrôle avec des colonnes masquables conçu
@@ -61,6 +63,7 @@ class CtrlWithHideableColumnsUnderTest(
     de masquer les colonnes si nécessaire. Il est principalement utilisé pour gérer et afficher des données tabulaires où les colonnes peuvent être
     activées ou désactivées en fonction des besoins de l'utilisateur.
     """
+
     pass
 
 
@@ -77,6 +80,7 @@ class CtrlWithHideableColumnsTestsMixin(object):
         column1 (object): Instance de colonne utilisée dans les scénarios de test pour valider la fonctionnalité de visibilité
             .
     """
+
     def testColumnIsVisibleByDefault(self):
         self.assertTrue(self.control.isColumnVisible(self.column1))
 
@@ -105,14 +109,18 @@ class CtrlWithHideableColumnsTest(
         column1 (type): Première colonne utilisée dans les tests.
         column2 (type): Deuxième colonne utilisée dans les tests.
     """
+
     def createControl(self):
         return CtrlWithHideableColumnsUnderTest(
-            self.frame, style=wx.LC_REPORT, columns=[self.column1, self.column2]
+            self.frame,
+            style=wx.LC_REPORT,
+            columns=[self.column1, self.column2],
         )
 
 
 class CtrlWithSortableColumnsUnderTest(
-    widgets.itemctrl._CtrlWithSortableColumnsMixin, wx.ListCtrl  # pylint: disable=W0212
+    widgets.itemctrl._CtrlWithSortableColumnsMixin,
+    wx.ListCtrl,  # pylint: disable=W0212
 ):
     """
     Gère un contrôle avec des colonnes triables.
@@ -125,6 +133,7 @@ class CtrlWithSortableColumnsUnderTest(
     Attributes:
         None
     """
+
     pass
 
 
@@ -141,8 +150,11 @@ class CtrlWithSortableColumnsTestsMixin(object):
         column1 (Any): La colonne par défaut utilisée pour le tri dans les tests.
         column2 (Any): Une colonne alternative utilisée pour le tri dans les tests.
     """
+
     def assertCurrentSortColumn(self, expectedSortColumn):
-        currentSortColumn = self.control._currentSortColumn()  # pylint: disable=W0212
+        currentSortColumn = (
+            self.control._currentSortColumn()
+        )  # pylint: disable=W0212
         self.assertEqual(expectedSortColumn, currentSortColumn)
 
     def testDefaultSortColumn(self):
@@ -170,13 +182,18 @@ class CtrlWithSortableColumnsTest(
         column1 (type): Première colonne utilisée dans le contrôle.
         column2 (type): La deuxième colonne utilisée dans le contrôle.
     """
+
     def createControl(self):
         return CtrlWithSortableColumnsUnderTest(
-            self.frame, style=wx.LC_REPORT, columns=[self.column1, self.column2]
+            self.frame,
+            style=wx.LC_REPORT,
+            columns=[self.column1, self.column2],
         )
 
 
-class CtrlWithColumnsUnderTest(widgets.itemctrl.CtrlWithColumnsMixin, wx.ListCtrl):
+class CtrlWithColumnsUnderTest(
+    widgets.itemctrl.CtrlWithColumnsMixin, wx.ListCtrl
+):
     """
     Gère le contrôle de liste avec une fonctionnalité basée sur les colonnes.
 
@@ -187,6 +204,7 @@ class CtrlWithColumnsUnderTest(widgets.itemctrl.CtrlWithColumnsMixin, wx.ListCtr
     Attributes:
         None
     """
+
     pass
 
 
@@ -207,6 +225,7 @@ class CtrlWithColumnsTest(
         column2 (Any): The second column used for testing.
         frame (Any): The parent frame or container for the control being tested.
     """
+
     def createControl(self):
         # NOTE: the resizeableColumn is the column that is not hidden
         return CtrlWithColumnsUnderTest(
@@ -230,19 +249,24 @@ class DummyEvent(object):
     Attributes:
         eventObject: The event object associated with this instance.
     """
+
     def __init__(self, eventObject):
         self.eventObject = eventObject
 
     def Skip(self, *args):
+        """Méthode qui ne fait rien pour passer."""
         pass
 
     def GetColumn(self):
+        """Méthode qui retourne le numéro de colonne."""
         return 0
 
     def GetEventObject(self):
+        """Retourne l'objet d'événement associé."""
         return self.eventObject
 
     def GetPosition(self):
+        """Retourne une position fictive."""
         return 0, 0
 
 
@@ -260,6 +284,7 @@ class ListCtrlWithColumnPopupMenuTest(CtrlWithColumnsTestCase):
         frame (type): The parent frame associated with the control under test.
         control (type): The instance of the control being tested.
     """
+
     def createControl(self):
         return CtrlWithColumnsUnderTest(
             self.frame,
@@ -289,6 +314,7 @@ class HyperListTreeCtrlWithColumnPopupMenuTest(CtrlWithColumnsTestCase):
         testColumnHeaderPopupMenu: Tests the functionality of column header
             popup menu in the TreeList control.
     """
+
     def createControl(self):
         return widgets.TreeListCtrl(
             self.frame,

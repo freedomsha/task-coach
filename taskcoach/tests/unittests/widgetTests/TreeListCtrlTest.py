@@ -42,16 +42,31 @@ class TreeListCtrlTestCase(TreeCtrlTest.TreeCtrlTestCase):
         )
         imageList = wx.ImageList(16, 16)
         for bitmapName in ["led_blue_icon", "folder_blue_icon"]:
-            imageList.Add(wx.ArtProvider.GetBitmap(bitmapName, wx.ART_MENU, (16, 16)))
+            imageList.Add(
+                wx.ArtProvider.GetBitmap(bitmapName, wx.ART_MENU, (16, 16))
+            )
         self.treeCtrl.AssignImageList(imageList)  # pylint: disable=E1101
 
     def createColumns(self):
+        """
+        Creates a list of column objects for testing the TreeListCtrl.
+
+        Returns:
+            list: A list of widgets.Column instances.
+        """
         names = ["treeColumn"] + ["column%d" % index for index in range(1, 5)]
         return [
-            widgets.Column(name, name, ("view", "whatever"), None) for name in names
+            widgets.Column(name, name, ("view", "whatever"), None)
+            for name in names
         ]
 
     def columns(self):
+        """
+        Returns the list of columns currently defined for the test.
+
+        Returns:
+            list: The list of widgets.Column instances.
+        """
         return self._columns
 
 
@@ -63,17 +78,43 @@ class TreeListCtrlColumnsTest(TreeListCtrlTestCase):
     def setUp(self):
         super().setUp()
         self.children[None] = [TreeCtrlTest.DummyDomainObject("item")]
-        self.treeCtrl.RefreshAllItems(1)
+        # self.treeCtrl.RefreshAllItems(1)
+        self.treeCtrl.scheduleRefresh(1)
         self.visibleColumns = self.columns()[1:]
 
     def assertColumns(self):
+        """
+        Asserts that the visible columns in the widget match the expected list.
+        """
         # pylint: disable=E1101
-        self.assertEqual(len(self.visibleColumns) + 1, self.treeCtrl.GetColumnCount())
+        # # # self.assertEqual(
+        # # #     len(self.visibleColumns) + 1, self.treeCtrl.GetColumnCount()
+        # # # )
+        # # self.assertEqual(
+        # #     len(self.visibleColumns) + 1, len(self.treeCtrl.cget("columns"))  # cget est une méthode Tkinter !
+        # # )
+        # self.assertEqual(
+        #     len(self.visibleColumns) + 1, len(self.treeCtrl._columns)
+        # )  # ou essayer self.treeCtrl.GetHeaderWindow().GetColumnCount()
+        self.assertEqual(
+            len(self.visibleColumns) + 1,
+            self.treeCtrl.GetHeaderWindow().GetColumnCount(),
+        )
         item = self.treeCtrl.GetFirstChild(self.treeCtrl.GetRootItem())[0]
+        # item = self.treeCtrl.get_children("")[0]
         for columnIndex in range(1, len(self.visibleColumns)):
-            self.assertEqual("item", self.treeCtrl.GetItemText(item, columnIndex))
+            self.assertEqual(
+                "item", self.treeCtrl.GetItemText(item, columnIndex)
+            )
 
     def showColumn(self, name, show=True):
+        """
+        Shows or hides a specific column in the TreeListCtrl.
+
+        Args:
+            name (str): The name of the column.
+            show (bool): Whether to show (True) or hide (False) the column.
+        """
         column = widgets.Column(name, name, ("view", "whatever"), None)
         self.treeCtrl.showColumn(column, show)
         if show:

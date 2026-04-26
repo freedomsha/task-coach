@@ -131,8 +131,9 @@ class AddNoteCommand(base.BaseCommand):
 
     @patterns.eventSource
     def addNotes(self, event=None):
-        for owner, note in zip(
-            self.owners, self.__notes
+        # for owner, note in zip(
+        for owner, note in list(
+            zip(self.owners, self.__notes)
         ):  # pylint: disable=W0621
             owner.addNote(note, event=event)
 

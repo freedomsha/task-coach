@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    from .. import base
 # except ImportError:
 from taskcoachlib.domain import base
+
 #  Importe la métaclasse DomainObjectOwnerMetaclass depuis le module taskcoachlib.domain.base
 
 
@@ -83,4 +84,5 @@ class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
         pass
 
     def notes(self):
-        pass
+        # pass
+        return self.__notes

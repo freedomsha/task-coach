@@ -367,7 +367,7 @@ class Task(
         )
 
         now = date.Now()
-        print(
+        log.debug(
             f"DEBUG: type now={type(now)}, type due={type(self.__dueDateTime)}"
         )
         # Remplacez la comparaison directe :
@@ -2932,8 +2932,25 @@ class Task(
     #     """Compare deux tâches par leur ID."""
     #     return self.id < other.id
 
-    def addNote(self, aNote):
-        pass
+    # def addNote(self, aNote):
+    #     # pass
+    #     if aNote not in self._notes:
+    #         self._notes.append(aNote)
+    #         # On notifie pour que TaskFile puisse passer needSave à True
+    #         pub.sendMessage('task.notes.added', task=self, note=aNote)
+
+    def addNote(self, aNote, **kwargs):
+        """Méthode singulière (utilisée par ton test)"""
+        self.addNotes(aNote, **kwargs)
+
+    def addNotes(self, *notes, **kwargs):
+        """Méthode plurielle (utilisée par les Commandes)"""
+        for aNote in notes:
+            if aNote not in self.notes():
+                self.notes().append(aNote)
+                # CRUCIAL : Notifier pour que TaskFile.needSave passe à True
+                # pub.sendMessage("task.notes.added", task=self, note=aNote)  # Ne sait pas quoi faire de ses arguments !
+                pub.sendMessage("task.notes.added")
 
     def addAttachments(self, param):
         pass

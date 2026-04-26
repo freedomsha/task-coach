@@ -140,7 +140,8 @@ class SafeWriteFile(object):
     en utilisant des fichiers temporaires pour éviter la perte de données.
     """
 
-    def __init__(self, filename):
+    # def __init__(self, filename):
+    def __init__(self, filename, mode="w", encoding="utf-8"):
         """
         Initialisez le SafeWriteFile avec un nom de fichier.
 
@@ -154,18 +155,30 @@ class SafeWriteFile(object):
         # vous devrez encoder explicitement la chaîne XML en bytes
         # avant de l'écrire (par exemple, tree.write(self.__fd, encoding="utf-8")
         # suivi d'un appel à .encode('utf-8') si tree.write attend un flux binaire).
+        # Il faut que le fichier temporaire soit créé dans le même répertoire
+        # que le fichier cible pour garantir que le renommage soit atomique et possible.
         log.info("Initialisation de SafeWriteFile avec un nom de fichier.")
         self.__filename = filename
+        self.__mode = mode  # On stocke le mode pour le retourner dans la propriété mode, même si on ouvre toujours en 'w' pour du texte.
+        # On place le fichier temporaire dans le même dossier que le fichier final
+        dirname = os.path.dirname(filename)
+        basename = os.path.basename(filename)
         if self._isCloud():
             # Ideally we should create a temporary file on the same filesystem (so that
             # os.rename works) but outside the Dropbox folder...
-            self.__fd = open(self.__filename, "w", encoding="utf-8")
+            # self.__fd = open(self.__filename, "w", encoding="utf-8")
+            self.__fd = open(self.__filename, mode, encoding=encoding)
             # self.__tempFilename = ?
         else:
-            self.__tempFilename = self._getTemporaryFileName(
-                os.path.dirname(filename)
+            # self.__tempFilename = self._getTemporaryFileName(
+            #     os.path.dirname(filename)
+            # )
+            self.__tempFilename = os.path.join(
+                dirname, f".tmp-{os.getpid()}-{basename}"
             )
-            self.__fd = open(self.__tempFilename, "w", encoding="utf-8")
+            # Création du fichier temporaire avec le chemin complet pour éviter les problèmes de renommage sur certains systèmes de fichiers.
+            # self.__fd = open(self.__tempFilename, "w", encoding="utf-8")
+            self.__fd = open(self.__tempFilename, mode, encoding=encoding)
         # self.__fd = filename
         log.info(
             "Initialisation de SafeWriteFile avec un nom de fichier."
@@ -174,6 +187,33 @@ class SafeWriteFile(object):
             f"self.__tempFilename={self.__tempFilename}"
         )
 
+    @property
+    def name(self):
+        """Retourne le nom du fichier cible (requis par certains writers/loggers)."""
+        return self.__filename
+
+    @property
+    def mode(self):
+        """Retourne le mode d'ouverture (requis par le logger de ChangesXMLWriter)."""
+        return self.__mode
+
+    @property
+    def closed(self):
+        """Indique si le fichier est fermé."""
+        return self.__fd is None or self.__fd.closed
+
+    # Vous devez ajouter les méthodes __enter__ et __exit__ à la classe SafeWriteFile.
+    # La méthode __enter__ doit retourner l'instance elle-même,
+    # et __exit__ doit s'assurer que le fichier est fermé
+    # (ce qui déclenche le renommage sécurisé dans votre logique actuelle).
+    def __enter__(self):
+        """Permet l'utilisation de 'with SafeWriteFile(...) as fd'."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Ferme le fichier automatiquement à la fin du bloc 'with'."""
+        self.close()
+
     def write(self, bf):
         """
         Écrivez les données dans le fichier.
@@ -181,53 +221,89 @@ class SafeWriteFile(object):
         Args :
             bf (str) : Les données à écrire.
         """
+        # Pour rendre votre système plus robuste aux erreurs de type,
+        # modifiez la méthode write pour qu'elle intercepte les types invalides
+        # avant qu'ils ne fassent planter l'écriture disque :
+        if bf is None:
+            return
+
         # The stream is opened in text mode, so we should write strings.
         # La méthode write attend une chaîne de caractères (str) et non des bytes.
         # Si bf est déjà une chaîne de caractères, nous pouvons l'écrire directement.
         # Si bf est un objet XML (comme un ElementTree),
         # nous devons d'abord le convertir en une chaîne de caractères XML avant de l'écrire.
-        # self.__fd.write(str(bf))
-        if isinstance(bf, bytes):
-            self.__fd.write(bf.decode("utf-8"))
-        elif isinstance(bf, str):
-            self.__fd.write(bf)
-        else:
-            # Si bf n'est pas une chaîne de caractères, essayons de le convertir en XML string.
-            # Cela suppose que bf est un objet XML compatible avec xml.etree.ElementTree.tostring()
-            try:
-                xml_string = xml.tostring(bf, encoding="unicode")
-                self.__fd.write(xml_string)
-            except Exception as e:
-                log.error(
-                    "SafeWriteFile.write : Impossible d'écrire les données. "
-                    f"Erreur : {e}"
-                )
-                raise
+        # # self.__fd.write(str(bf))
+        # if isinstance(bf, bytes):
+        if self.__fd:
+            if isinstance(bf, bytes) and "b" not in self.__mode:
+                self.__fd.write(bf.decode("utf-8"))
+            elif isinstance(bf, str):
+                self.__fd.write(bf)
+            else:
+                # Si bf n'est pas une chaîne de caractères, essayons de le convertir en XML string.
+                # Cela suppose que bf est un objet XML compatible avec xml.etree.ElementTree.tostring()
+                # Si c'est un élément XML (Element), on utilise tostring
+                try:
+                    # On force l'encodage en unicode pour éviter les bytes dans un fichier ouvert en 'w'
+                    # xml_string = xml.tostring(bf, encoding="unicode")
+                    xml_string = xml.writer.eTree.tostring(
+                        str(bf), encoding="unicode"
+                    )
+                    self.__fd.write(xml_string)
+                    # # Si c'est un objet complexe, on tente une conversion propre
+                    # self.__fd.write(str(bf))
+                except Exception as e:
+                    log.error(
+                        "SafeWriteFile.write : Impossible d'écrire les données. "
+                        f"Erreur : {e}"
+                    )
+                    raise
 
     def close(self):
         """
         Fermez le fichier et renommez le fichier temporaire en toute sécurité si nécessaire.
         """
+        if self.__fd is None:
+            return
         log.info(
-            "SafeWriteFile.close essaie de Fermer le fichier et renommer le fichier temporaire en toute sécurité si nécessaire."
+            "SafeWriteFile.close : Fermeture du fichier et renommage du fichier temporaire en toute sécurité si nécessaire."
         )
         # if isinstance(self.__fd, TextIOWrapper):
-        self.__fd.close()
+        try:
+            self.__fd.close()
+        finally:
+            self.__fd = None  # On marque comme fermé quoi qu'il arrive
+
+        # Tentative de renommage atomique du fichier temporaire vers le nom final.
         if not self._isCloud():
-            if os.path.exists(self.__filename):
-                log.info(f"SafeWriteFile.close retire {self.__filename}.")
-                os.remove(self.__filename)
-            if self.__filename is not None:
+            # Si le fichier original existe, on le prépare/supprime pour éviter les conflits de renommage.
+            # if os.path.exists(self.__filename):
+            #     log.info(f"SafeWriteFile.close retire {self.__filename}.")
+            #     os.remove(self.__filename)
+            # Renommage du temporaire vers le nom final, logique de renommage atomique
+            # if self.__filename is not None:  # Peux poser problème
+            if os.path.exists(self.__tempFilename):
+                # Sur Windows, os.rename n'écrase pas, il faut supprimer la cible avant de renommer le temporaire.
                 if os.path.exists(self.__filename):
-                    log.info(
-                        f"SafeWriteFile.close utilise __moveFileOutOfTheWay sur {self.__filename} avant de le renommer."
-                    )
-                    # WTF ?
-                    self.__moveFileOutOfTheWay(self.__filename)
+                    log.info(f"SafeWriteFile.close retire {self.__filename}.")
+                    os.remove(self.__filename)
                 log.info(
-                    f"SafeWriteFile.close renomme {self.__tempFilename} en {self.__filename}."
+                    f"SafeWriteFile.close utilise __moveFileOutOfTheWay sur {self.__filename} avant de le renommer."
                 )
+                # WTF ?
+                # self.__moveFileOutOfTheWay(self.__filename)
                 os.rename(self.__tempFilename, self.__filename)
+            else:
+                log.error(
+                    f"SafeWriteFile.close : Le fichier temporaire {self.__tempFilename} est introuvable !"
+                )
+        #     log.info(
+        #         f"SafeWriteFile.close renomme {self.__tempFilename} en {self.__filename}."
+        #     )
+        #     os.rename(self.__tempFilename, self.__filename)
+        # self.__fd = (
+        #     None  # Marquer comme fermé pour éviter les écritures ultérieures
+        # )
 
     def __moveFileOutOfTheWay(self, filename):
         """
@@ -321,7 +397,8 @@ class TaskFile(patterns.Observer):
         # Initialisez les variables d'instance avec des valeurs par défaut
         self.__filename = self.__lastFilename = ""
         # log.info("TaskFile : self.__filename = self.__lastFilename = ''")
-        self.__needSave = self.__loading = False
+        self.__needSave = False
+        self.__loading = False
         # log.info("TaskFile : self.__needSave = self.__loading = False")
         self.__tasks = task.TaskList()  # La liste de tâches.
         # log.info(f"TaskFile : self.__tasks = {self.__tasks}")
@@ -353,6 +430,7 @@ class TaskFile(patterns.Observer):
         else:
             self.__notifier = TaskCoachFilesystemNotifier(self)
         self.__saving = False
+
         for collection in [self.__tasks, self.__categories, self.__notes]:
             self.__monitor.monitorCollection(collection)
         for domainClass in [
@@ -408,6 +486,17 @@ class TaskFile(patterns.Observer):
                     self.onAttachmentChanged_Deprecated, eventType
                 )
         pub.subscribe(self.onAttachmentChanged, "pubsub.attachment")
+        # Branchement obligatoire pour que needSave() fonctionne correctement, même si les événements de modification de pièce jointe ne sont pas utilisés pour marquer le fichier comme sale.
+        # On écoute quand une note est ajoutée à une tâche
+        pub.subscribe(self.setNeedSave, "task.notes.added")
+        # On écoute aussi les autres changements importants
+        pub.subscribe(self.setNeedSave, "task.notes.removed")
+        pub.subscribe(self.setNeedSave, "task.notes.modified")
+        pub.subscribe(self.setNeedSave, "note.added")
+        pub.subscribe(self.setNeedSave, "note.modified")
+        # Pour être complet, on peut ajouter les tâches et catégories
+        pub.subscribe(self.setNeedSave, "task.added")
+        pub.subscribe(self.setNeedSave, "task.modified")
 
         log.info(
             f"TaskFile : TaskFile initialisé avec filename='{self.__filename}', guid='{self.__guid}' et syncMLConfig='{self.__syncMLConfig}'."
@@ -729,8 +818,9 @@ class TaskFile(patterns.Observer):
         self.__filename = filename
         self.__notifier.setFilename(filename)
         pub.sendMessage("taskfile.filenameChanged", filename=filename)
-        log.info(
-            "TaskFile.setFilename : Nom de fichier défini sur : %s", filename
+        # log.info(
+        print(
+            f"TaskFile.setFilename : Nom de fichier défini sur : {filename}."
         )
 
     def filename(self):
@@ -1030,7 +1120,7 @@ class TaskFile(patterns.Observer):
             Exception : Si une erreur de parsing XML ou de lecture survient.
         """
         log.info(
-            f"TaskFile.load : Début: Chargement du fichier de tâches filename '{filename}' à partir du disque. load sur self id {id(self)}."
+            f"TaskFile.load : Début du chargement du fichier de tâches filename='{filename}' à partir du disque. load sur self id {id(self)}."
         )
 
         pub.sendMessage("taskfile.aboutToRead", taskFile=self)
@@ -1183,7 +1273,7 @@ class TaskFile(patterns.Observer):
                 f"TaskFile.load : Erreur de parsing XML lors du chargement de filename '{filename}', erreur : {e}"
             )
         finally:
-            self.__loading = False
+            self.__loading = False  # Très important pour débloquer needSave()
             self.markClean()
             self.__changedOnDisk = False
             log.info(
@@ -1230,8 +1320,11 @@ class TaskFile(patterns.Observer):
         # # À modifier avec les nouvelles possibilités de with.
         try:
             pub.sendMessage("taskfile.aboutToSave", taskFile=self)
-        except Exception:
-            pass
+        except Exception as e:
+            # pass
+            log.error(
+                f"TaskFile._save : Erreur de sauvegarde : {e}", exc_info=True
+            )
         # # When encountering a problem while saving (disk full,
         # # computer on fire), if we were writing directly to the file,
         # # it's lost. So write to a temporary file and rename it if
@@ -1282,7 +1375,9 @@ class TaskFile(patterns.Observer):
         # Si le fichier de tâches ne contient aucune tâche,
         # nous n'avons rien à sauvegarder, et il est plus sûr de ne pas écraser le fichier existant.
         if not self.tasks():
-            log.warning("Save aborted: TaskFile contains no tasks.")
+            log.warning(
+                "TaskFile._save : Save aborted: TaskFile contains no tasks."
+            )
             return
 
         try:
@@ -1348,12 +1443,14 @@ class TaskFile(patterns.Observer):
         # Vérifie si la liste des tâches est vide
         if not self.tasks():
             # Écrit un message d'erreur dans le journal
-            logging.error("Sauvegarde annulée : la liste des tâches est vide.")
+            log.error(
+                "TaskFile.save : Sauvegarde annulée : la liste des tâches est vide."
+            )
 
             # Empêche la sauvegarde pour éviter d'écraser un fichier valide
             return
 
-        logging.info(
+        log.info(
             f"TaskFile.save : Sauvegarde demandée pour {self.__filename}. Nombre de tâches : {len(self.tasks())}"
         )
         # Vérifie si le fichier existe déjà
@@ -1366,7 +1463,7 @@ class TaskFile(patterns.Observer):
             shutil.copy2(self.__filename, backup)
 
             # écrit une information dans le log
-            logging.info(f"Backup créé : {backup}")
+            log.info(f"TaskFile.save : Backup créé : {backup}")
 
         # Appelle la méthode interne qui effectue réellement l'écriture
         self._save(**kwargs)
@@ -1599,7 +1696,23 @@ class TaskFile(patterns.Observer):
         Returns :
             bool : True si le fichier de tâche doit être enregistré, False sinon.
         """
+        log.debug(
+            f"TaskFile.needSave : Retourne __loading={self.__loading} et __needSave={self.__needSave}."
+        )
         return not self.__loading and self.__needSave
+
+    def setNeedSave(self, *args, **kwargs):
+        """Méthode de rappel pour marquer le fichier comme devant être sauvegardé."""
+        log.debug(
+            f"TaskFile.setNeedSave : Valeurs en entrée : __loading={self.__loading} et __needSave={self.__needSave}."
+        )
+        if (
+            not self.__loading
+        ):  # On ne veut pas passer à True pendant le chargement
+            self.__needSave = True
+        log.debug(
+            f"TaskFile.setNeedSave : Valeurs en Sortie : __loading={self.__loading} et __needSave={self.__needSave}."
+        )
 
     def changedOnDisk(self):
         """
@@ -1894,10 +2007,10 @@ class LockedTaskFile(TaskFile):
                     )
                     self.break_lock(filename)
                 log.debug(
-                    f"LockedTaskFile.load : Acquière un verrou pur {filename}."
+                    f"LockedTaskFile.load : Acquière un verrou pur {filename}.lock."
                 )
                 self.acquire_lock(filename)
-            log.debug("LockedTaskFile.load : Charge le fichier {filename}.")
+            log.debug(f"LockedTaskFile.load : Charge le fichier {filename}.")
             return super().load(filename)
         except Exception:
             # # Release lock if load fails ! NON, sinon on peut perdre le verrou en cas d'erreur de parsing XML, ce qui est très mauvais pour la sécurité des données. Laisser le verrou en place est plus sûr, même si cela peut nécessiter une intervention manuelle pour briser le verrou en cas de problème.

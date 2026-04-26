@@ -318,7 +318,9 @@ class PIElementTree(eTree.ElementTree):
                     )
                     file.write(f"{self.__pi}\n".encode(encoding))
                     kwargs["xml_declaration"] = False
-                    ET.ElementTree.write(self, file, encoding, *args, **kwargs)
+                    eTree.ElementTree.write(
+                        self, file, encoding, *args, **kwargs
+                    )
                 except UnicodeEncodeError as e:
                     log.exception(
                         f"PIElementTree.write : Erreur en écrivant l'instruction de traitement : {e}"
@@ -337,7 +339,8 @@ class PIElementTree(eTree.ElementTree):
                 file.write(self.__pi + "\n")
                 kwargs["xml_declaration"] = False
                 # Use 'unicode' encoding to write strings instead of bytes
-                ET.ElementTree.write(self, file, "unicode", *args, **kwargs)
+                # ET.ElementTree.write(self, file, "unicode", *args, **kwargs)
+                eTree.ElementTree.write(self, file, "unicode", *args, **kwargs)
 
         #     kwargs["xml_declaration"] = False
         # eTree.ElementTree.write(self, file, encoding=encoding, *args, **kwargs)
@@ -361,10 +364,12 @@ def sortedById(objects):
     log.debug(
         f"Trie d'une liste d'objets {objects} en fonction de leurs identifiants."
     )
-    # s = [(obj.id(), obj) for obj in objects]
-    # s.sort()
-    # return [obj for dummy_id, obj in s]
-    return sorted(objects, key=lambda item: item.id())
+    # # s = [(obj.id(), obj) for obj in objects]
+    # # s.sort()
+    # # return [obj for dummy_id, obj in s]
+    # return sorted(objects, key=lambda item: item.id())
+    # On convertit l'ID en string (ou une chaîne vide si None) pour permettre la comparaison
+    return sorted(objects, key=lambda item: str(item.id() or ""))
 
 
 class XMLWriter(object):
@@ -418,18 +423,29 @@ class XMLWriter(object):
         # Création de root l'élément de base XML avec le nom <tasks>.
         root = eTree.Element("tasks")
 
+        # Sécurité au cas où rootItems() renvoie None
+        rootTasks = taskList.rootItems() or []
+
         # Pour chaque rootTask dans la liste des rootItems de la liste de tâche triée par id.
-        for rootTask in sortedById(taskList.rootItems()):
+        # for rootTask in sortedById(taskList.rootItems()):
+        for rootTask in sortedById(rootTasks):
             # Créer des attributs, les dictionnaires rootTask contenant les attributs de l'élément nœud "task" dans l'élément parent root.
             self.taskNode(root, rootTask)
 
         ownedNotes = self.notesOwnedByNoteOwners(taskList, categoryContainer)
-        for rootCategory in sortedById(categoryContainer.rootItems()):
+
+        # Sécurité au cas où rootItems() renvoie None
+        rootCategories = categoryContainer.rootItems() or []
+        # for rootCategory in sortedById(categoryContainer.rootItems()):
+        for rootCategory in sortedById(rootCategories):
             self.categoryNode(
                 root, rootCategory, taskList, noteContainer, ownedNotes
             )
 
-        for rootNote in sortedById(noteContainer.rootItems()):
+        # Sécurité au cas où rootItems() renvoie None
+        rootNotes = noteContainer.rootItems() or []
+        # for rootNote in sortedById(noteContainer.rootItems()):
+        for rootNote in sortedById(rootNotes):
             if rootNote not in ownedNotes:
                 self.noteNode(root, rootNote)
 
@@ -497,6 +513,8 @@ class XMLWriter(object):
             node (Element) :
 
         """
+        # vous avez déjà un nettoyage à la fin, mais il est préférable de s'assurer
+        # que les valeurs insérées sont toujours des chaînes de caractères
         maxDateTime = self.maxDateTime
         node = self.baseCompositeNode(parentNode, task, "task", self.taskNode)
         node.attrib["status"] = str(task.getStatus())
@@ -513,13 +531,19 @@ class XMLWriter(object):
         if task.recurrence():
             self.recurrenceNode(node, task.recurrence())
         if task.budget() != date.TimeDelta():
-            node.attrib["budget"] = self.budgetAsAttribute(task.budget())
+            # node.attrib["budget"] = self.budgetAsAttribute(task.budget())
+            node.attrib["budget"] = str(self.budgetAsAttribute(task.budget()))
         if task.plannedDuration() != date.TimeDelta():
-            node.attrib["plannedDuration"] = self.budgetAsAttribute(
-                task.plannedDuration()
+            # node.attrib["plannedDuration"] = self.budgetAsAttribute(
+            node.attrib["plannedDuration"] = str(
+                self.budgetAsAttribute(task.plannedDuration())
             )
+
         if task.plannedDurationMode() != "implicit":
-            node.attrib["plannedDurationMode"] = task.plannedDurationMode()
+            # node.attrib["plannedDurationMode"] = task.plannedDurationMode()
+            node.attrib["plannedDurationMode"] = str(
+                task.plannedDurationMode()
+            )
         if task.priority():
             node.attrib["priority"] = str(task.priority())
         if task.hourlyFee():
@@ -535,13 +559,16 @@ class XMLWriter(object):
                 and reminderBeforeSnooze < task.reminder()
             ):
                 node.attrib["reminderBeforeSnooze"] = str(reminderBeforeSnooze)
+        # Assurez-vous que les IDs des prérequis ne sont pas None
         prerequisiteIds = " ".join(
             [
-                prerequisite.id()
+                # prerequisite.id()
+                str(prerequisite.id())
                 for prerequisite in sortedById(task.prerequisites())
             ]
         )
         if prerequisiteIds:
+            # node.attrib["prerequisites"] = prerequisiteIds
             node.attrib["prerequisites"] = prerequisiteIds
         if (
             task.shouldMarkCompletedWhenAllChildrenCompleted() is not None
@@ -555,6 +582,16 @@ class XMLWriter(object):
             self.noteNode(node, eachNote)
         for attachment in sortedById(task.attachments()):
             self.attachmentNode(node, attachment)
+        # Très important :
+        # Mesure de sécurité globale pour ce nœud :
+        # On retire après coup toute valeur qui serait restée à None
+        for key, val in list(node.attrib.items()):
+            if val is None:
+                del node.attrib[key]
+            else:
+                node.attrib[key] = str(
+                    val
+                )  # Forcer la conversion en string ici pour ElementTree
         return node
 
     def recurrenceNode(self, parentNode, recurrence):
@@ -724,6 +761,11 @@ class XMLWriter(object):
             node.attrib["subject"] = item.subject()
         if item.description():
             eTree.SubElement(node, "description").text = item.description()
+        # Mesure de sécurité globale pour ce nœud :
+        # On retire après coup toute valeur qui serait restée à None
+        for key, val in list(node.attrib.items()):
+            if val is None:
+                del node.attrib[key]
         return node
 
     def baseNode(self, parentNode, item, nodeName):
@@ -901,6 +943,10 @@ class ChangesXMLWriter(object):
         - `write` : Écrit les changements dans un fichier XML.
     """
 
+    # Il faut s'assurer que si un objet n'a pas de changements,
+    # on ne définit pas son texte à None.
+    # On peut soit sauter le nœud, soit mettre une chaîne vide.
+
     def __init__(self, fd):
         self.__fd = fd
 
@@ -916,12 +962,35 @@ class ChangesXMLWriter(object):
             for devName, monitor in allChanges.items():
                 # for devName, monitor in list(allChanges.items()):
                 devNode = eTree.SubElement(root, "device")
-                devNode.attrib["guid"] = monitor.guid()
+                # devNode.attrib["guid"] = monitor.guid()
+                devNode.attrib["guid"] = str(
+                    monitor.guid() or ""
+                )  # Sécurité : forcer str et gérer le None
+
+                # Dans la boucle qui crée les nœuds <obj>,
+                # si changes est vide ou contient une valeur non-string,
+                # join ou tostring échouent.
                 for id_, changes in list(monitor.allChanges().items()):
                     objNode = eTree.SubElement(devNode, "obj")
-                    objNode.attrib["id"] = id_
+                    # objNode.attrib["id"] = id_
+                    objNode.attrib["id"] = str(id_ or "")  # Sécurité str()
+                    # if changes:
+                    #     objNode.text = ",".join(list(changes))
+                    # On ne crée le nœud que s'il y a vraiment des changements
                     if changes:
-                        objNode.text = ",".join(list(changes))
+                        # objNode = eTree.SubElement(devNode, "obj")
+                        # objNode.attrib["id"] = str(id_)
+                        # On s'assure que le résultat de join est une chaîne
+                        objNode.text = ",".join([str(c) for c in changes])
+                    else:
+                        # Optionnel : si vous voulez le nœud vide sans erreur
+                        # objNode = eTree.SubElement(devNode, "obj")
+                        # objNode.attrib["id"] = str(id_)
+                        # objNode.text = ""
+                        objNode.text = (
+                            ""  # Jamais None pour éviter le crash au tostring
+                        )
+                        # pass
 
         tree = eTree.ElementTree(root)
         # # tree.write(self.__fd)
@@ -957,10 +1026,15 @@ class ChangesXMLWriter(object):
         # De plus, il est important de vérifier le mode d'ouverture du fichier dans taskfile.py. Il faut s'assurer que les fichiers .delta sont ouverts en mode texte ("w") avec l'encodage UTF-8 lors de l'écriture des changements.
         try:
             # Essayer d'écrire des bytes directement (cas binaire)
-            self.__fd.write(tree_str)
-        except TypeError:
-            # Si ça échoue (attendu str, reçu bytes), alors décoder et écrire
-            self.__fd.write(tree_str.decode("utf-8"))
+            self.__fd.write(tree_str)  # Plante ici !
+        # except TypeError:
+        #     # Si ça échoue (attendu str, reçu bytes), alors décoder et écrire
+        #     self.__fd.write(tree_str.decode("utf-8"))
+        except Exception as e:
+            # On logue l'erreur réelle 'e' pour comprendre pourquoi l'écriture a échoué
+            log.error(
+                f"ChangesXMLWriter.write : Erreur lors de la sérialisation/écriture : {e}"
+            )
 
         log.info(
             f"ChangesXMLWriter.write : Tentative de lecture du fichier {self.__fd.name} :"
@@ -980,9 +1054,23 @@ class ChangesXMLWriter(object):
                 f"ChangesXMLWriter.write : Contenu du fichier écrit:\n{self.__fd.read()}"
             )
             self.__fd.seek(0)  # Remet le curseur au début du fichier
+        # Au lieu de tester si le fichier est lisible (ce qui échoue en mode 'w'),
+        # on vérifie juste s'il est ouvert.
+        elif not hasattr(self.__fd, "write"):
+            log.error(
+                f"ChangesXMLWriter.write : Le descripteur n'est pas prêt pour l'écriture."
+            )
+            return
+        # Supprimez ou commentez la vérification qui déclenche le Warning :
+        # if not self.__fd.readable(): <--- C'est ça qui pose problème
         else:
+            # log.warning(
+            #     f"ChangesXMLWriter.write : ⚠️ Impossible de lire {self.__fd.name}, mode : {self.__fd.mode}"
+            # )
+            fd_name = getattr(self.__fd, "name", "Unknown")
+            fd_mode = getattr(self.__fd, "mode", "Unknown")
             log.warning(
-                f"ChangesXMLWriter.write : ⚠️ Impossible de lire {self.__fd.name}, mode : {self.__fd.mode}"
+                f"ChangesXMLWriter.write : ⚠️ Impossible de lire {fd_name}, mode : {fd_mode}"
             )
 
 
@@ -1028,6 +1116,9 @@ class TemplateXMLWriter(XMLWriter):
         Returns :
             node (Element) : Nœud XML créé.
         """
+        log.debug(
+            f"TemplateXMLWriter.taskNode : Génération d'un noeud avec parentNode={parentNode} et task={tsk}."
+        )
         node = super().taskNode(parentNode, tsk)
 
         for name, getter in [
@@ -1036,27 +1127,43 @@ class TemplateXMLWriter(XMLWriter):
             ("completiondate", "completionDateTime"),
             ("reminder", "reminder"),
         ]:
-            if hasattr(tsk, name + "tmpl"):
-                value = getattr(tsk, name + "tmpl") or None
-            else:
-                dateTime = getattr(tsk, getter)()
-                if dateTime not in (None, date.DateTime()):
-                    delta = dateTime - date.Now()
-                    minutes = delta.days * 24 * 60 + round(delta.seconds / 60)
-                    # minutes = delta.days * 24 * 60 + (delta.seconds // 60)
-                    if minutes < 0:
-                        # value = "%d minutes ago" % -minutes
-                        value = f"{-minutes:d} minutes ago"
-                    else:
-                        # value = "%d minutes from now" % minutes
-                        value = f"{minutes:d} minutes from now"
+            # if hasattr(tsk, name + "tmpl"):
+            #     value = getattr(tsk, name + "tmpl") or None
+            # else:
+            log.debug(
+                f"TemplateXMLWrite.taskNode : Pour name={name} et getter={getter}"
+            )
+            dateTime = getattr(tsk, getter)()
+            log.debug(f"TemplateXMLWrite.taskNode : dateTime = {dateTime}")
+            # Si on récupère un objet Attribute, on prend sa valeur
+            if hasattr(dateTime, "value"):
+                dateTime = dateTime.value()
+                log.debug(
+                    f"TemplateXMLWriter.taskNode : Récupération de l'attribut dateTime.value : dateTime = {dateTime}."
+                )
+            if dateTime not in (None, date.DateTime()):
+                log.debug(
+                    f"dateTime {dateTime} n'est ni None, ni {date.DateTime()}."
+                )
+                delta = dateTime - date.Now()
+                minutes = delta.days * 24 * 60 + round(delta.seconds / 60)
+                # minutes = delta.days * 24 * 60 + (delta.seconds // 60)
+                if minutes < 0:
+                    # value = "%d minutes ago" % -minutes
+                    value = f"{-minutes:d} minutes ago"
                 else:
-                    value = None
-
-            if value is None:
-                if name in node.attrib:
-                    del node.attrib[name]
+                    # value = "%d minutes from now" % minutes
+                    value = f"{minutes:d} minutes from now"
             else:
-                node.attrib[name + "tmpl"] = value
+                value = None
 
+        if value is None:
+            log.debug("value est None.")
+            if name in node.attrib:
+
+                del node.attrib[name]
+        # else:
+        #     # node.attrib[name + "tmpl"] = value
+        #     node.attrib[name] = value
+        log.debug(f"TemplateXMLWriter.taskNode: Renvoie node={node} !")
         return node

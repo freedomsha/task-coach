@@ -240,11 +240,11 @@ class VirtualListCtrl(
     """
     Contrôle de liste virtuel personnalisé pour Task Coach.
 
-    Cette classe étend `wx.ListCtrl` en mode virtuel (`wx.LC_VIRTUAL`) et combine
-    plusieurs mixins (gestion des items, colonnes et tooltips) pour afficher de
-    grandes listes de manière efficace. Le contrôle est léger : il ne conserve
-    pas les objets de domaine en mémoire mais délègue leur fourniture au parent
-    (principe du "delegate").
+    Cette classe étend `wx.ListCtrl` en mode virtuel (`wx.LC_VIRTUAL`)
+    et combine plusieurs mixins (gestion des items, colonnes et tooltips)
+    pour afficher de grandes listes de manière efficace.
+    Le contrôle est léger : il ne conserve pas les objets de domaine en mémoire
+    mais délègue leur fourniture au parent (principe du "delegate").
 
     Comportement et responsabilités principales :
       - Fournir les callbacks wx pour le mode virtuel : `OnGetItemText`,
@@ -310,16 +310,40 @@ class VirtualListCtrl(
             columnPopupMenu (wx.Menu, optionnel) : Menu contextuel pour les colonnes.
             resizeableColumn (int) : Colonne redimensionnable par défaut.
         """
-        super().__init__(
-            parent,
-            style=wx.LC_REPORT | wx.LC_VIRTUAL,
-            columns=columns,
-            resizeableColumn=resizeableColumn,
-            itemPopupMenu=itemPopupMenu,
-            columnPopupMenu=columnPopupMenu,
-            *args,
-            **kwargs,
-        )
+        # Ne pas transmettre de kwargs non supportés à wx.ListCtrl.
+        # Récupérer le style et l'id si fournis, puis appeler l'initialiseur de
+        # la classe de base avec des arguments compatibles.
+        style = kwargs.pop("style", wx.LC_REPORT | wx.LC_VIRTUAL)
+        listctrl_id = kwargs.pop("id", wx.ID_ANY)
+        # Ne pas passer les kwargs "columns", "resizeableColumn",
+        # "itemPopupMenu", "columnPopupMenu" à wx.ListCtrl; ils sont gérés
+        # par cette classe.
+        kwargs.pop("columns", None)
+        kwargs.pop("resizeableColumn", None)
+        kwargs.pop("itemPopupMenu", None)
+        kwargs.pop("columnPopupMenu", None)
+
+        # Initialiser la ListCtrl de façon standard (compatible wxPython)
+        super().__init__(parent, id=listctrl_id, style=style)
+
+        # Insérer les colonnes fournis via l'argument `columns`
+        try:
+            for idx, col in enumerate(columns or []):
+                try:
+                    label = col.name() if hasattr(col, "name") else str(col)
+                except Exception:
+                    label = str(col)
+                try:
+                    self.InsertColumn(idx, label)
+                except Exception:
+                    # Si InsertColumn n'est pas supporté dans une variante
+                    # particulière, on ignore et poursuit.
+                    pass
+
+        except Exception:
+            # Ignorer toute erreur lors de la création des colonnes
+            pass
+
         self.__parent = parent
         # On ne refresh PAS immédiatement.
         #
@@ -329,6 +353,8 @@ class VirtualListCtrl(
         self.__refreshing = (
             False  # Flag to suppress selection events during refresh
         )
+        # Stocke le dernier count demandé pour scheduleRefresh
+        self.__refresh_count = 0
         self.bindEventHandlers(selectCommand, editCommand)
 
     def bindEventHandlers(self, selectCommand, editCommand):
@@ -393,8 +419,12 @@ class VirtualListCtrl(
         """
         # return self.__parent.getItemText(domainObject, columnIndex)
         return_itemText = self.__parent.getItemText(domainObject, columnIndex)
+        # Utiliser lazy logging pour éviter l'interpolation si le niveau DEBUG n'est pas actif
         log.debug(
-            f"VirtualListCtrl.getItemText : renvoie {return_itemText} pour {domainObject} colonne {columnIndex}"
+            "VirtualListCtrl.getItemText : renvoie %s pour %s colonne %s",
+            return_itemText,
+            domainObject,
+            columnIndex,
         )
         return return_itemText
 
@@ -523,13 +553,25 @@ class VirtualListCtrl(
 
     def RefreshAllItems(self, count):
         """Mettre à jour tous les éléments de la liste."""
-        self.SetItemCount(count)
-        if count == 0:
-            self.DeleteAllItems()
-        else:
-            # The VirtualListCtrl makes sure only visible items are updated
-            super().RefreshItems(0, count - 1)
-        self.selectCommand()
+        # Marquer que l'on rafraîchit afin d'éviter certains événements
+        self.__refreshing = True
+        try:
+            self.SetItemCount(count)
+            if count == 0:
+                self.DeleteAllItems()
+            else:
+                # The VirtualListCtrl makes sure only visible items are updated
+                super().RefreshItems(0, count - 1)
+        finally:
+            # Toujours réinitialiser le flag et notifier la sélection
+            self.__refreshing = False
+            try:
+                self.selectCommand()
+            except Exception:
+                # Préserver l'ancien comportement : loguer mais continuer
+                log.exception(
+                    "VirtualListCtrl.RefreshAllItems : erreur lors de selectCommand"
+                )
 
     def RefreshItems(self, *items):
         """Actualisez des éléments spécifiques."""
@@ -646,16 +688,17 @@ class VirtualListCtrl(
                     or self.GetItemCount()
                 )
                 log.debug(
-                    f"TreeListCtrl.doRefresh : exécution du rafraîchissement avec count={count_to_use}."
+                    "TreeListCtrl.doRefresh : exécution du rafraîchissement avec count=%s.",
+                    count_to_use,
                 )
                 # Appeler RefreshAllItems avec le count désiré
                 try:
                     self.RefreshAllItems(count_to_use)
-                except Exception:
+                except Exception:  # pylint: disable=broad-except
                     # En dernier recours, appeler sans argument
                     try:
                         self.RefreshAllItems(self.GetItemCount())
-                    except Exception:
+                    except Exception:  # pylint: disable=broad-except
                         log.exception(
                             "TreeListCtrl.doRefresh : échec du RefreshAllItems"
                         )

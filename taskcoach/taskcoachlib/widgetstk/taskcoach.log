@@ -1,0 +1,627 @@
+2026-01-19 06:41:25,473 [DEBUG] __main__: Column.name() renvoie le nom interne task_name de la colonne.
+2026-01-19 06:41:25,473 [DEBUG] __main__: Column.name() renvoie le nom interne due_date de la colonne.
+2026-01-19 06:41:25,473 [DEBUG] __main__: Column.name() renvoie le nom interne priority de la colonne.
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithItemsMixin.__init__ : méthode super avec parent=., args=() et kwargs={'itemPopupMenu': <tkinter.Menu object .!menu>}.
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithItemPopupMenuMixin.__init__ : Initialisation du menu contextuel sur les éléments.
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithItemPopupMenuMixin.__init__ : méthode super avec parent=., args=() et kwargs={}.
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithColumnsMixin.__init__ : Initialisation avec parent=., args=() et kwargs={}.
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithColumnsMixin.__init__ : appel de super() avec parent=., args=(), kwargs={}.
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithAutoResizedColumnsMixin.__init__ : initialisation.
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithAutoResizedColumnsMixin.__init__ : méthode super avec parent=., args=() et kwargs={}.
+2026-01-19 06:41:25,476 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Initialisation de AutoColumnWidthMixin.
+2026-01-19 06:41:25,476 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Attributs initialisés : _resize_column_id=0, ResizeColumnMinWidth=50
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithAutoResizedColumnsMixin initialisé !
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithColumnsMixin initialisé !
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithItemPopupMenuMixin initialisé !
+2026-01-19 06:41:25,476 [DEBUG] __main__: TaskTree : 3 colonnes ([<__main__.Column object at 0x7f909ec7c830>, <__main__.Column object at 0x7f909ec216d0>, <__main__.Column object at 0x7f909ec21810>]) avant CtrWithColumnsMixin.
+2026-01-19 06:41:25,476 [DEBUG] __main__: Column.name() renvoie le nom interne task_name de la colonne.
+2026-01-19 06:41:25,476 [DEBUG] __main__: Column.name() renvoie le nom interne due_date de la colonne.
+2026-01-19 06:41:25,476 [DEBUG] __main__: Column.name() renvoie le nom interne priority de la colonne.
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithColumnsMixin.__init__ : Initialisation avec parent=., args=() et kwargs={'columns': ['task_name', 'due_date', 'priority'], 'columnPopupMenu': None}.
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithColumnsMixin.__init__ : appel de super() avec parent=., args=(), kwargs={'columns': ['task_name', 'due_date', 'priority'], 'columnPopupMenu': None}.
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithAutoResizedColumnsMixin.__init__ : initialisation.
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithAutoResizedColumnsMixin.__init__ : méthode super avec parent=., args=() et kwargs={'columns': ['task_name', 'due_date', 'priority'], 'columnPopupMenu': None}.
+2026-01-19 06:41:25,476 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Initialisation de AutoColumnWidthMixin.
+2026-01-19 06:41:25,476 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Attributs initialisés : _resize_column_id=3, ResizeColumnMinWidth=50
+2026-01-19 06:41:25,476 [DEBUG] __main__: _CtrlWithAutoResizedColumnsMixin initialisé !
+2026-01-19 06:41:25,476 [DEBUG] __main__: CtrlWithColumnsMixin initialisé !
+2026-01-19 06:41:25,477 [DEBUG] __main__: TaskTree : 3 colonnes ([<__main__.Column object at 0x7f909ec7c830>, <__main__.Column object at 0x7f909ec216d0>, <__main__.Column object at 0x7f909ec21810>]) après CtrWithColumnsMixin.
+2026-01-19 06:41:25,477 [INFO] taskcoachlib.widgetstk.autowidthtk: Changement de la colonne à redimensionner : 3 -> task_name
+2026-01-19 06:41:25,482 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=200px, Fixe=600px, Restant=-400px
+2026-01-19 06:41:25,482 [WARNING] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Espace insuffisant pour 'task_name' (-400px < 50px)
+2026-01-19 06:41:25,492 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=802px, Fixe=600px, Restant=202px
+2026-01-19 06:41:25,492 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 202px
+2026-01-19 06:41:53,220 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=791px, Fixe=552px, Restant=239px
+2026-01-19 06:41:53,221 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 239px
+2026-01-19 06:41:53,226 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=785px, Fixe=550px, Restant=235px
+2026-01-19 06:41:53,227 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 235px
+2026-01-19 06:41:53,238 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=780px, Fixe=549px, Restant=231px
+2026-01-19 06:41:53,238 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 231px
+2026-01-19 06:41:53,243 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=776px, Fixe=548px, Restant=228px
+2026-01-19 06:41:53,243 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 228px
+2026-01-19 06:41:53,251 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=772px, Fixe=547px, Restant=225px
+2026-01-19 06:41:53,251 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 225px
+2026-01-19 06:41:53,257 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=769px, Fixe=546px, Restant=223px
+2026-01-19 06:41:53,258 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 223px
+2026-01-19 06:41:53,265 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=766px, Fixe=545px, Restant=221px
+2026-01-19 06:41:53,266 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 221px
+2026-01-19 06:41:53,272 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=763px, Fixe=543px, Restant=220px
+2026-01-19 06:41:53,272 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 220px
+2026-01-19 06:41:53,280 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=762px, Fixe=541px, Restant=221px
+2026-01-19 06:41:53,280 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 221px
+2026-01-19 06:41:53,287 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=760px, Fixe=539px, Restant=221px
+2026-01-19 06:41:53,287 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 221px
+2026-01-19 06:41:53,295 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=758px, Fixe=538px, Restant=220px
+2026-01-19 06:41:53,295 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 220px
+2026-01-19 06:41:53,304 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=755px, Fixe=536px, Restant=219px
+2026-01-19 06:41:53,304 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 219px
+2026-01-19 06:41:53,311 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=753px, Fixe=534px, Restant=219px
+2026-01-19 06:41:53,311 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 219px
+2026-01-19 06:41:53,318 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=750px, Fixe=533px, Restant=217px
+2026-01-19 06:41:53,319 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 217px
+2026-01-19 06:41:53,326 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=747px, Fixe=531px, Restant=216px
+2026-01-19 06:41:53,327 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 216px
+2026-01-19 06:41:53,333 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=743px, Fixe=529px, Restant=214px
+2026-01-19 06:41:53,333 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 214px
+2026-01-19 06:41:53,340 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=740px, Fixe=527px, Restant=213px
+2026-01-19 06:41:53,340 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 213px
+2026-01-19 06:41:53,348 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=737px, Fixe=526px, Restant=211px
+2026-01-19 06:41:53,348 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 211px
+2026-01-19 06:41:53,356 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=733px, Fixe=525px, Restant=208px
+2026-01-19 06:41:53,357 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 208px
+2026-01-19 06:41:53,366 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=731px, Fixe=524px, Restant=207px
+2026-01-19 06:41:53,366 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 207px
+2026-01-19 06:41:53,373 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=727px, Fixe=522px, Restant=205px
+2026-01-19 06:41:53,373 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 205px
+2026-01-19 06:41:53,380 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=725px, Fixe=520px, Restant=205px
+2026-01-19 06:41:53,380 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 205px
+2026-01-19 06:41:53,388 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=723px, Fixe=519px, Restant=204px
+2026-01-19 06:41:53,388 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 204px
+2026-01-19 06:41:53,395 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=720px, Fixe=517px, Restant=203px
+2026-01-19 06:41:53,396 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:53,402 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=719px, Fixe=516px, Restant=203px
+2026-01-19 06:41:53,402 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:53,410 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=717px, Fixe=514px, Restant=203px
+2026-01-19 06:41:53,410 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:53,418 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=715px, Fixe=513px, Restant=202px
+2026-01-19 06:41:53,418 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 202px
+2026-01-19 06:41:53,426 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=714px, Fixe=511px, Restant=203px
+2026-01-19 06:41:53,426 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:53,435 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=712px, Fixe=509px, Restant=203px
+2026-01-19 06:41:53,435 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:53,441 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=711px, Fixe=508px, Restant=203px
+2026-01-19 06:41:53,441 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:53,448 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=710px, Fixe=506px, Restant=204px
+2026-01-19 06:41:53,449 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 204px
+2026-01-19 06:41:53,456 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=709px, Fixe=504px, Restant=205px
+2026-01-19 06:41:53,456 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 205px
+2026-01-19 06:41:53,468 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=707px, Fixe=503px, Restant=204px
+2026-01-19 06:41:53,468 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 204px
+2026-01-19 06:41:53,475 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=705px, Fixe=501px, Restant=204px
+2026-01-19 06:41:53,476 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 204px
+2026-01-19 06:41:53,481 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=704px, Fixe=500px, Restant=204px
+2026-01-19 06:41:53,481 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 204px
+2026-01-19 06:41:53,488 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=701px, Fixe=499px, Restant=202px
+2026-01-19 06:41:53,488 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 202px
+2026-01-19 06:41:53,495 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=698px, Fixe=498px, Restant=200px
+2026-01-19 06:41:53,496 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 200px
+2026-01-19 06:41:53,503 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=696px, Fixe=496px, Restant=200px
+2026-01-19 06:41:53,503 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 200px
+2026-01-19 06:41:53,511 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=693px, Fixe=495px, Restant=198px
+2026-01-19 06:41:53,511 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 198px
+2026-01-19 06:41:53,518 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=690px, Fixe=494px, Restant=196px
+2026-01-19 06:41:53,518 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 196px
+2026-01-19 06:41:53,525 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=688px, Fixe=492px, Restant=196px
+2026-01-19 06:41:53,526 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 196px
+2026-01-19 06:41:53,534 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=685px, Fixe=491px, Restant=194px
+2026-01-19 06:41:53,534 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 194px
+2026-01-19 06:41:53,541 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=683px, Fixe=490px, Restant=193px
+2026-01-19 06:41:53,542 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 193px
+2026-01-19 06:41:53,550 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=682px, Fixe=488px, Restant=194px
+2026-01-19 06:41:53,550 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 194px
+2026-01-19 06:41:53,558 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=679px, Fixe=486px, Restant=193px
+2026-01-19 06:41:53,559 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 193px
+2026-01-19 06:41:53,567 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=677px, Fixe=484px, Restant=193px
+2026-01-19 06:41:53,567 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 193px
+2026-01-19 06:41:53,574 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=675px, Fixe=483px, Restant=192px
+2026-01-19 06:41:53,575 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 192px
+2026-01-19 06:41:53,580 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=673px, Fixe=481px, Restant=192px
+2026-01-19 06:41:53,580 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 192px
+2026-01-19 06:41:53,588 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=670px, Fixe=480px, Restant=190px
+2026-01-19 06:41:53,588 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 190px
+2026-01-19 06:41:53,595 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=668px, Fixe=478px, Restant=190px
+2026-01-19 06:41:53,595 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 190px
+2026-01-19 06:41:53,602 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=666px, Fixe=477px, Restant=189px
+2026-01-19 06:41:53,602 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 189px
+2026-01-19 06:41:53,610 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=664px, Fixe=475px, Restant=189px
+2026-01-19 06:41:53,610 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 189px
+2026-01-19 06:41:53,618 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=661px, Fixe=474px, Restant=187px
+2026-01-19 06:41:53,618 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 187px
+2026-01-19 06:41:53,625 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=658px, Fixe=473px, Restant=185px
+2026-01-19 06:41:53,626 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 185px
+2026-01-19 06:41:53,634 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=655px, Fixe=471px, Restant=184px
+2026-01-19 06:41:53,634 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 184px
+2026-01-19 06:41:53,641 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=652px, Fixe=469px, Restant=183px
+2026-01-19 06:41:53,642 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 183px
+2026-01-19 06:41:53,649 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=649px, Fixe=468px, Restant=181px
+2026-01-19 06:41:53,649 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 181px
+2026-01-19 06:41:53,656 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=646px, Fixe=467px, Restant=179px
+2026-01-19 06:41:53,656 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 179px
+2026-01-19 06:41:53,663 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=641px, Fixe=465px, Restant=176px
+2026-01-19 06:41:53,663 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 176px
+2026-01-19 06:41:53,671 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=638px, Fixe=464px, Restant=174px
+2026-01-19 06:41:53,671 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 174px
+2026-01-19 06:41:53,678 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=633px, Fixe=462px, Restant=171px
+2026-01-19 06:41:53,678 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 171px
+2026-01-19 06:41:53,686 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=629px, Fixe=461px, Restant=168px
+2026-01-19 06:41:53,686 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 168px
+2026-01-19 06:41:53,693 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=623px, Fixe=460px, Restant=163px
+2026-01-19 06:41:53,693 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 163px
+2026-01-19 06:41:53,701 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=617px, Fixe=458px, Restant=159px
+2026-01-19 06:41:53,701 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 159px
+2026-01-19 06:41:53,709 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=613px, Fixe=457px, Restant=156px
+2026-01-19 06:41:53,709 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 156px
+2026-01-19 06:41:53,716 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=609px, Fixe=456px, Restant=153px
+2026-01-19 06:41:53,716 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 153px
+2026-01-19 06:41:53,724 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=604px, Fixe=455px, Restant=149px
+2026-01-19 06:41:53,724 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 149px
+2026-01-19 06:41:53,732 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=602px, Fixe=454px, Restant=148px
+2026-01-19 06:41:53,732 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 148px
+2026-01-19 06:41:53,740 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=598px, Fixe=452px, Restant=146px
+2026-01-19 06:41:53,740 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 146px
+2026-01-19 06:41:53,748 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=594px, Fixe=450px, Restant=144px
+2026-01-19 06:41:53,748 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 144px
+2026-01-19 06:41:53,755 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=590px, Fixe=448px, Restant=142px
+2026-01-19 06:41:53,755 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 142px
+2026-01-19 06:41:53,764 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=587px, Fixe=446px, Restant=141px
+2026-01-19 06:41:53,764 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 141px
+2026-01-19 06:41:53,772 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=583px, Fixe=444px, Restant=139px
+2026-01-19 06:41:53,772 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 139px
+2026-01-19 06:41:53,779 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=580px, Fixe=442px, Restant=138px
+2026-01-19 06:41:53,780 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 138px
+2026-01-19 06:41:53,787 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=577px, Fixe=441px, Restant=136px
+2026-01-19 06:41:53,787 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 136px
+2026-01-19 06:41:53,794 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=574px, Fixe=440px, Restant=134px
+2026-01-19 06:41:53,794 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 134px
+2026-01-19 06:41:53,802 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=571px, Fixe=438px, Restant=133px
+2026-01-19 06:41:53,803 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 133px
+2026-01-19 06:41:53,809 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=568px, Fixe=436px, Restant=132px
+2026-01-19 06:41:53,810 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 132px
+2026-01-19 06:41:53,818 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=565px, Fixe=435px, Restant=130px
+2026-01-19 06:41:53,818 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 130px
+2026-01-19 06:41:53,825 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=562px, Fixe=434px, Restant=128px
+2026-01-19 06:41:53,826 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 128px
+2026-01-19 06:41:53,835 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=559px, Fixe=432px, Restant=127px
+2026-01-19 06:41:53,835 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 127px
+2026-01-19 06:41:53,843 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=556px, Fixe=430px, Restant=126px
+2026-01-19 06:41:53,843 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 126px
+2026-01-19 06:41:53,851 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=553px, Fixe=429px, Restant=124px
+2026-01-19 06:41:53,852 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 124px
+2026-01-19 06:41:53,859 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=550px, Fixe=428px, Restant=122px
+2026-01-19 06:41:53,859 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 122px
+2026-01-19 06:41:53,863 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=547px, Fixe=426px, Restant=121px
+2026-01-19 06:41:53,863 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 121px
+2026-01-19 06:41:53,870 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=544px, Fixe=424px, Restant=120px
+2026-01-19 06:41:53,870 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 120px
+2026-01-19 06:41:53,877 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=541px, Fixe=423px, Restant=118px
+2026-01-19 06:41:53,877 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 118px
+2026-01-19 06:41:53,885 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=538px, Fixe=422px, Restant=116px
+2026-01-19 06:41:53,885 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 116px
+2026-01-19 06:41:53,893 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=537px, Fixe=420px, Restant=117px
+2026-01-19 06:41:53,893 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 117px
+2026-01-19 06:41:53,900 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=535px, Fixe=419px, Restant=116px
+2026-01-19 06:41:53,901 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 116px
+2026-01-19 06:41:53,908 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=533px, Fixe=417px, Restant=116px
+2026-01-19 06:41:53,908 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 116px
+2026-01-19 06:41:53,916 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=531px, Fixe=416px, Restant=115px
+2026-01-19 06:41:53,916 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 115px
+2026-01-19 06:41:53,924 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=530px, Fixe=414px, Restant=116px
+2026-01-19 06:41:53,924 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 116px
+2026-01-19 06:41:53,934 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=529px, Fixe=412px, Restant=117px
+2026-01-19 06:41:53,935 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 117px
+2026-01-19 06:41:53,940 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=528px, Fixe=411px, Restant=117px
+2026-01-19 06:41:53,941 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 117px
+2026-01-19 06:41:53,956 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=527px, Fixe=410px, Restant=117px
+2026-01-19 06:41:53,957 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 117px
+2026-01-19 06:41:55,246 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=528px, Fixe=408px, Restant=120px
+2026-01-19 06:41:55,247 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 120px
+2026-01-19 06:41:55,261 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=529px, Fixe=407px, Restant=122px
+2026-01-19 06:41:55,261 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 122px
+2026-01-19 06:41:55,268 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=530px, Fixe=406px, Restant=124px
+2026-01-19 06:41:55,268 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 124px
+2026-01-19 06:41:55,276 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=531px, Fixe=404px, Restant=127px
+2026-01-19 06:41:55,276 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 127px
+2026-01-19 06:41:55,285 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=533px, Fixe=402px, Restant=131px
+2026-01-19 06:41:55,285 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 131px
+2026-01-19 06:41:55,291 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=534px, Fixe=401px, Restant=133px
+2026-01-19 06:41:55,291 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 133px
+2026-01-19 06:41:55,301 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=535px, Fixe=399px, Restant=136px
+2026-01-19 06:41:55,302 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 136px
+2026-01-19 06:41:55,307 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=536px, Fixe=397px, Restant=139px
+2026-01-19 06:41:55,307 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 139px
+2026-01-19 06:41:55,314 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=538px, Fixe=396px, Restant=142px
+2026-01-19 06:41:55,314 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 142px
+2026-01-19 06:41:55,322 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=539px, Fixe=394px, Restant=145px
+2026-01-19 06:41:55,323 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 145px
+2026-01-19 06:41:55,329 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=541px, Fixe=392px, Restant=149px
+2026-01-19 06:41:55,330 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 149px
+2026-01-19 06:41:55,337 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=542px, Fixe=391px, Restant=151px
+2026-01-19 06:41:55,338 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 151px
+2026-01-19 06:41:55,345 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=543px, Fixe=389px, Restant=154px
+2026-01-19 06:41:55,345 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 154px
+2026-01-19 06:41:55,354 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=545px, Fixe=387px, Restant=158px
+2026-01-19 06:41:55,354 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 158px
+2026-01-19 06:41:55,361 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=546px, Fixe=386px, Restant=160px
+2026-01-19 06:41:55,362 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 160px
+2026-01-19 06:41:55,369 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=548px, Fixe=384px, Restant=164px
+2026-01-19 06:41:55,369 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 164px
+2026-01-19 06:41:55,379 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=549px, Fixe=383px, Restant=166px
+2026-01-19 06:41:55,379 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 166px
+2026-01-19 06:41:55,387 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=550px, Fixe=382px, Restant=168px
+2026-01-19 06:41:55,387 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 168px
+2026-01-19 06:41:55,393 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=551px, Fixe=380px, Restant=171px
+2026-01-19 06:41:55,394 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 171px
+2026-01-19 06:41:55,401 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=552px, Fixe=378px, Restant=174px
+2026-01-19 06:41:55,401 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 174px
+2026-01-19 06:41:55,409 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=553px, Fixe=377px, Restant=176px
+2026-01-19 06:41:55,409 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 176px
+2026-01-19 06:41:55,414 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=555px, Fixe=376px, Restant=179px
+2026-01-19 06:41:55,414 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 179px
+2026-01-19 06:41:55,422 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=556px, Fixe=374px, Restant=182px
+2026-01-19 06:41:55,422 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 182px
+2026-01-19 06:41:55,446 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=557px, Fixe=373px, Restant=184px
+2026-01-19 06:41:55,446 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 184px
+2026-01-19 06:41:55,462 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=558px, Fixe=372px, Restant=186px
+2026-01-19 06:41:55,462 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 186px
+2026-01-19 06:41:55,477 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=559px, Fixe=370px, Restant=189px
+2026-01-19 06:41:55,477 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 189px
+2026-01-19 06:41:55,488 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=560px, Fixe=368px, Restant=192px
+2026-01-19 06:41:55,488 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 192px
+2026-01-19 06:41:55,501 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=562px, Fixe=367px, Restant=195px
+2026-01-19 06:41:55,501 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 195px
+2026-01-19 06:41:55,510 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=563px, Fixe=365px, Restant=198px
+2026-01-19 06:41:55,510 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 198px
+2026-01-19 06:41:55,514 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=564px, Fixe=363px, Restant=201px
+2026-01-19 06:41:55,514 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 201px
+2026-01-19 06:41:55,522 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=565px, Fixe=362px, Restant=203px
+2026-01-19 06:41:55,522 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 203px
+2026-01-19 06:41:55,530 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=567px, Fixe=361px, Restant=206px
+2026-01-19 06:41:55,530 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 206px
+2026-01-19 06:41:55,538 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=568px, Fixe=359px, Restant=209px
+2026-01-19 06:41:55,538 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 209px
+2026-01-19 06:41:55,545 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=569px, Fixe=358px, Restant=211px
+2026-01-19 06:41:55,546 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 211px
+2026-01-19 06:41:55,553 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=570px, Fixe=357px, Restant=213px
+2026-01-19 06:41:55,553 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 213px
+2026-01-19 06:41:55,561 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=572px, Fixe=355px, Restant=217px
+2026-01-19 06:41:55,561 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 217px
+2026-01-19 06:41:55,568 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=573px, Fixe=354px, Restant=219px
+2026-01-19 06:41:55,568 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 219px
+2026-01-19 06:41:55,576 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=576px, Fixe=353px, Restant=223px
+2026-01-19 06:41:55,576 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 223px
+2026-01-19 06:41:55,584 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=578px, Fixe=352px, Restant=226px
+2026-01-19 06:41:55,584 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 226px
+2026-01-19 06:41:55,592 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=580px, Fixe=350px, Restant=230px
+2026-01-19 06:41:55,592 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 230px
+2026-01-19 06:41:55,602 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=583px, Fixe=349px, Restant=234px
+2026-01-19 06:41:55,602 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 234px
+2026-01-19 06:41:55,608 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=585px, Fixe=347px, Restant=238px
+2026-01-19 06:41:55,608 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 238px
+2026-01-19 06:41:55,615 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=588px, Fixe=346px, Restant=242px
+2026-01-19 06:41:55,615 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 242px
+2026-01-19 06:41:55,625 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=591px, Fixe=345px, Restant=246px
+2026-01-19 06:41:55,626 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 246px
+2026-01-19 06:41:55,631 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=594px, Fixe=343px, Restant=251px
+2026-01-19 06:41:55,631 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 251px
+2026-01-19 06:41:55,638 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=598px, Fixe=341px, Restant=257px
+2026-01-19 06:41:55,638 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 257px
+2026-01-19 06:41:55,646 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=600px, Fixe=339px, Restant=261px
+2026-01-19 06:41:55,646 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 261px
+2026-01-19 06:41:55,655 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=604px, Fixe=338px, Restant=266px
+2026-01-19 06:41:55,655 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 266px
+2026-01-19 06:41:55,662 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=606px, Fixe=337px, Restant=269px
+2026-01-19 06:41:55,662 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 269px
+2026-01-19 06:41:55,669 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=608px, Fixe=335px, Restant=273px
+2026-01-19 06:41:55,669 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 273px
+2026-01-19 06:41:55,676 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=611px, Fixe=334px, Restant=277px
+2026-01-19 06:41:55,676 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 277px
+2026-01-19 06:41:55,684 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=612px, Fixe=332px, Restant=280px
+2026-01-19 06:41:55,684 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 280px
+2026-01-19 06:41:55,691 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=613px, Fixe=331px, Restant=282px
+2026-01-19 06:41:55,691 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 282px
+2026-01-19 06:41:55,708 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=614px, Fixe=330px, Restant=284px
+2026-01-19 06:41:55,709 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 284px
+2026-01-19 06:41:55,861 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=615px, Fixe=328px, Restant=287px
+2026-01-19 06:41:55,862 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 287px
+2026-01-19 06:41:55,878 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=616px, Fixe=326px, Restant=290px
+2026-01-19 06:41:55,878 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 290px
+2026-01-19 06:41:55,892 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=617px, Fixe=325px, Restant=292px
+2026-01-19 06:41:55,893 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 292px
+2026-01-19 06:41:55,902 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=619px, Fixe=324px, Restant=295px
+2026-01-19 06:41:55,902 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 295px
+2026-01-19 06:41:55,909 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=620px, Fixe=322px, Restant=298px
+2026-01-19 06:41:55,909 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 298px
+2026-01-19 06:41:55,918 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=621px, Fixe=321px, Restant=300px
+2026-01-19 06:41:55,918 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 300px
+2026-01-19 06:41:55,926 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=623px, Fixe=320px, Restant=303px
+2026-01-19 06:41:55,926 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 303px
+2026-01-19 06:41:55,938 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=625px, Fixe=318px, Restant=307px
+2026-01-19 06:41:55,938 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 307px
+2026-01-19 06:41:55,946 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=626px, Fixe=317px, Restant=309px
+2026-01-19 06:41:55,946 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 309px
+2026-01-19 06:41:55,954 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=627px, Fixe=315px, Restant=312px
+2026-01-19 06:41:55,954 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 312px
+2026-01-19 06:41:55,963 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=628px, Fixe=313px, Restant=315px
+2026-01-19 06:41:55,964 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 315px
+2026-01-19 06:41:55,970 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=629px, Fixe=312px, Restant=317px
+2026-01-19 06:41:55,970 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 317px
+2026-01-19 06:41:55,976 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=630px, Fixe=311px, Restant=319px
+2026-01-19 06:41:55,977 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 319px
+2026-01-19 06:41:56,664 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=631px, Fixe=309px, Restant=322px
+2026-01-19 06:41:56,665 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 322px
+2026-01-19 06:42:08,742 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=619px, Fixe=305px, Restant=314px
+2026-01-19 06:42:08,742 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 314px
+2026-01-19 06:42:08,745 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=615px, Fixe=303px, Restant=312px
+2026-01-19 06:42:08,745 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 312px
+2026-01-19 06:42:08,755 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=611px, Fixe=301px, Restant=310px
+2026-01-19 06:42:08,756 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 310px
+2026-01-19 06:42:08,761 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=607px, Fixe=299px, Restant=308px
+2026-01-19 06:42:08,761 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 308px
+2026-01-19 06:42:08,768 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=603px, Fixe=297px, Restant=306px
+2026-01-19 06:42:08,768 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 306px
+2026-01-19 06:42:08,776 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=599px, Fixe=295px, Restant=304px
+2026-01-19 06:42:08,776 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 304px
+2026-01-19 06:42:08,784 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=594px, Fixe=293px, Restant=301px
+2026-01-19 06:42:08,784 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 301px
+2026-01-19 06:42:08,791 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=591px, Fixe=291px, Restant=300px
+2026-01-19 06:42:08,791 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 300px
+2026-01-19 06:42:08,800 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=586px, Fixe=289px, Restant=297px
+2026-01-19 06:42:08,800 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 297px
+2026-01-19 06:42:08,806 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=583px, Fixe=287px, Restant=296px
+2026-01-19 06:42:08,807 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 296px
+2026-01-19 06:42:08,815 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=580px, Fixe=285px, Restant=295px
+2026-01-19 06:42:08,815 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 295px
+2026-01-19 06:42:08,822 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=578px, Fixe=284px, Restant=294px
+2026-01-19 06:42:08,822 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 294px
+2026-01-19 06:42:08,830 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=575px, Fixe=282px, Restant=293px
+2026-01-19 06:42:08,830 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 293px
+2026-01-19 06:42:08,838 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=574px, Fixe=280px, Restant=294px
+2026-01-19 06:42:08,838 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 294px
+2026-01-19 06:42:08,846 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=572px, Fixe=278px, Restant=294px
+2026-01-19 06:42:08,846 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 294px
+2026-01-19 06:42:08,853 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=571px, Fixe=277px, Restant=294px
+2026-01-19 06:42:08,853 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 294px
+2026-01-19 06:42:08,870 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=570px, Fixe=275px, Restant=295px
+2026-01-19 06:42:08,870 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 295px
+2026-01-19 06:42:08,877 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=569px, Fixe=273px, Restant=296px
+2026-01-19 06:42:08,877 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 296px
+2026-01-19 06:42:08,885 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=568px, Fixe=272px, Restant=296px
+2026-01-19 06:42:08,885 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 296px
+2026-01-19 06:42:08,891 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=567px, Fixe=271px, Restant=296px
+2026-01-19 06:42:08,892 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 296px
+2026-01-19 06:42:08,899 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=566px, Fixe=269px, Restant=297px
+2026-01-19 06:42:08,899 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 297px
+2026-01-19 06:42:08,906 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=565px, Fixe=267px, Restant=298px
+2026-01-19 06:42:08,907 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 298px
+2026-01-19 06:42:08,914 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=564px, Fixe=266px, Restant=298px
+2026-01-19 06:42:08,914 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 298px
+2026-01-19 06:42:08,946 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=563px, Fixe=265px, Restant=298px
+2026-01-19 06:42:08,947 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 298px
+2026-01-19 06:42:08,962 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=562px, Fixe=263px, Restant=299px
+2026-01-19 06:42:08,962 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 299px
+2026-01-19 06:42:08,970 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=561px, Fixe=261px, Restant=300px
+2026-01-19 06:42:08,970 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 300px
+2026-01-19 06:42:08,986 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=560px, Fixe=260px, Restant=300px
+2026-01-19 06:42:08,986 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 300px
+2026-01-19 06:42:09,002 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=559px, Fixe=259px, Restant=300px
+2026-01-19 06:42:09,002 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 300px
+2026-01-19 06:42:09,011 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=558px, Fixe=257px, Restant=301px
+2026-01-19 06:42:09,011 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 301px
+2026-01-19 06:42:09,023 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=557px, Fixe=255px, Restant=302px
+2026-01-19 06:42:09,023 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 302px
+2026-01-19 06:42:09,038 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=556px, Fixe=254px, Restant=302px
+2026-01-19 06:42:09,039 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 302px
+2026-01-19 06:42:14,289 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=568px, Fixe=253px, Restant=315px
+2026-01-19 06:42:14,289 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 315px
+2026-01-19 06:42:14,296 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=574px, Fixe=252px, Restant=322px
+2026-01-19 06:42:14,296 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 322px
+2026-01-19 06:42:14,306 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=579px, Fixe=250px, Restant=329px
+2026-01-19 06:42:14,306 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 329px
+2026-01-19 06:42:14,311 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=585px, Fixe=248px, Restant=337px
+2026-01-19 06:42:14,311 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 337px
+2026-01-19 06:42:14,318 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=590px, Fixe=247px, Restant=343px
+2026-01-19 06:42:14,319 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 343px
+2026-01-19 06:42:14,325 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=596px, Fixe=245px, Restant=351px
+2026-01-19 06:42:14,326 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 351px
+2026-01-19 06:42:14,334 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=603px, Fixe=244px, Restant=359px
+2026-01-19 06:42:14,334 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 359px
+2026-01-19 06:42:14,342 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=611px, Fixe=242px, Restant=369px
+2026-01-19 06:42:14,342 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 369px
+2026-01-19 06:42:14,349 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=618px, Fixe=240px, Restant=378px
+2026-01-19 06:42:14,350 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 378px
+2026-01-19 06:42:14,357 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=623px, Fixe=238px, Restant=385px
+2026-01-19 06:42:14,358 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 385px
+2026-01-19 06:42:14,365 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=628px, Fixe=236px, Restant=392px
+2026-01-19 06:42:14,365 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 392px
+2026-01-19 06:42:14,374 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=633px, Fixe=235px, Restant=398px
+2026-01-19 06:42:14,374 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 398px
+2026-01-19 06:42:14,380 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=635px, Fixe=234px, Restant=401px
+2026-01-19 06:42:14,380 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 401px
+2026-01-19 06:42:14,387 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=639px, Fixe=232px, Restant=407px
+2026-01-19 06:42:14,387 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 407px
+2026-01-19 06:42:14,396 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=642px, Fixe=230px, Restant=412px
+2026-01-19 06:42:14,396 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 412px
+2026-01-19 06:42:14,405 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=644px, Fixe=228px, Restant=416px
+2026-01-19 06:42:14,405 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 416px
+2026-01-19 06:42:14,412 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=645px, Fixe=227px, Restant=418px
+2026-01-19 06:42:14,412 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 418px
+2026-01-19 06:42:14,420 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=646px, Fixe=226px, Restant=420px
+2026-01-19 06:42:14,420 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 420px
+2026-01-19 06:42:14,436 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=647px, Fixe=224px, Restant=423px
+2026-01-19 06:42:14,436 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 423px
+2026-01-19 06:42:14,497 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=648px, Fixe=222px, Restant=426px
+2026-01-19 06:42:14,498 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 426px
+2026-01-19 06:42:14,598 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=649px, Fixe=221px, Restant=428px
+2026-01-19 06:42:14,599 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 428px
+2026-01-19 06:42:14,608 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=650px, Fixe=220px, Restant=430px
+2026-01-19 06:42:14,609 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 430px
+2026-01-19 06:42:14,616 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=651px, Fixe=218px, Restant=433px
+2026-01-19 06:42:14,616 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 433px
+2026-01-19 06:42:14,625 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=652px, Fixe=216px, Restant=436px
+2026-01-19 06:42:14,625 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 436px
+2026-01-19 06:42:14,630 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=653px, Fixe=215px, Restant=438px
+2026-01-19 06:42:14,630 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 438px
+2026-01-19 06:42:14,636 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=655px, Fixe=214px, Restant=441px
+2026-01-19 06:42:14,636 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 441px
+2026-01-19 06:42:14,643 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=656px, Fixe=212px, Restant=444px
+2026-01-19 06:42:14,644 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 444px
+2026-01-19 06:42:14,652 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=658px, Fixe=211px, Restant=447px
+2026-01-19 06:42:14,653 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 447px
+2026-01-19 06:42:14,659 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=659px, Fixe=209px, Restant=450px
+2026-01-19 06:42:14,659 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 450px
+2026-01-19 06:42:14,670 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=660px, Fixe=207px, Restant=453px
+2026-01-19 06:42:14,671 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 453px
+2026-01-19 06:42:14,678 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=662px, Fixe=206px, Restant=456px
+2026-01-19 06:42:14,678 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 456px
+2026-01-19 06:42:14,686 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=664px, Fixe=204px, Restant=460px
+2026-01-19 06:42:14,686 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 460px
+2026-01-19 06:42:14,691 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=666px, Fixe=203px, Restant=463px
+2026-01-19 06:42:14,691 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 463px
+2026-01-19 06:42:14,699 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=667px, Fixe=201px, Restant=466px
+2026-01-19 06:42:14,699 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 466px
+2026-01-19 06:42:14,707 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=669px, Fixe=199px, Restant=470px
+2026-01-19 06:42:14,707 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 470px
+2026-01-19 06:42:14,714 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=672px, Fixe=198px, Restant=474px
+2026-01-19 06:42:14,714 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 474px
+2026-01-19 06:42:14,722 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=674px, Fixe=197px, Restant=477px
+2026-01-19 06:42:14,722 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 477px
+2026-01-19 06:42:14,730 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=676px, Fixe=195px, Restant=481px
+2026-01-19 06:42:14,731 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 481px
+2026-01-19 06:42:14,737 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=679px, Fixe=194px, Restant=485px
+2026-01-19 06:42:14,738 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 485px
+2026-01-19 06:42:14,745 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=680px, Fixe=192px, Restant=488px
+2026-01-19 06:42:14,745 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 488px
+2026-01-19 06:42:14,754 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=681px, Fixe=191px, Restant=490px
+2026-01-19 06:42:14,754 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 490px
+2026-01-19 06:42:14,894 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=682px, Fixe=190px, Restant=492px
+2026-01-19 06:42:14,894 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 492px
+2026-01-19 06:42:14,903 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=684px, Fixe=188px, Restant=496px
+2026-01-19 06:42:14,904 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 496px
+2026-01-19 06:42:14,913 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=685px, Fixe=187px, Restant=498px
+2026-01-19 06:42:14,914 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 498px
+2026-01-19 06:42:14,925 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=686px, Fixe=186px, Restant=500px
+2026-01-19 06:42:14,925 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 500px
+2026-01-19 06:42:26,766 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=679px, Fixe=356px, Restant=323px
+2026-01-19 06:42:26,767 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 323px
+2026-01-19 06:42:26,772 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=676px, Fixe=354px, Restant=322px
+2026-01-19 06:42:26,773 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 322px
+2026-01-19 06:42:26,780 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=672px, Fixe=353px, Restant=319px
+2026-01-19 06:42:26,780 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 319px
+2026-01-19 06:42:26,788 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=670px, Fixe=352px, Restant=318px
+2026-01-19 06:42:26,788 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 318px
+2026-01-19 06:42:26,796 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=668px, Fixe=350px, Restant=318px
+2026-01-19 06:42:26,796 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 318px
+2026-01-19 06:42:26,804 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=665px, Fixe=349px, Restant=316px
+2026-01-19 06:42:26,804 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 316px
+2026-01-19 06:42:26,811 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=664px, Fixe=348px, Restant=316px
+2026-01-19 06:42:26,811 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 316px
+2026-01-19 06:42:26,820 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=662px, Fixe=347px, Restant=315px
+2026-01-19 06:42:26,820 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 315px
+2026-01-19 06:42:26,826 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=660px, Fixe=345px, Restant=315px
+2026-01-19 06:42:26,826 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 315px
+2026-01-19 06:42:26,834 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=657px, Fixe=344px, Restant=313px
+2026-01-19 06:42:26,834 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 313px
+2026-01-19 06:42:26,843 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=656px, Fixe=343px, Restant=313px
+2026-01-19 06:42:26,843 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 313px
+2026-01-19 06:42:26,849 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=654px, Fixe=342px, Restant=312px
+2026-01-19 06:42:26,850 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 312px
+2026-01-19 06:42:26,857 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=653px, Fixe=340px, Restant=313px
+2026-01-19 06:42:26,857 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 313px
+2026-01-19 06:42:26,865 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=651px, Fixe=339px, Restant=312px
+2026-01-19 06:42:26,865 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 312px
+2026-01-19 06:42:26,881 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=650px, Fixe=337px, Restant=313px
+2026-01-19 06:42:26,881 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 313px
+2026-01-19 06:42:26,950 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=649px, Fixe=335px, Restant=314px
+2026-01-19 06:42:26,951 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 314px
+2026-01-19 06:42:27,425 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=650px, Fixe=334px, Restant=316px
+2026-01-19 06:42:27,425 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 316px
+2026-01-19 06:42:27,432 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=651px, Fixe=332px, Restant=319px
+2026-01-19 06:42:27,432 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 319px
+2026-01-19 06:42:27,440 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=652px, Fixe=330px, Restant=322px
+2026-01-19 06:42:27,440 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 322px
+2026-01-19 06:42:27,448 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=654px, Fixe=329px, Restant=325px
+2026-01-19 06:42:27,448 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 325px
+2026-01-19 06:42:27,456 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=656px, Fixe=327px, Restant=329px
+2026-01-19 06:42:27,456 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 329px
+2026-01-19 06:42:27,463 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=659px, Fixe=326px, Restant=333px
+2026-01-19 06:42:27,463 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 333px
+2026-01-19 06:42:27,471 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=661px, Fixe=324px, Restant=337px
+2026-01-19 06:42:27,472 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 337px
+2026-01-19 06:42:27,478 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=663px, Fixe=323px, Restant=340px
+2026-01-19 06:42:27,479 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 340px
+2026-01-19 06:42:27,488 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=665px, Fixe=321px, Restant=344px
+2026-01-19 06:42:27,488 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 344px
+2026-01-19 06:42:27,494 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=666px, Fixe=320px, Restant=346px
+2026-01-19 06:42:27,494 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 346px
+2026-01-19 06:42:27,501 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=667px, Fixe=318px, Restant=349px
+2026-01-19 06:42:27,501 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 349px
+2026-01-19 06:42:27,509 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=668px, Fixe=316px, Restant=352px
+2026-01-19 06:42:27,509 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 352px
+2026-01-19 06:42:27,526 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=669px, Fixe=315px, Restant=354px
+2026-01-19 06:42:27,526 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 354px
+2026-01-19 06:42:27,540 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=670px, Fixe=314px, Restant=356px
+2026-01-19 06:42:27,540 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 356px
+2026-01-19 06:42:27,556 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=671px, Fixe=312px, Restant=359px
+2026-01-19 06:42:27,556 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 359px
+2026-01-19 06:42:27,571 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=672px, Fixe=310px, Restant=362px
+2026-01-19 06:42:27,571 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 362px
+2026-01-19 06:42:27,594 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=673px, Fixe=309px, Restant=364px
+2026-01-19 06:42:27,594 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 364px
+2026-01-19 06:42:27,601 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=674px, Fixe=308px, Restant=366px
+2026-01-19 06:42:27,601 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 366px
+2026-01-19 06:42:27,618 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=675px, Fixe=306px, Restant=369px
+2026-01-19 06:42:27,618 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 369px
+2026-01-19 06:42:27,687 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=676px, Fixe=304px, Restant=372px
+2026-01-19 06:42:27,687 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 372px
+2026-01-19 06:42:27,716 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=677px, Fixe=303px, Restant=374px
+2026-01-19 06:42:27,717 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 374px
+2026-01-19 06:42:27,725 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=678px, Fixe=302px, Restant=376px
+2026-01-19 06:42:27,725 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 376px
+2026-01-19 06:42:29,977 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=664px, Fixe=300px, Restant=364px
+2026-01-19 06:42:29,977 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 364px
+2026-01-19 06:42:29,980 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=657px, Fixe=299px, Restant=358px
+2026-01-19 06:42:29,981 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 358px
+2026-01-19 06:42:29,990 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=649px, Fixe=298px, Restant=351px
+2026-01-19 06:42:29,990 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 351px
+2026-01-19 06:42:29,998 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=643px, Fixe=297px, Restant=346px
+2026-01-19 06:42:29,998 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 346px
+2026-01-19 06:42:30,005 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=638px, Fixe=295px, Restant=343px
+2026-01-19 06:42:30,005 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 343px
+2026-01-19 06:42:30,012 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=634px, Fixe=293px, Restant=341px
+2026-01-19 06:42:30,013 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 341px
+2026-01-19 06:42:30,021 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=629px, Fixe=291px, Restant=338px
+2026-01-19 06:42:30,021 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 338px
+2026-01-19 06:42:30,028 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=625px, Fixe=290px, Restant=335px
+2026-01-19 06:42:30,028 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 335px
+2026-01-19 06:42:30,036 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=620px, Fixe=289px, Restant=331px
+2026-01-19 06:42:30,036 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 331px
+2026-01-19 06:42:30,044 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=617px, Fixe=288px, Restant=329px
+2026-01-19 06:42:30,045 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 329px
+2026-01-19 06:42:30,055 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=613px, Fixe=287px, Restant=326px
+2026-01-19 06:42:30,056 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 326px
+2026-01-19 06:42:30,060 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=612px, Fixe=286px, Restant=326px
+2026-01-19 06:42:30,060 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 326px
+2026-01-19 06:42:30,069 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=610px, Fixe=285px, Restant=325px
+2026-01-19 06:42:30,069 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 325px
+2026-01-19 06:42:30,075 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=608px, Fixe=283px, Restant=325px
+2026-01-19 06:42:30,075 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 325px
+2026-01-19 06:42:30,082 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=607px, Fixe=282px, Restant=325px
+2026-01-19 06:42:30,083 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 325px
+2026-01-19 06:42:30,091 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=606px, Fixe=280px, Restant=326px
+2026-01-19 06:42:30,091 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 326px
+2026-01-19 06:42:30,107 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=605px, Fixe=278px, Restant=327px
+2026-01-19 06:42:30,107 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 327px
+2026-01-19 06:42:30,114 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=604px, Fixe=277px, Restant=327px
+2026-01-19 06:42:30,114 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 327px
+2026-01-19 06:42:30,121 [DEBUG] taskcoachlib.widgetstk.autowidthtk: AutoColumnWidthMixin.on_resize : Événement Resize : Total=603px, Fixe=276px, Restant=327px
+2026-01-19 06:42:30,121 [DEBUG] taskcoachlib.widgetstk.autowidthtk: Ajustement de la colonne 'task_name' à 327px

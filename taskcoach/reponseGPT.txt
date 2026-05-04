@@ -1,0 +1,213 @@
+Très bien, on peut clarifier ça proprement 👍
+Je vais faire trois choses, dans cet ordre :
+
+    Expliquer précisément le type d’erreur que tu montres (cause racine)
+
+    Proposer une stratégie de correction robuste et progressive (sans tout casser)
+
+    Te dire exactement quels fichiers me fournir pour avancer efficacement
+
+Je reste volontairement pédagogique et orienté portage wx → Tkinter, pas “théorie pure”.
+1️⃣ Analyse de l’erreur : ce qui se passe réellement
+Symptôme clé (répété partout)
+
+UICommandContainerMixin.__init__ : parent_window n’a pas été fourni.
+
+Puis plus loin :
+
+AttributeError: 'TaskTemplateMenu' object has no attribute '_UICommandContainerMixin__window'
+
+Et encore ailleurs :
+
+KeyError: '#!mainmenu'
+
+👉 Tout est lié, ce n’est pas trois bugs différents.
+2️⃣ Cause racine (très importante)
+🔴 Problème fondamental
+
+Dans la version wxPython :
+
+    Tous les menus, popup menus, toolbars, etc.
+
+    reçoivent systématiquement une référence vers la MainWindow
+
+    Cette référence est stockée très tôt dans UICommandContainerMixin
+
+Dans ton portage Tkinter :
+
+    Tu crées bien les menus graphiquement (tk.Menu)
+
+    ❌ mais le parent_window logique (MainWindow) n’est pas toujours fourni
+
+    Résultat :
+
+        UICommandContainerMixin est partiellement initialisé
+
+        self.__window n’existe pas
+
+        Les UICommand qui font :
+
+        self.mainWindow().focus_get()
+
+        explosent
+
+3️⃣ Pourquoi ça casse surtout avec les menus contextuels ?
+
+Exemple :
+
+TaskPopupMenu
+ToggleCategoryMenu
+DynamicMenu
+
+Ces menus sont :
+
+    créés à la volée
+
+    parfois depuis un Viewer
+
+    parfois depuis un Container
+
+    parfois depuis un widget Tkinter (Treeview, Canvas, etc.)
+
+👉 Ils n’ont PAS naturellement accès à la MainWindow Tk, contrairement à wx.
+4️⃣ Ce qu’il faut corriger (principe clair)
+Règle d’or (à appliquer partout)
+
+    Tout objet qui hérite de UICommandContainerMixin
+    DOIT recevoir une référence valide vers la MainWindow
+
+Même :
+
+    les menus popup
+
+    les menus dynamiques
+
+    les menus temporaires
+
+5️⃣ Correction recommandée (propre et sûre)
+✅ A. Sécuriser UICommandContainerMixin.__init__
+
+Il faut refuser silencieusement l’état invalide.
+
+👉 Proposition claire :
+
+class UICommandContainerMixin:
+    """
+    Mixin responsable de la gestion des UICommand et de leur lien
+    avec la fenêtre principale.
+    """
+
+    def __init__(self, parent_window=None):
+        """
+        Initialise le conteneur de commandes UI.
+
+        Args:
+            parent_window (tk.Tk | tk.Toplevel):
+                Fenêtre principale de l'application.
+        """
+        # Vérifie que la fenêtre principale est fournie
+        if parent_window is None:
+            raise ValueError(
+                "UICommandContainerMixin nécessite une référence vers la MainWindow (parent_window)."
+            )
+
+        # Stocke la fenêtre principale
+        self.__window = parent_window
+
+🔹 Avantage :
+→ Le bug est détecté immédiatement, pas 3 secondes plus tard dans enabled().
+✅ B. Corriger la création des menus (exemple TaskPopupMenu)
+
+Dans ton log :
+
+DynamicMenu : Création du menu Dynamique pour Tkinter.
+UICommandContainerMixin.__init__ : parent_window n’a pas été fourni.
+
+👉 Ça veut dire que l’appel est faux, typiquement :
+
+super().__init__(window, parent_mainwindow=window)
+
+❌ Ici window est parfois un widget, pas la MainWindow.
+Solution correcte
+
+Toujours faire :
+
+main_window = parent.winfo_toplevel()
+super().__init__(parent, parent_mainwindow=main_window)
+
+✅ C. Corriger mainWindow() dans UICommandContainerMixin
+
+Le crash :
+
+AttributeError: '_UICommandContainerMixin__window'
+
+👉 Ça arrive parce que __window n’existe pas.
+
+Proposition défensive :
+
+def mainWindow(self):
+    """
+    Retourne la fenêtre principale Tkinter.
+
+    Returns:
+        tk.Tk
+    """
+    if not hasattr(self, "_UICommandContainerMixin__window"):
+        raise RuntimeError(
+            f"{self.__class__.__name__} n’a pas de fenêtre principale associée."
+        )
+    return self.__window
+
+6️⃣ Le KeyError: '#!mainmenu' expliqué simplement
+
+Celui-ci :
+
+KeyError: '#!mainmenu'
+
+➡️ Tkinter essaie de résoudre un widget qui n’existe plus
+➡️ Typiquement :
+
+    un menu détruit
+
+    mais encore référencé dans une UICommand
+
+    souvent via focus_get()
+
+💡 C’est une conséquence, pas la cause.
+
+Quand self.mainWindow() est correct → ce bug disparaît généralement.
+7️⃣ Les fichiers à me fournir (ordre précis)
+
+Pour que je t’aide rapidement et efficacement, fournis dans cet ordre :
+🔹 Indispensables
+
+    taskcoachlib/guitk/uicommand/uicommandcontainertk.py
+
+    taskcoachlib/guitk/menutk.py
+
+    taskcoachlib/guitk/uicommand/base_uicommandtk.py
+
+🔹 Pour les menus contextuels
+
+    taskcoachlib/guitk/viewer/basetk.py
+
+    taskcoachlib/guitk/viewer/tasktk.py
+
+🔹 Si possible (bonus très utile)
+
+    taskcoachlib/guitk/mainwindowtk.py (la méthode qui crée les menus)
+
+8️⃣ Ce que je te proposerai ensuite
+
+Une fois ces fichiers :
+
+    ✅ un schéma clair MainWindow → Menu → UICommand
+
+    ✅ une signature unique pour tous les menus Tk
+
+    ✅ un diff Git prêt à commit
+
+    ✅ plus aucune erreur parent_window n’a pas été fourni
+
+👉 Tu peux m’envoyer les fichiers un par un ou en bloc, comme tu préfères.
+On est clairement sur la dernière ligne droite du portage menus 💪

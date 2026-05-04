@@ -240,12 +240,19 @@ class VirtualListCtrl(
     """
     Contrôle de liste virtuel personnalisé pour Task Coach.
 
-    Cette classe étend `wx.ListCtrl` en mode virtuel (`wx.LC_VIRTUAL`) et combine plusieurs mixins
-    afin de fournir une interface riche pour afficher de grandes quantités de données efficacement.
+    Cette classe étend `wx.ListCtrl` en mode virtuel (`wx.LC_VIRTUAL`) et combine
+    plusieurs mixins (gestion des items, colonnes et tooltips) pour afficher de
+    grandes listes de manière efficace. Le contrôle est léger : il ne conserve
+    pas les objets de domaine en mémoire mais délègue leur fourniture au parent
+    (principe du "delegate").
 
-    Le contrôle ne stocke pas directement les éléments ; il délègue la récupération
-    des données à son parent (généralement un `Viewer`) via des méthodes comme
-    `getItemWithIndex()`, `getItemText()` ou `getItemTooltipData()`.
+    Comportement et responsabilités principales :
+      - Fournir les callbacks wx pour le mode virtuel : `OnGetItemText`,
+        `OnGetItemImage`, `OnGetItemAttr`, etc.; ces méthodes appellent le
+        parent pour obtenir le texte, les images et les attributs d'un item.
+      - Gérer la sélection, l'activation (édition) et les info-bulles.
+      - Permettre le rafraîchissement coalescé des éléments via
+        `scheduleRefresh()` / `RefreshAllItems()`.
 
     Fonctionnalités principales :
         - Mode virtuel (affichage efficace de milliers d’éléments)
@@ -254,16 +261,26 @@ class VirtualListCtrl(
         - Sélection multiple et navigation clavier
         - Délégation des événements de sélection et d’édition à des callbacks externes
 
+    Interface requise du parent : le parent doit implémenter (au moins) les
+    méthodes suivantes, utilisées par ce contrôle :
+        - getItemWithIndex(rowIndex) -> object
+        - getIndexOfItem(item) -> int
+        - getItemText(item, columnIndex) -> str
+        - getItemImages(item, columnIndex) -> list[int]
+        - getItemTooltipData(item) -> str
     Args:
-        parent (wx.Window) : Widget parent.
-        columns (list) : Liste des colonnes à afficher.
-        selectCommand (callable, optionnel) : Callback appelé lors d’une sélection.
-        editCommand (callable, optionnel) : Callback appelé lors d’une activation (double clic).
-        itemPopupMenu (wx.Menu, optionnel) : Menu contextuel associé aux éléments.
-        columnPopupMenu (wx.Menu, optionnel) : Menu contextuel associé aux colonnes.
-        resizeableColumn (int, optionnel) : Index de la colonne redimensionnable.
-        *args : Arguments supplémentaires transmis à `wx.ListCtrl`.
-        **kwargs : Arguments nommés supplémentaires transmis à `wx.ListCtrl`.
+        parent (wx.Window): widget parent (souvent un viewer fournissant l'API
+            décrite ci-dessus).
+        columns (list): liste des colonnes à afficher (objets décrivant les
+            colonnes, tels que utilisés par le mixin de colonnes).
+        selectCommand (callable|None): callback appelé lors d'une sélection.
+        editCommand (callable|None): callback appelé lors d'une activation
+            d'élément (double-clic). L'événement transmis peut recevoir un
+            attribut `columnName` ajouté par `onItemActivated`.
+        itemPopupMenu (wx.Menu|None): menu contextuel pour les items.
+        columnPopupMenu (wx.Menu|None): menu contextuel pour les colonnes.
+        resizeableColumn (int): index de la colonne redimensionnable par défaut.
+        *args, **kwargs: transmis à `wx.ListCtrl`.
     """
 
     def __init__(
@@ -579,49 +596,88 @@ class VirtualListCtrl(
         Lors de l'ordonnancement, elle posera le flag,
         et exécutera finalement RefreshAllItems pour reconstruire l'arbre.
         forceRefresh() réinitialise le flag et force la replanification.
+        Usage : appeler `scheduleRefresh(count)` à chaque fois que le modèle
+        de données a changé. Les appels rapides successifs seront coalescés en
+        un seul rafraîchissement effectif pour éviter les rebuilds coûteux.
         """
-        log.debug(
-            f"TreeListCtrl.scheduleRefresh : début du rafraîchissement différé."
-        )
-        if self.__refresh_scheduled:
-            log.debug(f"TreeListCtrl.scheduleRefresh : déjà planifié !")
-            return  # ← RETOUR IMMÉDIAT si déjà planifié
-        self.__refresh_scheduled = True
 
-        # def doRefresh():
-        #     # C'est la seule correction nécessaire :
-        #     # remettre __refresh_scheduled = False dans tous les chemins de sortie de doRefresh,
-        #     # pas seulement dans le chemin nominal.
-        #
-        #     # Protection contre la destruction de l'objet
-        #     # if not self:
-        #     try:
-        #         if not self:
-        #             log.debug(f"TreeListCtrl.doRefresh : objet déjà supprimé.")
-        #             # solution :
-        #             self.__refresh_scheduled = (
-        #                 False  # ← remettre le flag même en cas d'abort
-        #             )
-        #             return
-        #     except RuntimeError:
-        #         # L'objet C++ a été supprimé
-        #         log.warning(
-        #             f"TreeListCtrl.doRefresh : erreur de suppression de l'objet déjà supprimé."
-        #         )
-        #         self.__refresh_scheduled = False  # ← idem
-        #         return
-        #     self.__refresh_scheduled = False
-        #     log.debug(
-        #         f"TreeListCtrl.doRefresh : exécution du rafraîchissement planifié."
-        #     )
-        #     # self.RefreshAllItems(count)  # Faux, RefreshAllItems() ne prend aucun argument.
-        #     self.RefreshAllItems()
-        #     # Le problème est le suivant :
-        #     # lors du thaw, refresh() est appelé 3 fois (on le voit dans le log :
-        #     # 3 × "Rafraîchissement de la visionneuse CategoryViewer avec 8 éléments").
-        #     # La première appelle scheduleRefresh qui pose __refresh_scheduled = True.
-        #     # Les 2 suivantes retournent immédiatement car le flag est déjà posé.
-        #     # Puis doRefresh s'exécute via wx.CallAfter — mais à ce moment
+        log.debug(
+            "TreeListCtrl.scheduleRefresh : début du rafraîchissement différé."
+        )
+        # Si un rafraîchissement est déjà planifié, ne rien faire (coalescing)
+        if self.__refresh_scheduled:
+            log.debug("TreeListCtrl.scheduleRefresh : déjà planifié !")
+            # Mettre à jour le count demandé si nécessaire
+            try:
+                current = getattr(self, "_VirtualListCtrl__refresh_count", 0)
+                self.__refresh_count = max(current, count)
+            except Exception:
+                # Si l'attribut ne peut être mis à jour, on ignore silencieusement
+                pass
+            return
+
+        # Marquer comme planifié et stocker le count demandé
+        self.__refresh_scheduled = True
+        self.__refresh_count = max(
+            getattr(self, "_VirtualListCtrl__refresh_count", 0), count
+        )
+
+        def doRefresh():
+            """Exécute le refresh planifié. Garantit la réinitialisation du flag.
+
+            Doit toujours remettre `__refresh_scheduled` à False, même en cas
+            d'exception ou si l'objet C++ a été détruit.
+            """
+            try:
+                # Protection contre la destruction de l'objet (objet native supprimé)
+                try:
+                    # Accessing self may raise RuntimeError if the underlying C++
+                    # object was destroyed; capture et sortir proprement.
+                    _ = self.GetId()
+                except RuntimeError:
+                    log.warning(
+                        "TreeListCtrl.doRefresh : objet GUI déjà supprimé."
+                    )
+                    return
+
+                # Utiliser le count le plus récent demandé, ou le nombre actuel
+                count_to_use = (
+                    getattr(self, "_VirtualListCtrl__refresh_count", 0)
+                    or self.GetItemCount()
+                )
+                log.debug(
+                    f"TreeListCtrl.doRefresh : exécution du rafraîchissement avec count={count_to_use}."
+                )
+                # Appeler RefreshAllItems avec le count désiré
+                try:
+                    self.RefreshAllItems(count_to_use)
+                except Exception:
+                    # En dernier recours, appeler sans argument
+                    try:
+                        self.RefreshAllItems(self.GetItemCount())
+                    except Exception:
+                        log.exception(
+                            "TreeListCtrl.doRefresh : échec du RefreshAllItems"
+                        )
+            finally:
+                # Toujours réinitialiser l'état planifié
+                try:
+                    self.__refresh_scheduled = False
+                    self.__refresh_count = 0
+                except Exception:
+                    # Ignorer les erreurs de nettoyage
+                    pass
+
+        # Planifier l'exécution différée (wx.CallAfter afin d'exécuter dans la boucle d'événements)
+        try:
+            wx.CallAfter(doRefresh)
+        except Exception:
+            # En cas d'impossibilité d'utiliser CallAfter, exécuter directement
+            log.debug(
+                "TreeListCtrl.scheduleRefresh : wx.CallAfter indisponible, exécution synchrone."
+            )
+            doRefresh()
+        log.debug("TreeListCtrl.scheduleRefresh : rafraîchissement planifié.")
         #     # le widget est encore à 20×20 pixels,
         #     # donc RefreshAllItems s'exécute mais le widget n'est pas encore dans sa taille finale.
         #     # Quand la fenêtre s'agrandit après, aucun nouveau refresh n'est planifié.
@@ -630,11 +686,11 @@ class VirtualListCtrl(
         # self.after(1, doRefresh)
         # Utilisation de wx.CallAfter pour wxPython
         # wx.CallAfter(doRefresh)
-        log.debug(
-            "TreeListCtrl.doRefresh : exécution du rafraîchissement planifié."
-        )
-        self.__refresh_scheduled = False
-        self.RefreshAllItems(count)
-        log.debug(
-            f"TreeListCtrl.scheduleRefresh : fin du rafraîchissement planifié différé !"
-        )
+        # log.debug(
+        #     "TreeListCtrl.doRefresh : exécution du rafraîchissement planifié."
+        # )
+        # self.__refresh_scheduled = False
+        # self.RefreshAllItems(count)
+        # log.debug(
+        #     f"TreeListCtrl.scheduleRefresh : fin du rafraîchissement planifié différé !"
+        # )

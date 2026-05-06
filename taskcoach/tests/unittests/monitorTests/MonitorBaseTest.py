@@ -28,6 +28,7 @@ class MonitorBaseTest(tctest.TestCase):
     listClass = ObservableList
 
     def setUp(self):
+
         self.monitor = ChangeMonitor()
         self.monitor.monitorClass(self.klass)
 
@@ -42,19 +43,27 @@ class MonitorBaseTest(tctest.TestCase):
 
 
 class MonitorObjectTest(MonitorBaseTest):
-    def doTestAttributeChanged(self, name, value, initialValue, methodName=None):
+    def doTestAttributeChanged(
+        self, name, value, initialValue, methodName=None
+    ):
         if methodName is None:
             methodName = name
-        getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(initialValue)
+        getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(
+            initialValue
+        )
         self.monitor.resetChanges(self.obj)
-        getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(value)
+        getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(
+            value
+        )
         # self.assertEqual(self.monitor.getChanges(self.obj), set([name]))
         self.assertEqual(self.monitor.getChanges(self.obj), {name})
 
     def doTestAttributeDidNotChange(self, name, initialValue, methodName=None):
         if methodName is None:
             methodName = name
-        getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(initialValue)
+        getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(
+            initialValue
+        )
         self.monitor.resetChanges(self.obj)
         getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(
             getattr(self.obj, methodName)()
@@ -68,7 +77,9 @@ class MonitorObjectTest(MonitorBaseTest):
         self.doTestAttributeDidNotChange("subject", "Subject")
 
     def testDescriptionChanged(self):
-        self.doTestAttributeChanged("description", "New description", "Old description")
+        self.doTestAttributeChanged(
+            "description", "New description", "Old description"
+        )
 
     def testDescriptionDidNotChange(self):
         self.doTestAttributeDidNotChange("description", "Description")
@@ -126,7 +137,9 @@ class MonitorObjectTest(MonitorBaseTest):
         self.obj.setSubject("Foo")
         self.list.remove(self.obj)
         # self.assertEqual(self.monitor.getChanges(self.obj), set(['subject', '__del__']))
-        self.assertEqual(self.monitor.getChanges(self.obj), {"subject", "__del__"})
+        self.assertEqual(
+            self.monitor.getChanges(self.obj), {"subject", "__del__"}
+        )
         self.list.append(self.obj)
         # self.assertEqual(self.monitor.getChanges(self.obj), set(['subject']))
         self.assertEqual(self.monitor.getChanges(self.obj), {"subject"})
@@ -162,7 +175,16 @@ class MonitorCompositeObjectTest(MonitorObjectTest):
         self.obj.expand()
         # self.assertEqual(self.monitor.getChanges(self.obj), set(['expandedContexts']))
         # self.assertEqual(self.monitor.getChanges(self.obj), {"expandedContexts"})
-        self.assertEqual(self.monitor.getChanges(self.obj), {'expandedContexts', 'ordering', 'subject', 'description', 'appearance'})
+        self.assertEqual(
+            self.monitor.getChanges(self.obj),
+            {
+                "expandedContexts",
+                "ordering",
+                "subject",
+                "description",
+                "appearance",
+            },
+        )
 
     def testAddChild(self):
         child = self.klass(subject="Child")

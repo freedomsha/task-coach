@@ -58,7 +58,8 @@ class Composite(object):
 
         for child in self.__children:
             log.debug(
-                f"Composite : Ajout de l'enfant {child.id()} à {self.id()}"
+                # f"Composite : Ajout de l'enfant {child.id()} à {self.id()}"
+                f"Composite : Ajout de l'enfant {child} à {self}"
             )
             child.setParent(self)
         log.debug("Composite : Initialisé.")
@@ -393,6 +394,9 @@ class CompositeCollection(object):
             composite (Composite) : Le composite à ajouter.
             event (Event) : (facultatif) L'événement à notifier.
         """
+        print(
+            f"CompositeCollection.append : ajoute {composite} à la collection {self} avec event = {event}."
+        )
         return self.extend([composite], event=event)
 
     @observer.eventSource

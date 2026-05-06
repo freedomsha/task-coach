@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import builtins
 import sys
+
 # from imp import load_source as Load_Source # obsolète à remplacer par importlib.
 # Pour imp.load_source remplacer par importlib.machinery.SourceFileLoader
 import locale
@@ -27,6 +28,7 @@ import os
 from gettext import *
 from taskcoachlib import patterns, operating_system
 from taskcoachlib.config.arguments import get_gui
+
 if get_gui() == "wx":
     import wx
 elif get_gui() == "tk":
@@ -38,6 +40,8 @@ _RTL_LANGUAGE_PREFIXES = {"ar", "he", "fa", "ur", "ps", "sd", "ug", "yi"}
 
 
 class Translator(metaclass=patterns.Singleton):
+    """The Translator class is responsible for loading the translation for the current"""
+
     def __init__(self, language):
         # def __init__(self):  # Unresolved reference 'language' language='en_GB.po'
         # load = (
@@ -52,20 +56,24 @@ class Translator(metaclass=patterns.Singleton):
         self._setLocale(language)
 
     def _loadPoFile(self, poFilename):
-        """ Load the translation from a .po file by creating a python
-            module with po2dict and them importing that module. """
+        """
+        Load the translation from a .po file by creating a python
+        module with po2dict and them importing that module.
+        """
         # Chargez la traduction à partir d'un fichier .po en créant
         # un module python avec po2dict et en important ce module.
         language = self._languageFromPoFilename(poFilename)
         pyFilename = self._tmpPyFilename()
         po2dict.make(poFilename, pyFilename)
-        module = Load_Source(language, pyFilename)  # imp déprécié. Remplacer par importlib.machinery.SourceFileLoader
+        module = Load_Source(
+            language, pyFilename
+        )  # imp déprécié. Remplacer par importlib.machinery.SourceFileLoader
         os.remove(pyFilename)
         return module, language
 
     # @staticmethod
     def _tmpPyFilename(self) -> str:
-        """ Return a filename of a (closed) temporary .py file. """
+        """Return a filename of a (closed) temporary .py file."""
         # Renvoie le nom d'un fichier .py temporaire (fermé).
         tmpFile = tempfile.NamedTemporaryFile(suffix=".py")
         pyFilename = tmpFile.name
@@ -73,8 +81,8 @@ class Translator(metaclass=patterns.Singleton):
         return pyFilename
 
     def _loadModule(self, language: str) -> tuple:
-        """ Load the translation from a python module that has been
-            created from a .po file with po2dict before. """
+        """Load the translation from a python module that has been
+        created from a .po file with po2dict before."""
         # Chargez la traduction à partir d'un module python qui a été
         # créé auparavant à partir d'un fichier .po avec po2dict.
         module = None  # d'où ça sort ? Local variable 'module' might be referenced before assignment
@@ -87,7 +95,7 @@ class Translator(metaclass=patterns.Singleton):
         return module, language
 
     def _installModule(self, module):
-        """ Make the module's translation dictionary and encoding available. """
+        """Make the module's translation dictionary and encoding available."""
         # Rendre disponible le dictionnaire de traduction et l'encodage du module.
         # pylint: disable=W0201
         if module:
@@ -95,7 +103,7 @@ class Translator(metaclass=patterns.Singleton):
             self.__encoding = module.encoding
 
     def _setLocale(self, language):
-        """ Try to set the locale, trying possibly multiple localeStrings. """
+        """Try to set the locale, trying possibly multiple localeStrings."""
         # Essayez de définir les paramètres régionaux, en essayant éventuellement plusieurs localeStrings.
         if not operating_system.isGTK():
             try:
@@ -110,12 +118,16 @@ class Translator(metaclass=patterns.Singleton):
             for localeString in self._localeStrings(language):
                 languageInfo = wx.Locale.FindLanguageInfo(localeString)
                 if languageInfo:
-                    self.__locale = wx.Locale(languageInfo.Language)  # pylint: disable=W0201
+                    self.__locale = wx.Locale(
+                        languageInfo.Language
+                    )  # pylint: disable=W0201
                     # Add the wxWidgets message catalog. This is really only for
                     # py2exe'ified versions, but it doesn't seem to hurt on other
                     # platforms...
                     # localedir = os.path.join(wx.StandardPaths_Get().GetResourcesDir(), 'locale')
-                    localedir = os.path.join(wx.StandardPaths.Get().GetResourcesDir(), "locale")
+                    localedir = os.path.join(
+                        wx.StandardPaths.Get().GetResourcesDir(), "locale"
+                    )
                     self.__locale.AddCatalogLookupPathPrefix(localedir)
                     self.__locale.AddCatalog("wxstd")
                     break
@@ -132,6 +144,7 @@ class Translator(metaclass=patterns.Singleton):
 
     # @staticmethod
     def _fixBrokenLocales(self):
+        """Fix broken locales that cause crashes in the wx.DatePicker."""
         current_language = locale.getlocale(locale.LC_TIME)[0]
         if current_language and "_NO" in current_language:
             # nb_BO and ny_NO cause crashes in the wx.DatePicker. Set the
@@ -157,7 +170,7 @@ class Translator(metaclass=patterns.Singleton):
     # TypeError: Translator._localeStrings() takes 1 positional argument but 2 were given
     # Method '_localeStrings' may be 'static'
     def _localeStrings(self, language: str) -> list:
-        """ Extract language and language_country from language if possible. """
+        """Extract language and language_country from language if possible."""
         # Extrayez la langue et la langue_pays de language si possible.
         localeStrings = []
         if language:
@@ -168,13 +181,17 @@ class Translator(metaclass=patterns.Singleton):
 
     # Method '_languageFromPoFilename' may be 'static'
     def _languageFromPoFilename(self, poFilename: str) -> str:
+        """Extract the language from the .po filename."""
+        # Extraire la langue du nom de fichier .po.
         return os.path.splitext(os.path.basename(poFilename))[0]
 
     # def translate(self, string):
     def translate(self, string: str) -> str:
-        """ Look up string in the current language dictionary. Return the
-            passed string if no language dictionary is available or if the
-            dictionary doesn't contain the string. """
+        """
+        Look up string in the current language dictionary. Return the
+        passed string if no language dictionary is available or if the
+        dictionary doesn't contain the string.
+        """
         # Recherchez une chaîne dans le dictionnaire de langue actuel.
         # Renvoie la chaîne transmise si aucun dictionnaire de langue n'est disponible
         # ou si le dictionnaire ne contient pas la chaîne.
@@ -182,6 +199,7 @@ class Translator(metaclass=patterns.Singleton):
             return self.__language[string].decode(self.__encoding)
         except (AttributeError, KeyError):
             return string
+
 
 def _is_rtl_language_code(lang_code: str) -> bool:
     """Return True if the language code (e.g. 'ar', 'he', 'fa') is RTL."""
@@ -191,7 +209,9 @@ def _is_rtl_language_code(lang_code: str) -> bool:
     prefix = lang_code.split("_")[0].split("-")[0].lower()
     return prefix in _RTL_LANGUAGE_PREFIXES
 
+
 def currentLanguageIsRightToLeft():
+    """Return True if the current language is a right-to-left language."""
     # return wx.GetApp().GetLayoutDirection() == wx.Layout_RightToLeft
     if get_gui() == "wx":
         try:
@@ -207,6 +227,7 @@ def currentLanguageIsRightToLeft():
 
 
 def translate(string):
+    """Translate the given string using the current Translator instance."""
     # print('translate est évité pour les tests')
 
     # return Translator().translate(string)
@@ -217,9 +238,9 @@ def translate(string):
     # solution de starofrainnight:
     # return Translator(locale.getdefaultlocale()[0]).translate(string)
     try:
-        language = locale.getdefaultlocale()[0]
+        language = locale.getlocale()[0]
         if not language:
-            language = locale.getlocale()[0]
+            language = locale.getdefaultlocale()[0]
         return Translator(language).translate(string)
     except Exception:
         # In case anything goes wrong (tests, missing modules...), return a safe string
@@ -236,5 +257,3 @@ _ = translate  # This prevents a warning from pygettext.py
 # #__builtin__.__dict__['_'] = _
 
 builtins.__dict__["_"] = _
-
-

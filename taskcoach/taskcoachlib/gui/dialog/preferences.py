@@ -1084,6 +1084,7 @@ class EditorPage(SettingsPage):
         self.fit()
 
     def ok(self):
+        """Définit la valeur de ok même pour mac."""
         super().ok()
         widgets.MultiLineTextCtrl.CheckSpelling = self.settings.getboolean(
             "editor", "maccheckspelling"

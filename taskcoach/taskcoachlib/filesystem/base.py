@@ -46,6 +46,9 @@ class NotifierBase(object):
         atexit.register(self.__stopWhenExit)
 
     def __stopWhenExit(self):
+        """
+        Enregistrez __stopWhenExit comme fonction à exécuter lors d'un arrêt normal du programme.
+        """
         self.stop()
 
     def stop(self):

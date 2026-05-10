@@ -16,8 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import uuid
 from taskcoachlib.domain import categorizable
 
 
 class NoteContainer(categorizable.CategorizableContainer):
-    pass
+    # pass
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        # self._note = None
+        self.id = str(uuid.uuid4())

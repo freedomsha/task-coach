@@ -77,7 +77,28 @@ import functools
 
 # from taskcoachlib.thirdparty.pubsub import pub
 from pubsub import pub
+import os
 
+# Optionally install a tracer for PyPubSub sendMessage calls when
+# TASKCOACH_TRACE_PUBSUB is set. This helps debugging why TaskFile
+# (which listens via pubsub) does or does not receive messages.
+if os.environ.get("TASKCOACH_TRACE_PUBSUB") in ("1", "true", "True"):
+    try:
+        _orig_sendMessage = pub.sendMessage
+
+        def _traced_sendMessage(topic, *args, **kwargs):
+            try:
+                print(
+                    f"pub.sendMessage: topic={topic!r}, args={args}, kwargs={kwargs}"
+                )
+            except Exception:
+                print("pub.sendMessage: (trace) failed to stringify message")
+            return _orig_sendMessage(topic, *args, **kwargs)
+
+        pub.sendMessage = _traced_sendMessage
+    except Exception:
+        # If pub doesn't have sendMessage or monkeypatching fails, ignore
+        pass
 # Ignore these pylint messages:
 # - W0142: * or ** magic
 # - W0622: Redefining builtin types
@@ -145,8 +166,18 @@ class List(list):
 
 
 # Résumé du problème
-# L'erreur TypeError: cannot use 'taskcoachlib.domain.task.tasklist.TaskList' as a dict key survient parce que des instances de TaskList (ou plus exactement des collections dérivées de set) sont utilisées comme clés dans des dictionnaires (ex. dans Event/Publisher) mais les instances héritées de set sont par défaut non hachables en Python (built-in set met hash = None).
-# Le code existant (Event/Publisher) s'attend à pouvoir utiliser des « sources » qui peuvent être des collections (TaskList, ObservableSet, etc.) comme clés. La solution la moins intrusive est d'ajouter un hash basé sur l'identité des objets pour ces classes de collection afin d'autoriser leur usage comme clés sans modifier la logique métier.
+# L'erreur TypeError: cannot use 'taskcoachlib.domain.task.tasklist.TaskList'
+# as a dict key survient parce que des instances de TaskList
+# (ou plus exactement des collections dérivées de set) sont utilisées
+# comme clés dans des dictionnaires (ex. dans Event/Publisher)
+# mais les instances héritées de set sont par défaut non hachables
+# en Python (built-in set met hash = None).
+# Le code existant (Event/Publisher) s'attend à pouvoir
+# utiliser des « sources » qui peuvent être des collections
+# (TaskList, ObservableSet, etc.) comme clés.
+# La solution la moins intrusive est d'ajouter un hash basé
+# sur l'identité des objets pour ces classes de collection
+# afin d'autoriser leur usage comme clés sans modifier la logique métier.
 class Set(set):
     """
     Sous-classe de `set` qui restreint les arguments lors de l'instanciation.
@@ -164,6 +195,9 @@ class Set(set):
     Methods :
         __new__ : Crée une nouvelle instance de Set, en vérifiant que l'argument est un itérable.
         __cmp__ : Compare deux ensembles pour l'égalité, en utilisant set.__eq__ pour éviter les erreurs dans Python 2.5.
+        __hash__ : Rendre les instances de Set hachables en utilisant un hachage basé sur l'identité (id(self))
+                   pour permettre leur utilisation comme clés de dictionnaire,
+                   tout en restant compatibles avec l'égalité basée sur l'identité définie ailleurs.
     """
 
     def __new__(class_, iterable=None, *args, **kwargs):
@@ -237,6 +271,20 @@ class Event(object):
 
     Pour ajouter une source avec un type d'événement différent :
     >> event.addSource('encore une autre source', 'sa valeur', type='un autre type')
+
+    Methods :
+        __init__ : Initialiser l'événement avec un type, une source et des valeurs facultatives.
+        __repr__ : Représentation de l'événement sous forme de chaîne de caractères.
+        __eq__ : Comparer deux événements pour l'égalité.
+        addSource : Ajouter une source avec des valeurs facultatives à l'événement.
+        type : Renvoie le type d'événement.
+        types : Renvoie l'ensemble des types d'événements que cet événement notifie.
+        sources : Renvoie l'ensemble de toutes les sources de cette instance d'événement, ou les sources pour des types d'événements spécifiques.
+        sourcesAndValuesByType : Renvoie toutes les données {type : {source : valeurs}}.
+        value : Renvoie la valeur qui appartient à une source.
+        values : Renvoie les valeurs qui appartiennent à une source.
+        subEvent : Crée un sous-événement pour une source et un type d'événement spécifiques.
+        send : Envoyer l'événement aux observateurs du(des) type(s) de cet événement.
     """
 
     def __init__(self, type=None, source=None, *values):
@@ -392,6 +440,9 @@ class Event(object):
 
         currentValues = set(sources.setdefault(source_key, tuple()))
         currentValues |= set(values)
+        print(
+            f"Event.addSource : Ajoute les valeurs : {values} à la source : {source} (clé : {source_key}) dans le dictionnaire de sources : {sources}."
+        )
         sources[source_key] = tuple(currentValues)
 
     # def type(self) -> str:
@@ -630,6 +681,10 @@ class Event(object):
         self._sending = True
         try:
             Publisher().notifyObservers(self)
+        except Exception as e:
+            log.exception(
+                f"Event send : Exception lors de l'envoi de l'événement : {e}"
+            )
         finally:
             self._sending = False
 
@@ -668,12 +723,26 @@ def eventSource(f):
         Returns:
             object: Le résultat de l'appel de la méthode décorée.
         """
+        # Récupérer l'événement des arguments de mot-clé ou en créer un nouveau s'il n'existe pas
         event = kwargs.pop("event", None)
+        print(
+            f"eventSource : Récupération de l'événement : {event} à partir des arguments de mot-clé."
+        )
+        # Créer un nouvel événement si aucun n'est fourni, sinon utiliser l'événement existant
         notify = event is None  # We only Notify if we're the event creator
-        kwargs["event"] = event = event if event else Event()
+        # Passer l'événement à la méthode décorée via les arguments de mot-clé
+        event = event if event else Event()
+        kwargs["event"] = event if event else Event()
+        print(
+            f"eventSource : Appel de la méthode décorée avec l'événement : {kwargs['event']}."
+        )
         result = f(*args, **kwargs)
         if notify:
+            print(f"eventSource : Envoi de l'événement : {kwargs['event']}.")
             event.send()
+        print(
+            f"eventSource : Résultat de l'appel de la méthode décorée : {result} !"
+        )
         return result
 
     return decorator
@@ -958,8 +1027,42 @@ class Publisher(object, metaclass=singleton.Singleton):
 
             # Normalize eventSource to a hashable key
             def _source_key(source):
+                """Normalize the event source to a hashable key for use in the observers dict.
+                En français : Normaliser la source d'événement en une clé hachable pour l'utilisation dans le dictionnaire des observateurs.
+
+                If the source is None, return None. If the source is hashable, return it directly.
+                En français : Si la source est None, renvoyer None. Si la source est hachable, la renvoyer directement.
+                If the source is unhashable, use id(source) as the key and store the mapping in __idToSource for later retrieval of the original object.
+                En français : Si la source est non hachable, utiliser id(source) comme clé et stocker la correspondance dans __idToSource pour une récupération ultérieure de l'objet original.
+                """
                 if source is None:
                     return None
+                # Try to use the source itself as the key if it's hashable; otherwise, use id(source) and store the mapping in __idToSource.
+                # This allows us to support unhashable sources while still allowing observers to receive the original source object.
+                # This is necessary because some event sources (e.g. TaskList) are unhashable, and we need a way to use them as keys in the observers dict without causing a TypeError.
+                # The __idToSource mapping allows us to retrieve the original source object later when we need to construct the event passed to the observer, so the observer receives the actual object instead of an id.
+                # En français : Essayez d'utiliser la source elle-même comme clé si elle est hachable ; sinon, utilisez id(source) et stockez la correspondance dans __idToSource.
+                # Cela nous permet de prendre en charge les sources non hachables tout en permettant aux observateurs de recevoir l'objet source original.
+                # Cela est nécessaire car certaines sources d'événements (par ex. TaskList) sont non hachables, et nous avons besoin d'un moyen de les utiliser comme clés dans le dictionnaire des observateurs sans provoquer de TypeError.
+                # La correspondance __idToSource nous permet de récupérer l'objet source original plus tard lorsque nous devons construire l'événement passé à l'observateur, afin que l'observateur reçoive l'objet réel au lieu d'un id.
+
+                # This approach allows us to maintain the public API of events (Event.sources() returns the original objects) while having a safe and performant internal representation for the observers registry.
+                # Note: we only store the id->source mapping for unhashable sources to avoid unnecessary memory usage for hashable sources.
+                # This design allows us to handle both hashable and unhashable sources seamlessly in the Publisher without requiring changes to the event sources themselves.
+                # This is a pragmatic solution to the TypeError issue while preserving the functionality and API of the event system.
+                # The _source_key function encapsulates the logic for determining the appropriate key to use for a given event source, abstracting away the details of handling hashable vs unhashable sources from the rest of the registerObserver method.
+                # By using this helper function, we can keep the main logic of registerObserver clean and focused on the registration process, while the _source_key function takes care of the complexities of key normalization for event sources.
+                # This design also allows for future extensions or changes to how we handle event sources without needing to modify the core registration logic, as we can simply update the _source_key function as needed.
+                # Overall, this approach provides a robust and flexible way to manage event source keys in the Publisher's observers registry while ensuring that observers receive the correct source objects when notified of events.
+
+                # En français : Si la source est None, renvoyer None. Si la source est hachable, la renvoyer directement. Si la source est non hachable, utiliser id(source) comme clé et stocker la correspondance dans __idToSource pour une récupération ultérieure de l'objet original.
+                # Note : nous ne stockons la correspondance id->source que pour les sources non hachables afin d'éviter une utilisation de mémoire inutile pour les sources hachables.
+                # Cette conception nous permet de gérer à la fois les sources hachables et non hachables de manière transparente dans le Publisher sans nécessiter de modifications des sources d'événements elles-mêmes.
+                # La fonction _source_key encapsule la logique pour déterminer la clé appropriée à utiliser pour une source d'événement donnée, abstrahant les détails de la gestion des sources hachables vs non hachables du reste de la méthode registerObserver.
+                # En utilisant cette fonction d'aide, nous pouvons garder la logique principale de registerObserver propre et centrée sur le processus d'enregistrement, tandis que la fonction _source_key s'occupe des complexités de la normalisation des clés pour les sources d'événements.
+                # Cette conception permet également des extensions ou des changements futurs sur la façon dont nous gérons les sources d'événements sans avoir besoin de modifier la logique d'enregistrement principale, car nous pouvons simplement mettre à jour la fonction _source_key selon les besoins.
+                # Dans l'ensemble, cette approche fournit un moyen robuste et flexible de gérer les clés des sources d'événements dans le registre des observateurs du Publisher tout en garantissant que les observateurs reçoivent les objets source corrects lorsqu'ils sont informés des événements.
+
                 try:
                     hash(source)
                 except TypeError:
@@ -1012,6 +1115,7 @@ class Publisher(object, metaclass=singleton.Singleton):
 
         # Helper to compare stored source keys with a provided eventSource
         def _source_matches(stored_key, provided_source):
+            """Compare une clé de source stockée avec une source d'événement fournie."""
             if stored_key is None and provided_source is None:
                 return True
             if isinstance(stored_key, int):
@@ -1021,6 +1125,7 @@ class Publisher(object, metaclass=singleton.Singleton):
         if eventType and eventSource:
 
             def match(type, source):
+                """Compare une paire (type, source) avec les critères de suppression."""
                 # # def match(type: Optional[str], source: Optional[Any]) -> bool:
                 # return type == eventType and source == eventSource
                 return type == eventType and _source_matches(
@@ -1030,12 +1135,14 @@ class Publisher(object, metaclass=singleton.Singleton):
         elif eventType:
 
             def match(type, source):
+                """Compare un type d'événement avec le critère de suppression, en ignorant la source."""
                 # def match(type: Optional[str], source: Optional[Any]) -> bool:
                 return type == eventType
 
         elif eventSource:
 
             def match(type, source):
+                """Compare une source d'événement avec le critère de suppression, en ignorant le type d'événement."""
                 # # def match(type: Optional[str], source: Optional[Any]) -> bool:
                 # return source == eventSource
                 return _source_matches(source, eventSource)
@@ -1043,6 +1150,7 @@ class Publisher(object, metaclass=singleton.Singleton):
         else:
 
             def match(type, source):
+                """Accepte toutes les paires (type, source) car aucun critère de suppression n'est spécifié."""
                 # def match(type: Optional[str], source: Optional[Any]) -> bool:
                 return True
 
@@ -1074,7 +1182,20 @@ class Publisher(object, metaclass=singleton.Singleton):
         Returns :
             None
         """
+        # Ajout d'un traceur conditionnel (activable par la variable d'environnement TASKCOACH_TRACE_PUBSUB=1) dans Publisher.notifyObservers pour imprimer les types et sources d'événement ainsi que les observateurs qui seront invoqués.
+        # Optional tracing for debugging pubsub message flow.
+        # Activate by setting environment variable TASKCOACH_TRACE_PUBSUB=1
+        trace_pubsub = os.environ.get("TASKCOACH_TRACE_PUBSUB") in (
+            "1",
+            "true",
+            "True",
+        )
+
         if not event.sources():
+            if trace_pubsub:
+                print(
+                    f"Publisher.notifyObservers: event has no sources, event={event}"
+                )
             return
         # log.debug(
         #     f"Publisher.notifyObservers : lancé par {self.__class__.__name__} pour informer les observateurs de l'événement {event} avec sources {event.sources()}."
@@ -1102,6 +1223,22 @@ class Publisher(object, metaclass=singleton.Singleton):
         #             eventTypeAndSource
         #         )  # dict() a setdefault ! pas set().
         #         # observers.setdefault(observer, []).append(eventTypeAndSource)
+
+        if trace_pubsub:
+            try:
+                print(
+                    "Publisher.notifyObservers: event types=",
+                    list(types),
+                    " sources=",
+                    list(event.sources()),
+                    " event=",
+                    event,
+                )
+            except Exception:
+                # Ensure tracing never raises
+                print(
+                    "Publisher.notifyObservers: (trace) failed to stringify event"
+                )
 
         # For each original source, compute stored key and look up observers.
         for source_orig in sources:
@@ -1277,6 +1414,9 @@ class Decorator(Observer):
         """
         Obtenez l'instance observable encapsulée.
 
+        Attributes :
+            __observable (object) : L'instance observable encapsulée.
+
         Args :
             recursive (bool) : (optional) True, obtenez l'observable de niveau supérieur.
 
@@ -1396,9 +1536,6 @@ class ObservableSet(ObservableCollection, Set):
     """
     ObservableSet est un ensemble qui avertit les observateurs
     lorsque des éléments sont ajoutés ou supprimés de l'ensemble.
-
-    Attributes :
-        None
 
     Methods :
         __eq__ : Compare cet ObservableSet avec un autre objet.
@@ -1980,7 +2117,7 @@ class ListDecorator(CollectionDecorator, ObservableList):
     Attributes :
         From CollectionDecorator :
             __freezeCount (int) : Compteur utilisé pour savoir si la collection est gelée (freeze) ou non.
-            observable (ObservableCollection) : La collection observée.
+            __observable (ObservableCollection) : La collection observée.
             __observers (set) : L'ensemble des observateurs.
 
     Méthodes :
@@ -1988,20 +2125,20 @@ class ListDecorator(CollectionDecorator, ObservableList):
             - __init__ : Initialise la CollectionDecorator.
             - --repr__ : Retourne une représentation sous forme de chaîne de la collection décorée.
             - --str__ : Retourne une représentation sous forme de chaîne de la collection décorée.
-            - refresh() : Rafraîchit la collection.
-            - freeze() : Gèle la collection et arrête temporairement les notifications aux observateurs.
-            - thaw() : Dégèle la collection et reprend les notifications.
-            - isFrozen() : Retourne True si la collection est gelée.
-            - detach() : Détache la collection et arrête d'observer les événements.
-            - onAddItem(event) : Méthode appelée lorsqu'un élément est ajouté à la collection observée.
-            - onRemoveItem(event) : Méthode appelée lorsqu'un élément est supprimé de la collection observée.
-            - extendSelf(items, event=None) : Ajoute des éléments à la collection décorée sans déléguer à la collection observée.
-            - removeItemsFromSelf(items, event=None) : Supprime des éléments de la collection décorée sans déléguer à la collection observée.
+            - refresh : Rafraîchit la collection.
+            - freeze : Gèle la collection et arrête temporairement les notifications aux observateurs.
+            - thaw : Dégèle la collection et reprend les notifications.
+            - isFrozen : Retourne True si la collection est gelée.
+            - detach : Détache la collection et arrête d'observer les événements.
+            - onAddItem : Méthode appelée lorsqu'un élément est ajouté à la collection observée.
+            - onRemoveItem : Méthode appelée lorsqu'un élément est supprimé de la collection observée.
+            - extendSelf : Ajoute des éléments à la collection décorée sans déléguer à la collection observée.
+            - removeItemsFromSelf : Supprime des éléments de la collection décorée sans déléguer à la collection observée.
 
         From ObservableCollection :
             __hash__ : Rendre les Collections Observables appropriées comme clés dans les dictionnaires.
             detach : Met en pause les Cycles.
-            addItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été ajoutés à la collection.
+            addItemEventType : (classmethod) Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été ajoutés à la collection.
             removeItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été supprimés de la collection.
             modificationEventTypes (classmethod) : Renvoie les types d'événements de modification pour cette collection.
             __eq__ : Compare cet ObservableSet avec un autre objet.

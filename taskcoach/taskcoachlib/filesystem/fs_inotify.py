@@ -42,9 +42,12 @@ class FilesystemNotifier(base.NotifierBase):
         """
         Initialisez le FilesystemNotifier.
         """
-        log.debug("FilesystemNotifier.__init__ : initialisation du notificateur utilisant inotify")
+        log.debug(
+            "FilesystemNotifier.__init__ : initialisation du notificateur utilisant inotify"
+        )
         # super(FilesystemNotifier, self).__init__()
         super().__init__()
+        # Création de l'objet INotify, conteneur de données interne self.notifier :
         self.notifier = INotify()
         # Commencer à attendre l'accessibilité de la lecture :
         self.notifier.startReading()

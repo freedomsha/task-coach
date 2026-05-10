@@ -32,7 +32,10 @@ class AddAttachmentTestsMixin(object):
         self.attachment = attachment.FileAttachment(
             "attachment"
         )  # pylint: disable=W0201
-        print(f"AttachmentCommandsTest.AddAttachmentTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec attachements: {self.attachments}, attachment={self.attachment}")
+        # print(f"AttachmentCommandsTest.AddAttachmentTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec attachements: {self.attachments}, attachment={self.attachment}")
+        print(
+            f"AttachmentCommandsTest.AddAttachmentTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec attachment={self.attachment}"
+        )
 
         addAttachmentCommand = command.AddAttachmentCommand(
             self.container, selectedItems or [], attachments=[self.attachment]
@@ -79,16 +82,22 @@ class AddAttachmentTestCase(CommandTestCase):
         self.container = self.ContainerClass([self.item1, self.item2])
 
 
-class AddAttachmentCommandWithTasksTest(AddAttachmentTestCase, AddAttachmentTestsMixin):
+class AddAttachmentCommandWithTasksTest(
+    AddAttachmentTestCase, AddAttachmentTestsMixin
+):
     ItemClass = task.Task
     ContainerClass = task.TaskList
 
 
-class AddAttachmentCommandWithNotesTest(AddAttachmentTestCase, AddAttachmentTestsMixin):
+class AddAttachmentCommandWithNotesTest(
+    AddAttachmentTestCase, AddAttachmentTestsMixin
+):
     ItemClass = note.Note
     ContainerClass = note.NoteContainer
 
 
-class AddAttachmentCommandWithCategoriesTest(AddAttachmentTestCase, AddAttachmentTestsMixin):
+class AddAttachmentCommandWithCategoriesTest(
+    AddAttachmentTestCase, AddAttachmentTestsMixin
+):
     ItemClass = category.Category
     ContainerClass = category.CategoryList

@@ -85,6 +85,7 @@ class AddAttachmentCommand(base.BaseCommand):
             owner.addAttachments(
                 *self.__attachments, **kwargs
             )  # pylint: disable=W0142
+            # TypeError: Task.addAttachments() got an unexpected keyword argument 'event'
 
     @patterns.eventSource
     def removeAttachments(self, event=None):

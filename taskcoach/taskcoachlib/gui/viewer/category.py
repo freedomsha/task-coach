@@ -150,15 +150,36 @@ class BaseCategoryViewer(
         Returns :
             (list) : Liste des catégories racines à afficher.
         """
+        # # Pour un TreeViewer, on doit retourner uniquement les éléments racines (sans parent).
+        # # Le widget construira l'arbre récursivement via les méthodes children() des objets.
+        # # La collection retournée doit être un ObservableList pour être observée par les filtres.
+        # from taskcoachlib.patterns.observer import ObservableList
+
         log.debug(
-            f"BaseCategoryViewer.domainObjectsToView : retourne {self.taskFile.categories()}"
+            f"BaseCategoryViewer.domainObjectsToView : retourne les catégories racines à afficher dans le viewer : {self.taskFile.categories()}."
         )
         # return self.taskFile.categories()  # Peut renvoyer dict_values ou un itérateur-générateur qui peut s'effacer et casser les viewer wx !
         # list() protège contre les itérateurs.
         # return list(self.taskFile.categories())
+        # C'est la version correcte
+        # car elle fournit la collection "observable" complète au filtre et au trieur,
+        # et c'est ensuite le TreeViewer (avec la correction ci-dessus)
+        # qui se charge de n'extraire que les racines pour l'affichage.
         return (
             self.taskFile.categories()
         )  # déjà correct — CategoryList gère la hiérarchie
+        # # Pour un TreeViewer, on doit retourner uniquement les éléments racines (sans parent).
+        # # Le widget construira l'arbre récursivement via les méthodes children() des objets.
+        # roots = [
+        #     cat for cat in self.taskFile.categories() if cat.parent() is None
+        # ]
+        # log.debug(
+        #     "BaseCategoryViewer.domainObjectsToView : %d racines trouvées sur %d catégories au total",
+        #     len(roots),
+        #     len(self.taskFile.categories()),
+        # )
+        # # return roots
+        # return ObservableList(roots)
 
     def curselectionIsInstanceOf(self, class_):
         """
@@ -183,13 +204,22 @@ class BaseCategoryViewer(
             "BaseCategoryViewer.createWidget : CREATION DU WIDGET CATEGORYVIEWER avec ses categories dans taskFile : %s ***************",
             [cat.subject() for cat in self.taskFile.categories()],
         )
+        log.debug(
+            "BaseCategoryViewer.createWidget: domainObjectsToView=%r",
+            list(self.domainObjectsToView()),
+        )
+        log.debug(
+            "BaseCategoryViewer.createWidget: presentation (len)=%d, isTreeMode=%s",
+            len(self.presentation()),
+            getattr(self.presentation(), "treeMode", lambda: True)(),
+        )
         imageList = self.createImageList()  # Has side-effects
         self._columns = self._createColumns()
         itemPopupMenu = self.createCategoryPopupMenu()
         columnPopupMenu = taskcoachlib.gui.menu.ColumnPopupMenu(self)
         self._popupMenus.extend([itemPopupMenu, columnPopupMenu])
         log.debug(
-            f"BaseCategoryViewer.createWidget :  : {len(self.taskFile.categories())}"
+            f"BaseCategoryViewer.createWidget :  : {len(self.taskFile.categories())} catégories"
         )
         widget = widgets.CheckTreeCtrl(
             self,
@@ -599,6 +629,7 @@ class BaseCategoryViewer(
         """
         return command.DeleteCategoryCommand
 
+
 # MRO de CategoryViewer (Python C3 linearization) :
 #
 # CategoryViewer
@@ -634,11 +665,11 @@ class CategoryViewer(BaseCategoryViewer):  # pylint: disable=W0223
             self.settings.getboolean("view", "categoryfiltermatchall")
         )
         log.debug(
-            "CategoryViewer : CATEGORIES DANS TASKFILE :",
+            "CategoryViewer : CATEGORIES DANS TASKFILE : %d",
             len(self.taskFile.categories()),
         )
         log.debug(
-            "CategoryViewer : CATEGORIES DANS DOMAIN :",
+            "CategoryViewer : CATEGORIES DANS DOMAIN : %d",
             len(self.domainObjectsToView()),
         )
 

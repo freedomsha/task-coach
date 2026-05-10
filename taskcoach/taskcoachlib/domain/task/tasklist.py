@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 # from builtins import object
+import uuid
 from taskcoachlib.i18n import _
 from taskcoachlib.domain import categorizable
 from taskcoachlib import help, operating_system  # pylint: disable=W0622
@@ -30,6 +31,13 @@ class TaskListQueryMixin(object):
     """
     Classe mixin.
     """
+
+    def __init__(self, *args, **kwargs):
+        """Initialise le mixin et transmet les arguments au constructeur de la
+        classe parente afin de permettre la construction depuis un itérable
+        (par ex. TaskList(tasks))."""
+        super().__init__(*args, **kwargs)
+        self.id = str(uuid.uuid4())
 
     def nrOfTasksPerStatus(self):
         """
@@ -102,15 +110,31 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
     newItemHelpText = help.taskNew
 
     def nrBeingTracked(self):
+        """Retourne le nombre de tâches actuellement suivies (en cours)."""
         return len(self.tasksBeingTracked())
 
     def tasksBeingTracked(self):
+        """Retourne une liste de tâches qui sont actuellement suivies."""
         return [eachTask for eachTask in self if eachTask.isBeingTracked()]
 
     def efforts(self):
+        """Collecte tous les efforts de toutes les tâches de la liste."""
         result = []
+        print(
+            "TaskList.efforts() : called, iterating over tasks to collect efforts..."
+        )  # Debug print
         for task in self:  # pylint: disable=W0621
+            print(
+                "TaskList.efforts() : processing task with id={0}, subject='{1}'".format(
+                    task.id(), task.subject()
+                )
+            )  # Debug print
             result.extend(task.efforts())
+        print(
+            "TaskList.efforts() : collected efforts, total count={0}".format(
+                len(result)
+            )
+        )  # Debug print
         return result
 
     def originalLength(self):
@@ -118,18 +142,21 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
         Fournir un moyen de contourner la méthode __len__ des décorateurs.
 
         Returns :
-            (int) :
+            (int) : Le nombre de tâches dans la liste, en excluant celles qui sont marquées comme supprimées.
         """
 
         return len([t for t in self if not t.isDeleted()])
 
     def minPriority(self):
+        """Retourne la priorité minimale parmi toutes les tâches non supprimées."""
         return min(self.__allPriorities())
 
     def maxPriority(self):
+        """Retourne la priorité maximale parmi toutes les tâches non supprimées."""
         return max(self.__allPriorities())
 
     def __allPriorities(self):
+        """Récupère toutes les priorités des tâches non supprimées."""
         return [task.priority() for task in self if not task.isDeleted()] or (
             0,
         )  # pylint: disable=W0621

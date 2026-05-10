@@ -156,7 +156,7 @@ class BaseCommand(patterns.Command):
             method = getattr(super(), method_name)
         except AttributeError as e:
             log.error(f"AttributeError: {e}", exc_info=True)
-            return  # no 'method' in any super class
+            return None  # no 'method' in any super class
         return method(*args, **kwargs)
 
     def do_command(self):

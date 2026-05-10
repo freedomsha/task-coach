@@ -22,12 +22,21 @@ from ... import tctest
 
 class PubSubTest(tctest.TestCase):
     def setUp(self):
+        """Initialize the test case."""
         self.calledTestTopic = False
 
     def onTestTopic(self):
+        """Handler for the 'TestTopic' topic.
+
+        En français : 'Gestionnaire pour le sujet 'TestTopic'.'
+        """
         self.calledTestTopic = True
 
     def testSubscribe(self):
-        pub.subscribe(self.onTestTopic, 'TestTopic')
-        pub.sendMessage('TestTopic')
+        """Test that subscribing to a topic and sending a message works.
+
+        En français : 'Tester que s'abonner à un sujet et envoyer un message fonctionne.'
+        """
+        pub.subscribe(self.onTestTopic, "TestTopic")
+        pub.sendMessage("TestTopic")
         self.assertTrue(self.calledTestTopic)

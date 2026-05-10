@@ -1166,6 +1166,9 @@ class Task(
                 )
 
     def _onCompletionDateTimeChanged(self, event):
+        """When the completion date time changes, update the status, percentage
+        completed of children, parent's completion date time and send messages
+        to update the UI."""
         self.__status = None
         # Use direct datetime comparison instead of self.completed() because
         # computedStatus() cache is stale at this point (not yet recomputed).
@@ -1211,6 +1214,7 @@ class Task(
 
     @classmethod
     def completionDateTimeChangedEventType(class_):
+        """The event type that is sent when the completion date time of a task"""
         return "pubsub.task.completionDateTime"
 
     def shouldBeMarkedCompleted(self):
@@ -1239,6 +1243,7 @@ class Task(
 
     @staticmethod
     def completionDateTimeSortFunction(**kwargs):
+        """Types d'événements qui influencent l'ordre de tri de la date et de l'heure d'achèvement."""
         recursive = kwargs.get("treeMode", False)
         return lambda task: task.completionDateTime(recursive=recursive)
 
@@ -1310,6 +1315,7 @@ class Task(
 
     @classmethod
     def possibleStatuses(class_):
+        """Return all possible statuses of a task."""
         return (
             mod_status.inactive,
             mod_status.late,
@@ -1394,6 +1400,10 @@ class Task(
 
     @classmethod
     def statusChangedEventType(class_):
+        """
+        The event type that is fired when a task's status changes.
+        The new status is sent as 'newValue' in the event.
+        """
         return "pubsub.task.status"
 
     # SSOT (Single Source of Truth) : C'est le changement architectural majeur.
@@ -1411,7 +1421,8 @@ class Task(
         now=None,
         maxDateTime=None,
     ):
-        """Compute task status from date values. SINGLE SOURCE OF TRUTH.
+        """
+        Compute task status from date values. SINGLE SOURCE OF TRUTH.
 
         This is the only function that computes status. All status calculations
         must go through this method.
@@ -1514,13 +1525,16 @@ class Task(
             )
 
     def statusText(self):
+        """Return the human-readable text corresponding to the task's status."""
         return self.__status_text
 
     def statusIconName(self):
+        """Return the name of the icon corresponding to the task's status."""
         return self.__status_icon
 
     def computedStatus(self, explain=False):
-        """Return the computed TaskStatus object (single source of truth).
+        """
+        Return the computed TaskStatus object (single source of truth).
 
         This is the preferred accessor for status. It returns the cached
         TaskStatus object populated by computeStatus(), which is called:
@@ -1545,6 +1559,10 @@ class Task(
         return self.__status_source
 
     def onDueSoonHoursChanged(self, value):
+        """
+        When the due soon hours setting changes,
+        reschedule the onDueSoon event if necessary.
+        """
         date.Scheduler().unschedule(self.onDueSoon)
         self.__dueSoonHours = value
         dueDateTime = self.dueDateTime()
@@ -1560,6 +1578,10 @@ class Task(
     # effort related methods:
 
     def efforts(self, recursive=False):
+        """
+        Retourne la liste des efforts de la tâche.
+        Si recursive est True, inclut aussi les efforts des sous-tâches.
+        """
         childEfforts = []
         if recursive:
             for child in self.children():
@@ -1567,9 +1589,11 @@ class Task(
         return self._efforts + childEfforts
 
     def isBeingTracked(self, recursive=False):
+        """Retourne True si la tâche a au moins un effort actif, False sinon."""
         return self.activeEfforts(recursive)
 
     def activeEfforts(self, recursive=False):
+        """Retourne la liste des efforts actifs de la tâche."""
         return [
             effort
             for effort in self.efforts(recursive)
@@ -1595,15 +1619,28 @@ class Task(
             newValue=(self._efforts, oldValue),
             sender=self,
         )
+        # Compatibilité : émettre aussi des topics "legacy" écoutés par TaskFile
+        try:
+            pub.sendMessage("task.efforts.added", task=self, effort=effort)
+        except Exception:
+            # Ne pas casser si l'abonné attend d'autres arguments
+            try:
+                pub.sendMessage("task.efforts.added")
+            except Exception:
+                pass
         if effort.isBeingTracked() and not wasTracking:
             self.sendTrackingChangedMessage(tracking=True)
         self.sendTimeSpentChangedMessage()
 
     @classmethod
     def effortsChangedEventType(class_):
+        """
+        The event type for changes to the efforts list.
+        The newValue is a tuple of (newEffortsList, oldEffortsList)."""
         return "pubsub.task.efforts"
 
     def sendTrackingChangedMessage(self, tracking):
+        """Envoie un message de changement de suivi."""
         self.recomputeAppearance()
         pub.sendMessage(
             self.trackingChangedEventType(), newValue=tracking, sender=self
@@ -1631,15 +1668,29 @@ class Task(
             newValue=(self._efforts, oldValue),
             sender=self,
         )
+        # Compatibilité : notifier les abonnés legacy
+        try:
+            pub.sendMessage("task.efforts.removed", task=self, effort=effort)
+        except Exception:
+            try:
+                pub.sendMessage("task.efforts.removed")
+            except Exception:
+                pass
         if effort.isBeingTracked() and not self.isBeingTracked():
             self.sendTrackingChangedMessage(tracking=False)
         self.sendTimeSpentChangedMessage()
 
     def stopTracking(self):
+        """Arrête le suivi de tous les efforts actifs de la tâche."""
         for effort in self.activeEfforts():
             effort.setStop()
 
+    # taskcoach/taskcoachlib/domain/task/task.py
+    # Ajout d'envois additionnels de topics « legacy » dans addEffort, removeEffort et setEfforts :
+    # task.efforts.added, task.efforts.removed, task.efforts.modified
+    # But : Task envoie déjà pubsub.task.efforts via effortsChangedEventType() — j'ai ajouté ces envois complémentaires pour assurer la compatibilité avec les abonnements existants dans TaskFile.
     def setEfforts(self, efforts):
+        """Définit la liste des efforts de la tâche."""
         if efforts == self._efforts:
             return
         oldValue = self._efforts[:]
@@ -1649,6 +1700,14 @@ class Task(
             newValue=(self._efforts, oldValue),
             sender=self,
         )
+        # Compatibilité : notifier les abonnés legacy que la liste d'efforts a été modifiée
+        try:
+            pub.sendMessage("task.efforts.modified", task=self)
+        except Exception:
+            try:
+                pub.sendMessage("task.efforts.modified")
+            except Exception:
+                pass
         self.sendTimeSpentChangedMessage()
 
     @classmethod

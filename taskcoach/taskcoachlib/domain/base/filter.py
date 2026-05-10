@@ -61,11 +61,11 @@ class Filter(patterns.SetDecorator):
         """
         Dégèle le filtre, réactivant le filtrage après un gel.
         """
-        log.debug("Filter.thaw : degèle le filtre.")
+        log.debug(f"Filter.thaw : degèle le filtre {self.__class__.__name__}.")
         super().thaw()  # Boucle entre ici et patterns.observer.CollectionDecorator.thaw
         if not self.isFrozen():
             self.reset()
-        log.debug("Filter.thaw : filtre dégelé !")
+        log.debug(f"Filter.thaw : filtre {self.__class__.__name__} dégelé !")
 
     def setTreeMode(self, treeMode):
         """

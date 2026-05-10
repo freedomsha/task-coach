@@ -720,12 +720,14 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         )
 
         def itemsRemoved():
+            """Vérifie si des éléments ont été supprimés de la présentation."""
             log.debug(
                 f"Viewer.onPresentationChanged : Vérification si des éléments ont été supprimés pour {self.__class__.__name__} avec event={event}."
             )
             return event.type() == self.presentation().removeItemEventType()
 
         def allItemsAreSelected():
+            """Vérifie si tous les éléments sélectionnés sont encore dans la présentation."""
             return set(self.__curselection).issubset(set(event.values()))
 
         self.refresh()
@@ -779,7 +781,7 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         qui se déroulent à l'écran, la fenêtre n'est pas du tout redessinée.
 
         Returns :
-
+            None
         """
         self.widget.Freeze()
 
@@ -1016,18 +1018,23 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
 
     # @staticmethod
     def isViewerContainer(self):
+        """Retourne si c'est un conteneur de viewer."""
         return False
 
     def isShowingTasks(self):
+        """Retourne si ce viewer affiche des tâches."""
         return False
 
     def isShowingEffort(self):
+        """Retourne si ce viewer affiche les efforts."""
         return False
 
     def isShowingCategories(self):
+        """Retourne si ce viewer affiche les catégories."""
         return False
 
     def isShowingNotes(self):
+        """Retourne si ce viewer affiche les notes."""
         return False
 
     def isShowingAttachments(self):
@@ -1036,6 +1043,7 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         return False
 
     def visibleColumns(self):
+        """Retourne la liste des colonnes visibles."""
         return [widgets.Column("subject", _("Subject"))]
 
     def bitmap(self):
@@ -1075,41 +1083,52 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         return self.__settingsSection
 
     def hasModes(self):
+        """Retourne si le viewer a des modes."""
         return False
 
     def getModeUICommands(self):
+        """Retourne la liste des UICommands de mode."""
         return []
 
     # @staticmethod
     def isSortable(self):
+        """Retourne si le viewer est sortable."""
         return False
 
     # @staticmethod
     def getSortUICommands(self):
+        """Retourne la liste des UICommands de sort."""
         return []
 
     # @staticmethod
     def isSearchable(self):
+        """Retourne si le viewer a une fonction recherche."""
         return False
 
     def hasHideableColumns(self):
+        """Retourne si le viewer a des colonnes cachables."""
         return False
 
     def getColumnUICommands(self):
+        """Retourne la liste des UICommands pour les colonnes."""
         return []
 
     # @staticmethod
     def isFilterable(self):
+        """Retourne si l'affichage du viewer est filtrable."""
         return False
 
     # @staticmethod
     def getFilterUICommands(self):
+        """Retourne la liste des UICommands de filtrage."""
         return []
 
     def supportsRounding(self):
+        """Retourne si le viewer supporte les arrondis."""
         return False
 
     def getRoundingUICommands(self):
+        """Retourne la liste des UICommands d'arrondi."""
         return []
 
     def createToolBarUICommands(self):
@@ -1132,6 +1151,7 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         modeToolBarUICommands = self.createModeToolBarUICommands()
 
         def separator(uiCommands, *otherUICommands):
+            """Retourne un ensemble d'uiCommands."""
             return (None,) if (uiCommands and any(otherUICommands)) else ()
 
         clipboardSeparator = separator(
@@ -1169,9 +1189,11 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         )
 
     def getToolBarPerspective(self):
+        """Retourne la perspective de la barre d'outils."""
         return self.settings.get(self.settingsSection(), "toolbarperspective")
 
     def saveToolBarPerspective(self, perspective):
+        """Règle la perspective de la barre d'outils."""
         self.settings.set(
             self.settingsSection(), "toolbarperspective", perspective
         )
@@ -1255,6 +1277,7 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         raise NotImplementedError
 
     def newItemCommand(self, *args, **kwargs):
+        """Retourne la commande du nouvel élément."""
         log.debug(
             f"Viewer.newItemCommand : Création de la commande de nouvel élément pour {self.__class__.__name__} avec args={args}, kwargs={kwargs}."
         )
@@ -2060,7 +2083,9 @@ class ViewerWithColumns(
                 f"ViewerWithColumns.showColumn : rafraîchissement de la vue après avoir {'affiché' if show else 'masqué'} la colonne {column.name()}."
             )
             # self.widget.RefreshAllItems(len(self.presentation()))
-            self.widget.scheduleRefresh(len(self.presentation()))
+            self.widget.scheduleRefresh(
+                len(self.presentation())
+            )  # AttributeError: 'VirtualListCtrl' object has no attribute 'scheduleRefresh'
 
     def hideColumn(self, visibleColumnIndex):
         """

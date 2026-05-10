@@ -4,3 +4,4 @@ wxPython
 chardet
 twisted
 lockfile
+fasteners

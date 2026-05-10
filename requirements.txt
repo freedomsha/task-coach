@@ -21,3 +21,4 @@ pyparsing>=3.1.2
 wxhelper>=0.0.7
 lxml>=5.3.0
 watchdog
+fasteners

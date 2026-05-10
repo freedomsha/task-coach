@@ -30,6 +30,7 @@ sys.modules["taskcoachlib.operating_system"] = os_mod
 # taskcoachlib.widgets.itemctrl (mixins minimalistes requis par la classe)
 itemctrl_mod = _types.ModuleType("taskcoachlib.widgets.itemctrl")
 
+
 class CtrlWithItemsMixin:
     pass
 
@@ -156,8 +157,8 @@ def test_scheduleRefresh_coalescing(wx_app, monkeypatch):
     def fake_refresh_all(count):
         calls["count"] += 1
 
-    # Monkeypatch wx.CallAfter to execute immediately
-    monkeypatch.setattr(wx, "CallAfter", lambda f, *a, **k: f(*a, **k))
+    # # Monkeypatch wx.CallAfter to execute immediately
+    # monkeypatch.setattr(wx, "CallAfter", lambda f, *a, **k: f(*a, **k))
     # Monkeypatch wx.CallAfter to queue the callable instead of executing it
     scheduled = []
     monkeypatch.setattr(wx, "CallAfter", lambda f, *a, **k: scheduled.append(lambda: f(*a, **k)))

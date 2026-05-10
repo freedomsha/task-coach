@@ -107,7 +107,7 @@ class AutoColumnWidthMixin(object):
     la classe finale :
         - `Bind`, `Unbind` : Gestion des événements wxPython.
         - `GetColumnWidth`, `SetColumnWidth` : Gestion des colonnes.
-        - `GetColumnCount` : Nombre total de colonnes.
+        - `GetColumnCount` : Nombre total de colonnes.-> Remplacé par len(self._columns) !
         - `GetClientSize`, `GetSize` : Dimensions du contrôle.
 
     Les méthodes comme Bind, Unbind, GetColumnWidth, etc., dépendent de wxPython.
@@ -194,6 +194,11 @@ class AutoColumnWidthMixin(object):
 
     def OnEndColumnDrag(self, event):
         if event.Column == self.ResizeColumn and self.GetColumnCount() > 1:
+            # # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # if (
+            #     event.Column == self.ResizeColumn
+            #     and self.GetHeaderWindow().GetColumnCount() > 1
+            # ):  # ou essayer self._columns
             extra_width = self.__oldResizeColumnWidth - self.GetColumnWidth(
                 self.ResizeColumn
             )
@@ -276,6 +281,8 @@ class AutoColumnWidthMixin(object):
         """
         cumulative_width = 0
         for col_index in range(self.GetColumnCount()):
+            # # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # for col_index in range(len(self._columns)):
             cumulative_width += self.GetColumnWidth(col_index)
             if abs(x - cumulative_width) <= tolerance:
                 return col_index
@@ -319,6 +326,8 @@ class AutoColumnWidthMixin(object):
         if self.GetSize().height < 32:  # Évite les bugs de hauteur minimale.
             return  # Évite un bug de mise à jour sans fin lorsque la hauteur est petite.
         if self.GetColumnCount() <= self.ResizeColumn:
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # if len(self.cget("columns")) <= self.ResizeColumn:
             return  # Nothing to resize.
 
         unused_width = max(self.AvailableWidth - self.NecessaryWidth, 0)
@@ -340,6 +349,8 @@ class AutoColumnWidthMixin(object):
         other_columns = [
             index
             for index in range(self.GetColumnCount())
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # for index in range(self.GetHeaderWindow().GetColumnCount())
             if index != self.ResizeColumn
         ]
         total_width = float(
@@ -358,6 +369,8 @@ class AutoColumnWidthMixin(object):
     def GetResizeColumn(self):
         if self.__resize_column == -1:
             return self.GetColumnCount() - 1
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # return self.widget.GetHeaderWindow().GetColumnCount() - 1
         else:
             return self.__resize_column
 
@@ -382,6 +395,8 @@ class AutoColumnWidthMixin(object):
     def GetNecessaryWidth(self):
         necessary_width = 0
         for column_index in range(self.GetColumnCount()):
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # for column_index in range(self.GetHeaderWindow().GetColumnCount()):
             if column_index == self.ResizeColumn:
                 necessary_width += self.ResizeColumnMinWidth
             else:

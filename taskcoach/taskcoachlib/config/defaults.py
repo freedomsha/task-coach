@@ -543,7 +543,7 @@ defaults = {
         "duesoontasks": "led_orange_icon",
     },
     "editor": {
-        "descriptionfont": "",  # Font to use in the desciption field of editors
+        "descriptionfont": "",  # Font to use in the description field of editors
         "maccheckspelling": "True",
     },
     "os_darwin": {"getmailsubject": "False"},
@@ -595,7 +595,9 @@ defaults = {
         "margin_bottom": "0",
         "margin_right": "0",
         "paper_id": "0",
-        "orientation": str(wx.PORTRAIT),  # TODO : A changer pour le rendre compatible tk ! side="top" ou sticky="n"
+        "orientation": str(
+            wx.PORTRAIT
+        ),  # TODO : A changer pour le rendre compatible tk ! side="top" ou sticky="n"
     },
     "export": {
         "html_selectiononly": "False",

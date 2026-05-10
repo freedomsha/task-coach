@@ -2634,11 +2634,17 @@ class EffortPage(PageWithViewer):
             return dict(firstEntry=self.viewer, timeSpent=self.viewer)
         return dict()
 
+    # -> Voir EffortEditBook
+    # # def addEntries(self):
+    # #     """
+    # #     Ajoute les champs d'entrée pour l'édition de l'effort consacré à une tâche.
+    # #     """
+    # #     pass
     # def addEntries(self):
-    #     """
-    #     Ajoute les champs d'entrée pour l'édition de l'effort consacré à une tâche.
-    #     """
-    #     pass
+    #     # ... code pour ajouter les sélecteurs de date ...
+    #     self._startDateTimeEntry = widgets.DateTimeCtrl(...)
+    #     # Il est crucial que l'objet "parent" (EditBook) puisse y accéder
+    #     # ou que la page les expose.
 
 
 class LocalCategoryViewer(BaseCategoryViewer):  # pylint: disable=W0223
@@ -4411,6 +4417,7 @@ class EffortEditBook(Page):
         y compris la sélection des tâches, le suivi du temps et l'édition de la description.
     """
 
+    # allPageNames = ['subject', 'dates'] # ou les pages pertinentes pour l'effort
     domainObject = "effort"
     columns = 3  # Label, DateTime row, Button/Rest (matches DatesPage)
 
@@ -4427,6 +4434,15 @@ class EffortEditBook(Page):
         """Initialise l'éditeur avec les efforts et le fichier de tâches donnés."""
         self._descriptionSync = None
         self._descriptionEntry = None
+        # Initialisation des attributs qui seront utilisés dans entries()
+        self._startDateTimeEntry = None  # Initialisation préventive
+        self._stopDateTimeEntry = None
+        self._taskEntry = None
+        self._invalidPeriodMessage = None
+        self._taskSync = None
+        self._startDateTimeSync = None
+        self._stopDateTimeSync = None
+
         self._effortList = taskFile.efforts()
         task_list = taskFile.tasks()
         self._taskList = task.TaskList(task_list)
@@ -4455,7 +4471,7 @@ class EffortEditBook(Page):
     def settings_section(self):
         """Renvoie la section des paramètres pour la boîte de dialogue d'effort."""
         # Puisque la boîte de dialogue d'effort n'a pas d'onglets, la section des paramètres ne
-        # dépend des onglets visibles.
+        # dépend pas des onglets visibles.
         # renvoie la "boîte de dialogue d'effort"
         return "effortdialog"
 
@@ -4521,6 +4537,8 @@ class EffortEditBook(Page):
     def __add_start_and_stop_entries(self):
         # pylint: disable=W0201,W0142
         """Ajoute les entrées d'heure de début et d'arrêt, y compris les options de temps relatif."""
+        # utilise 3 colonnes : Label, DateTime row, Button/Rest (matches DatesPage)
+        # Définir l'entrée date_time comme dictionnaire d'arguments
         date_time_entry_kw_args = dict(showSeconds=True)
         flags = [
             None,
@@ -4529,6 +4547,7 @@ class EffortEditBook(Page):
             None,
         ]
 
+        # Définir l'entrée date_time courante de début et d'arrêt
         current_start_date_time = self.items[0].getStart()
         self._startDateTimeEntry = entry.DateTimeEntry(
             self,
@@ -4696,6 +4715,7 @@ class EffortEditBook(Page):
         """Ajoute l'entrée de description."""
 
         def combined_description(items):
+            """Méthode de description de combinaison pour les éléments de description."""
             distinctDescriptions = set(item.description() for item in items)
             if len(distinctDescriptions) == 1 and distinctDescriptions.pop():
                 return items[0].description()
@@ -4744,9 +4764,15 @@ class EffortEditBook(Page):
 
     def entries(self):
         """Renvoie les entrées clés de l'éditeur."""
+        # Cette méthode est appelée par setFocus pour trouver les entrées à partir desquelles le focus peut être défini.
+        # Si EffortEditBook doit exposer les entrées directement :
+        # Il faut s'assurer que ces attributs sont remplis par la page qui crée les widgets !
+        # Elle semble indiquer que EffortEditBook.entries() est codé en dur pour s'attendre à cet attribut. Si vous avez modifié editor.py récemment pour simplifier les constructeurs, vous avez peut-être oublié de migrer la définition de ces membres privés.
         return dict(
             firstEntry=self._startDateTimeEntry,
             task=self._taskEntry,
+            startDateTime=self._startDateTimeEntry,
+            stopDateTime=self._stopDateTimeEntry,
             period=self._stopDateTimeEntry,
             description=self._descriptionEntry,
             timeSpent=self._stopDateTimeEntry,

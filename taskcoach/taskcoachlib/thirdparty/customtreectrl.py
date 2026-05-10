@@ -57,7 +57,7 @@ to the standard `wx.TreeCtrl` behaviour this class supports:
 * Added support for 3-state value checkbox items;
 * RadioButton-type items: since I elected to put radiobuttons in L{CustomTreeCtrl}, I
   needed some way to handle them, that made sense. So, I used the following approach:
-  
+
   - All peer-nodes that are radiobuttons will be mutually exclusive. In other words,
     only one of a set of radiobuttons that share a common parent can be checked at
     once. If a radiobutton node becomes checked, then all of its peer radiobuttons
@@ -124,7 +124,7 @@ attached to the tree items:
 - ``TR_ALIGN_WINDOWS_RIGHT``: aligns to the rightmost position the windows belonging
   to the item on the same tree level.
 
-And two styles related to long items (with a lot of text in them), which can be 
+And two styles related to long items (with a lot of text in them), which can be
 ellipsized and/or highlighted with a tooltip:
 
 - ``TR_ELLIPSIZE_LONG_ITEMS``: ellipsizes long items when the horizontal space for
@@ -147,13 +147,13 @@ Usage example::
 
         def __init__(self, parent):
 
-            wx.Frame.__init(self, parent, -1, "CustomTreeCtrl Demo")        
+            wx.Frame.__init(self, parent, -1, "CustomTreeCtrl Demo")
 
             # Create a CustomTreeCtrl instance
             custom_tree = CT.CustomTreeCtrl(self, agwStyle=wx.TR_DEFAULT_STYLE)
-            
+
             # Add a root node to it
-            root = custom_tree.AddRoot("The Root Item")            
+            root = custom_tree.AddRoot("The Root Item")
 
             # Create an image list to add icons next to an item
             il = wx.ImageList(16, 16)
@@ -162,7 +162,7 @@ Usage example::
             fileidx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, 16))
 
             custom_tree.SetImageList(il)
-            
+
             custom_tree.SetItemImage(root, fldridx, wx.TreeItemIcon_Normal)
             custom_tree.SetItemImage(root, fldropenidx, wx.TreeItemIcon_Expanded)
 
@@ -195,7 +195,7 @@ Usage example::
     app.MainLoop()
 
 
-        
+
 Events
 ======
 
@@ -297,7 +297,7 @@ Event Name                     Description
 License And Version
 ===================
 
-L{CustomTreeCtrl} is distributed under the wxPython license. 
+L{CustomTreeCtrl} is distributed under the wxPython license.
 
 Latest Revision: Andrea Gavana @ 08 Mar 2012, 21.00 GMT
 
@@ -387,7 +387,9 @@ TR_AUTO_TOGGLE_CHILD = 0x08000  # only meaningful for checkboxes
 """ Only meaningful foe checkbox-type items: when a parent item is checked/unchecked""" """ its children are toggled accordingly. """
 TR_AUTO_CHECK_PARENT = 0x10000  # only meaningful for checkboxes
 """ Only meaningful foe checkbox-type items: when a child item is checked/unchecked""" """ its parent item is checked/unchecked as well. """
-TR_ALIGN_WINDOWS = 0x20000  # to align windows horizontally for items at the same level
+TR_ALIGN_WINDOWS = (
+    0x20000  # to align windows horizontally for items at the same level
+)
 """ Flag used to align windows (in items with windows) at the same horizontal position. """
 TR_ALIGN_WINDOWS_RIGHT = (
     0x40000  # to align windows to the rightmost edge of CustomTreeCtrl
@@ -435,7 +437,9 @@ TREE_HITTEST_ONITEMLOWERPART = wx.TREE_HITTEST_ONITEMLOWERPART
 TREE_HITTEST_ONITEMCHECKICON = 0x4000
 # anywhere on the item
 TREE_HITTEST_ONITEM = (
-    TREE_HITTEST_ONITEMICON | TREE_HITTEST_ONITEMLABEL | TREE_HITTEST_ONITEMCHECKICON
+    TREE_HITTEST_ONITEMICON
+    | TREE_HITTEST_ONITEMLABEL
+    | TREE_HITTEST_ONITEMCHECKICON
 )
 
 TREE_ITEMTYPE_NORMAL = 0
@@ -593,7 +597,9 @@ def DrawTreeItemButton(win, dc, rect, flags):
 
         # turn "-" into "+"
         halfHeight = rect.height / 2 - 2
-        dc.DrawLine(xMiddle, yMiddle - halfHeight, xMiddle, yMiddle + halfHeight + 1)
+        dc.DrawLine(
+            xMiddle, yMiddle - halfHeight, xMiddle, yMiddle + halfHeight + 1
+        )
 
 
 # ----------------------------------------------------------------------------
@@ -696,7 +702,11 @@ class DragImage(wx.DragImage):
             font = treeCtrl._normalFont
 
         backcolour = treeCtrl.GetBackgroundColour()
-        r, g, b = int(backcolour.Red()), int(backcolour.Green()), int(backcolour.Blue())
+        r, g, b = (
+            int(backcolour.Red()),
+            int(backcolour.Green()),
+            int(backcolour.Blue()),
+        )
         backcolour = ((r >> 1) + 20, (g >> 1) + 20, (b >> 1) + 20)
         backcolour = wx.Colour(backcolour[0], backcolour[1], backcolour[2])
         self._backgroundColour = backcolour
@@ -735,13 +745,15 @@ class DragImage(wx.DragImage):
 
         if image_w:
             ximagepos = wcheck
-            yimagepos = ((total_h > image_h) and [(total_h - image_h) / 2] or [0])[0]
+            yimagepos = (
+                (total_h > image_h) and [(total_h - image_h) / 2] or [0]
+            )[0]
 
         if checkimage is not None:
             xcheckpos = 2
-            ycheckpos = ((total_h > image_h) and [(total_h - image_h) / 2] or [0])[
-                0
-            ] + 2
+            ycheckpos = (
+                (total_h > image_h) and [(total_h - image_h) / 2] or [0]
+            )[0] + 2
 
         extraH = ((total_h > height) and [(total_h - height) / 2] or [0])[0]
 
@@ -803,10 +815,14 @@ class DragImage(wx.DragImage):
         memory.Clear()
 
         if self._itemimage:
-            memory.DrawBitmap(self._itemimage, self._ximagepos, self._yimagepos, True)
+            memory.DrawBitmap(
+                self._itemimage, self._ximagepos, self._yimagepos, True
+            )
 
         if self._itemcheck:
-            memory.DrawBitmap(self._itemcheck, self._xcheckpos, self._ycheckpos, True)
+            memory.DrawBitmap(
+                self._itemcheck, self._xcheckpos, self._ycheckpos, True
+            )
 
         textrect = wx.Rect(
             self._xtextpos,
@@ -828,7 +844,9 @@ class DragImage(wx.DragImage):
             for y in xrange(timg.GetHeight()):
                 for x in xrange(timg.GetWidth()):
                     pix = wx.Colour(
-                        timg.GetRed(x, y), timg.GetGreen(x, y), timg.GetBlue(x, y)
+                        timg.GetRed(x, y),
+                        timg.GetGreen(x, y),
+                        timg.GetBlue(x, y),
                     )
                     if pix == self._backgroundColour:
                         timg.SetAlpha(x, y, 0)
@@ -848,7 +866,9 @@ class TreeItemAttr(object):
     :note: This class is inspired by the wxWidgets generic implementation of `wx.TreeItemAttr`.
     """
 
-    def __init__(self, colText=wx.NullColour, colBack=wx.NullColour, font=wx.NullFont):
+    def __init__(
+        self, colText=wx.NullColour, colBack=wx.NullColour, font=wx.NullFont
+    ):
         """
         Default class constructor.
         For internal use: do not call it in your code!
@@ -963,7 +983,14 @@ class CommandTreeEvent(wx.PyCommandEvent):
     """
 
     def __init__(
-        self, evtType, evtId, item=None, evtKey=None, point=None, label=None, **kwargs
+        self,
+        evtType,
+        evtId,
+        item=None,
+        evtKey=None,
+        point=None,
+        label=None,
+        **kwargs
     ):
         """
         Default class constructor.
@@ -1155,7 +1182,14 @@ class TreeEvent(CommandTreeEvent):
     """
 
     def __init__(
-        self, evtType, evtId, item=None, evtKey=None, point=None, label=None, **kwargs
+        self,
+        evtType,
+        evtId,
+        item=None,
+        evtKey=None,
+        point=None,
+        label=None,
+        **kwargs
     ):
         """
         Default class constructor.
@@ -1610,7 +1644,9 @@ class GenericTreeItem(object):
 
         self._isCollapsed = True
         self._hasHilight = False  # same as focused
-        self._hilightPart = 0  # 0: full; else wx.TREE_HITTEST_ONITEM[LOWER|UPPER]PART
+        self._hilightPart = (
+            0  # 0: full; else wx.TREE_HITTEST_ONITEM[LOWER|UPPER]PART
+        )
         self._hasPlus = False  # used for item which doesn't have
         # children but has a [+] button
         self._isBold = False  # render the label in bold font
@@ -1871,7 +1907,9 @@ class GenericTreeItem(object):
         """
 
         if self.IsSeparator() and wnd is not None:
-            raise Exception("Separator items can not have an associated window")
+            raise Exception(
+                "Separator items can not have an associated window"
+            )
 
         self._wnd = wnd
 
@@ -2438,7 +2476,7 @@ class GenericTreeItem(object):
                     # at -4 , -4  from the position up to +10/+10 max
                     if (
                         xCross - 4 < point.x < xCross + 10
-                            and y_mid - 4 < point.y < y_mid + 10
+                        and y_mid - 4 < point.y < y_mid + 10
                         and self.HasPlus()
                         and theCtrl.HasButtons()
                     ):
@@ -2449,7 +2487,7 @@ class GenericTreeItem(object):
                     # 5 is the size of the plus sign
                     if (
                         xCross - 6 < point.x < xCross + 6
-                            and y_mid - 6 < point.y < y_mid + 6
+                        and y_mid - 6 < point.y < y_mid + 6
                         and self.HasPlus()
                         and theCtrl.HasButtons()
                     ):
@@ -2463,7 +2501,10 @@ class GenericTreeItem(object):
                     wcheck = 0
 
                     # assuming every image (normal and selected) has the same size!
-                    if self.GetImage() != _NO_IMAGE and theCtrl._imageListNormal:
+                    if (
+                        self.GetImage() != _NO_IMAGE
+                        and theCtrl._imageListNormal
+                    ):
                         image_w, image_h = theCtrl._imageListNormal.GetSize(
                             self.GetImage()
                         )
@@ -2477,7 +2518,10 @@ class GenericTreeItem(object):
                         flags |= TREE_HITTEST_ONITEMCHECKICON
                         return self, flags
 
-                    if image_w != -1 and point.x <= self._x + wcheck + image_w + 1:
+                    if (
+                        image_w != -1
+                        and point.x <= self._x + wcheck + image_w + 1
+                    ):
                         flags |= TREE_HITTEST_ONITEMICON
                     else:
                         flags |= TREE_HITTEST_ONITEMLABEL
@@ -2644,7 +2688,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         self._dragStart = None
         self._oldCursor = None
         self._oldItem = None
-        self._current = self._key_current = self._anchor = self._select_me = None
+        self._current = self._key_current = self._anchor = self._select_me = (
+            None
+        )
         self._hasFocus = False
         self._dirty = False
 
@@ -2671,9 +2717,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         self._hilightUnfocusedBrush2 = wx.Brush(backcolour)
 
         # image list for icons
-        self._imageListNormal = self._imageListButtons = self._imageListState = (
-            self._imageListCheck
-        ) = self._imageListLeft = None
+        self._imageListNormal = self._imageListButtons = (
+            self._imageListState
+        ) = self._imageListCheck = self._imageListLeft = None
         self._ownsImageListNormal = self._ownsImageListButtons = (
             self._ownsImageListState
         ) = self._ownsImageListLeft = False
@@ -2796,7 +2842,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             self._drawingfunction = wx.RendererNative.Get().DrawTreeItemButton
 
         # Set the separator pen default colour
-        self._separatorPen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+        self._separatorPen = wx.Pen(
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+        )
 
         # Create our container... at last!
         wx.PyScrolledWindow.__init__(
@@ -2876,7 +2924,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
         event.Skip()
 
-    def GetControlBmp(self, checkbox=True, checked=False, enabled=True, x=16, y=16):
+    def GetControlBmp(
+        self, checkbox=True, checked=False, enabled=True, x=16, y=16
+    ):
         """
         Returns a native looking checkbox or radio button bitmap.
 
@@ -2936,17 +2986,14 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
     def GetIndent(self):
         """Returns the item indentation, in pixels."""
-
         return self._indent
 
     def GetSpacing(self):
         """Returns the spacing between the start and the text, in pixels."""
-
         return self._spacing
 
     def GetRootItem(self):
         """Returns the root item, an instance of L{GenericTreeItem}."""
-
         return self._anchor
 
     def GetSelection(self):
@@ -2995,9 +3042,11 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         while child:
             self.EnableItem(child, enable, torefresh=torefresh)
             # Recurse on tree
-            if child.GetType != 2 or (child.GetType() == 2 and item.IsChecked()):
+            if child.GetType != 2 or (
+                child.GetType() == 2 and item.IsChecked()
+            ):
                 self.EnableChildren(child, enable)
-            (child, cookie) = self.GetNextChild(item, cookie)
+            child, cookie = self.GetNextChild(item, cookie)
 
     def EnableItem(self, item, enable=True, torefresh=True):
         """
@@ -3251,9 +3300,11 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         # Recurse on tree
         while child:
             if child.GetType() == 1 and child.IsEnabled():
-                self.CheckItem2(child, not child.IsChecked(), torefresh=torefresh)
+                self.CheckItem2(
+                    child, not child.IsChecked(), torefresh=torefresh
+                )
             self.AutoToggleChild(child)
-            (child, cookie) = self.GetNextChild(item, cookie)
+            child, cookie = self.GetNextChild(item, cookie)
 
     def AutoCheckChild(self, item, checked):
         """
@@ -3265,7 +3316,7 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         :note: This method is meaningful only for checkbox-like and radiobutton-like items.
         """
 
-        (child, cookie) = self.GetFirstChild(item)
+        child, cookie = self.GetFirstChild(item)
 
         torefresh = False
         if item.IsExpanded():
@@ -3275,7 +3326,7 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             if child.GetType() == 1 and child.IsEnabled():
                 self.CheckItem2(child, checked, torefresh=torefresh)
             self.AutoCheckChild(child, checked)
-            (child, cookie) = self.GetNextChild(item, cookie)
+            child, cookie = self.GetNextChild(item, cookie)
 
     def AutoCheckParent(self, item, checked):
         """
@@ -3291,12 +3342,12 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         if not parent or parent.GetType() != 1:
             return
 
-        (child, cookie) = self.GetFirstChild(parent)
+        child, cookie = self.GetFirstChild(parent)
         while child:
             if child.GetType() == 1 and child.IsEnabled():
                 if checked != child.IsChecked():
                     return
-            (child, cookie) = self.GetNextChild(parent, cookie)
+            child, cookie = self.GetNextChild(parent, cookie)
 
         self.CheckItem2(parent, checked, torefresh=True)
         self.AutoCheckParent(parent, checked)
@@ -3339,13 +3390,15 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         if parent.IsExpanded():
             torefresh = True
 
-        (child, cookie) = self.GetFirstChild(parent)
+        child, cookie = self.GetFirstChild(parent)
         while child:
             if child.GetType() == 2 and child != item:
                 self.CheckItem2(child, checked, torefresh=torefresh)
-                if child.GetType != 2 or (child.GetType() == 2 and child.IsChecked()):
+                if child.GetType != 2 or (
+                    child.GetType() == 2 and child.IsChecked()
+                ):
                     self.EnableChildren(child, checked)
-            (child, cookie) = self.GetNextChild(parent, cookie)
+            child, cookie = self.GetNextChild(parent, cookie)
 
     def EditLabel(self, item):
         """
@@ -3982,7 +4035,11 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             # No colour given, generate a slightly darker from the
             # CustomTreeCtrl background colour
             colour = self.GetBackgroundColour()
-            r, g, b = int(colour.Red()), int(colour.Green()), int(colour.Blue())
+            r, g, b = (
+                int(colour.Red()),
+                int(colour.Green()),
+                int(colour.Blue()),
+            )
             colour = ((r >> 1) + 20, (g >> 1) + 20, (b >> 1) + 20)
             colour = wx.Colour(colour[0], colour[1], colour[2])
 
@@ -4183,7 +4240,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         """
 
         if item.IsSeparator() and wnd is not None:
-            raise Exception("Separator items can not have an associated window")
+            raise Exception(
+                "Separator items can not have an associated window"
+            )
 
         if wnd is not None:
             self._hasWindows = True
@@ -4721,9 +4780,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                     return id
 
             # and try all the items (stop when we get to the one we Started from)
-            while id != idParent and not self.GetItemText(id).lower().startswith(
-                prefix
-            ):
+            while id != idParent and not self.GetItemText(
+                id
+            ).lower().startswith(prefix):
                 id = self.GetNext(id)
 
         return id
@@ -4784,7 +4843,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 "\nERROR: In Order To Append/Insert Controls You Have To Use The Style TR_HAS_VARIABLE_ROW_HEIGHT"
             )
 
-        if text.find("\n") >= 0 and not self.HasAGWFlag(TR_HAS_VARIABLE_ROW_HEIGHT):
+        if text.find("\n") >= 0 and not self.HasAGWFlag(
+            TR_HAS_VARIABLE_ROW_HEIGHT
+        ):
             raise Exception(
                 "\nERROR: In Order To Append/Insert A MultiLine Text You Have To Use The Style TR_HAS_VARIABLE_ROW_HEIGHT"
             )
@@ -4796,7 +4857,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
         if separator:
             if wnd:
-                raise Exception("Separator items can not have associated windows")
+                raise Exception(
+                    "Separator items can not have associated windows"
+                )
             if text.strip():
                 raise Exception("Separator items can not text labels")
 
@@ -4806,7 +4869,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             # should we give a warning here?
             return self.AddRoot(text, ct_type, wnd, image, selImage, data)
 
-        self._dirty = True  # do this first so stuff below doesn't cause flicker
+        self._dirty = (
+            True  # do this first so stuff below doesn't cause flicker
+        )
 
         item = GenericTreeItem(
             parent, text, ct_type, wnd, image, selImage, data, separator
@@ -4820,7 +4885,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
         return item
 
-    def AddRoot(self, text, ct_type=0, wnd=None, image=-1, selImage=-1, data=None):
+    def AddRoot(
+        self, text, ct_type=0, wnd=None, image=-1, selImage=-1, data=None
+    ):
         """
         Adds a root item to the L{CustomTreeCtrl}.
 
@@ -4858,7 +4925,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 "\nERROR: In Order To Append/Insert Controls You Have To Use The Style TR_HAS_VARIABLE_ROW_HEIGHT"
             )
 
-        if text.find("\n") >= 0 and not self.HasAGWFlag(TR_HAS_VARIABLE_ROW_HEIGHT):
+        if text.find("\n") >= 0 and not self.HasAGWFlag(
+            TR_HAS_VARIABLE_ROW_HEIGHT
+        ):
             raise Exception(
                 "\nERROR: In Order To Append/Insert A MultiLine Text You Have To Use The Style TR_HAS_VARIABLE_ROW_HEIGHT"
             )
@@ -4868,9 +4937,13 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 "\nERROR: Item Type Should Be 0 (Normal), 1 (CheckBox) or 2 (RadioButton). "
             )
 
-        self._dirty = True  # do this first so stuff below doesn't cause flicker
+        self._dirty = (
+            True  # do this first so stuff below doesn't cause flicker
+        )
 
-        self._anchor = GenericTreeItem(None, text, ct_type, wnd, image, selImage, data)
+        self._anchor = GenericTreeItem(
+            None, text, ct_type, wnd, image, selImage, data
+        )
 
         if wnd is not None:
             self._hasWindows = True
@@ -4985,7 +5058,15 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 )
 
         return self.DoInsertItem(
-            parentId, index + 1, text, ct_type, wnd, image, selImage, data, separator
+            parentId,
+            index + 1,
+            text,
+            ct_type,
+            wnd,
+            image,
+            selImage,
+            data,
+            separator,
         )
 
     def InsertItemByIndex(
@@ -5031,7 +5112,15 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             return self.AddRoot(text, ct_type, wnd, image, selImage, data)
 
         return self.DoInsertItem(
-            parentId, idPrevious, text, ct_type, wnd, image, selImage, data, separator
+            parentId,
+            idPrevious,
+            text,
+            ct_type,
+            wnd,
+            image,
+            selImage,
+            data,
+            separator,
         )
 
     def InsertItem(
@@ -5062,15 +5151,38 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             1
         ):  # E721 Use `is` and `is not` for type comparisons, or `isinstance()` for isinstance checks
             return self.InsertItemByIndex(
-                parentId, input, text, ct_type, wnd, image, selImage, data, separator
+                parentId,
+                input,
+                text,
+                ct_type,
+                wnd,
+                image,
+                selImage,
+                data,
+                separator,
             )
         else:
             return self.InsertItemByItem(
-                parentId, input, text, ct_type, wnd, image, selImage, data, separator
+                parentId,
+                input,
+                text,
+                ct_type,
+                wnd,
+                image,
+                selImage,
+                data,
+                separator,
             )
 
     def AppendItem(
-        self, parentId, text, ct_type=0, wnd=None, image=-1, selImage=-1, data=None
+        self,
+        parentId,
+        text,
+        ct_type=0,
+        wnd=None,
+        image=-1,
+        selImage=-1,
+        data=None,
     ):
         """
         Appends an item as a last child of its parent.
@@ -5101,7 +5213,14 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             return self.AddRoot(text, ct_type, wnd, image, selImage, data)
 
         return self.DoInsertItem(
-            parent, len(parent.GetChildren()), text, ct_type, wnd, image, selImage, data
+            parent,
+            len(parent.GetChildren()),
+            text,
+            ct_type,
+            wnd,
+            image,
+            selImage,
+            data,
         )
 
     def AppendSeparator(self, parentId):
@@ -5117,7 +5236,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         """
 
         parent = parentId
-        return self.DoInsertItem(parent, len(parent.GetChildren()), "", separator=True)
+        return self.DoInsertItem(
+            parent, len(parent.GetChildren()), "", separator=True
+        )
 
     def InsertSeparator(self, parentId, input):
         """
@@ -5196,7 +5317,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         ):
             self._editCtrl.StopEditing()
 
-        if item != self._key_current and self.IsDescendantOf(item, self._key_current):
+        if item != self._key_current and self.IsDescendantOf(
+            item, self._key_current
+        ):
             self._key_current = None
 
         if self.IsDescendantOf(item, self._select_me):
@@ -5214,7 +5337,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         :param item: an instance of L{GenericTreeItem}.
         """
 
-        self._dirty = True  # do this first so stuff below doesn't cause flicker
+        self._dirty = (
+            True  # do this first so stuff below doesn't cause flicker
+        )
 
         self.ChildrenClosing(item)
         item.DeleteChildren(self)
@@ -5228,7 +5353,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         :note: This method sends the ``EVT_TREE_DELETE_ITEM`` event.
         """
 
-        self._dirty = True  # do this first so stuff below doesn't cause flicker
+        self._dirty = (
+            True  # do this first so stuff below doesn't cause flicker
+        )
 
         if self._editCtrl is not None and self.IsDescendantOf(
             item, self._editCtrl.item()
@@ -5322,7 +5449,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             event._item = item
             event.SetEventObject(self)
 
-            if self.GetEventHandler().ProcessEvent(event) and not event.IsAllowed():
+            if (
+                self.GetEventHandler().ProcessEvent(event)
+                and not event.IsAllowed()
+            ):
                 # cancelled by program
                 return
 
@@ -5403,7 +5533,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         event = TreeEvent(wxEVT_TREE_ITEM_COLLAPSING, self.GetId())
         event._item = item
         event.SetEventObject(self)
-        if self.GetEventHandler().ProcessEvent(event) and not event.IsAllowed():
+        if (
+            self.GetEventHandler().ProcessEvent(event)
+            and not event.IsAllowed()
+        ):
             # cancelled by program
             return
 
@@ -5652,7 +5785,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         event.SetEventObject(self)
         # TODO : Here we don't send any selection mode yet !
 
-        if self.GetEventHandler().ProcessEvent(event) and not event.IsAllowed():
+        if (
+            self.GetEventHandler().ProcessEvent(event)
+            and not event.IsAllowed()
+        ):
             return
 
         parent = self.GetItemParent(item)
@@ -5852,7 +5988,8 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 x / _PIXELS_PER_UNIT,
                 y / _PIXELS_PER_UNIT,
                 x_pos,
-                (item_y + self.GetLineHeight(item) - client_h) / _PIXELS_PER_UNIT,
+                (item_y + self.GetLineHeight(item) - client_h)
+                / _PIXELS_PER_UNIT,
             )
 
     def OnCompareItems(self, item1, item2):
@@ -6009,7 +6146,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         if self._lineHeight < 30:
             self._lineHeight += 2  # at least 2 pixels
         else:
-            self._lineHeight += self._lineHeight / 10  # otherwise 10% extra spacing
+            self._lineHeight += (
+                self._lineHeight / 10
+            )  # otherwise 10% extra spacing
 
     def SetImageList(self, imageList):
         """
@@ -6120,18 +6259,30 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             )
             self._grayedCheckList.Add(
                 self.GetControlBmp(
-                    checkbox=True, checked=True, enabled=False, x=sizex, y=sizey
+                    checkbox=True,
+                    checked=True,
+                    enabled=False,
+                    x=sizex,
+                    y=sizey,
                 )
             )
 
             self._imageListCheck.Add(
                 self.GetControlBmp(
-                    checkbox=True, checked=False, enabled=True, x=sizex, y=sizey
+                    checkbox=True,
+                    checked=False,
+                    enabled=True,
+                    x=sizex,
+                    y=sizey,
                 )
             )
             self._grayedCheckList.Add(
                 self.GetControlBmp(
-                    checkbox=True, checked=False, enabled=False, x=sizex, y=sizey
+                    checkbox=True,
+                    checked=False,
+                    enabled=False,
+                    x=sizex,
+                    y=sizey,
                 )
             )
 
@@ -6149,23 +6300,39 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             # Get the Radio Buttons
             self._imageListCheck.Add(
                 self.GetControlBmp(
-                    checkbox=False, checked=True, enabled=True, x=sizex, y=sizey
+                    checkbox=False,
+                    checked=True,
+                    enabled=True,
+                    x=sizex,
+                    y=sizey,
                 )
             )
             self._grayedCheckList.Add(
                 self.GetControlBmp(
-                    checkbox=False, checked=True, enabled=False, x=sizex, y=sizey
+                    checkbox=False,
+                    checked=True,
+                    enabled=False,
+                    x=sizex,
+                    y=sizey,
                 )
             )
 
             self._imageListCheck.Add(
                 self.GetControlBmp(
-                    checkbox=False, checked=False, enabled=True, x=sizex, y=sizey
+                    checkbox=False,
+                    checked=False,
+                    enabled=True,
+                    x=sizex,
+                    y=sizey,
                 )
             )
             self._grayedCheckList.Add(
                 self.GetControlBmp(
-                    checkbox=False, checked=False, enabled=False, x=sizex, y=sizey
+                    checkbox=False,
+                    checked=False,
+                    enabled=False,
+                    x=sizex,
+                    y=sizey,
                 )
             )
 
@@ -6389,7 +6556,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         oldbrush = dc.GetBrush()
 
         bdrRect = wx.Rect(*rect.Get())
-        filRect = wx.Rect(*rect.Get())  # TODO : Comment obtenir x, y,  width & height ?
+        filRect = wx.Rect(
+            *rect.Get()
+        )  # TODO : Comment obtenir x, y,  width & height ?
         filRect.Deflate(1, 1)
 
         r1, g1, b1 = int(top.Red()), int(top.Green()), int(top.Blue())
@@ -6505,7 +6674,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                     dc.SetBrush(wx.TRANSPARENT_BRUSH)
                     dc.SetPen(
                         wx.Pen(
-                            wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT),
+                            wx.SystemSettings.GetColour(
+                                wx.SYS_COLOUR_HIGHLIGHT
+                            ),
                             1,
                             wx.SOLID,
                         )
@@ -6541,7 +6712,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             if item.IsSelected():
                 if self._usegradients:
                     if self._gradientstyle == 0:  # Horizontal
-                        self.DrawHorizontalGradient(dc, itemrect, self._hasFocus)
+                        self.DrawHorizontalGradient(
+                            dc, itemrect, self._hasFocus
+                        )
                     else:  # Vertical
                         self.DrawVerticalGradient(dc, itemrect, self._hasFocus)
                 elif self._vistaselection:
@@ -6594,7 +6767,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
                 if self._usegradients:
                     if self._gradientstyle == 0:  # Horizontal
-                        self.DrawHorizontalGradient(dc, itemrect, self._hasFocus)
+                        self.DrawHorizontalGradient(
+                            dc, itemrect, self._hasFocus
+                        )
                     else:  # Vertical
                         self.DrawVerticalGradient(dc, itemrect, self._hasFocus)
                 elif self._vistaselection:
@@ -6631,7 +6806,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
                 if self._usegradients and self._hasFocus:
                     if self._gradientstyle == 0:  # Horizontal
-                        self.DrawHorizontalGradient(dc, itemrect, self._hasFocus)
+                        self.DrawHorizontalGradient(
+                            dc, itemrect, self._hasFocus
+                        )
                     else:  # Vertical
                         self.DrawVerticalGradient(dc, itemrect, self._hasFocus)
                 else:
@@ -6652,7 +6829,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 dc,
                 item.GetX() + wcheck,
                 item.GetY()
-                + ((total_h > image_h) and [(total_h - image_h) / 2] or [0])[0],
+                + ((total_h > image_h) and [(total_h - image_h) / 2] or [0])[
+                    0
+                ],
                 wx.IMAGELIST_DRAW_TRANSPARENT,
             )
 
@@ -6684,7 +6863,11 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 dc,
                 4,
                 item.GetY()
-                + ((total_h > l_image_h) and [(total_h - l_image_h) / 2] or [0])[0],
+                + (
+                    (total_h > l_image_h)
+                    and [(total_h - l_image_h) / 2]
+                    or [0]
+                )[0],
                 wx.IMAGELIST_DRAW_TRANSPARENT,
             )
 
@@ -6692,7 +6875,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         extraH = ((total_h > text_h) and [(total_h - text_h) / 2] or [0])[0]
 
         textrect = wx.Rect(
-            wcheck + image_w + item.GetX(), item.GetY() + extraH, text_w, text_h
+            wcheck + image_w + item.GetX(),
+            item.GetY() + extraH,
+            text_w,
+            text_h,
         )
 
         itemText = item.GetText()
@@ -6707,7 +6893,11 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             dc.DrawLabel(itemText, textrect)
             dc.SetTextForeground(foreground)
         else:
-            if wx.Platform == "__WXMAC__" and item.IsSelected() and self._hasFocus:
+            if (
+                wx.Platform == "__WXMAC__"
+                and item.IsSelected()
+                and self._hasFocus
+            ):
                 dc.SetTextForeground(wx.WHITE)
             dc.DrawLabel(itemText, textrect)
 
@@ -6746,7 +6936,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
             dc.SetPen(separatorPen)
             dc.DrawLine(
-                item.GetX() + 2, item.GetY() + total_h / 2, w, item.GetY() + total_h / 2
+                item.GetX() + 2,
+                item.GetY() + total_h / 2,
+                w,
+                item.GetY() + total_h / 2,
             )
             dc.SetPen(oldPen)
 
@@ -6841,9 +7034,13 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
 
             if item.IsSelected():
                 if wx.Platform == "__WXMAC__" and self._hasFocus:
-                    colText = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+                    colText = wx.SystemSettings.GetColour(
+                        wx.SYS_COLOUR_HIGHLIGHTTEXT
+                    )
                 else:
-                    colText = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+                    colText = wx.SystemSettings.GetColour(
+                        wx.SYS_COLOUR_HIGHLIGHTTEXT
+                    )
             else:
                 attr = item.GetAttributes()
                 if attr and attr.HasTextColour():
@@ -6971,7 +7168,12 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                         self._drawingfunction(
                             self,
                             dc,
-                            wx.Rect(x - wImage / 2, y_mid - hImage / 2, wImage, hImage),
+                            wx.Rect(
+                                x - wImage / 2,
+                                y_mid - hImage / 2,
+                                wImage,
+                                hImage,
+                            ),
                             flag,
                         )
 
@@ -7186,7 +7388,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 self.Expand(self._current)
 
         elif keyCode in [ord("*"), wx.WXK_MULTIPLY]:  # "*"
-            if not self.IsExpanded(self._current) and self.IsItemEnabled(self._current):
+            if not self.IsExpanded(self._current) and self.IsItemEnabled(
+                self._current
+            ):
                 # expand all
                 self.ExpandAll(self._current)
 
@@ -7218,7 +7422,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 event.SetEventObject(self)
                 self.GetEventHandler().ProcessEvent(event)
 
-                if keyCode == wx.WXK_SPACE and self.GetItemType(self._current) > 0:
+                if (
+                    keyCode == wx.WXK_SPACE
+                    and self.GetItemType(self._current) > 0
+                ):
                     if self.IsItem3State(self._current):
                         checked = self.GetItem3StateValue(self._current)
                         checked = (checked + 1) % 3
@@ -7240,17 +7447,21 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             prev = self.GetPrevSibling(self._key_current)
             if not prev:
                 prev = self.GetItemParent(self._key_current)
-                if prev == self.GetRootItem() and self.HasAGWFlag(TR_HIDE_ROOT):
+                if prev == self.GetRootItem() and self.HasAGWFlag(
+                    TR_HIDE_ROOT
+                ):
                     return
 
                 if prev:
                     current = self._key_current
                     # TODO: Huh?  If we get here, we'd better be the first child of our parent.  How else could it be?
-                    if current == self.GetFirstChild(prev)[0] and self.IsItemEnabled(
-                        prev
-                    ):
+                    if current == self.GetFirstChild(prev)[
+                        0
+                    ] and self.IsItemEnabled(prev):
                         # otherwise we return to where we came from
-                        self.DoSelectItem(prev, unselect_others, extended_select)
+                        self.DoSelectItem(
+                            prev, unselect_others, extended_select
+                        )
                         self._key_current = prev
 
             else:
@@ -7294,7 +7505,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         elif keyCode == wx.WXK_RIGHT:
             # this works the same as the down arrow except that we
             # also expand the item if it wasn't expanded yet
-            if self.IsExpanded(self._current) and self.HasChildren(self._current):
+            if self.IsExpanded(self._current) and self.HasChildren(
+                self._current
+            ):
                 child, cookie = self.GetFirstChild(self._key_current)
                 if self.IsItemEnabled(child):
                     self.DoSelectItem(child, unselect_others, extended_select)
@@ -7677,7 +7890,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                 hevent._item = hoverItem
                 hevent.SetEventObject(self)
 
-                if self.GetEventHandler().ProcessEvent(hevent) and hevent.IsAllowed():
+                if (
+                    self.GetEventHandler().ProcessEvent(hevent)
+                    and hevent.IsAllowed()
+                ):
                     self.SetToolTip(hevent._label)
 
                 elif self.HasAGWFlag(TR_TOOLTIP_ON_LONG_ITEMS):
@@ -7735,7 +7951,8 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             event.Dragging()
             and not self._isDragging
             and (
-                (flags & TREE_HITTEST_ONITEMICON) or (flags & TREE_HITTEST_ONITEMLABEL)
+                (flags & TREE_HITTEST_ONITEMICON)
+                or (flags & TREE_HITTEST_ONITEMLABEL)
             )
         ):
 
@@ -7765,7 +7982,10 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             # explicitly allow the event for it to take place
             nevent.Veto()
 
-            if self.GetEventHandler().ProcessEvent(nevent) and nevent.IsAllowed():
+            if (
+                self.GetEventHandler().ProcessEvent(nevent)
+                and nevent.IsAllowed()
+            ):
 
                 # we're going to drag this item
                 self._isDragging = True
@@ -7874,13 +8094,19 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             self._dragCount = 0
 
             if item is None:
-                if self._editCtrl is not None and item != self._editCtrl.item():
+                if (
+                    self._editCtrl is not None
+                    and item != self._editCtrl.item()
+                ):
                     self._editCtrl.StopEditing()
                 return  # we hit the blank area
 
             if event.RightDown():
 
-                if self._editCtrl is not None and item != self._editCtrl.item():
+                if (
+                    self._editCtrl is not None
+                    and item != self._editCtrl.item()
+                ):
                     self._editCtrl.StopEditing()
 
                 self._hasFocus = True
@@ -7947,11 +8173,17 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             else:  # !RightDown() && !LeftUp() ==> LeftDown() || LeftDClick()
 
                 if not item or not item.IsEnabled():
-                    if self._editCtrl is not None and item != self._editCtrl.item():
+                    if (
+                        self._editCtrl is not None
+                        and item != self._editCtrl.item()
+                    ):
                         self._editCtrl.StopEditing()
                     return
 
-                if self._editCtrl is not None and item != self._editCtrl.item():
+                if (
+                    self._editCtrl is not None
+                    and item != self._editCtrl.item()
+                ):
                     self._editCtrl.StopEditing()
 
                 self._hasFocus = True
@@ -7972,13 +8204,17 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                     # don't select the item if the button was clicked
                     return
 
-                if item.GetType() > 0 and (flags & TREE_HITTEST_ONITEMCHECKICON):
+                if item.GetType() > 0 and (
+                    flags & TREE_HITTEST_ONITEMCHECKICON
+                ):
 
                     if event.LeftDown():
                         if flags & TREE_HITTEST_ONITEM and self.HasAGWFlag(
                             TR_FULL_ROW_HIGHLIGHT
                         ):
-                            self.DoSelectItem(item, not self.HasAGWFlag(TR_MULTIPLE))
+                            self.DoSelectItem(
+                                item, not self.HasAGWFlag(TR_MULTIPLE)
+                            )
 
                         if self.IsItem3State(item):
                             checked = self.GetItem3StateValue(item)
@@ -8010,7 +8246,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
                             )
                         )
 
-                        self.DoSelectItem(item, unselect_others, extended_select)
+                        self.DoSelectItem(
+                            item, unselect_others, extended_select
+                        )
 
                 # Handle hyperlink items... which are a bit odd sometimes
                 elif self.IsSelected(item) and item.IsHyperText():
@@ -8146,14 +8384,17 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             totalWidth = image_w + text_w + wcheck + 2
             totalHeight = total_h
         else:
-            totalWidth = item.GetWindowSize()[0] + image_w + text_w + wcheck + 2
+            totalWidth = (
+                item.GetWindowSize()[0] + image_w + text_w + wcheck + 2
+            )
             totalHeight = max(total_h, item.GetWindowSize()[1])
 
         if level >= 0 and wnd:
             if align == 0:
                 if level in self.absoluteWindows:
                     self.absoluteWindows[level] = max(
-                        self.absoluteWindows[level], image_w + text_w + wcheck + 2
+                        self.absoluteWindows[level],
+                        image_w + text_w + wcheck + 2,
                     )
                 else:
                     self.absoluteWindows[level] = image_w + text_w + wcheck + 2
@@ -8204,7 +8445,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
             count = len(children)
             level = level + 1
             for n in xrange(count):
-                y = self.CalculateLevel(children[n], dc, level, y, align)  # recurse
+                y = self.CalculateLevel(
+                    children[n], dc, level, y, align
+                )  # recurse
 
             return y
 
@@ -8223,7 +8466,9 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         count = len(children)
         level = level + 1
         for n in xrange(count):
-            y = self.CalculateLevel(children[n], dc, level, y, align)  # recurse
+            y = self.CalculateLevel(
+                children[n], dc, level, y, align
+            )  # recurse
 
         return y
 
@@ -8243,10 +8488,14 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         y = 2
         y = self.CalculateLevel(self._anchor, dc, 0, y)  # start recursion
 
-        if self.HasAGWFlag(TR_ALIGN_WINDOWS) or self.HasAGWFlag(TR_ALIGN_WINDOWS_RIGHT):
+        if self.HasAGWFlag(TR_ALIGN_WINDOWS) or self.HasAGWFlag(
+            TR_ALIGN_WINDOWS_RIGHT
+        ):
             align = (self.HasAGWFlag(TR_ALIGN_WINDOWS) and [1] or [2])[0]
             y = 2
-            y = self.CalculateLevel(self._anchor, dc, 0, y, align)  # start recursion
+            y = self.CalculateLevel(
+                self._anchor, dc, 0, y, align
+            )  # start recursion
 
     def RefreshSubtree(self, item):
         """

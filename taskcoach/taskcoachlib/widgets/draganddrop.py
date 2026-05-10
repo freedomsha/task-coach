@@ -448,6 +448,9 @@ class TreeCtrlDragAndDropMixin(TreeHelperMixin):
         hwin = self.GetHeaderWindow()
         x = 0
         for j in range(self.GetColumnCount()):
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # Savoir de quel type est self !?
+            # for j in range(len(self._columns)):
             if not hwin.IsColumnShown(j):
                 continue
             w = hwin.GetColumnWidth(j)

@@ -196,18 +196,25 @@ class _CheckBox(wx.Panel):
         x = (20 - cbw) // 2
         y = (h - cbh) // 2
         wx.RendererNative.Get().DrawCheckBox(
-            self, dc, (x, y, cbw, cbh), wx.CONTROL_CHECKED if self.__value else 0
+            self,
+            dc,
+            (x, y, cbw, cbh),
+            wx.CONTROL_CHECKED if self.__value else 0,
         )
         if platform.system() == "Windows" and platform.win32_ver()[0] == "XP":
             # Draw the 3D box ourselves...
             cbw, cbh = 15, 15
-            dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW)))
+            dc.SetPen(
+                wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW))
+            )
             dc.DrawLine(x, y, x + cbw, y)
             dc.DrawLine(x, y, x, y + cbh)
             dc.SetPen(wx.BLACK_PEN)
             dc.DrawLine(x + 1, y + 1, x + cbw - 1, y + 1)
             dc.DrawLine(x + 1, y + 1, x + 1, y + cbh - 1)
-            dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE)))
+            dc.SetPen(
+                wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE))
+            )
             dc.DrawLine(x + cbw - 1, y + 1, x + cbw - 1, y + cbh - 1)
             dc.DrawLine(x + cbw - 1, y + cbh - 1, x + 1, y + cbh - 1)
             dc.SetPen(wx.WHITE_PEN)
@@ -308,10 +315,13 @@ class Field(object):
         GetChoices (self) : Retourne les choix disponibles pour ce champ.
         PaintValue (self, dc, x, y, w, h) : Méthode à redéfinir pour peindre la valeur dans l'interface graphique.
     """
+
     def __init__(self, *args, **kwargs):
         self.__value = kwargs.pop("value")
         self.__observer = kwargs.pop("observer")
-        self.__choices = kwargs.pop("choices", None)  # 2-tuples [(label, value)]
+        self.__choices = kwargs.pop(
+            "choices", None
+        )  # 2-tuples [(label, value)]
 
         super().__init__(*args, **kwargs)
 
@@ -414,6 +424,7 @@ class Entry(wx.Panel):
         SetValue (self, value) : Définit les valeurs des champs à partir d'un tuple.
         PopupChoices (self, widget) : Affiche une liste de choix pour un champ donné.
     """
+
     MARGIN = 3
     formats = [AnyFormatCharacter]
     _rx_paste = re.compile(r"(?i)\d+|am|pm")
@@ -618,10 +629,16 @@ class Entry(wx.Panel):
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
         # w, h = self.GetClientSizeTuple()
         w, h = self.GetClientSize()
-        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE), width=3))
+        dc.SetPen(
+            wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE), width=3)
+        )
         dc.DrawLine(0, 0, w, 0)
         dc.DrawLine(0, 0, 0, h)
-        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), width=3))
+        dc.SetPen(
+            wx.Pen(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), width=3
+            )
+        )
         dc.DrawLine(w, 0, w, h)
         dc.DrawLine(0, h, w, h)
         dc.SetFont(wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT))
@@ -637,7 +654,9 @@ class Entry(wx.Panel):
                     ):
                         drawFocusRect(dc, x, y, w, h)
                         dc.SetTextForeground(
-                            wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+                            wx.SystemSettings.GetColour(
+                                wx.SYS_COLOUR_HIGHLIGHTTEXT
+                            )
                         )
                     else:
                         dc.SetTextForeground(wx.BLACK)
@@ -652,7 +671,8 @@ class Entry(wx.Panel):
         if self.__focus is not None:
             self.__SetFocus(
                 self.Fields()[
-                    (self.Fields().index(self.__focus) + 1) % len(self.Fields())
+                    (self.Fields().index(self.__focus) + 1)
+                    % len(self.Fields())
                 ]
             )
 
@@ -676,7 +696,9 @@ class Entry(wx.Panel):
                     data = wx.TextDataObject()
                     wx.TheClipboard.GetData(data)
                     values = list()
-                    for idx, mt in enumerate(self._rx_paste.finditer(data.GetText())):
+                    for idx, mt in enumerate(
+                        self._rx_paste.finditer(data.GetText())
+                    ):
                         values.append(
                             (
                                 mt.group(0),
@@ -714,7 +736,11 @@ class Entry(wx.Panel):
             if self.__focus is not None:
                 self.__SetFocus(
                     self.Fields()[
-                        (self.Fields().index(self.__focus) + len(self.Fields()) - 1)
+                        (
+                            self.Fields().index(self.__focus)
+                            + len(self.Fields())
+                            - 1
+                        )
                         % len(self.Fields())
                     ]
                 )
@@ -748,7 +774,10 @@ class Entry(wx.Panel):
                     self.__SetFocus(widget)
                     # the __focusStamp stuff is there so that choices don't show when clicking to set focus to
                     # the whole control
-                    if oldFocus == widget and time.time() - self.__focusStamp >= 0.05:
+                    if (
+                        oldFocus == widget
+                        and time.time() - self.__focusStamp >= 0.05
+                    ):
                         self.PopupChoices(widget)
                         self.ForceFocus()
                     widget.OnClick()
@@ -788,6 +817,7 @@ class NumericField(Field):
         PaintValue (self, dc, x, y, w, h) : Peint la valeur numérique dans l'interface utilisateur.
         HandleKey (self, event) : Gère les événements de clavier, y compris les touches fléchées pour augmenter/diminuer la valeur.
     """
+
     class NumericFormatCharacter(FormatCharacter):
         def __init__(self, c):
             self.__width = 1
@@ -830,14 +860,18 @@ class NumericField(Field):
 
     def HandleKey(self, event):
         if event.GetKeyCode() == wx.WXK_UP:
-            value = self.Observer().ValidateIncrement(self, self.GetValue() + 1)
+            value = self.Observer().ValidateIncrement(
+                self, self.GetValue() + 1
+            )
             if value is None:
                 return False
             self.SetValue(value)
             return True
 
         if event.GetKeyCode() == wx.WXK_DOWN:
-            value = self.Observer().ValidateDecrement(self, self.GetValue() - 1)
+            value = self.Observer().ValidateDecrement(
+                self, self.GetValue() - 1
+            )
             if value is None:
                 return False
             self.SetValue(value)
@@ -856,12 +890,17 @@ class NumericField(Field):
                 self.SetValue(number, notify=True)
             elif self.__state == 1:
                 self.SetValue(
-                    (self.GetValue() * 10 + number) % int(math.pow(10, self.__width)),
+                    (self.GetValue() * 10 + number)
+                    % int(math.pow(10, self.__width)),
                     notify=True,
                 )
             return True
 
-        if event.GetKeyCode() in [wx.WXK_BACK, wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE]:
+        if event.GetKeyCode() in [
+            wx.WXK_BACK,
+            wx.WXK_DELETE,
+            wx.WXK_NUMPAD_DELETE,
+        ]:
             self.SetValue(self.GetValue() // 10, notify=True)
             return True
 
@@ -911,7 +950,9 @@ class EnumerationField(NumericField):
             return True
         if event.GetKeyCode() == wx.WXK_DOWN:
             self.SetValue(
-                self.GetChoices()[(self.__index() + 1) % len(self.GetChoices())][1],
+                self.GetChoices()[
+                    (self.__index() + 1) % len(self.GetChoices())
+                ][1],
                 notify=True,
             )
             return True
@@ -1013,6 +1054,7 @@ class TimeEntry(Entry):
         SetTime (self, value, notify) : Définit l'heure saisie et notifie l'observateur.
         PopupRelativeChoices (self) : Affiche les choix relatifs d'heure pour ajuster rapidement l'heure sélectionnée.
     """
+
     class HourFormatCharacter(SingleFormatCharacter):
         character = "H"
         valueName = "hour"
@@ -1042,9 +1084,13 @@ class TimeEntry(Entry):
     Entry.addFormat(SecondFormatCharacter)
 
     def __init__(self, *args, **kwargs):
-        fmt = kwargs.pop("format", lambda x: decodeSystemString(x.strftime("%H:%M:%S")))
+        fmt = kwargs.pop(
+            "format", lambda x: decodeSystemString(x.strftime("%H:%M:%S"))
+        )
         self.__formatter = fmt
-        pattern = decodeSystemString(fmt(datetime.time(hour=11, minute=33, second=44)))
+        pattern = decodeSystemString(
+            fmt(datetime.time(hour=11, minute=33, second=44))
+        )
         debugInfo = dict(original=pattern)
         pattern = re.sub("3+", "M", pattern)
         pattern = re.sub("1+", "H", pattern)
@@ -1063,7 +1109,9 @@ class TimeEntry(Entry):
                 pass
             else:
                 osxFormatter = Cocoa.NSDateFormatter.alloc().init()
-                osxFormatter.setFormatterBehavior_(Cocoa.NSDateFormatterBehavior10_4)
+                osxFormatter.setFormatterBehavior_(
+                    Cocoa.NSDateFormatterBehavior10_4
+                )
                 osxFormatter.setDateFormat_("a")
                 amStrings.append(
                     osxFormatter.stringFromDate_(
@@ -1085,14 +1133,18 @@ class TimeEntry(Entry):
         elif platform.system() == "Linux":
             try:
                 from PyKDE4.kdecore import KLocale, KGlobal
-                from PyQt4.QtCore import QTime  # TODO : Retrouver la source pour python3
+                from PyQt4.QtCore import (
+                    QTime,
+                )  # TODO : Retrouver la source pour python3
             except ImportError:
                 pass
             else:
                 if KGlobal.locale() is not None:
                     localeCopy = KLocale(KGlobal.locale())
                     localeCopy.setTimeFormat("%p")
-                    amStrings.append(str(localeCopy.formatTime(QTime(11, 0, 0))))
+                    amStrings.append(
+                        str(localeCopy.formatTime(QTime(11, 0, 0)))
+                    )
 
         debugInfo["amlit"] = amStrings
         idx = -1
@@ -1103,7 +1155,7 @@ class TimeEntry(Entry):
                 break
         ampm = idx != -1
         if ampm:
-            pattern = pattern[:idx] + "p" + pattern[idx + len(amLit):]
+            pattern = pattern[:idx] + "p" + pattern[idx + len(amLit) :]
 
         self.__value = datetime.time(
             hour=kwargs.get("hour", 0),
@@ -1129,7 +1181,8 @@ class TimeEntry(Entry):
             super().__init__(*args, **kwargs)
         except KeyError as e:
             raise ValueError(
-                'Invalid format "%s" (original exception: "%s")' % (debugInfo, e)
+                'Invalid format "%s" (original exception: "%s")'
+                % (debugInfo, e)
             )
 
         # EVT_ENTRY_CHOICE_SELECTED(self, self.__OnHourSelected)
@@ -1158,20 +1211,30 @@ class TimeEntry(Entry):
                 #     for hour in range(self.__startHour, min(self.__endHour + 1, 24))
                 # ]
                 hours = []
-                for hour in range(self.__startHour, min(self.__endHour + 1, 24)):
+                for hour in range(
+                    self.__startHour, min(self.__endHour + 1, 24)
+                ):
                     hours.append((f"{hour:d}", hour))
             else:
                 hours = list()
-                for hour in range(self.__startHour, min(self.__endHour + 1, 24)):
+                for hour in range(
+                    self.__startHour, min(self.__endHour + 1, 24)
+                ):
                     hr, ampm = Convert24To12(hour)
                     # hours.append(("%02d %s" % (hr, ["AM", "PM"][ampm]), hour))
                     hours.append((f"{hr:02d} {['AM', 'PM'][ampm]}", hour))
             self.Field("hour").SetChoices(hours)
             self.Field("minute").SetChoices(
-                [("%d" % minute, minute) for minute in range(0, 60, self.__minuteDelta)]
+                [
+                    ("%d" % minute, minute)
+                    for minute in range(0, 60, self.__minuteDelta)
+                ]
             )
             self.Field("second").SetChoices(
-                [("%d" % second, second) for second in range(0, 60, self.__secondDelta)]
+                [
+                    ("%d" % second, second)
+                    for second in range(0, 60, self.__secondDelta)
+                ]
             )
         else:
             self.Field("hour").SetChoices(None)
@@ -1180,9 +1243,9 @@ class TimeEntry(Entry):
             self.DismissPopup()
 
     def __OnHourSelected(self, event):
-        if self.Field("ampm") is not NullField and event.GetField() is self.Field(
-            "hour"
-        ):
+        if self.Field(
+            "ampm"
+        ) is not NullField and event.GetField() is self.Field("hour"):
             event.Veto()
             evt = TimeChangeEvent(self, self.__NewValue(hour=event.GetValue()))
             self.ProcessEvent(evt)
@@ -1257,7 +1320,8 @@ class TimeEntry(Entry):
         )
         if self.Field("ampm") is not NullField:
             keywords["hour"] = Convert12To24(
-                keywords["hour"], kwargs.pop("ampm", self.Field("ampm").GetValue())
+                keywords["hour"],
+                kwargs.pop("ampm", self.Field("ampm").GetValue()),
             )
         keywords.update(kwargs)
         return datetime.time(**keywords)
@@ -1330,7 +1394,9 @@ class TimeEntry(Entry):
             self.SetTime(evt.GetValue())
 
     def ValidateHourIncrement(self, value):
-        self.__ValidateIncrementDecrement(datetime.timedelta(hours=1), TimeNextDayEvent)
+        self.__ValidateIncrementDecrement(
+            datetime.timedelta(hours=1), TimeNextDayEvent
+        )
 
     def ValidateHourDecrement(self, value):
         self.__ValidateIncrementDecrement(
@@ -1396,12 +1462,14 @@ class TimeEntry(Entry):
 
     def OnPaste(self, values):
         kwargs = dict(
-            hour=self.Field("hour").GetValue(), minute=self.Field("minute").GetValue()
+            hour=self.Field("hour").GetValue(),
+            minute=self.Field("minute").GetValue(),
         )
         for value, field in values:
             try:
                 if value.lower() in ["am", "pm"] and (
-                    field == self.Field("ampm") or self.Field("ampm") is NullField
+                    field == self.Field("ampm")
+                    or self.Field("ampm") is NullField
                 ):
                     kwargs["ampm"] = value
                 else:
@@ -1458,7 +1526,9 @@ class AbbreviatedMonthField(EnumerationField):
                 [
                     (
                         decodeSystemString(
-                            datetime.date(year=2012, month=month, day=1).strftime("%b")
+                            datetime.date(
+                                year=2012, month=month, day=1
+                            ).strftime("%b")
                         ),
                         month,
                     )
@@ -1478,7 +1548,9 @@ class FullMonthField(EnumerationField):
                 [
                     (
                         decodeSystemString(
-                            datetime.date(year=2012, month=month, day=1).strftime("%B")
+                            datetime.date(
+                                year=2012, month=month, day=1
+                            ).strftime("%B")
                         ),
                         month,
                     )
@@ -1505,6 +1577,7 @@ class DateEntry(Entry):
         ValidateYearChange (self, value) : Valide et applique un changement d'année.
         OnPaste (self, values) : Gère l'événement de collage pour définir les valeurs de date.
     """
+
     class YearFormatCharacter(SingleFormatCharacter):
         character = "y"
         valueName = "year"
@@ -1550,15 +1623,21 @@ class DateEntry(Entry):
     Entry.addFormat(DayFormatCharacter)
 
     def __init__(self, *args, **kwargs):
-        fmt = kwargs.pop("format", lambda x: decodeSystemString(x.strftime("%x")))
+        fmt = kwargs.pop(
+            "format", lambda x: decodeSystemString(x.strftime("%x"))
+        )
         self.__formatter = fmt
-        fmt = decodeSystemString(fmt(datetime.date(year=3333, day=22, month=11)))
+        fmt = decodeSystemString(
+            fmt(datetime.date(year=3333, day=22, month=11))
+        )
         debugInfo = dict(original=fmt)
 
         months = list()
         for fmtChar in ["B", "b"]:
             substring = decodeSystemString(
-                datetime.date(year=3333, day=22, month=11).strftime("%%%s" % fmtChar)
+                datetime.date(year=3333, day=22, month=11).strftime(
+                    "%%%s" % fmtChar
+                )
             )
             debugInfo["month%s" % fmtChar] = substring
             months.append((fmtChar, substring + "."))
@@ -1572,10 +1651,14 @@ class DateEntry(Entry):
         # Some people have the week day in their "short" Date format.
         for weekChar in ["A", "a"]:
             weekday = decodeSystemString(
-                datetime.date(year=3333, day=22, month=11).strftime("%%%s" % weekChar)
+                datetime.date(year=3333, day=22, month=11).strftime(
+                    "%%%s" % weekChar
+                )
             )
             # fmt = re.sub(ur'%s\s*' % weekday, '', fmt)  # don't support ur prefix
-            fmt = re.sub(r"%s\s*" % weekday, "", fmt)  # TODO : '%s\s*' invalid syntax
+            fmt = re.sub(
+                r"%s\s*" % weekday, "", fmt
+            )  # TODO : '%s\s*' invalid syntax
 
         fmt = re.sub("1+", "m", fmt)
         fmt = re.sub("2+", "d", fmt)
@@ -1590,7 +1673,8 @@ class DateEntry(Entry):
             super().__init__(*args, **kwargs)
         except KeyError as e:
             raise ValueError(
-                'Invalid format "%s" (original exception: "%s")' % (debugInfo, e)
+                'Invalid format "%s" (original exception: "%s")'
+                % (debugInfo, e)
             )
 
         self.__calendar = None
@@ -1608,12 +1692,14 @@ class DateEntry(Entry):
         if self.Field("month") is NullField:
             self.AddField(None, " ")
             self.AddField(
-                "month", AbbreviatedMonthField(value=self.__value.month, observer=self)
+                "month",
+                AbbreviatedMonthField(value=self.__value.month, observer=self),
             )
         if self.Field("year") is NullField:
             self.AddField(None, " ")
             self.AddField(
-                "year", YearField(value=self.__value.year, observer=self, width=4)
+                "year",
+                YearField(value=self.__value.year, observer=self, width=4),
             )
 
     def Format(self):
@@ -1632,7 +1718,9 @@ class DateEntry(Entry):
         if event.GetKeyCode() == ord("/"):
             self.FocusNext()
             event.Skip()
-        elif event.GetKeyCode() == wx.WXK_ESCAPE and self.__calendar is not None:
+        elif (
+            event.GetKeyCode() == wx.WXK_ESCAPE and self.__calendar is not None
+        ):
             self.DismissPopup()
         else:
             return super().OnChar(event)
@@ -1840,7 +1928,9 @@ class DateEntry(Entry):
             else:
                 evt = DateChangeEvent(
                     self,
-                    self.__NewValue(month=self.Field("month").GetValue() + 1, day=1),
+                    self.__NewValue(
+                        month=self.Field("month").GetValue() + 1, day=1
+                    ),
                 )
         else:
             evt = DateChangeEvent(self, self.__NewValue(day=value))
@@ -1863,7 +1953,9 @@ class DateEntry(Entry):
                     self.__NewValue(
                         year=self.Field("year").GetValue() - 1,
                         month=12,
-                        day=MaxDayOfMonth(self.Field("year").GetValue() - 1, 12),
+                        day=MaxDayOfMonth(
+                            self.Field("year").GetValue() - 1, 12
+                        ),
                     ),
                 )
             else:
@@ -1894,7 +1986,9 @@ class DateEntry(Entry):
             # x, y = self.GetPositionTuple()
             x, y = self.GetPosition()
             self.__calendar = _CalendarPopup(self, selection=self.GetDate())
-            self.__calendar.Popup(self.GetParent().ClientToScreen(wx.Point(x, y + h)))
+            self.__calendar.Popup(
+                self.GetParent().ClientToScreen(wx.Point(x, y + h))
+            )
             EVT_POPUP_DISMISS(self.__calendar, self.OnCalendarDismissed)
             self.ForceFocus()
         else:
@@ -1948,7 +2042,9 @@ class _PopupWindow(wx.Dialog):
     """wx.PopupWindow does not exist on Mac and doesn't work well on other plaforms."""
 
     def __init__(self, *args, **kwargs):
-        kwargs["style"] = wx.FRAME_NO_TASKBAR | wx.NO_BORDER | wx.FRAME_FLOAT_ON_PARENT
+        kwargs["style"] = (
+            wx.FRAME_NO_TASKBAR | wx.NO_BORDER | wx.FRAME_FLOAT_ON_PARENT
+        )
         if "__WXMSW__" in wx.PlatformInfo:
             kwargs["style"] |= wx.WANTS_CHARS
         super().__init__(*args, **kwargs)
@@ -1966,7 +2062,9 @@ class _PopupWindow(wx.Dialog):
             # wx.EVT_CHAR(self.__interior, self.OnChar)
             self.__interior.Bind(wx.EVT_CHAR, self.OnChar)
 
-        self.Fill(self.__interior)  # Unresolved attribute reference 'Fill' for class '_PopupWindow'
+        self.Fill(
+            self.__interior
+        )  # Unresolved attribute reference 'Fill' for class '_PopupWindow'
         # valable pour panel, layout et sizers.
         # wx.Dialog est une fenêtre qui les contient.
         # Il est préférable d'utiliser wx.Sizer ou wx.Panel lors des créations et de les réutiliser via les compositions.
@@ -2093,7 +2191,9 @@ class _RelativeChoicePopup(_PopupWindow):
         self.__btnAdd = wx.BitmapButton(
             self.__interior,
             wx.ID_ANY,
-            wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK, wx.ART_BUTTON, (16, 16)),
+            wx.ArtProvider.GetBitmap(
+                wx.ART_ADD_BOOKMARK, wx.ART_BUTTON, (16, 16)
+            ),
         )
         self.__sizer.Add(self.__btnAdd, 0, wx.ALL | wx.ALIGN_CENTRE, 3)
         wx.EVT_BUTTON(self.__btnAdd, wx.ID_ANY, self.OnAdd)
@@ -2118,7 +2218,9 @@ class _RelativeChoicePopup(_PopupWindow):
             btn = wx.BitmapButton(
                 self.__interior,
                 idDel,
-                wx.ArtProvider.GetBitmap(wx.ART_DEL_BOOKMARK, wx.ART_BUTTON, (16, 16)),
+                wx.ArtProvider.GetBitmap(
+                    wx.ART_DEL_BOOKMARK, wx.ART_BUTTON, (16, 16)
+                ),
             )
             self.__sizer.Add(btn, 0, wx.ALL | wx.ALIGN_CENTRE, 3)
             btn.Show(False)
@@ -2238,13 +2340,17 @@ class _CalendarPopup(_PopupWindow):
         W, H = 0, 0
         for month in range(1, 13):
             header = decodeSystemString(
-                datetime.date(year=self.__year, month=month, day=11).strftime("%B %Y")
+                datetime.date(year=self.__year, month=month, day=11).strftime(
+                    "%B %Y"
+                )
             )
             tw, th = dc.GetTextExtent(header)
             W = max(W, tw)
             H = max(H, th)
         header = decodeSystemString(
-            datetime.date(year=self.__year, month=self.__month, day=1).strftime("%B %Y")
+            datetime.date(
+                year=self.__year, month=self.__month, day=1
+            ).strftime("%B %Y")
         )
 
         lines = monthcalendarex(self.__year, self.__month, weeks=1)
@@ -2287,7 +2393,9 @@ class _CalendarPopup(_PopupWindow):
         dc.SetBrush(wx.BLACK_BRUSH)
 
         header = decodeSystemString(
-            datetime.date(year=self.__year, month=self.__month, day=1).strftime("%B %Y")
+            datetime.date(
+                year=self.__year, month=self.__month, day=1
+            ).strftime("%B %Y")
         )
         tw, th = dc.GetTextExtent(header)
         dc.DrawText(header, (w - 48 - tw) // 2, 1)
@@ -2313,7 +2421,9 @@ class _CalendarPopup(_PopupWindow):
             gp.AddArc(
                 cx,
                 cy,
-                math.sqrt((xsup - cx) * (xsup - cx) + (yinf - cy) * (yinf - cy)),
+                math.sqrt(
+                    (xsup - cx) * (xsup - cx) + (yinf - cy) * (yinf - cy)
+                ),
                 math.pi * 3 // 4,
                 math.pi * 5 // 4,
                 True,
@@ -2332,7 +2442,9 @@ class _CalendarPopup(_PopupWindow):
             gp.AddArc(
                 cx,
                 cy,
-                math.sqrt((xinf - cx) * (xinf - cx) + (yinf - cy) * (yinf - cy)),  # TODO : ? A vérifier
+                math.sqrt(
+                    (xinf - cx) * (xinf - cx) + (yinf - cy) * (yinf - cy)
+                ),  # TODO : ? A vérifier
                 # math.sqrt((xinf - cx) * (xsup - cx) + (yinf - cy) * (ysup - cy)),  # TODO : plutôt ?
                 math.pi // 4,
                 -math.pi // 4,
@@ -2387,7 +2499,9 @@ class _CalendarPopup(_PopupWindow):
                 if dt == self.__selection:
                     drawFocusRect(dc, x, y, self.__maxDim, self.__maxDim)
                     dc.SetTextForeground(
-                        wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+                        wx.SystemSettings.GetColour(
+                            wx.SYS_COLOUR_HIGHLIGHTTEXT
+                        )
                     )
 
                 if not active:
@@ -2402,7 +2516,11 @@ class _CalendarPopup(_PopupWindow):
                     dc.DrawRectangle(x, y, self.__maxDim, self.__maxDim)
 
                 now = datetime.datetime.now()
-                if (dt.year, dt.month, dt.day) == (now.year, now.month, now.day):
+                if (dt.year, dt.month, dt.day) == (
+                    now.year,
+                    now.month,
+                    now.day,
+                ):
                     dc.SetPen(wx.RED_PEN)
                     dc.SetBrush(wx.TRANSPARENT_BRUSH)
                     dc.DrawRectangle(x, y, self.__maxDim, self.__maxDim)
@@ -2426,7 +2544,9 @@ class _CalendarPopup(_PopupWindow):
 
         # Buttons
         if event.GetY() < 16 and event.GetX() > w - 48:
-            if event.GetX() < w - 48 + 16 and (self.__month != 1 or self.__year != 1):
+            if event.GetX() < w - 48 + 16 and (
+                self.__month != 1 or self.__year != 1
+            ):
                 if self.__month == 1:
                     self.__year -= 1
                     self.__month = 12
@@ -2521,13 +2641,16 @@ class _MultipleChoicesPopup(_PopupWindow):
     def HandleKey(self, event):
         if event.GetKeyCode() == wx.WXK_UP:
             self.__value = self.__choices[
-                (self.__index() + len(self.__choices) - 1) % len(self.__choices)
+                (self.__index() + len(self.__choices) - 1)
+                % len(self.__choices)
             ][1]
             self.Refresh()
             return True
 
         if event.GetKeyCode() == wx.WXK_DOWN:
-            self.__value = self.__choices[(self.__index() + 1) % len(self.__choices)][1]
+            self.__value = self.__choices[
+                (self.__index() + 1) % len(self.__choices)
+            ][1]
             self.Refresh()
             return True
 
@@ -2633,9 +2756,13 @@ class SmartDateTimeCtrl(wx.Panel):
             self.__relButton = wx.BitmapButton(
                 self,
                 wx.ID_ANY,
-                wx.ArtProvider.GetBitmap(wx.ART_LIST_VIEW, wx.ART_BUTTON, (16, 16)),
+                wx.ArtProvider.GetBitmap(
+                    wx.ART_LIST_VIEW, wx.ART_BUTTON, (16, 16)
+                ),
             )
-            wx.EVT_BUTTON(self.__relButton, wx.ID_ANY, self.__OnPopupRelativeChoices)
+            wx.EVT_BUTTON(
+                self.__relButton, wx.ID_ANY, self.__OnPopupRelativeChoices
+            )
             # self.__relButton.Bind(wx.EVT_BUTTON, self.__OnPopupRelativeChoices, wx.ID_ANY)
             sizer.Add(self.__relButton, 0, wx.ALL | wx.ALIGN_CENTRE, 1)
             self.__relButton.Enable(False)
@@ -2653,6 +2780,8 @@ class SmartDateTimeCtrl(wx.Panel):
         self.Bind(EVT_TIME_CHANGE, self.OnTimeChange)
         # EVT_TIME_CHOICES_CHANGE(self.__timeCtrl, self.__OnChoicesChange)
         self.__timeCtrl.Bind(EVT_TIME_CHOICES_CHANGE, self.__OnChoicesChange)
+        # ou
+        # self.Bind(EVT_TIME_CHOICES_CHANGE, self.__timeCtrl, self.__OnChoicesChange) ?
         # EVT_TIME_NEXT_DAY(self, self.OnNextDay)
         self.Bind(EVT_TIME_NEXT_DAY, self.OnNextDay)
         # EVT_TIME_PREV_DAY(self, self.OnPrevDay)
@@ -2671,7 +2800,8 @@ class SmartDateTimeCtrl(wx.Panel):
                 # Today, same time
                 self.SetDateTime(
                     datetime.datetime.combine(
-                        datetime.datetime.now().date(), self.GetDateTime().time()
+                        datetime.datetime.now().date(),
+                        self.GetDateTime().time(),
                     ),
                     notify=True,
                 )
@@ -2701,7 +2831,9 @@ class SmartDateTimeCtrl(wx.Panel):
     def SetRelativeChoicesStart(self, start=None):
         self.__timeCtrl.SetRelativeChoicesStart(start)
         if self.__relButton is not None:
-            self.__relButton.Enable(self.__timeCtrl.IsEnabled() and start is not None)
+            self.__relButton.Enable(
+                self.__timeCtrl.IsEnabled() and start is not None
+            )
 
     def LoadChoices(self, choices):
         self.__timeCtrl.LoadChoices(choices)
@@ -2723,17 +2855,23 @@ class SmartDateTimeCtrl(wx.Panel):
                     self.__checkbox.SetValue(False)
                     self.Enable(False)
                 else:
-                    raise ValueError("This control does not support the None value")
+                    raise ValueError(
+                        "This control does not support the None value"
+                    )
             else:
                 self.Enable(True)
                 if self.__enableNone:
                     self.__checkbox.SetValue(True)
                 self.__dateCtrl.SetDate(
-                    datetime.date(year=value.year, month=value.month, day=value.day)
+                    datetime.date(
+                        year=value.year, month=value.month, day=value.day
+                    )
                 )
                 self.__timeCtrl.SetTime(
                     datetime.time(
-                        hour=value.hour, minute=value.minute, second=value.second
+                        hour=value.hour,
+                        minute=value.minute,
+                        second=value.second,
                     )
                 )
                 self.Enable(True)
@@ -2743,7 +2881,8 @@ class SmartDateTimeCtrl(wx.Panel):
         self.__timeCtrl.Enable(enabled)
         if self.__relButton is not None:
             self.__relButton.Enable(
-                enabled and self.__timeCtrl.GetRelativeChoicesStart() is not None
+                enabled
+                and self.__timeCtrl.GetRelativeChoicesStart() is not None
             )
 
     def OnToggleNone(self, event):
@@ -2789,7 +2928,9 @@ class SmartDateTimeCtrl(wx.Panel):
     def OnNextDay(self, event):
         evt = DateTimeChangeEvent(
             self,
-            datetime.datetime.combine(self.GetDateTime().date(), event.GetValue())
+            datetime.datetime.combine(
+                self.GetDateTime().date(), event.GetValue()
+            )
             + datetime.timedelta(days=1),
         )
         self.ProcessEvent(evt)
@@ -2802,7 +2943,9 @@ class SmartDateTimeCtrl(wx.Panel):
     def OnPrevDay(self, event):
         evt = DateTimeChangeEvent(
             self,
-            datetime.datetime.combine(self.GetDateTime().date(), event.GetValue())
+            datetime.datetime.combine(
+                self.GetDateTime().date(), event.GetValue()
+            )
             - datetime.timedelta(days=1),
         )
         self.ProcessEvent(evt)
@@ -2875,7 +3018,10 @@ class DateTimeSpanCtrl(wx.EvtHandler):
                     if self.__ctrlEnd.GetDateTime() is not None:
                         self.__ctrlEnd.SetDateTime(
                             self.__ctrlEnd.GetDateTime()
-                            + (event.GetValue() - self.__ctrlStart.GetDateTime())
+                            + (
+                                event.GetValue()
+                                - self.__ctrlStart.GetDateTime()
+                            )
                         )
             self.__ctrlEnd.SetRelativeChoicesStart(event.GetValue())
 
@@ -2905,7 +3051,9 @@ class DateTimeSpanCtrl(wx.EvtHandler):
                     event.Veto()
 
         self.ProcessEvent(
-            DateTimeSpanChangeEvent(self, (self.__ctrlStart.GetDateTime(), value))
+            DateTimeSpanChangeEvent(
+                self, (self.__ctrlStart.GetDateTime(), value)
+            )
         )
 
 
@@ -2927,8 +3075,12 @@ if __name__ == "__main__":
                 self,
                 label="Start",
                 enableNone=True,
-                timeFormat=lambda x: decodeSystemString(x.strftime("%I:%M %p")),
-                dateFormat=lambda x: decodeSystemString(x.strftime("%a %Y %b %d")),
+                timeFormat=lambda x: decodeSystemString(
+                    x.strftime("%I:%M %p")
+                ),
+                dateFormat=lambda x: decodeSystemString(
+                    x.strftime("%a %Y %b %d")
+                ),
                 startHour=8,
                 endHour=18,
             )
@@ -2939,7 +3091,9 @@ if __name__ == "__main__":
                 self,
                 label="End",
                 enableNone=True,
-                timeFormat=lambda x: decodeSystemString(x.strftime("%H:%M:%S")),
+                timeFormat=lambda x: decodeSystemString(
+                    x.strftime("%H:%M:%S")
+                ),
                 showRelative=True,
             )
             pnl2.EnableChoices()
@@ -2949,12 +3103,16 @@ if __name__ == "__main__":
             sz.Add(wx.TextCtrl(self, wx.ID_ANY, ""), 1, wx.ALL | wx.EXPAND, 3)
             self.SetSizer(sz)
 
-            spanCtrl = DateTimeSpanCtrl(pnl1, pnl2, minSpan=datetime.timedelta(hours=1))
+            spanCtrl = DateTimeSpanCtrl(
+                pnl1, pnl2, minSpan=datetime.timedelta(hours=1)
+            )
             EVT_DATETIMESPAN_CHANGE(spanCtrl, self.OnChange)
             # TODO : a remplacer par
             # spanCtrl.Bind(EVT_DATETIMESPAN_CHANGE, self.OnChange)
 
-            cfg = wx.Config("SmartDateTimeCtrlSample")  # TODO : qu'est devenu wx.Config ? Deprecatted ! Disparu.
+            cfg = wx.Config(
+                "SmartDateTimeCtrlSample"
+            )  # TODO : qu'est devenu wx.Config ? Deprecatted ! Disparu.
             # à remplacer par import json et cerberus.Validator
             # ou par la bibliothèque standard configparser
             if cfg.HasEntry("Choices"):
@@ -2971,7 +3129,9 @@ if __name__ == "__main__":
             self.Show()
 
         def OnChoicesChanged(self, event):
-            wx.Config("SmartDateTimeCtrlSample").Write("Choices", event.GetValue())
+            wx.Config("SmartDateTimeCtrlSample").Write(
+                "Choices", event.GetValue()
+            )
 
         def OnChange(self, event):
             print(event.GetValue())

@@ -96,6 +96,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # TMP: compat to map wx platform strings
 _PLATFORM_MAP = {
     "__WXGTK__": "Linux",
+    # "__WXMAC__": "Darwin",
+    # "__WXMSW__": "Windows",
 }
 
 

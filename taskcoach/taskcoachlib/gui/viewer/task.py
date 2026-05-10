@@ -275,6 +275,22 @@ class BaseTaskViewer(
 
         return wx.Colour(*rgb)
 
+    def to_wx_font(font_tuple):
+        import wx
+
+        if not font_tuple:
+            return wx.NullFont
+
+        family, size, style = font_tuple
+
+        weight = wx.FONTWEIGHT_NORMAL
+        if style == "bold":
+            weight = wx.FONTWEIGHT_BOLD
+
+        return wx.Font(size, wx.FONTFAMILY_DEFAULT,
+                       wx.FONTSTYLE_NORMAL, weight,
+                       faceName=family)
+
     def __registerForAppearanceChanges(self):
         """
         C’est important pour les mises à jour de l’interface utilisateur !
@@ -445,8 +461,9 @@ class BaseTaskViewer(
         # provoquent des blocages de l’interface utilisateur,
         # car elle gère le filtrage des données.
         #
-        tasks = domain.base.DeletedFilter(taskList)
+        tasks = domain.base.DeletedFilter(taskList)  # Commenté pour test
         return super().createFilter(tasks)
+        # return taskList  # Si cela fait réapparaître les tâches, le problème vient des filtres.
 
     def nrOfVisibleTasks(self):
         """

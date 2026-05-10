@@ -408,11 +408,24 @@ class CompositeCollection(object):
             composites (list) : La liste des composites à ajouter.
             event (Event | None) : (facultatif) L'événement à notifier.
         """
+        print(
+            f"CompositeCollection.extend : ajoute les composites suivants à la collection {self} avec event = {event} : {composites}."
+        )
         if not composites:
             return
+        print(
+            "CompositeCollection.extend : obtient les composites et tous leurs enfants."
+        )
         compositesAndAllChildren = self._compositesAndAllChildren(composites)
+        print(
+            "CompositeCollection.extend : ajoute les composites et tous leurs enfants à la collection."
+        )
         super().extend(compositesAndAllChildren, event=event)
+        print(
+            "CompositeCollection.extend : ajoute les composites à leur parent."
+        )
         self._addCompositesToParent(composites, event)
+        print("CompositeCollection.extend : terminé !")
 
     def _compositesAndAllChildren(self, composites):
         """

@@ -29,7 +29,13 @@ class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
     # class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass, __ownedType__="Note") :
     # Cela signifie que la classe bénéficiera des fonctionnalités de gestion des objets possédés
     # (notes dans ce cas) fournies par la métaclasse.
-    """Classe Mixin pour les (autres) objets de domaine pouvant contenir des notes."""
+    """Classe Mixin pour les (autres) objets de domaine pouvant contenir des notes.
+
+    NoteOwner est une classe mixin qui peut être utilisée pour les objets de domaine qui peuvent posséder des notes.
+    En utilisant la métaclasse DomainObjectOwnerMetaclass, NoteOwner bénéficie de fonctionnalités de gestion des objets possédés, ce qui facilite l'ajout et la suppression de notes associées à ces objets de domaine.
+
+    Les classes qui héritent de NoteOwner sont surtout Task et Category, mais d'autres classes de domaine pourraient également en bénéficier si elles ont besoin de gérer des notes associées.
+    """
 
     # __metaclass__ = base.DomainObjectOwnerMetaclass
     # TODO: lequel NoteOwner utiliser ? domain/note/noteowner ou domain/base/owner ?
@@ -39,8 +45,14 @@ class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
     # Il indique à la métaclasse que la classe peut posséder des objets de type Note.
 
     def __init__(self, *args, **kwargs):
+        print(
+            f"DEBUG: NoteOwner.__init__ called with args: {args}, kwargs: {kwargs}"
+        )
         self.__notes = kwargs.pop("notes", [])
         # safe_super_init(NoteOwner, self, *args, **kwargs)
+        print(
+            f"DEBUG: NoteOwner.__init__ after popping notes, remaining kwargs: {kwargs}, self.__notes={self.__notes}"
+        )
         # Transmet les arguments uniquement si le parent **n'est pas `object`**
         # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
         if type(self).__mro__[1] is not object:
@@ -50,18 +62,22 @@ class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
                 super().__init__()
         else:
             super().__init__()  # Sécurisé pour `object`
+        print(
+            f"DEBUG: NoteOwner.__init__ completed for {self} (id: {self.id() if hasattr(self,'id') else 'N/A'}) with notes: {self.__notes}"
+        )
 
     # Il faudra juste compléter les méthodes noteAddedEventType et noteRemovedEventType
     # pour qu'elles retournent les types d'événements appropriés.
     @classmethod
     def noteAddedEventType(class_):
-        # like taskcoachlib/patterns/observer/addItemEventType
-        # and taskcoachlib/domain/attachment/attachmentowner/attachmentAddedEventType
-        # return f"{class_}.add"  # TODO : à essayer
-        # return f"{class_}.noteAdded"  # TODO: a essayer
-        return f"{class_}.add"
-        # return f"{class_}.noteAdd"  # TODO: a essayer
-        pass
+        # # like taskcoachlib/patterns/observer/addItemEventType
+        # # and taskcoachlib/domain/attachment/attachmentowner/attachmentAddedEventType
+        # # return f"{class_}.add"  # TODO : à essayer
+        # # return f"{class_}.noteAdded"  # TODO: a essayer
+        # return f"{class_}.add"
+        # # return f"{class_}.noteAdd"  # TODO: a essayer
+        # pass
+        return f"{class_.__module__.split('.')[-1]}.{class_.__ownedType__.lower()}.add"
 
     # @classmethod
     # def categoryAddedEventType(class_):
@@ -76,13 +92,17 @@ class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
 
     @classmethod
     def noteRemovedEventType(class_):
-        # like taskcoachlib/patterns/observer/removeItemEventType
-        # and taskcoachlib/domain/attachment/attachmentowner/attachmentRemovedEventType
+        # # like taskcoachlib/patterns/observer/removeItemEventType
+        # # and taskcoachlib/domain/attachment/attachmentowner/attachmentRemovedEventType
+        # # return f"{class_}.remove"
         # return f"{class_}.remove"
-        return f"{class_}.remove"
-        # return f"{cls}.attachmentRemoved"  # TODO: a essayer
-        pass
+        # # return f"{cls}.attachmentRemoved"  # TODO: a essayer
+        # pass
+        return f"{class_.__module__.split('.')[-1]}.{class_.__ownedType__.lower()}.remove"
 
     def notes(self):
         # pass
+        print(
+            f"DEBUG: NoteOwner.notes() called for {self} (id: {self.id() if hasattr(self, 'id') else 'N/A'}, returning {len(self.__notes)} notes: {self.__notes}"
+        )
         return self.__notes

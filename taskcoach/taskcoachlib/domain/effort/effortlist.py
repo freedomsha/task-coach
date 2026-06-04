@@ -60,8 +60,7 @@ class MaxDateTimeMixin(object):
 
 
 class EffortUICommandNamesMixin(object):
-    """Classe mixin qui définit l'affichage et la commande help de Nouvel effort.
-    """
+    """Classe mixin qui définit l'affichage et la commande help de Nouvel effort."""
 
     newItemMenuText = _("&New effort...\tCtrl+E")
     newItemHelpText = help.effortNew

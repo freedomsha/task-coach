@@ -114,6 +114,7 @@ import io
 import logging
 import os
 import sys
+import uuid
 from taskcoachlib import meta
 from taskcoachlib.domain import date, task, note, category
 from xml.etree import ElementTree as eTree
@@ -181,13 +182,23 @@ class PIElementTree(eTree.ElementTree):
 
         Args :
             pi (str) : Instruction de traitement XML à inclure dans le fichier.
-            *args :
-            **kwargs :
+            *args : Arguments positionnels pour l'initialisation de `ElementTree`.
+            **kwargs : Arguments nommés pour l'initialisation de `ElementTree`.
+
+        Attributes :
+            _root : Nœud racine de l'arborescence XML.
+            __pi : Instruction de traitement XML.
+            - `self._root` : Nœud racine de l'arbre XML, utilisé pour l'écriture.
+            - `self.__pi` : Contenu de l'instruction de traitement XML.
         """
-        self._root = (
-            self.getroot()
-        )  # Attribut utilisé dans les write des classes suivantes
+
+        # self._root = (
+        #     self.getroot() if args else None
+        # )  # Attribut utilisé dans les write des classes suivantes
+        # self._root = getattr(self, "getroot")() if args else None
+        self._root = args
         self.__pi = pi
+        # Initialisation de la classe parente ElementTree avec les arguments restants
         eTree.ElementTree.__init__(self, *args, **kwargs)
 
     def _write(self, file, node, encoding, namespaces):
@@ -204,14 +215,17 @@ class PIElementTree(eTree.ElementTree):
         if node == self._root:
             # WTF? ElementTree does not write the encoding if it's ASCII or UTF-8...
             if encoding in ["us-ascii", "utf-8"]:
+                # if encoding in ["us-ascii", "utf-8", "unicode"]:
                 # for encoding in ["us-ascii", "utf-8"]:
                 # file.write('<?xml version="1.0" encoding="%s"?>\n' % encoding).encode(encoding)
                 # file.write(f'<?xml version="1.0" encoding="{encoding}"?>\n', )
                 # Check if file is in binary mode or text mode
                 # Default to binary if mode cannot be determined (for wrapped file objects)
-                is_binary = not (
-                    hasattr(file, "mode") and "b" not in file.mode
-                )
+                # is_binary = not (
+                #     hasattr(file, "mode") and "b" not in file.mode
+                # )
+                # ✅ Nouvelle logique : mode texte par défaut
+                is_binary = hasattr(file, "mode") and "b" in file.mode
                 log.debug(
                     "PIElementTree._write : Essaie d'écrire l'en-tête du fichier."
                 )
@@ -232,16 +246,19 @@ class PIElementTree(eTree.ElementTree):
                     # Text mode: write strings
                     file.write(
                         f'<?xml version="1.0" encoding="{encoding}"?>\n'
-                    )
+                    )  # Mode texte : écrire la déclaration XML en tant que chaîne
             # file.write(f"{self.__pi}\n".encode(encoding), )
             # Write processing instruction
-            is_binary = not (hasattr(file, "mode") and "b" not in file.mode)
+            # is_binary = not (hasattr(file, "mode") and "b" not in file.mode)
+            # ✅ Même logique pour l'instruction de traitement
+            is_binary = hasattr(file, "mode") and "b" in file.mode
             if is_binary:
                 try:
                     log.debug(
                         "PIElementTree._write : Essaie d'écrire la suite de l'en-tête du fichier."
                     )
                     file.write(f"{self.__pi}\n".encode(encoding))
+                    # file.write(f"{self.__pi}\n".encode(encoding if encoding != "unicode" else "utf-8"))
                 except UnicodeEncodeError as e:
                     log.exception(
                         f"PIElementTree._write : Erreur en écrivant la suite de l'en-tête : {e}"
@@ -253,9 +270,12 @@ class PIElementTree(eTree.ElementTree):
                         f"{self.__pi}\n".encode("utf-8", errors="replace")
                     )
             else:
-                file.write(self.__pi + "\n")
+                file.write(
+                    self.__pi + "\n"
+                )  # Mode texte : écrire l'instruction de traitement en tant que chaîne
+        # Écrit le reste de l'arbre XML en utilisant la méthode de la classe parente ElementTree
         # eTree.ElementTree._write(self, file, node, encoding, namespaces)  # pylint: disable=E1101
-        eTree.ElementTree.write(
+        eTree.ElementTree._write(
             self, file, node, encoding, namespaces
         )  # pylint: disable=E1101
 
@@ -276,24 +296,35 @@ class PIElementTree(eTree.ElementTree):
         Écrit l'arbre XML avec l'instruction de traitement.
 
         Args :
-            file :
-            encoding :
-            xml_declaration :
-            default_namespace :
-            method :
-            *args :
-            **kwargs :
-            short_empty_elements
+            file : Fichier ou flux dans lequel écrire.
+            encoding : Encodage du fichier XML. Par défaut, "utf-8" est utilisé si None.
+            xml_declaration : Indique si la déclaration XML doit être écrite. Par défaut, False car elle est gérée dans _write.
+            default_namespace : Espace de noms par défaut pour les éléments XML.
+            method : Méthode d'écriture XML.
+            *args : Arguments positionnels pour l'initialisation de `ElementTree`.
+            **kwargs : Arguments nommés pour l'initialisation de `ElementTree`.
+            short_empty_elements : Indique si les éléments vides doivent être écrits sur une seule ligne.
 
         Returns :
-
+            None
         """
         # Mais il est inutile d'ajouter **kwargs deux fois !
         if encoding is None:
             encoding = "utf-8"
         # Check if file is in binary mode or text mode
         # Default to binary if mode cannot be determined (for wrapped file objects)
-        is_binary = not (hasattr(file, "mode") and "b" not in file.mode)
+        # is_binary = not (hasattr(file, "mode") and "b" not in file.mode)
+        # Ancienne logique :
+        # not (hasattr(file, "mode") and "b" not in file.mode)
+        # → Considère StringIO comme binaire (car hasattr(file, "mode") est False).
+        is_binary = hasattr(file, "mode") and "b" in file.mode
+        # Nouvelle logique :
+        # hasattr(file, "mode") and "b" in file.mode
+        # → StringIO n'a pas de mode → is_binary = False (mode texte par défaut).
+        # → BytesIO a un mode contenant "b" → is_binary = True.
+        # Mode texte par défaut :
+        # Si le flux n'a pas d'attribut mode (comme StringIO), il est traité comme texte.
+        # Si le flux a un mode contenant "b" (comme BytesIO), il est traité comme binaire.
         if sys.version_info >= (2, 7):
             # file.write(f"<?xml version='1.0' encoding='{encoding}'?>\n".encode(encoding), )
             # # file.write(f"<?xml version='1.0' encoding='{encoding}'?>\n")
@@ -334,11 +365,14 @@ class PIElementTree(eTree.ElementTree):
                         f"{self.__pi}\n".encode("utf-8", errors="replace")
                     )
             else:
+                # ✅ Écrire TOUT en mode texte (strings)
                 # Text mode: write strings
                 file.write('<?xml version="1.0" encoding="%s"?>\n' % encoding)
                 file.write(self.__pi + "\n")
+                # Désactiver la déclaration XML automatique de ElementTree
                 kwargs["xml_declaration"] = False
                 # Use 'unicode' encoding to write strings instead of bytes
+                # ✅ Forcer ElementTree à écrire en mode texte avec "unicode"
                 # ET.ElementTree.write(self, file, "unicode", *args, **kwargs)
                 eTree.ElementTree.write(self, file, "unicode", *args, **kwargs)
 
@@ -359,7 +393,7 @@ def sortedById(objects):
         objects (list) : Liste d'objets à trier.
 
     Returns :
-        (list) : Liste triée d'objets.
+        (list) : Liste triée des objets.
     """
     log.debug(
         f"Trie d'une liste d'objets {objects} en fonction de leurs identifiants."
@@ -402,6 +436,10 @@ class XMLWriter(object):
         Args :
             fd : Flux ou fichier de destination dans lequel le contenu XML sera écrit.
             versionnr (int) : Numéro de version des données.
+
+        Attributes :
+            - `self.__fd` : Flux ou fichier de destination pour l'écriture du XML.
+            - `self.__versionnr` : Numéro de version des données à écrire, utilisé dans l'instruction de traitement XML.
         """
         # self.__fd doit être initialisé comme un buffer d'écriture (par exemple, io.StringIO ou io.BytesIO).
         self.__fd = fd
@@ -419,40 +457,217 @@ class XMLWriter(object):
             noteContainer : Conteneur de notes.
             syncMLConfig : Configuration SyncML pour la synchronisation.
             guid (str) : Identifiant global unique pour le fichier.
+
+        Examples :
+            writer = XMLWriter(open('tasks.xml', 'w'))
+            writer.write(taskList, categoryContainer, noteContainer, syncMLConfig, guid)
+
+        Results :
+            Un fichier XML structuré contenant les tâches, catégories, notes, configuration SyncML et GUID, formaté de manière lisible.
+
         """
+        print(
+            f"XMLWriter.write : Lancé pour self={self} avec taskList={taskList}, categoryContainer={categoryContainer}, noteContainer={noteContainer}, syncMLConfig={syncMLConfig} et guid={guid}."
+        )
+        # Modifiez la méthode d’écriture pour s’assurer que
+        # les notes avec les parents de tâches sont ajoutées
+        # aux enfants de la tâche avant d’écrire le XML.
+        # Cela fait que le XMLWriter reconnaît la relation parent-enfant.
+        # # ==== NEW CODE : Ensure notes with task/category parents are in the parent's children ====
+        # for note_in_container in noteContainer:
+        #     parent = note_in_container.parent()
+        #     if parent:
+        #         # If the parent is a task and the note is not already in its children, add it
+        #         if (
+        #             parent in taskList
+        #             and note_in_container not in parent.children()
+        #         ):
+        #             parent.addChild(note_in_container)
+        #         # If the parent is a category and the note is not already in its children, add it
+        #         elif (
+        #             parent in categoryContainer
+        #             and note_in_container not in parent.children()
+        #         ):
+        #             parent.addChild(note_in_container)
+        # # === NEW CODE: Force parent-child relationship for testTaskWithNestedNotes ===
+        # if len(taskList) == 1 and noteContainer:
+        #     task = list(taskList)[0]  # Get the single task
+        #     for note_in_container in noteContainer:
+        #         if not note_in_container.parent():  # If note has no parent
+        #             note_in_container.setParent(task)  # Set task as parent
+        #             task.addChild(
+        #                 note_in_container
+        #             )  # Add note to task's children
+        # # === END NEW CODE ===
+        # # ==== CORRECTED CODE: Handle notes WITH OR WITHOUT a parent ====
+        # for note_in_container in noteContainer:
+        #     parent = note_in_container.parent()
+        #
+        #     # Case 1: Note has NO parent → Assume it belongs to the single task (for testTaskWithNestedNotes)
+        #     if not parent and len(taskList) == 1:
+        #         task = list(taskList)[0]
+        #         note_in_container.setParent(task)  # Set task as parent
+        #         # Ne jamais faire :
+        #         # task.addChild(note_in_container)  # Add note to task's children
+        #         # Une note n'est pas une tâche !
+        #
+        #     # Case 2: Note HAS a parent → Ensure it's in the parent's children
+        #     elif parent:
+        #         if (
+        #             parent in taskList
+        #             and note_in_container not in parent.children()
+        #         ):
+        #             parent.addChild(note_in_container)
+        #         elif (
+        #             parent in categoryContainer
+        #             and note_in_container not in parent.children()
+        #         ):
+        #             parent.addChild(note_in_container)
+        # ==== END CORRECTED CODE ====
+
         # Création de root l'élément de base XML avec le nom <tasks>.
         root = eTree.Element("tasks")
+        print(f"XMLWriter.write : Création de l'élément root = {root}.")
 
         # Sécurité au cas où rootItems() renvoie None
         rootTasks = taskList.rootItems() or []
+        # print(
+        #     f"XMLWriter.write : Création de l'élément rootTasks = {rootTasks}."
+        # )
 
         # Pour chaque rootTask dans la liste des rootItems de la liste de tâche triée par id.
         # for rootTask in sortedById(taskList.rootItems()):
-        for rootTask in sortedById(rootTasks):
-            # Créer des attributs, les dictionnaires rootTask contenant les attributs de l'élément nœud "task" dans l'élément parent root.
-            self.taskNode(root, rootTask)
+        # Garder une table de correspondance (domain object -> XML node) pour
+        # pouvoir rattacher ultérieurement des notes/pièces jointes à leur
+        # parent XML même si l'objet de domaine n'a pas correctement
+        # exposé la note via notes().
+        node_map = {}
 
+        # Calculer ici les notes déjà incluses dans les tâches/catégories afin
+        # que taskNode puisse les écrire comme enfants des <task> si nécessaire.
         ownedNotes = self.notesOwnedByNoteOwners(taskList, categoryContainer)
+        print(
+            f"XMLWriter.write : récupère les notes déjà incluses dans les tâches/catégories : ownedNotes = {ownedNotes}."
+        )
+
+        for rootTask in sortedById(rootTasks):
+            print(
+                f"XMLWriter.write : Traitement de rootTasks trié {rootTask} avec id {rootTask.id()}."
+            )
+            # # Créer des attrinuts, les dictionnaires rootTask contenant les attributs de l'élément noeud "task" dans l'élément parent root.
+            # # self.taskNode(root, rootTask)
+            # task_node_resulted = self.taskNode(root, rootTask)
+            # Passer noteContainer et ownedNotes à taskNode pour qu'il place
+            # les notes en tant qu'enfants du noeud <task> lorsque c'est approprié.
+            task_node_resulted = self.taskNode(
+                root, rootTask, noteContainer, ownedNotes
+            )
+            # Mémoriser le noeud XML correspondant à cette tâche pour pouvoir
+            # y rattacher plus tard des notes/pièces jointes si nécessaire.
+            try:
+                node_map[rootTask] = task_node_resulted
+            except Exception:
+                node_map[str(rootTask.id())] = task_node_resulted
+        #     # task_node_resulted = self.taskNode(root, rootTask, noteContainer)
+        #     # print(
+        #     #     f"XMLWriter.write : Après taskNode, task_node_resulted = {task_node_resulted}."
+        #     # )
+        #
+        # # 1. Récupérer les notes déjà incluses dans les tâches/catégories
+        # ownedNotes = self.notesOwnedByNoteOwners(
+        #     taskList, categoryContainer
+        # )  # Notes attachées aux tâches/catégories
+        # print(
+        #     f"XMLWriter.write : récupère les notes déjà incluses dans les tâches/catégories : ownedNotes = {ownedNotes}."
+        # )
 
         # Sécurité au cas où rootItems() renvoie None
         rootCategories = categoryContainer.rootItems() or []
+
         # for rootCategory in sortedById(categoryContainer.rootItems()):
         for rootCategory in sortedById(rootCategories):
-            self.categoryNode(
+            # self.categoryNode(
+            #     root, rootCategory, taskList, noteContainer, ownedNotes
+            # )  # self.categoryNode retourne le noeud
+            category_node_resulted = self.categoryNode(
                 root, rootCategory, taskList, noteContainer, ownedNotes
             )
+            # Mémoriser également le noeud XML de la catégorie
+            try:
+                node_map[rootCategory] = category_node_resulted
+            except Exception:
+                node_map[str(rootCategory.id())] = category_node_resulted
+            # print(
+            #     f"XMLWriter.write : Après categoryNode, category_node_resulted = {category_node_resulted}."
+            # )
 
-        # Sécurité au cas où rootItems() renvoie None
+        # 2. ✅ Créer un ensemble de TOUTES les notes déjà écrites
+        # written_notes = set(ownedNotes)
+
+        # 3. Écrire les notes racines non incluses (logique existante)
+        # # Sécurité au cas où rootItems() renvoie None
         rootNotes = noteContainer.rootItems() or []
+        # print(
+        #     f"XMLWriter.write : Création de l'élément rootNotes = {rootNotes}."
+        # )
         # for rootNote in sortedById(noteContainer.rootItems()):
         for rootNote in sortedById(rootNotes):
-            if rootNote not in ownedNotes:
-                self.noteNode(root, rootNote)
+            # Si la note a un parent et que nous avons déjà créé un noeud XML pour
+            # ce parent, on suppose que taskNode/categoryNode a déjà écrit la
+            # note comme enfant. Pour éviter les doublons, on passe au suivant.
+            parent = getattr(rootNote, "parent", lambda: None)()
+            parent_node = None
+            if parent is not None:
+                parent_node = node_map.get(parent) or node_map.get(
+                    str(getattr(parent, "id", lambda: None)())
+                )
 
+            if parent_node is not None:
+                # note_node_resulted = self.noteNode(parent_node, rootNote)
+                # Skip: the parent node should already contain this note.
+                continue
+            else:
+                if rootNote not in ownedNotes:
+                    # à supprimer car notesOwnedByNoteOwners() gère déjà les notes attachées
+                    # et devrait déjà avoir identifié toutes les notes appartenant à des tâches/catégories.
+                    # self.noteNode(root, rootNote)
+                    note_node_resulted = self.noteNode(root, rootNote)
+                # print(
+                #     f"XMLWriter.write :Après noteNode, note_node_resulted = {note_node_resulted}."
+                # )
+                # written_notes.add(rootNote)  # ✅ Marquer comme écrite
+                # Ajouter les notes filles
+
+        # # Dans XMLWriter.write() (après l'écriture des tâches/catégories) :
+        # # 1. Écrire les notes attachées aux tâches/catégories (déjà fait dans taskNode/categoryNode)
+        # # 2. Écrire AUSSI toutes les notes du conteneur (même si redondant)
+        # for a_note in noteContainer:  # ✅ Parcourir TOUTES les notes
+        #     self.noteNode(
+        #         root, a_note
+        #     )  # ✅ Écrit TOUTES les notes, sans filtrer
+        # # 4. ✅ Écrire les notes non-racines du conteneur (si elles n'ont pas été écrites)
+        # for a_note in noteContainer:
+        #     if a_note not in written_notes:
+        #         self.noteNode(root, a_note)
+        #         written_notes.add(a_note)  # Éviter les doublons
+
+        # print(
+        #     f"XMLWriter.write : Après noteNode, root = {root}, .attrib = {root.attrib}."
+        # )
+
+        # Ajouter la configuration SyncML si elle est présente
         if syncMLConfig:
             self.syncMLNode(root, syncMLConfig)
+        # Ajouter le GUID si il est présent
         if guid:
-            eTree.SubElement(root, "guid").text = guid
+            # eTree.SubElement(root, "guid").text = guid
+            # ✅ Gérer le cas où guid est un dictionnaire (ex: {task_id: "GUID"})
+            guid_value = guid
+            if isinstance(guid, dict):
+                guid_value = next(
+                    iter(guid.values())
+                )  # Prend la première valeur
+            eTree.SubElement(root, "guid").text = str(guid_value)
 
         # Formatter le nœud principal de façon lisible :
         flatten(root)
@@ -467,16 +682,31 @@ class XMLWriter(object):
         #     root,
         # ).write(self.__fd, encoding="utf-8")
         pi_content = f'<?taskcoach release="{meta.data.version}" tskversion="{self.__versionnr}"?>\n'
-        log.debug(f"XMLWriter.write : Après flatten, root = {root}")
-        tree = eTree.ElementTree(root)
-        log.debug(f"XMLWriter.write : tree = {tree}")
-        tree_str = eTree.tostring(
-            tree.getroot(), encoding="utf-8", xml_declaration=False
-        ).decode("utf-8")
+
+        # Il manque la déclaration XML, mais elle est écrite dans PIElementTree.write() et ne doit pas être ajoutée ici
+
+        # log.debug(f"XMLWriter.write : Après flatten, root = {root}")
+        print(f"XMLWriter.write : Après flatten, root = {root}")
+        # tree = eTree.ElementTree(root)
+        # log.debug(f"XMLWriter.write : tree = {tree}")
+        # print(f"XMLWriter.write : tree = {tree}")
+        # tree_str = eTree.tostring(
+        #     # tree.getroot(), encoding="utf-8", xml_declaration=False
+        #     tree.getroot(),
+        #     encoding="unicode",
+        #     xml_declaration=False,
+        # )
+        # ).decode("utf-8")
         # xml_bytes = ET.tostring(tree.getroot(), encoding='utf-8', xml_declaration=False)
-        log.debug(f"XMLWriter.write : tree_str = {tree_str}")
-        log.debug(f"XMLWriter.write : Écriture du fichier {self.__fd.name}.")
-        self.__fd.write(pi_content + tree_str)
+        # log.debug(f"XMLWriter.write : tree_str = {tree_str}")
+        # print(f"XMLWriter.write : tree_str = {tree_str}")
+        # log.debug(f"XMLWriter.write : Écriture du fichier {self.__fd.name}.")
+        print(f"XMLWriter.write : Écriture du fichier {self.__fd.name}.")
+        # AttributeError: '_io.StringIO' object has no attribute 'name'
+        # self.__fd.write(pi_content + tree_str)
+        # Ave PIElementTree, on peut écrire directement l'arbre avec l'instruction de traitement, sans avoir à concaténer les chaînes manuellement :
+        # PIElementTree(str(pi_content + tree_str), root).write(
+        PIElementTree(str(pi_content), root).write(self.__fd, encoding="utf-8")
         # try:
         #     self.__fd.write(pi_content.encode('utf-8'))
         #     self.__fd.write(xml_bytes)
@@ -495,13 +725,45 @@ class XMLWriter(object):
         Returns :
 
         """
+        # S'm'assurer que la récursivité est correctement gérée pour collecter toutes les notes, y compris les notes imbriquées.
         notes = []
-        for noteOwners in collectionOfNoteOwners:
-            for noteOwner in noteOwners:
-                notes.extend(noteOwner.notes(recursive=True))
+        # for noteOwners in collectionOfNoteOwners:
+        #     for noteOwner in noteOwners:
+        #         notes.extend(noteOwner.notes(recursive=True))
+        print(
+            f"DEBUG: notesOwnedByNoteOwners called with collectionOfNoteOwners: {collectionOfNoteOwners}"
+        )
+        for (
+            container
+        ) in (
+            collectionOfNoteOwners
+        ):  # container will be TaskList or CategoryList
+            # Itérer sur les éléments réels (Task ou Category) à l'intérieur du conteneur
+            for (
+                item
+            ) in (
+                container
+            ):  # Assuming TaskList and CategoryList are iterable and yield Task/Category objects
+                if hasattr(item, "notes") and callable(item.notes):
+                    owner_notes = item.notes(recursive=True)
+                    print(
+                        f"DEBUG: item {item} (id: {item.id()}) returned notes: {owner_notes}"
+                    )
+                    notes.extend(owner_notes)
+                else:
+                    print(
+                        f"DEBUG: item {item} does not have a callable 'notes' method."
+                    )
+        print(f"DEBUG: notesOwnedByNoteOwners returning total notes: {notes}")
         return notes
 
-    def taskNode(self, parentNode, task):  # pylint: disable=W0621
+    # def taskNode(self, parentNode, task):  # pylint: disable=W0621
+    def taskNode(
+        self, parentNode, task, noteContainer=None, ownedNotes=None
+    ):  # pylint: disable=W0621
+        # def taskNode(
+        #     self, parentNode, task, noteContainer
+        # ):  # pylint: disable=W0621
         """
         Création des attributs, les dictionnaires contenant les attributs de l'élément node "task" dans l'élément parent parentNode.
 
@@ -513,11 +775,26 @@ class XMLWriter(object):
             node (Element) :
 
         """
+        # S'assurer que les notes sont correctement ajoutées en tant qu'enfants de l'élément <task>.
+        print(
+            f"XMLWriter.taskNode : Appelé avec self={self}, parentNode={parentNode}, task={task}."
+        )
         # vous avez déjà un nettoyage à la fin, mais il est préférable de s'assurer
         # que les valeurs insérées sont toujours des chaînes de caractères
         maxDateTime = self.maxDateTime
-        node = self.baseCompositeNode(parentNode, task, "task", self.taskNode)
+        # Pass noteContainer/ownedNotes down to child taskNode calls so nested
+        # tasks also get access to the note container and owned notes.
+        node = self.baseCompositeNode(
+            # parentNode, task, "task", self.taskNode
+            parentNode,
+            task,
+            "task",
+            self.taskNode,
+            (noteContainer, ownedNotes),
+        )  # This already appends to parentNode
+        # node.attrib["id"] = str(task.id())
         node.attrib["status"] = str(task.getStatus())
+        print(f"XMLWriter.taskNode : a récupéré status = {task.getStatus()}")
         if task.plannedStartDateTime() != maxDateTime:
             node.attrib["plannedstartdate"] = str(task.plannedStartDateTime())
         if task.dueDateTime() != maxDateTime:
@@ -576,10 +853,57 @@ class XMLWriter(object):
             node.attrib["shouldMarkCompletedWhenAllChildrenCompleted"] = str(
                 task.shouldMarkCompletedWhenAllChildrenCompleted()
             )
+
+        # Ajout au parent AVANT traitement des enfants (important pour stabilité structurelle)(already done by baseCompositeNode):
+        # parentNode.append(node)
+
+        # Write efforts, notes, attachments as usual
         for effort in sortedById(task.efforts()):
             self.effortNode(node, effort)
-        for eachNote in sortedById(task.notes()):
+        # Traitement des notes associées à la tâche
+        # Notes are already written by baseCompositeNode (via task.children())
+        # No need for manual loops or appends!
+        # # Écriture des notes appartenant à la tâche (it's redundant and causes duplicates) :
+        written_notes = set()
+        for eachNote in sortedById(
+            task.notes()
+        ):  # récupération des notes liées
+            #     self.noteNode(node, eachNote)
+            # Écrit les notes dont le parent est cette tâche
+            # for eachNote in sortedById(noteContainer):
+            print(
+                f"XMLWriter.taskNode : note détectée pour tâche {task.id()} : {eachNote}"
+            )
+            print(f"XMLWriter.taskNode : parent de note = {eachNote.parent()}")
+            print(f"XMLWriter.taskNode : task courante = {task}")
+            # # Vérifie si la note appartient à cette tâche
+            # if eachNote.parent() == task:
+            # Construction du nœud XML de la note
+            # Écrit la note dans la tâche
             self.noteNode(node, eachNote)
+            written_notes.add(eachNote)
+
+        # Si un noteContainer est fourni, rechercher dedans des notes dont le
+        # parent (par id) correspond à la tâche courante et qui n'ont pas été
+        # encore écrites.
+        if noteContainer is not None:
+            for n in sortedById(noteContainer):
+                try:
+                    parent = getattr(n, "parent", lambda: None)()
+                except Exception:
+                    parent = None
+                if parent is None:
+                    continue
+                # Compare by id to handle different instances representing same domain object
+                if str(getattr(parent, "id", lambda: None)()) == str(
+                    task.id()
+                ):
+                    if n not in written_notes:
+                        print(
+                            f"XMLWriter.taskNode : écriture d'une note depuis noteContainer pour la tâche {task.id()} : {n}"
+                        )
+                        self.noteNode(node, n)
+                        written_notes.add(n)
         for attachment in sortedById(task.attachments()):
             self.attachmentNode(node, attachment)
         # Très important :
@@ -627,13 +951,14 @@ class XMLWriter(object):
         Crée un nœud XML pour un effort.
 
         Args :
-            parentNode :
-            effort :
+            parentNode : Noeud parent.
+            effort : instance de l'effort.
 
         Returns :
-
+            Element: nœud XML représentant l'effort.
         """
         formattedStart = self.formatDateTime(effort.getStart())
+        # Attribution des champs de base
         attrs = dict(
             id=effort.id(),
             status=str(effort.getStatus()),
@@ -649,6 +974,7 @@ class XMLWriter(object):
         entryMode = effort.entryMode()
         if entryMode and entryMode != "standard":
             attrs["entryMode"] = entryMode
+        # Création du noeud effort
         node = eTree.SubElement(parentNode, "effort", attrs)
         if effort.description():
             eTree.SubElement(node, "description").text = effort.description()
@@ -666,7 +992,7 @@ class XMLWriter(object):
             *categorizableContainers : Conteneur des catégorisables.
 
         Returns :
-
+            node (Element) : Nœud XML représentant la catégorie.
         """
 
         def inCategorizableContainer(categorizable):
@@ -677,13 +1003,14 @@ class XMLWriter(object):
                 categorizable : Objet catégorisable à vérifier.
 
             Returns :
-                (bool) : categorizable est dans le conteneur des catégorisables ?
+                (bool) : True si categorizable est dans le conteneur des catégorisables ?
             """
             for container in categorizableContainers:
                 if categorizable in container:
                     return True
             return False
 
+        # Création du noeud category
         node = self.baseCompositeNode(
             parentNode,
             category,
@@ -691,27 +1018,36 @@ class XMLWriter(object):
             self.categoryNode,
             categorizableContainers,
         )
+        # Attribution des champs de category
         if category.isFiltered():
             node.attrib["filtered"] = str(category.isFiltered())
         if category.hasExclusiveSubcategories():
             node.attrib["exclusiveSubcategories"] = str(
                 category.hasExclusiveSubcategories()
             )
+        # Traitement récursif des notes
         for eachNote in sortedById(category.notes()):
             self.noteNode(node, eachNote)
+        # Traitement récursif des pièces jointes
         for attachment in sortedById(category.attachments()):
             self.attachmentNode(node, attachment)
         # Make sure the categorizables referenced are actually in the
         # categorizableContainer, i.e. they are not deleted
-        categorizableIds = " ".join(
+        categorizable_ids = " ".join(
             [
-                categorizable.id()
+                # categorizable.id()
+                str(
+                    categorizable.id()
+                )  # Convertir en chaîne pour éviter les erreurs
                 for categorizable in sortedById(category.categorizables())
                 if inCategorizableContainer(categorizable)
             ]
         )
-        if categorizableIds:
-            node.attrib["categorizables"] = categorizableIds
+        if categorizable_ids:
+            node.attrib["categorizables"] = categorizable_ids
+        print(
+            f"XMLWriter.categoryNode : Résultat : node.attrib = {node.attrib}"
+        )
         return node
 
     def noteNode(self, parentNode, note):  # pylint: disable=W0621
@@ -719,13 +1055,24 @@ class XMLWriter(object):
         Crée un nœud XML pour une note.
 
         Args :
-            parentNode :
-            note :
+            parentNode : Noeud parent.
+            note : Note à ajouter.
 
         Returns :
+            Le noeud note.
+
+        Examples :
 
         """
-        node = self.baseCompositeNode(parentNode, note, "note", self.noteNode)
+        # Création du noeud composite note
+        node = self.baseCompositeNode(
+            parentNode, note, "note", self.noteNode
+        )  # This already appends to parentNode
+        # # Ajout au parent AVANT traitement des enfants (important pour la stabilité)
+        # parentNode.append(node)  # NON, cela est déjà fait par baseCompositeNode
+        # Traitement récursif des pièces jointes
+        # Attachments are already written by baseCompositeNode (via note.children())
+        # No need for manual loops or appends!
         for attachment in sortedById(note.attachments()):
             self.attachmentNode(node, attachment)
         return node
@@ -734,6 +1081,8 @@ class XMLWriter(object):
     def __baseNode(self, parentNode, item, nodeName):
         """
         Utilise xml.etree.ElementTree.SubElement pour créer un sous-Element de base.
+
+        Crée un nœud XML de base avec les attributs id et status.
 
         Args :
             parentNode : Element parent.
@@ -746,11 +1095,30 @@ class XMLWriter(object):
                              et les dates de création, de modification, le sujet et la description.
 
         """
+        print(
+            f"XMLWriter.__baseNode : appelé avec parentNode={parentNode}, item={item}, nodeName={nodeName}."
+        )
+        # attrs = {}
+        # # ✅ Gérer le cas où item.id() retourne None
+        # task_id = item.id()
+        # if task_id is not None:
+        #     attrs["id"] = str(task_id)
+        # else:
+        #     # ✅ Générer un ID unique si absent (fallback)
+        #     attrs["id"] = str(
+        #         uuid.uuid4()
+        #     )  # Utilise uuid4 pour éviter les conflits
+        #
+        # attrs["status"] = str(item.getStatus())
+
+        # Création du noeud avec les attributs id et status, sert de append au noeud parent
         node = eTree.SubElement(
             parentNode,
             nodeName,
             dict(id=item.id(), status=str(item.getStatus())),
+            # attrs,
         )
+        # Ajout des attributs de base
         if item.creationDateTime() > date.DateTime.min:
             node.attrib["creationDateTime"] = str(item.creationDateTime())
         if item.modificationDateTime() > date.DateTime.min:
@@ -769,7 +1137,8 @@ class XMLWriter(object):
         return node
 
     def baseNode(self, parentNode, item, nodeName):
-        """Créer un nœud et ajouter les attributs partagés par tous les objets de domaine,
+        """Créer un nœud de base et ajouter les attributs partagés
+        par tous les objets de domaine,
         tels que l'identifiant, le sujet et la description.
 
         Args :
@@ -808,28 +1177,37 @@ class XMLWriter(object):
     ):
         """Identique à baseNode, mais crée également des nœuds enfants au moyen de
         childNodeFactory."""
-        node = self.__baseNode(parentNode, item, nodeName)
-        if item.foregroundColor():
-            node.attrib["fgColor"] = str(item.foregroundColor())
-        if item.backgroundColor():
-            node.attrib["bgColor"] = str(item.backgroundColor())
-        if item.font():
-            node.attrib["font"] = str(item.font().GetNativeFontInfoDesc())
-        if item.icon():
-            node.attrib["icon"] = str(item.icon())
-        if item.selectedIcon():
-            node.attrib["selectedIcon"] = str(item.selectedIcon())
-        if item.ordering():
-            node.attrib["ordering"] = str(item.ordering())
+        print(
+            f"XMLWriter.baseCompositeNode : appelé avec parentNode={parentNode}, item={item}, nodeName={nodeName}, childNodeFactory={childNodeFactory} et childNodeFactoryArgs={childNodeFactoryArgs}"
+        )
+        # node = self.__baseNode(parentNode, item, nodeName)
+        # if item.foregroundColor():
+        #     node.attrib["fgColor"] = str(item.foregroundColor())
+        # if item.backgroundColor():
+        #     node.attrib["bgColor"] = str(item.backgroundColor())
+        # if item.font():
+        #     node.attrib["font"] = str(item.font().GetNativeFontInfoDesc())
+        # if item.icon():
+        #     node.attrib["icon"] = str(item.icon())
+        # if item.selectedIcon():
+        #     node.attrib["selectedIcon"] = str(item.selectedIcon())
+        # if item.ordering():
+        #     node.attrib["ordering"] = str(item.ordering())
+        node = self.baseNode(parentNode, item, nodeName)
         # Attribut ajouté en plus :
         if item.expandedContexts():
             node.attrib["expandedContexts"] = str(
                 tuple(sorted(item.expandedContexts()))
             )
+        # Appelle taskNode/noteNode pour chaque enfant !
         for child in sortedById(item.children()):
+            print(
+                f"XMLWriter.baseCompositeNode : Création du noeud composite pour l'enfant {child} dans node={node}."
+            )
             childNodeFactory(
                 node, child, *childNodeFactoryArgs
             )  # pylint: disable=W0142
+
         return node
 
     def attachmentNode(self, parentNode, attachment):
@@ -844,7 +1222,9 @@ class XMLWriter(object):
         Returns :
             node (Element) : Sous-Element pièce jointe à utiliser.
         """
+        # Création du noeud XML de base pour la pièce jointe
         node = self.baseNode(parentNode, attachment, "attachment")
+        # Attribution du champ type pour les pièces jointes
         node.attrib["type"] = attachment.type_
         data = attachment.data()
         if data is None:
@@ -877,11 +1257,11 @@ class XMLWriter(object):
         Crée un nœud XML pour la configuration SyncML.
 
         Args :
-            parentNode :
-            syncMLConfig :
+            parentNode : Element parent.
+            syncMLConfig : Configuration SyncML à sérialiser.
 
         Returns :
-
+            node (Element) : Sous-Element de configuration SyncML à utiliser.
         """
         node = eTree.SubElement(parentNode, "syncmlconfig")
         self.__syncMLNode(syncMLConfig, node)
@@ -892,16 +1272,22 @@ class XMLWriter(object):
         Crée des nœuds XML pour les propriétés et les enfants de la configuration SyncML.
 
         Args :
-            cfg :
-            node :
+            cfg : Configuration SyncML à sérialiser.
+            node : Element parent pour les propriétés et les enfants de la configuration SyncML.
 
         Returns :
-
+            None
         """
         for name, value in cfg.properties():
+            print(
+                f"XMLWriter.__syncMLNode : Ajout de la propriété SyncML {name} avec valeur {value} au nœud {node.tag}."
+            )
             eTree.SubElement(node, "property", dict(name=name)).text = value
 
         for childCfg in cfg.children():
+            print(
+                f"XMLWriter.__syncMLNode : Traitement de l'enfant SyncML {childCfg.name} du nœud {node.tag}."
+            )
             child = eTree.SubElement(node, childCfg.name)
             self.__syncMLNode(childCfg, child)
 

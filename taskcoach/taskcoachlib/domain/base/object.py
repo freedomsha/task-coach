@@ -210,6 +210,34 @@ class SynchronizedObject(object):
 
     Elle gère des mécanismes de verrouillage ou de synchronisation d'accès aux attributs.
 
+    Attributs :
+        - STATUS_NONE (int) : = 0 Représente l'état "aucun" de l'objet.
+        - STATUS_NEW (int) : = 1 Représente l'état "nouveau" de l'objet.
+        - STATUS_CHANGED (int) : = 2 Représente l'état "modifié" de l'objet.
+        - STATUS_DELETED (int) : = 3 Représente l'état "supprimé" de l'objet.
+        - __status (int) : Le statut actuel de l'objet, qui peut être l'un des quatre états définis ci-dessus.
+
+    Methods :
+        - __init__ : Initialise l'objet avec un statut par défaut.
+        - markDeletedEventType : Renvoie le type d'événement pour marquer un objet comme supprimé.
+        - markNotDeletedEventType : Renvoie le type d'événement pour marquer un objet comme non supprimé.
+        - modificationEventTypes : (commenté) Fournit les types d'événements de modification pour les classes dérivées.
+        - __getstate__ : Prépare l'état de l'objet pour la sérialisation.
+        - __setstate__ : Définit l'état de l'objet à partir de la désérialisation.
+        - __getcopystate__ : Prépare l'état de l'objet pour la copie (actuellement vide).
+        - markDirty : Marque l'objet comme modifié.
+        - markNew : Marque l'objet comme nouveau.
+        - markDeleted : Marque l'objet comme supprimé.
+        - cleanDirty : Marque l'objet comme non modifié.
+        - getStatus : Renvoie le statut actuel de l'objet.
+        - setStatusDirty : Définit le statut de l'objet comme modifié.
+        - setStatusNew : Définit le statut de l'objet comme nouveau.
+        - setStatusDeleted : Définit le statut de l'objet comme supprimé.
+        - setStatusNone : Définit le statut de l'objet comme aucun.
+        - isNew : Vérifie si l'objet est nouveau.
+        - isModified : Vérifie si l'objet est modifié.
+        - isDeleted : Vérifie si l'objet est supprimé.
+
     """
 
     STATUS_NONE = 0
@@ -219,11 +247,16 @@ class SynchronizedObject(object):
 
     def __init__(self, *args, **kwargs):
         """
-        Initialisez l'instance SynchronizedObject.
+        Initialisez l'instance de l'objet.
 
-        Args:
-            *args: Liste d’arguments de longueur(length) variable.
-            **kwargs: Arbitrary keyword arguments.
+        Args :
+            *args : Liste d’arguments de longueur(length) variable.
+            **kwargs : Arbitrary keyword arguments.
+
+        Note :  Le statut de l'objet peut être défini via le mot-clé 'status' dans kwargs. Si aucun statut n'est fourni, il sera défini sur STATUS_NEW par défaut.
+
+        Attributes :
+            __status (int) : Le statut actuel de l'objet, qui peut être STATUS_NONE, STATUS_NEW, STATUS_CHANGED ou STATUS_DELETED.
         """
         # log.debug(f"SynchronizedObject.__init__ : 🔍 Avant super().__init__() : self.__status = kwargs.pop('status', self.STATUS_NEW)={kwargs.get('status', 'Non défini')}")
         log.debug("SynchronizedObject : Initialisation.")
@@ -259,7 +292,7 @@ class SynchronizedObject(object):
         Obtenir le type d'événement pour marquer un objet comme supprimé.
 
         Returns :
-            str : Le type d'événement pour marquer un objet comme supprimé.
+            (str) : Le type d'événement pour marquer un objet comme supprimé.
         """
         return "object.markdeleted"
 
@@ -269,7 +302,7 @@ class SynchronizedObject(object):
         Obtenir le type d'événement pour marquer un objet comme non supprimé.
 
         Return :
-            str : Type d'événement permettant de marquer un objet comme non supprimé.
+            (str) : Type d'événement permettant de marquer un objet comme non supprimé.
         """
         return "object.marknotdeleted"
 
@@ -279,12 +312,12 @@ class SynchronizedObject(object):
     # obligeant à filtrer manuellement ce qu'on sauvegarde.
     def __getstate__(self):
         """
-        Étend l'état sérialisé de l'objet avec les informations de synchronisation.
+        Étends l'état sérialisé de l'objet avec les informations de synchronisation.
 
         Returns :
             dict : L'état de l'objet, incluant l'état de synchronisation.
         """
-        # Récupération de l'état de base de l'objet (depuis Object)
+        # Récupération de l'état de base de l'objet (depuis la classe supérieure Object)
         try:
             state = super().__getstate__()
         except AttributeError:
@@ -360,7 +393,8 @@ class SynchronizedObject(object):
         #     # print("🟡 getStatus : self.__status est None → Forçage à STATUS_CHANGED (2)")
         #     self.__status = self.STATUS_CHANGED  # Force le recalcul
 
-        log.debug(
+        # log.debug(
+        print(
             f"✅ SynchronizedObject.getStatus renvoie {self.__status} - de type {type(self.__status)}"
         )
         return self.__status
@@ -514,6 +548,7 @@ class SynchronizedObject(object):
     # méthode à ajouter ? oui ou non ?
     @classmethod
     def modificationEventTypes(class_):
+        """Obtenez les types d'événements de modification pour l'objet."""
         pass
 
 
@@ -530,6 +565,24 @@ class Object(SynchronizedObject):
     les couleurs, la police, les icônes, etc. Tous ces attributs sont encapsulés
     dans des objets `Attribute` capables de déclencher des événements.
 
+    SynchronizedObject fournit des mécanismes pour marquer l'objet
+    comme nouveau, modifié ou supprimé, et pour émettre
+    des événements correspondants via l'attribut __status.
+
+    Méthodes de gestion de l'état héritées de SynchronizedObject :
+        getStatus,
+        markDirty,
+        markNew,
+        markDeleted,
+        cleanDirty,
+        setStatusDirty,
+        setStatusNew,
+        setStatusDeleted,
+        setStatusNone,
+        isNew,
+        isModified,
+        isDeleted.
+
     Attributs principaux :
         __subject,
         __description,
@@ -545,6 +598,97 @@ class Object(SynchronizedObject):
 
     Encapsulation des attributs: Beaucoup d'attributs sont encapsulés par des classes Attribute (ex: self.__subject = attribute.Attribute(...)).
     C'est un pattern qui permet d'ajouter de la logique (validation, événements de changement) lors de la lecture/écriture des attributs.
+
+    Methods :
+        __init__
+        __repr__,
+        __eq__,
+        __lt__,
+        __hash__,
+        __getstate__,
+        __setstate__,
+        __getcopystate__,
+        copy,
+        monitoredAttributes,
+        id,
+        customAttributes,
+        creationDateTime,
+        modificationDateTime,
+        setModificationDateTime,
+        modificationDateTimeSortFunction,
+        creationDteTimeSortFunction,
+        subject,
+        setSubject,
+        subjectChangedEvent,
+        subjectChangedEventType,
+        ordering,
+        setOrdering,
+        orderingChangedEvent,
+        orderingChangedEventType,
+        orderingSortFunction,
+        orderingSortEventType,
+        description
+        setDescription,
+        descriptionChangedEvent,
+        descriptionChangedEventType : Obtenir le type d'événement pour les événements de changement de description.,
+        descriptionSortFunction,
+        descriptionSortEventType,
+        setForegroundColor : Définir la couleur de premier plan de l'objet composite.,
+        foregroundColor,
+        setBackgroundColor : Définir la couleur d'arrière-plan de l'objet composite.,
+        backgroundColor,
+        font,
+        setFont,
+        icon,
+        setIcon,
+        selectedIcon,
+        setSelectedIcon,
+        appearanceChangedEventType,
+        appearanceChangedEvent,
+        derivedFgColor,
+        derivedFgColorSource,
+        derivedBgColor,
+        derivedBgColorSource,
+        derivedIcon,
+        derivedIconSource,
+        derivedFont,
+        derivedFontSource,
+        setDerivedFgColor,
+        setDerivedBgColor,
+        setDerivedIcon,
+        setDerivedFont,
+        _onDerivedFgColorChanged,
+        _onDerivedBgColorChanged,
+        _onDerivedIconChanged,
+        _onDerivedFontChanged,
+        - derivedFgColorChangedEventType : Obtenir le type d'événement pour les événements de couleur de premier plan dérivée modifiée.
+        - derivedBgColorChangedEventType : Obtenir le type d'événement pour les événements de couleur de fond dérivée modifiée.
+        - derivedIconChangedEventType : Obtenir le type d'événement pour les événements d’icône dérivés modifiés.
+        - derivedFontChangedEventType : Obtenir le type d'événement pour les événements de police dérivés modifiés.
+        - effectiveFgColor : Obtenir la couleur de premier plan effective de l'objet composite.
+        - effectiveFgColorSource : Obtenir la source de la couleur de premier plan effective de l'objet composite.
+        - effectiveFgColorDefault : Obtenir la valeur par défaut de la couleur de premier plan effective de l'objet composite.
+        - effectiveBgColor : Obtenir la couleur d'arrière-plan effective de l'objet composite.
+        - effectiveBgColorSource : Obtenir la source de la couleur d'arrière-plan effective de l'objet composite.
+        - effectiveBgColorDefault : Obtenir la valeur par défaut de la couleur d'arrière-plan effective de l'objet composite.
+        - effectiveIcon : Obtenir le nom de l'icône effectif de l'objet composite.
+        - effectiveIconSource : Obtenir la source de l'icône effectif de l'objet composite.
+        - effectiveFont : Obtenir la police effective de l'objet composite.
+        - effectiveFontSource : Obtenir la source de la police effective de l'objet composite.
+        - effectiveFontDefault : Obtenir la police par défaut de l'objet composite.
+        - setEffectiveFgColor : Définir la couleur de premier plan effective, sa valeur par défaut et sa source.
+        - setEffectiveBgColor : Définir la couleur d'arrière-plan effective, sa valeur par défaut et sa source.
+        - setEffectiveIcon : Définir l'icône effectif.
+        - setEffectiveFont : Définir la valeur de la police à appliquer.
+        - _onEffectiveFgColorChanged : Fonction de rappel pour les changements de couleur de premier plan effective.
+        - _onEffectiveBgColorChanged : Fonction de rappel pour les changements de couleur d'arrière-plan effective.
+        - _onEffectiveIconChanged : Fonction de rappel pour les changements d'icône effective.
+        - _onEffectiveFontChanged : Fonction de rappel pour les changements de police effective.
+        - effectiveFgColorChangedEventType : Obtenir le type d’événement pour les événements de couleur de premier plan dérivée modifiée.
+        - effectiveBgColorChangedEventType : Obtenir le type d’événement pour les événements de couleur de fond dérivée modifiée.
+        - effectiveIconChangedEventType : Obtenir le type d’événement pour les événements d’icône dérivée modifiée.
+        - effectiveFontChangedEventType : Obtenir le type d’événement pour les événements de police dérivée modifiée.
+        - modificationEventTypes : Fournit les types d'événements de modification pour les classes dérivées.
     """
 
     rx_attributes = re.compile(
@@ -573,8 +717,23 @@ class Object(SynchronizedObject):
             *kwargs : Arguments de mots clés arbitraires. Arguments nommés pour
                       personnaliser les attributs de l'objet. Attributs sérialisés
                       pour restaurer l'état de l'objet.
+
+        Attributes :
+            id (str) : Identifiant unique de l'objet.
+            subject (str) : Sujet ou titre de l'objet.
+            description (str) : Description détaillée de l'objet.
+            creationDateTime (DateTime) : Date et heure de création de l'objet.
+            modificationDateTime (DateTime) : Date et heure de la dernière modification de l'objet.
+            fgColor (str) : Couleur de premier plan de l'objet (ex: "#RRGGBB").
+            bgColor (str) : Couleur de fond de l'objet (ex: "#RRGGBB").
+            font (str) : Police de caractères utilisée pour l'affichage de l'objet (ex: "Arial 12").
+            icon (str) : Chemin vers l'icône associée à l'objet.
+            selectedIcon (str) : Chemin vers l'icône utilisée lorsque l'objet est sélectionné.
+            ordering (int) : Un entier représentant l'ordre de tri de l'objet parmi ses pairs.
         """
+        # print(f"Object.__init__ : args={args} et kwargs={kwargs}")
         # print(f"Object.__init__ : self avant init={self}")  # AttributeError: 'CompositeObject' object has no attribute '_Object__subject'
+        # Récupère et définit
         Attribute = attribute.Attribute  # Raccourci pour la classe Attribute
         # print(f"Object.__init__ : Attribute={Attribute}")
         # print(f"Object.__init__ : kwargs={kwargs}")
@@ -603,7 +762,6 @@ class Object(SynchronizedObject):
         }
 
         # Faut-il les garder ou les effacer de kwargs ?
-
         log.debug(
             f"Object.__init__ : kwargs={kwargs} et local_kwargs={local_kwargs} avant appel à super."
         )
@@ -611,22 +769,26 @@ class Object(SynchronizedObject):
         super().__init__(*args, **kwargs)
 
         def setSubjectEvent(event):
+            """Fonction de rappel personnalisée pour les changements de sujet."""
             obj = selfRef()
             if obj is not None:
                 obj.subjectChangedEvent(event)
 
         # Fonction de rappel personnalisée pour les changements de description
         def setDescriptionEvent(event):
+            """Fonction de rappel personnalisée pour les changements de description."""
             obj = selfRef()  # Récupère l'objet si encore en mémoire
             if obj is not None:
                 obj.descriptionChangedEvent(event)  # Déclenche l'événement
 
         def setAppearanceEvent(event):
+            """Fonction de rappel personnalisée pour les changements d'apparence."""
             obj = selfRef()
             if obj is not None:
                 obj.appearanceChangedEvent(event)
 
         def setOrderingEvent(event):
+            """Fonction de rappel personnalisée pour les changements d'ordre de tri."""
             obj = selfRef()
             if obj is not None:
                 obj.orderingChangedEvent(event)
@@ -752,12 +914,12 @@ class Object(SynchronizedObject):
             self,
             setOrderingEvent,
         )
-        # self.__id = kwargs.pop("id", None or str(uuid.uuid1()))  # ID unique
-        self.__id = local_kwargs.pop(
-            "id", None or str(uuid.uuid1())
-        )  # ID unique
-        log.debug(f"Object.__init__() : id reçu: {self.__id}.")
-        # self.__id = local_kwargs.pop("id", str(uuid.uuid1()))  # ID unique, TODO : à essayer
+        # # self.__id = kwargs.pop("id", None or str(uuid.uuid1()))  # ID unique
+        # self.__id = local_kwargs.pop("id", None or str(uuid.uuid1())
+        # )  # ID unique, mais ne permet d'avoir None comme id !
+        self.__id = local_kwargs.pop("id", None) or str(uuid.uuid1())
+        # log.debug(f"Object.__init__() : id reçu: {self.__id}.")
+        print(f"Object.__init__() : id reçu: {self.__id}.")
 
         # Derived SSOT fields (value + source for each appearance type)
         self.__derivedFgColorValue = Attribute(
@@ -823,9 +985,10 @@ class Object(SynchronizedObject):
         # Initialisation du parent
         # super().__init__(*args, **kwargs)  # Appelle le constructeur de la classe parente
         # super().__init__()  # à vérifier sinon revenir à la définition précédente
-        # Transmet les arguments uniquement si le parent **n'est pas `object`**
+        # Transmet les arguments uniquement si le parent **n'est pas `object'**
         # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
         if type(self).__mro__[1] is not object:
+            # Class 'property' does not define '__getitem__', so the '[]' operator cannot be used on its instances
             try:
                 super().__init__(*args, **kwargs)
             except TypeError:
@@ -1376,15 +1539,15 @@ class Object(SynchronizedObject):
         )
 
     @classmethod
-    def descriptionChangedEventType(class_):
+    def descriptionChangedEventType(class_) -> str:
         """
         Obtenez le type d’événement pour les événements modifiés dans la description.
 
         Returns :
             (str) : Le type d'événement pour la description des événements a changé.
         """
-        # return "%s.description" % class_
-        return f"{class_}.description"
+        return "%s.description" % class_
+        # return f"{class_}.description"  # Alternative plus moderne mais moins compatible avec les anciennes versions de Python.
 
     @staticmethod
     def descriptionSortFunction(**kwargs):
@@ -1422,6 +1585,11 @@ class Object(SynchronizedObject):
             event : L'événement associé à la définition de la couleur.
         """
         self.__fgColor.set(color, event=event)
+        # self.appearanceChangedEvent(event)
+        # Trigger computeEffective after SSOT update
+        from . import appearance
+
+        appearance.computeEffective(self, "fgColor")
 
     def foregroundColor(self, recursive=False):  # pylint: disable=W0613
         """
@@ -1447,6 +1615,11 @@ class Object(SynchronizedObject):
             event : L'événement associé à la définition de la couleur.
         """
         self.__bgColor.set(color, event=event)
+        # self.appearanceChangedEvent(event)
+        # Trigger computeEffective after SSOT update
+        from . import appearance
+
+        appearance.computeEffective(self, "bgColor")
 
     def backgroundColor(self, recursive=False):  # pylint: disable=W0613
         """
@@ -1627,87 +1800,106 @@ class Object(SynchronizedObject):
 
     @classmethod
     def derivedFgColorChangedEventType(class_):
+        """Obtenez le type d’événement pour les événements de couleur de premier plan dérivée modifiée."""
         return "pubsub.derived.fgColor"
 
     @classmethod
     def derivedBgColorChangedEventType(class_):
+        """Obtenez le type d’événement pour les événements de couleur de fond dérivée modifiée."""
         return "pubsub.derived.bgColor"
 
     @classmethod
     def derivedIconChangedEventType(class_):
+        """Obtenez le type d’événement pour les événements d’icône dérivés modifiés."""
         return "pubsub.derived.icon"
 
     @classmethod
     def derivedFontChangedEventType(class_):
+        """Obtenez le type d’événement pour les événements de police dérivés modifiés."""
         return "pubsub.derived.font"
 
     # --- Effective SSOT Getters ---
 
     def effectiveFgColor(self):
+        """Obtenez la couleur de premier plan effective de l'objet."""
         return self.__effectiveFgColorValue.get() or FIELD_DEFAULTS["fgColor"]
 
     def effectiveFgColorSource(self):
+        """Obtenez la source de la couleur de premier plan effective de l'objet."""
         return (
             self.__effectiveFgColorSource.get()
             or FIELD_NO_VALUE_SOURCE["fgColor"]
         )
 
     def effectiveFgColorDefault(self):
+        """Obtenez la valeur par défaut de la couleur de premier plan effective de l'objet."""
         return (
             self.__effectiveFgColorDefault.get() or FIELD_DEFAULTS["fgColor"]
         )
 
     def effectiveBgColor(self):
+        """Obtenez la couleur d'arrière-plan effective de l'objet."""
         return self.__effectiveBgColorValue.get() or FIELD_DEFAULTS["bgColor"]
 
     def effectiveBgColorSource(self):
+        """Obtenez la source de la couleur d'arrière-plan effective de l'objet."""
         return (
             self.__effectiveBgColorSource.get()
             or FIELD_NO_VALUE_SOURCE["bgColor"]
         )
 
     def effectiveBgColorDefault(self):
+        """Obtenir la valeur par défaut de la couleur d'arrière-plan effective de l'objet."""
         return (
             self.__effectiveBgColorDefault.get() or FIELD_DEFAULTS["bgColor"]
         )
 
     def effectiveIcon(self):
+        """Obtenir le nom de l'icône effectif de l'objet."""
         return self.__effectiveIconValue.get() or FIELD_DEFAULTS["icon"]
 
     def effectiveIconSource(self):
+        """Obtenir la source de l'icône effectif de l'objet."""
         return (
             self.__effectiveIconSource.get() or FIELD_NO_VALUE_SOURCE["icon"]
         )
 
     def effectiveFont(self):
+        """Obtenir la police effective de l'objet."""
         return self.__effectiveFontValue.get() or FIELD_DEFAULTS["font"]
 
     def effectiveFontSource(self):
+        """Obtenir la source de la police effective de l'objet."""
         return (
             self.__effectiveFontSource.get() or FIELD_NO_VALUE_SOURCE["font"]
         )
 
     def effectiveFontDefault(self):
+        """Obtenir la police par défaut de l'objet."""
         return self.__effectiveFontDefault.get() or FIELD_DEFAULTS["font"]
 
     # --- Effective SSOT Setters (for use by computeEffective) ---
 
     def setEffectiveFgColor(self, value, default, source, event=None):
+        """Set the effective foreground color, its default, and its source."""
         self.__effectiveFgColorValue.set(value, event=event)
         self.__effectiveFgColorDefault.set(default, event=event)
         self.__effectiveFgColorSource.set(source, event=event)
 
     def setEffectiveBgColor(self, value, default, source, event=None):
+        """Set the effective background color, its default, and its source."""
         self.__effectiveBgColorValue.set(value, event=event)
         self.__effectiveBgColorDefault.set(default, event=event)
         self.__effectiveBgColorSource.set(source, event=event)
 
     def setEffectiveIcon(self, value, source, event=None):
+        """Définir l'icône effectif."""
         # Icon has no default
         self.__effectiveIconValue.set(value, event=event)
         self.__effectiveIconSource.set(source, event=event)
 
     def setEffectiveFont(self, value, default, source, event=None):
+        """Définir la valeur de la police à appliquer."""
         self.__effectiveFontValue.set(value, event=event)
         self.__effectiveFontDefault.set(default, event=event)
         self.__effectiveFontSource.set(source, event=event)
@@ -1730,6 +1922,7 @@ class Object(SynchronizedObject):
 
     @classmethod
     def effectiveFgColorChangedEventType(class_):
+        """Obtenir le nom de l'événement pour changer la couleur de premier plan à appliquer."""
         return "pubsub.effective.fgColor"
 
     @classmethod
@@ -1809,10 +2002,42 @@ class CompositeObject(
     Object, patterns.composite.ObservableComposite
 ):  # Est le seul bon ordre !
     """
-    Un objet composite qui peut contenir d'autres objets en tant qu'enfants.
+    Un objet composite peut contenir d'autres objets en tant qu'enfants.
 
-    Cette classe étend Object et ObservableComposite pour fournir des méthodes supplémentaires
-    pour gérer les objets enfants et leur état.
+    Cette classe étend Object et ObservableComposite pour fournir des méthodes
+    supplémentaires pour gérer les objets enfants et leur état.
+
+    Methods :
+        - __getcopystate__ : Obtenir un dictionnaire qui peut être transmis à __init__ lors de la création d'une copie de l'objet composite.
+        - __setstate__ : Définir l'état de l'objet à partir de la désérialisation.
+        - monitoredAttributes : Obtenir la liste des attributs surveillés.
+        - subject : Obtenir le sujet de l'objet composite.
+        - subjectChangedEvent : Gérer l'événement de changement de sujet.
+        - subjectSortFunction : Obtenir une fonction de tri pour trier par sujet.
+        - description : Obtenir la description de l'objet composite.
+        - getDescription : Obtenir la description de l'objet composite.
+        - isExpanded : Vérifier si le contexte de l'objet composite est développé.
+        - expandedContexts : Obtenir les contextes développés de l'objet composite.
+        - expand : Développer un contexte spécifique de l'objet composite.
+        - expansionChangedEventType : Obtenir le type d'événement pour les événements de changement d'expansion.
+        - expansionChangedEvent : Gérer l'événement de changement d'expansion.
+        - expandedContextsChangedEventType : Obtenir le type d'événement pour les événements de changement de contextes développés.
+        - appearanceChangedEvent : Gérer l'événement de modification d’apparence.
+        - foregroundColor : Obtenir la couleur de premier plan de l'objet composite.
+        - backgroundColor : Obtenir la couleur d'arrière-plan de l'objet composite.
+        - font : Obtenir la police de l'objet composite.
+        - icon : Obtenir l'icône de l'objet composite.
+        - selectedIcon : Obtenir l'icône sélectionnée de l'objet composite.
+        - pluralOrSingularIcon : Obtenir l'icône plurielle ou singulière de l'objet composite en fonction du nombre d'enfants.
+        - modificationEventTypes : Obtenir les types d'événements pour les événements de modification.
+        - markDeleted : Marquer l'objet composite comme supprimé.
+        - markNew : Marquer l'objet composite comme nouveau.
+        - markDirty : Marquer l'objet composite comme modifié.
+        - cleanDirty : Marquer l'objet composite comme propre.
+
+    Attributes :
+        - __expandedContexts : Un ensemble privé pour stocker les contextes développés de l'objet composite.
+
     """
 
     def __init__(self, *args, **kwargs):

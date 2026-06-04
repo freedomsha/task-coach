@@ -865,20 +865,27 @@ class XMLWriter(object):
         # No need for manual loops or appends!
         # # Écriture des notes appartenant à la tâche (it's redundant and causes duplicates) :
         written_notes = set()
-        for eachNote in sortedById(
-            task.notes()
-        ):  # récupération des notes liées
-            #     self.noteNode(node, eachNote)
-            # Écrit les notes dont le parent est cette tâche
-            # for eachNote in sortedById(noteContainer):
-            print(
-                f"XMLWriter.taskNode : note détectée pour tâche {task.id()} : {eachNote}"
-            )
-            print(f"XMLWriter.taskNode : parent de note = {eachNote.parent()}")
-            print(f"XMLWriter.taskNode : task courante = {task}")
-            # # Vérifie si la note appartient à cette tâche
-            # if eachNote.parent() == task:
-            # Construction du nœud XML de la note
+        # Some NoteOwner implementations store notes in a private attribute
+        # (_NoteOwner__notes). If task.notes() returns empty, fall back to
+        # reading that attribute so notes added via Task.addNote are not lost.
+        own_notes = task.notes()
+        if not own_notes:
+            own_notes = getattr(task, "_NoteOwner__notes", own_notes)
+        for eachNote in sortedById(own_notes):  # récupération des notes liées
+            try:
+                print(
+                    f"XMLWriter.taskNode : note détectée pour tâche {task.id()} : {eachNote}"
+                )
+            except Exception:
+                pass
+            try:
+                print(f"XMLWriter.taskNode : parent de note = {eachNote.parent()}")
+            except Exception:
+                pass
+            try:
+                print(f"XMLWriter.taskNode : task courante = {task}")
+            except Exception:
+                pass
             # Écrit la note dans la tâche
             self.noteNode(node, eachNote)
             written_notes.add(eachNote)
@@ -1006,8 +1013,52 @@ class XMLWriter(object):
                 (bool) : True si categorizable est dans le conteneur des catégorisables ?
             """
             for container in categorizableContainers:
-                if categorizable in container:
-                    return True
+                # Direct membership (e.g. note is in NoteContainer or task in TaskList)
+                try:
+                    if categorizable in container:
+                        return True
+                except Exception:
+                    # Some containers may not support 'in' for the given object
+                    pass
+
+                # If container is iterable, build a set of items and their
+                # descendants and check whether either the categorizable or its
+                # parent is among those items. This covers notes attached to
+                # tasks (note.parent() == task) even if the note itself is not
+                # directly in the container.
+                try:
+                    items = set()
+                    for item in container:
+                        items.add(item)
+                        if hasattr(item, "children") and callable(item.children):
+                            try:
+                                items.update(item.children(recursive=True))
+                            except Exception:
+                                pass
+
+                    # Direct presence
+                    if categorizable in items:
+                        return True
+
+                    # Parent presence: for notes/categorizables attached to a
+                    # parent that is in the container
+                    # Walk up the parent chain: a categorizable might be a
+                    # subnote whose ancestor is a task in the container.
+                    try:
+                        cur = categorizable
+                        while True:
+                            cur = getattr(cur, "parent", lambda: None)()
+                            if cur is None:
+                                break
+                            if cur in items:
+                                return True
+                    except Exception:
+                        # Be defensive: if parent() fails, ignore and continue
+                        pass
+                except Exception:
+                    # Not iterable or can't iterate; skip
+                    pass
+
             return False
 
         # Création du noeud category

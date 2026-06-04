@@ -21,6 +21,22 @@ from taskcoachlib.domain import categorizable
 
 
 class NoteContainer(categorizable.CategorizableContainer):
+    """Conteneur de notes catégorisables.
+
+    Hérite de CategorizableContainer qui est un conteneur de catégorisables
+    qui étend Collection (une classe de collection qui étend CompositeSet).
+    Collection qui est un ensemble d'objets de domaine
+    fournit la méthode getObjectId pour récupérer un objet par son ID.
+    CompositeSet hérite de CompositeCollection et de ObservableSet
+    pour gérer les composites et leurs relations parent/enfant
+    et avertir les observateurs quand un élément est ajouté ou supprimé.
+
+    Cette classe représente un conteneur de notes catégorisables
+    (collection/ensemble d'objets de domaine catégorisable)
+    et fournit deux méthodes pour ajouter ou retirer des éléments
+    de la liste des catégorisables.
+    """
+
     # pass
     def __init__(self, *args, **kwargs):
         super().__init__()

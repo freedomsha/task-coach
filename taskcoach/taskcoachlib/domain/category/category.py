@@ -40,7 +40,7 @@ class Category(
         exclusiveSubcategories=False,
         stylePriority=0,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             subject=subject,
@@ -48,7 +48,7 @@ class Category(
             parent=parent,
             description=description,
             *args,
-            **kwargs
+            **kwargs,
         )
         # Liste d'attributs de base contenant la liste des catégorisables.
         self.__categorizables = base.SetAttribute(
@@ -156,11 +156,37 @@ class Category(
         self.categorySubjectChangedEvent(event)
 
     def categorySubjectChangedEvent(self, event):
+        """
+        Définit un événement de changement de sujet pour la catégorie,
+        qui est déclenché lorsque le sujet de la catégorie change.
+
+        Cet événement est ensuite propagé à tous les éléments catégorisables
+        appartenant à cette catégorie,
+        afin qu'ils puissent réagir en conséquence
+        (par exemple, en mettant à jour leur affichage
+        ou en recalculant des valeurs dérivées du sujet de la catégorie).
+
+        Args:
+            event: L'événement de changement de sujet qui a été déclenché.
+
+        Returns:
+            None
+        """
         subject = self.subject()
         for eachCategorizable in self.categorizables(recursive=True):
             eachCategorizable.categorySubjectChangedEvent(event, subject)
 
     def categorizables(self, recursive=False):
+        """Return the set of categorizables that belong to this category.
+        If recursive is True, also include categorizables that belong to
+        subcategories.
+
+        Args:
+            recursive (bool): Whether to include categorizables from subcategories.
+
+        Returns:
+            Set of categorizables that belong to this category (and optionally its subcategories).
+        """
         # Met la Liste d'attributs de base contenant la liste des catégorisables dans result.
         result = self.__categorizables.get()
         # Si récursive, pour chaque enfant de la liste d'enfants, result devient result OU la liste d'attributs de l'enfant :
@@ -170,6 +196,10 @@ class Category(
         return result
 
     def addCategorizable(self, *categorizables, **kwargs):
+        """Add one or more categorizables to this category."""
+        print(
+            f"Category.addCategorizable: pour {self}, ajoute les categorizables : {categorizables} !"
+        )
         self.__categorizables.add(
             set(categorizables), event=kwargs.pop("event", None)
         )
@@ -178,7 +208,7 @@ class Category(
         event.addSource(
             self,
             *categorizables,
-            **dict(type=self.categorizableAddedEventType())
+            **dict(type=self.categorizableAddedEventType()),
         )
 
     def removeCategorizable(self, *categorizables, **kwargs):
@@ -190,7 +220,7 @@ class Category(
         event.addSource(
             self,
             *categorizables,
-            **dict(type=self.categorizableRemovedEventType())
+            **dict(type=self.categorizableRemovedEventType()),
         )
 
     def setCategorizables(self, categorizables, event=None):

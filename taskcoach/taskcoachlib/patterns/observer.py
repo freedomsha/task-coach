@@ -56,7 +56,10 @@ Classes : Les classes ont été annotées pour indiquer les types des attributs 
 # Suppression : si on supprime la dernière entrée pour une clé stockée par id, on supprime aussi la clef du mapping __idToSource.
 
 # Remarques et points à surveiller
-# Il reste des warnings de linting (imports typés non utilisés, etc.) mais ce n'est pas bloquant pour l'exécution. J'ai préféré conserver le style et les annotations présentes afin de minimiser les changements.
+# Il reste des warnings de linting (imports typés non utilisés, etc.)
+# mais ce n'est pas bloquant pour l'exécution.
+# J'ai préféré conserver le style et les annotations présentes
+# afin de minimiser les changements.
 # L'utilisation de id(object) pour la clé est une solution pragmatique ; elle suppose que l'objet reste vivant pendant la durée d'enregistrement de l'observateur. Tant que l'observateur tient une référence (MethodProxy) à l'instance, l'objet ne sera pas garbage-collected, donc pas de réutilisation d'id problématique.
 # Si tu veux, on peut implémenter une clé basée sur (object.class, id(object)) ou un wrapper explicit pour rendre encore plus robuste — mais ce n'est a priori pas nécessaire.
 # from . import singleton
@@ -119,8 +122,13 @@ class List(list):
     on garantit un comportement plus prévisible.
 
     Methods :
-        __eq__ : Comparez deux listes pour l'égalité, en considérant les sous-classes de List comme inégales même si leur contenu est le même.
-        removeItems : Supprimez plusieurs éléments de la liste, utile pour ObservableList pour générer une seule notification lors de la suppression de plusieurs éléments.
+        - __eq__ : Comparez deux listes pour l'égalité,
+                   en considérant les sous-classes de List
+                   comme inégales même si leur contenu est le même.
+        - removeItems : Supprimez plusieurs éléments de la liste,
+                        utile pour ObservableList pour générer
+                        une seule notification lors de la suppression
+                        de plusieurs éléments.
 
     """
 
@@ -150,7 +158,7 @@ class List(list):
     def removeItems(self, items):
         # def removeItems(self, items: list) -> None:
         """
-        Supprimez plusieurs éléments de la liste.
+        Supprimer plusieurs éléments de la liste.
 
         List.removeItems est l'opposé de list.extend. Utile pour
         ObservableList pour pouvoir générer une seule notification
@@ -193,11 +201,11 @@ class Set(set):
     on garantit un comportement plus prévisible.
 
     Methods :
-        __new__ : Crée une nouvelle instance de Set, en vérifiant que l'argument est un itérable.
-        __cmp__ : Compare deux ensembles pour l'égalité, en utilisant set.__eq__ pour éviter les erreurs dans Python 2.5.
-        __hash__ : Rendre les instances de Set hachables en utilisant un hachage basé sur l'identité (id(self))
-                   pour permettre leur utilisation comme clés de dictionnaire,
-                   tout en restant compatibles avec l'égalité basée sur l'identité définie ailleurs.
+        - __new__ : Crée une nouvelle instance de Set, en vérifiant que l'argument est un itérable.
+        - __cmp__ : Compare deux ensembles pour l'égalité, en utilisant set.__eq__ pour éviter les erreurs dans Python 2.5.
+        - __hash__ : Rendre les instances de Set hachables en utilisant un hachage basé sur l'identité (id(self))
+                     pour permettre leur utilisation comme clés de dictionnaire,
+                     tout en restant compatibles avec l'égalité basée sur l'identité définie ailleurs.
     """
 
     def __new__(class_, iterable=None, *args, **kwargs):
@@ -910,8 +918,17 @@ def unwrapObservers(decoratedMethod):
     return decorator
 
 
-# Petite question : Dans Publisher.init, tu ajoute self.__idToSource = {] mais pourquoi ne pas utiliser self.__observers directement ?
-# Problème originel : certains objets « sources » (par ex. collections comme TaskList) sont potentiellement non-hashables par Python (ou sont mutables et leur hash vaut None). Or le registre des observateurs (Publisher.__observers) utilise des tuples (eventType, eventSource) comme clés de dictionnaire. Si eventSource n'est pas hashable, Python lève TypeError quand on tente d'utiliser ce tuple comme clé.
+# Petite question : Dans Publisher.init, tu ajoute self.__idToSource = {}
+#                   mais pourquoi ne pas utiliser self.__observers directement ?
+# Problème originel : certains objets « sources »
+#                     (par ex. collections comme TaskList)
+#                     sont potentiellement non-hashables par Python
+#                     (ou sont mutables et leur hash vaut None).
+#                     Or le registre des observateurs (Publisher.__observers)
+#                     utilise des tuples (eventType, eventSource)
+#                     comme clés de dictionnaire.
+#                     Si eventSource n'est pas hashable, Python lève TypeError
+#                     quand on tente d'utiliser ce tuple comme clé.
 # Deux approches possibles :
 #   Forcer toutes ces collections à être hashables (on trouvera parfois des patchs qui ajoutent __hash__ = lambda self: hash(id(self))). C'est possible, mais touche beaucoup de classes de collection et peut être invasif.
 #   Conserver une représentation interne stable et hachable pour la clé (par ex. id(source)), et garder une table séparée pour retrouver l'objet original quand on en a besoin. C'est l'approche retenue ici.
@@ -923,7 +940,8 @@ def unwrapObservers(decoratedMethod):
 # Pourquoi ne pas « tout faire » avec __observers :
 #   __observers est le registre clé->set(callbacks); il est conçu pour lookup rapide. Si on remplaçait en permanence la clé par l'objet original, on se heurterait encore au problème de non-hashabilité. Si on utilisait id(...) partout sans table « id→objet », on perdrait l'objet (et on ne pourrait pas reconstituer l'original pour l'API publique).
 #   Séparer la « clé interne hachable » et le « stockage id→objet » permet de garder l'API publique (Event.sources() rend les objets), tout en ayant un comportement interne sûr et performant.
-# Conclusion : __idToSource est la façon pragmatique et sûre de résoudre le bug TypeError tout en conservant l'API publique d'événements.
+# Conclusion : __idToSource est la façon pragmatique et sûre
+# de résoudre le bug TypeError tout en conservant l'API publique d'événements.
 
 
 class Publisher(object, metaclass=singleton.Singleton):
@@ -938,13 +956,13 @@ class Publisher(object, metaclass=singleton.Singleton):
     éventuellement des sources d'événements spécifiques, lors de leur inscription.
 
     Note d'implémentation :
-    - Publisher est une classe Singleton puisque tous les observables et tous les observateurs
-    doivent utiliser exactement un seul registre pour être sûr que tous les observables
-    peuvent atteindre tous les observateurs.
+    Publisher est une classe Singleton puisque tous les observables et
+    tous les observateurs doivent utiliser exactement un seul registre pour
+    être sûr que tous les observables peuvent atteindre tous les observateurs.
 
     Attributes :
         __observers (dict) : Le registre des observateurs, organisé par type d'événement et source d'événement.
-        __idToSource (dict) : Un mapping de id -> source pour les sources d'événements non hachables utilisées comme clés.
+        __idToSource (dict) : Un mapping d'id→source pour les sources d'événements non hachables utilisées comme clés.
 
     Methods :
         __init__ : Initialisez l'éditeur.
@@ -1007,8 +1025,8 @@ class Publisher(object, metaclass=singleton.Singleton):
             eventType (str) : le type d'événement à observer.
             eventSource (object, facultatif) : la source d'événement à observer.
         """
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"Publisher.registerObserver : Enregistre l'observateur {observer} pour le type d'événement {eventType} et la source d'événement {eventSource}."
         )
         try:
@@ -1018,7 +1036,7 @@ class Publisher(object, metaclass=singleton.Singleton):
             #     (eventType, id(eventSource)),
             #     set(),
             # )
-            print(
+            log.debug(
                 # f"Publisher.registerObserver : Ajoute observer = {observer} à observers : {observers}."
                 f"Publisher.registerObserver : Ajoute observer = {observer} à observers."
             )
@@ -1055,8 +1073,10 @@ class Publisher(object, metaclass=singleton.Singleton):
                 # This design also allows for future extensions or changes to how we handle event sources without needing to modify the core registration logic, as we can simply update the _source_key function as needed.
                 # Overall, this approach provides a robust and flexible way to manage event source keys in the Publisher's observers registry while ensuring that observers receive the correct source objects when notified of events.
 
-                # En français : Si la source est None, renvoyer None. Si la source est hachable, la renvoyer directement. Si la source est non hachable, utiliser id(source) comme clé et stocker la correspondance dans __idToSource pour une récupération ultérieure de l'objet original.
-                # Note : nous ne stockons la correspondance id->source que pour les sources non hachables afin d'éviter une utilisation de mémoire inutile pour les sources hachables.
+                # En français : Si la source est None, renvoyer None.
+                #               Si la source est hachable, la renvoyer directement.
+                #               Si la source est non hachable, utiliser id(source) comme clé et stocker la correspondance dans __idToSource pour une récupération ultérieure de l'objet original.
+                # Note : nous ne stockons la correspondance id→source que pour les sources non hachables afin d'éviter une utilisation de mémoire inutile pour les sources hachables.
                 # Cette conception nous permet de gérer à la fois les sources hachables et non hachables de manière transparente dans le Publisher sans nécessiter de modifications des sources d'événements elles-mêmes.
                 # La fonction _source_key encapsule la logique pour déterminer la clé appropriée à utiliser pour une source d'événement donnée, abstrahant les détails de la gestion des sources hachables vs non hachables du reste de la méthode registerObserver.
                 # En utilisant cette fonction d'aide, nous pouvons garder la logique principale de registerObserver propre et centrée sur le processus d'enregistrement, tandis que la fonction _source_key s'occupe des complexités de la normalisation des clés pour les sources d'événements.
@@ -1328,7 +1348,8 @@ class Observer(object):
         """
         self.__observers = set()
         # self.__observers: Set[Callable] = set()
-        super().__init__(*args, **kwargs)
+        # super().__init__(*args, **kwargs)
+        # Removed super().__init__(*args, **kwargs) as object.__init__ does not accept arguments
         # log.debug(f"Observer.__init__ : Liste des observateurs : {self.__observers}")
 
     def registerObserver(self, observer, *args, **kwargs):
@@ -1520,7 +1541,7 @@ class ObservableCollection(object):
         Les modifications sont soit des ajouts, soit des suppressions.
 
         Returns :
-            list : Les types d'événements de modification pour cette collection.
+            (list) : Les types d'événements de modification pour cette collection.
         """
         try:
             eventTypes = super().modificationEventTypes()
@@ -1538,19 +1559,19 @@ class ObservableSet(ObservableCollection, Set):
     lorsque des éléments sont ajoutés ou supprimés de l'ensemble.
 
     Methods :
-        __eq__ : Compare cet ObservableSet avec un autre objet.
-        append : Ajoute un élément à ObservableSet.
-        extend : Étend l'ObservableSet avec plusieurs éléments.
-        remove : Supprime un élément de l'ObservableSet.
-        removeItems : Supprime plusieurs éléments de l'ObservableSet.
-        clear : Efface tous les éléments de l’événement ObservableSet.
+        - __eq__ : Compare cet ObservableSet avec un autre objet.
+        - append : Ajoute un élément à ObservableSet.
+        - extend : Étend l'ObservableSet avec plusieurs éléments.
+        - remove : Supprime un élément de l'ObservableSet.
+        - removeItems : Supprime plusieurs éléments de l'ObservableSet.
+        - clear : Efface tous les éléments de l’événement ObservableSet.
 
-        From ObservableCollection :
-            __hash__ : Rendre les Collections Observables appropriées comme clés dans les dictionnaires.
-            detach : Met en pause les Cycles.
-            addItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été ajoutés à la collection.
-            removeItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été supprimés de la collection.
-            modificationEventTypes (classmethod) : Renvoie les types d'événements de modification pour cette collection.
+    From ObservableCollection :
+        - __hash__ : Rendre les Collections Observables appropriées comme clés dans les dictionnaires.
+        - detach : Met en pause les Cycles.
+        - addItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été ajoutés à la collection.
+        - removeItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été supprimés de la collection.
+        - modificationEventTypes (classmethod) : Renvoie les types d'événements de modification pour cette collection.
     """
 
     # def __eq__(self, other) -> bool:
@@ -1661,22 +1682,27 @@ class ObservableList(ObservableCollection, List):
     """ObservableList est une liste qui informe les observateurs
     lorsque des éléments sont ajoutés ou supprimés de la liste.
 
-    Attributes :
-        None
-
     Methods :
-        append : Ajoute un élément à ObservableList.
-        extend : Étend l'ObservableList avec plusieurs éléments.
-        remove : Supprime un élément de l'ObservableList.
-        removeItems : Supprime plusieurs éléments de l'ObservableList.
-        clear : Efface tous les éléments de l’événement ObservableList.
+        - append : Ajoute un élément à ObservableList.
+        - extend : Étend l'ObservableList avec plusieurs éléments.
+        - remove : Supprime un élément de l'ObservableList.
+        - removeItems : Supprime plusieurs éléments de l'ObservableList.
+        - clear : Efface tous les éléments de l’événement ObservableList.
 
-        From ObservableCollection :
-            __hash__ : Rendre les Collections Observables appropriées comme clés dans les dictionnaires.
-            detach : Met en pause les Cycles.
-            addItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été ajoutés à la collection.
-            removeItemEventType (classmethod) : Type d'événement utilisé pour informer les observateurs qu'un ou plusieurs éléments ont été supprimés de la collection.
-            modificationEventTypes (classmethod) : Renvoie les types d'événements de modification pour cette collection.
+    From ObservableCollection :
+        - __hash__ : Rendre les Collections Observables appropriées
+                     comme clés dans les dictionnaires.
+        - detach : Met en pause les Cycles.
+        - addItemEventType (classmethod) : Type d'événement utilisé
+                                           pour informer les observateurs
+                                           qu'un ou plusieurs éléments ont été
+                                           ajoutés à la collection.
+        - removeItemEventType (classmethod) : Type d'événement utilisé
+                                              pour informer les observateurs
+                                              qu'un ou plusieurs éléments ont
+                                              été supprimés de la collection.
+        - modificationEventTypes (classmethod) : Renvoie les types d'événements
+                                                 de modification pour cette collection.
     """
 
     @eventSource

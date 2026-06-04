@@ -28,7 +28,12 @@ class CategorizableCompositeObject(base.CompositeObject):
     """
     Les CatégorizableCompositeObjects sont des objets composites qui peuvent
     être classés en les ajoutant à une ou plusieurs catégories.
-    Des exemples d'objets composites catégorisables sont des tâches et des notes.
+
+    Hérite de CompositeObject pour contenir d'autres objets en tant qu'enfants.
+    Cette classe étend Object et ObservableComposite pour fournir des méthodes
+    supplémentaires pour gérer les objets enfants et leur état.
+
+    Des exemples d'objets composites catégorisables sont les tâches et les notes.
     """
 
     def __init__(self, *args, **kwargs):
@@ -62,6 +67,7 @@ class CategorizableCompositeObject(base.CompositeObject):
             f"CategorizableCompositeObject.__setstate__ : pour state {state} et event {event}"
         )
         super().__setstate__(state, event=event)
+        # Définit les catégories à partir de l'état, en utilisant la méthode setCategories pour gérer les événements et les mises à jour d'apparence.
         self.setCategories(state["categories"], event=event)
         # # Gérer uniquement les attributs spécifiques à CategorizableCompositeObject, comme 'categories'.
         # categories_value = state.pop("categories", set()) # Exemple d'attribut spécifique à CategorizableCompositeObject
@@ -75,11 +81,11 @@ class CategorizableCompositeObject(base.CompositeObject):
         # AttributeError: 'Task' object has no attribute '_CategorizableCompositeObject__subject'
         if hasattr(self, "subject"):
             log.debug(
-                f"CategorizableCompositeObject.__setstate__() - subject après set: {self.subject}"
+                f"CategorizableCompositeObject.__setstate__() - subject après set: {self.subject} !"
             )
         else:
             log.debug(
-                "CategorizableCompositeObject.__setstate__() - subject non défini"
+                "CategorizableCompositeObject.__setstate__() - subject non défini !"
             )
 
     def __getcopystate__(self):
@@ -94,6 +100,7 @@ class CategorizableCompositeObject(base.CompositeObject):
         return state
 
     def categories(self, recursive=False, upwards=False):
+        """Retourne les catégories auxquelles appartient cet objet catégorisable composite."""
         # print(f"CategorizableCompositeObject.categories : 🔍 DEBUG - Appel de categories() pour {self.id()} | Retour = {self.__categories}")
         result = self.__categories.get()
         # print(f"CategorizableCompositeObject.categories : Retour=result={result}")
@@ -106,6 +113,13 @@ class CategorizableCompositeObject(base.CompositeObject):
 
     @classmethod
     def categoryAddedEventType(class_):
+        """Retourne le type d'événement pour l'ajout d'une catégorie.
+
+        Les événements de ce type sont déclenchés lorsqu'une catégorie
+        est ajoutée à un objet catégorisable composite,
+        et peuvent être utilisés pour mettre à jour l'apparence
+        ou d'autres propriétés de l'objet en fonction de la nouvelle catégorie.
+        """
         return "categorizable.category.add"
 
     # Bug SetAttribute (categorizable.py) :
@@ -114,6 +128,7 @@ class CategorizableCompositeObject(base.CompositeObject):
     # cela peut provoquer des erreurs d'itération ou d'ajout.
     # La correction ici est importante pour la stabilité.
     def addCategory(self, *categories, **kwargs):
+        """Ajoute une ou plusieurs catégories à cet objet composite catégorisable."""
         # print(f"CategorizableCompositeObject.addCategory : 🛠 DEBUG - Ajout de {categories} à {self} dans {self.__class__.__name__}")
         # return self.__categories.add(set(categories), event=kwargs.pop("event", None))
         # self.__categories.update(categories)  # Ajoute les catégories. Erreur, update() ne fonctionne pas.
@@ -127,6 +142,15 @@ class CategorizableCompositeObject(base.CompositeObject):
         return True  # Retourne True pour que Task.addCategory() fonctionne
 
     def addCategoryEvent(self, event, *categories):
+        """
+        Gère l'événement d'ajout de catégorie en ajoutant la source de
+        l'événement pour cet objet et ses enfants,
+        et en déclenchant un changement d'apparence si nécessaire.
+
+        Args :
+            event : L'événement d'ajout de catégorie.
+            *categories : Les catégories qui ont été ajoutées.
+        """
         event.addSource(
             self, *categories, **dict(type=self.categoryAddedEventType())
         )
@@ -138,6 +162,15 @@ class CategorizableCompositeObject(base.CompositeObject):
             self.appearanceChangedEvent(event)
 
     def categoriesChangeAppearance(self, categories):
+        """
+        Détermine si l'ajout ou la suppression de catégories change l'apparence de cet objet composite catégorisable.
+
+        Args:
+            categories : Les catégories qui ont été ajoutées ou supprimées.
+
+        Returns:
+            True si l'apparence change en raison de l'ajout ou de la suppression de catégories, False sinon.
+        """
         return (
             self.categoriesChangeFgColor(categories)
             or self.categoriesChangeBgColor(categories)
@@ -146,35 +179,46 @@ class CategorizableCompositeObject(base.CompositeObject):
         )
 
     def categoriesChangeFgColor(self, categories):
+        """Détermine si l'ajout ou la suppression de catégories change la couleur de premier plan de cet objet composite catégorisable."""
         return not self.foregroundColor() and any(
             category.foregroundColor(recursive=True) for category in categories
         )
 
     def categoriesChangeBgColor(self, categories):
+        """Détermine si l'ajout ou la suppression de catégories change la couleur de fond de cet objet composite catégorisable."""
         return not self.backgroundColor() and any(
             category.backgroundColor(recursive=True) for category in categories
         )
 
     def categoriesChangeFont(self, categories):
+        """Détermine si l'ajout ou la suppression de catégories change la police de cet objet composite catégorisable."""
         return not self.font() and any(
             category.font(recursive=True) for category in categories
         )
 
     def categoriesChangeIcon(self, categories):
+        """Détermine si l'ajout ou la suppression de catégories change l'icône de cet objet composite catégorisable."""
         return not self.icon() and any(
             category.icon(recursive=True) for category in categories
         )
 
     @classmethod
     def categoryRemovedEventType(class_):
+        """Retourne le type d'événement pour la suppression d'une catégorie."""
         return "categorizable.category.remove"
 
     def removeCategory(self, *categories, **kwargs):
+        """Supprime une ou plusieurs catégories de cet objet composite catégorisable."""
         return self.__categories.remove(
             set(categories), event=kwargs.pop("event", None)
         )
 
     def removeCategoryEvent(self, event, *categories):
+        """
+        Gère l'événement de suppression de catégorie en ajoutant la source de
+        l'événement pour cet objet et ses enfants,
+        et en déclenchant un changement d'apparence si nécessaire.
+        """
         event.addSource(
             self, *categories, **dict(type=self.categoryRemovedEventType())
         )
@@ -188,7 +232,7 @@ class CategorizableCompositeObject(base.CompositeObject):
             self.appearanceChangedEvent(event)
 
     def setCategories(self, categories, event=None):
-
+        """Remplace les catégories de cet objet composite catégorisable par un nouvel ensemble de catégories."""
         # print(
         #     f"CategorizableCompositeObject.setCategory : 🛠 DEBUG - Règle de {categories} à {self} dans {self.__class__.__name__}")
         return self.__categories.set(set(categories), event=event)
@@ -212,19 +256,25 @@ class CategorizableCompositeObject(base.CompositeObject):
         après les catégories de la catégorisable elle-même.
 
         Args :
-            **kwargs :
+            **kwargs : Arguments optionnels pour configurer la fonction de tri,
+                       tels que "treeMode" pour indiquer si le tri
+                       est en mode arborescence ou liste.
 
         Returns :
+            Une fonction de clé de tri qui peut être utilisée
+            pour trier les objets catégorisables en fonction de leurs catégories.
         """
 
         def sortKeyFunction(categorizable):
             """
+            Fonction de clé de tri pour les objets catégorisables, basée sur les sujets de leurs catégories.
 
             Args :
-                categorizable :
+                categorizable : L'objet catégorisable pour lequel calculer la clé de tri.
 
             Returns :
-
+                Une liste de sujets de catégories triés,
+                qui peut être utilisée comme clé de tri pour les objets catégorisables.
             """
 
             def sortedSubjects(items):
@@ -347,6 +397,20 @@ class CategorizableCompositeObject(base.CompositeObject):
         return icon
 
     def categoryIcon(self):
+        """If a categorizable object belongs to a category that has an icon
+        associated with it, the categorizable object uses that icon. When a
+        categorizable object belongs to multiple categories,
+        the icon of the first category with an icon is used.
+        If a categorizable composite object has no icon of its own,
+        it uses its parent's icon.
+
+        En français : Si un objet catégorisable appartient à une catégorie
+        qui a une icône associée, l'objet catégorisable utilise cette icône.
+        Lorsqu'un objet catégorisable appartient à plusieurs catégories,
+        l'icône de la première catégorie avec une icône est utilisée.
+        Si un objet composite catégorisable n'a pas d'icône propre,
+        il utilise l'icône de son parent.
+        """
         icon = ""
         for category in self.categories():
             icon = category.icon(recursive=True)
@@ -366,6 +430,9 @@ class CategorizableCompositeObject(base.CompositeObject):
         return icon
 
     def categorySelectedIcon(self):
+        """
+        If a categorizable object belongs to a category that has a selected
+        """
         icon = ""
         for category in self.categories():
             icon = category.selectedIcon(recursive=True)
@@ -378,6 +445,7 @@ class CategorizableCompositeObject(base.CompositeObject):
 
     @classmethod
     def categorySubjectChangedEventType(class_):
+        """"""
         return "categorizable.category.subject"
 
     def categorySubjectChangedEvent(self, event, subject):

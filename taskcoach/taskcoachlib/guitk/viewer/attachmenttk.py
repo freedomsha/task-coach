@@ -63,19 +63,26 @@ from taskcoachlib.guitk.viewer import basetk, mixintk
 log = logging.getLogger(__name__)
 
 
-class Attachmentviewer(mixintk.AttachmentDropTargetMixin,  # pylint: disable=W0223
-                       basetk.SortableViewerWithColumns,
-                       mixintk.SortableViewerForAttachmentsMixin,
-                       mixintk.SearchableViewerMixin,
-                       mixintk.NoteColumnMixin,
-                       basetk.ListViewer):
+class Attachmentviewer(
+    mixintk.AttachmentDropTargetMixin,  # pylint: disable=W0223
+    basetk.SortableViewerWithColumns,
+    mixintk.SortableViewerForAttachmentsMixin,
+    mixintk.SearchableViewerMixin,
+    mixintk.NoteColumnMixin,
+    basetk.ListViewer,
+):
     """Vue des pièces jointes dans Task Coach."""
 
     # Classe de tri pour les pièces jointes
     SorterClass = attachment.AttachmentSorter
-    viewerImages = basetk.ListViewer.viewerImages + ["fileopen", "fileopen_red"]
+    viewerImages = basetk.ListViewer.viewerImages + [
+        "fileopen",
+        "fileopen_red",
+    ]
 
-    def __init__(self, parent, attachmentsToShow, taskFile, settings, **kwargs):
+    def __init__(
+        self, parent, attachmentsToShow, taskFile, settings, **kwargs
+    ):
         """Initialise la vue des pièces jointes."""
         self.attachments = attachmentsToShow
         self.taskFile = taskFile
@@ -87,7 +94,9 @@ class Attachmentviewer(mixintk.AttachmentDropTargetMixin,  # pylint: disable=W02
     def _addAttachments(self, attachments, item, **itemDialogKwargs):
         """Ajoute des pièces jointes."""
         # Don't try to add attachments to attachments.
-        print(f"viewer.attachment.AttachmentViewer._addAttachments : 📌 [DEBUG] Ajout des attachements : {attachments} dans self={self}")
+        print(
+            f"viewer.attachment.AttachmentViewer._addAttachments : 📌 [DEBUG] Ajout des attachements : {attachments} dans self={self}"
+        )
         super()._addAttachments(attachments, None, **itemDialogKwargs)
 
     def domainObjectsToView(self):
@@ -107,17 +116,28 @@ class Attachmentviewer(mixintk.AttachmentDropTargetMixin,  # pylint: disable=W02
         """Crée et retourne le widget utilisé pour afficher les pièces jointes."""
         # imageList = self.createImageList() # A adapter
         itemPopupMenu = taskcoachlib.guitk.menutk.AttachmentPopupMenu(
-            self.parent, self.settings, self.taskFile, self  # presentation() n'existe plus, remplacer par self.taskFile
+            self.parent,
+            self.settings,
+            self.taskFile,
+            self,  # presentation() n'existe plus, remplacer par self.taskFile
         )
         columnPopupMenu = taskcoachlib.guitk.menutk.ColumnPopupMenu(self)
         self._popupMenus.extend([itemPopupMenu, columnPopupMenu])
         self._columns = self._createColumns()
 
         # Création du Treeview pour afficher les pièces jointes
-        self.tree = ttk.Treeview(self, columns=[col.name for col in self._columns], show='headings')
+        self.tree = ttk.Treeview(
+            self, columns=[col.name for col in self._columns], show="headings"
+        )
         for col in self._columns:
-            self.tree.heading(col.name, text=col.header, command=lambda c=col: self.sort_column(c, reverse=False))  # Gestion du tri
-            self.tree.column(col.name, width=col.width)  # Initialisation de la largeur
+            self.tree.heading(
+                col.name,
+                text=col.header,
+                command=lambda c=col: self.sort_column(c, reverse=False),
+            )  # Gestion du tri
+            self.tree.column(
+                col.name, width=col.width
+            )  # Initialisation de la largeur
 
         # Remplissage du Treeview avec les données
         self.populate_tree()
@@ -132,7 +152,9 @@ class Attachmentviewer(mixintk.AttachmentDropTargetMixin,  # pylint: disable=W02
         for item in self.domainObjectsToView():
             values = []
             for column in self._columns:
-                values.append(column.render(item))  # Utilisation de la méthode render de la colonne
+                values.append(
+                    column.render(item)
+                )  # Utilisation de la méthode render de la colonne
             self.tree.insert("", tk.END, values=values)
 
     def sort_column(self, col, reverse):
@@ -149,60 +171,97 @@ class Attachmentviewer(mixintk.AttachmentDropTargetMixin,  # pylint: disable=W02
         # Column_def = widgetstk.itemctrl.Column
         return [
             widgetstk.itemctrltk.Column(
-                "type", _("Type"), width=100, eventTypes="",  # Ajuster la largeur
+                "type",
+                _("Type"),
+                width=100,
+                eventTypes="",  # Ajuster la largeur
                 renderCallback=lambda item: item.type_,  # Remplacer typeImageIndices
             ),
             widgetstk.itemctrltk.Column(
-                "subject", _("Subject"), width=150, eventTypes="",
+                "subject",
+                _("Subject"),
+                width=150,
+                eventTypes="",
                 renderCallback=lambda item: item.subject(),
             ),
             widgetstk.itemctrltk.Column(
-                "description", _("Description"),width=200, eventTypes="",
+                "description",
+                _("Description"),
+                width=200,
+                eventTypes="",
                 renderCallback=lambda item: item.description(),
             ),
             # Ajoutez d'autres colonnes ici en adaptant le code wxPython
             widgetstk.itemctrltk.Column(
-                "creationDateTime", _("Creation date"), width=120, eventTypes="",
-                renderCallback=lambda item: str(item.creationDateTime()),  # Formatage de la date
+                "creationDateTime",
+                _("Creation date"),
+                width=120,
+                eventTypes="",
+                renderCallback=lambda item: str(
+                    item.creationDateTime()
+                ),  # Formatage de la date
             ),
             widgetstk.itemctrltk.Column(
-                "modificationDateTime", _("Modification date"), width=120, eventTypes="",
-                renderCallback=lambda item: str(item.modificationDateTime()),  # Formatage de la date
+                "modificationDateTime",
+                _("Modification date"),
+                width=120,
+                eventTypes="",
+                renderCallback=lambda item: str(
+                    item.modificationDateTime()
+                ),  # Formatage de la date
             ),
         ]
 
     def createColumnUICommands(self):
         """Crée et retourne les commandes de l'interface utilisateur pour gérer les colonnes."""
         return [
-            uicommand.ToggleAutoColumnResizing(viewer=self, settings=self.settings),
+            uicommand.ToggleAutoColumnResizing(
+                viewer=self, settings=self.settings
+            ),
             None,
             uicommand.ViewColumn(
-                menuText=_("&Description"), helpText=_("Show/hide description column"),
-                setting="description", viewer=self
+                menuText=_("&Description"),
+                helpText=_("Show/hide description column"),
+                setting="description",
+                viewer=self,
             ),
             uicommand.ViewColumn(
-                menuText=_("&Notes"), helpText=_("Show/hide notes column"),
-                setting="notes", viewer=self
+                menuText=_("&Notes"),
+                helpText=_("Show/hide notes column"),
+                setting="notes",
+                viewer=self,
             ),
             uicommand.ViewColumn(
-                menuText=_("&Creation date"), helpText=_("Show/hide creation date column"),
-                setting="creationDateTime", viewer=self
+                menuText=_("&Creation date"),
+                helpText=_("Show/hide creation date column"),
+                setting="creationDateTime",
+                viewer=self,
             ),
             uicommand.ViewColumn(
-                menuText=_("&Modification date"), helpText=_("Show/hide last modification date column"),
-                setting="modificationDateTime", viewer=self
-            )
+                menuText=_("&Modification date"),
+                helpText=_("Show/hide last modification date column"),
+                setting="modificationDateTime",
+                viewer=self,
+            ),
         ]
 
     def createCreationToolBarUICommands(self):
         """Crée et retourne les commandes de la barre d'outils pour la création de pièces jointes."""
-        return (uicommand.AttachmentNew(attachments=self.taskFile, settings=self.settings, viewer=self),) + \
-            super().createCreationToolBarUICommands()
+        return (
+            uicommand.AttachmentNew(
+                attachments=self.taskFile, settings=self.settings, viewer=self
+            ),
+        ) + super().createCreationToolBarUICommands()
 
     def createActionToolBarUICommands(self):
         """Crée et retourne les commandes de la barre d'outils pour les actions sur les pièces jointes."""
-        return (uicommand.AttachmentOpen(attachments=attachment.AttachmentList(), viewer=self, settings=self.settings),) + \
-            super().createActionToolBarUICommands()
+        return (
+            uicommand.AttachmentOpen(
+                attachments=attachment.AttachmentList(),
+                viewer=self,
+                settings=self.settings,
+            ),
+        ) + super().createActionToolBarUICommands()
 
     def typeImageIndices(self, anAttachment, exists=os.path.exists):
         """Retourne les indices des images associées à un type de pièce jointe."""
@@ -214,15 +273,21 @@ class Attachmentviewer(mixintk.AttachmentDropTargetMixin,  # pylint: disable=W02
                 index = 1  # self.imageIndex["fileopen_red"]
         else:
             try:
-                index = {"uri": 2, "mail": 3}[anAttachment.type_] # self.imageIndex[{"uri": "earth_blue_icon", "mail": "envelope_icon"}[anAttachment.type_]]
+                index = {"uri": 2, "mail": 3}[
+                    anAttachment.type_
+                ]  # self.imageIndex[{"uri": "earth_blue_icon", "mail": "envelope_icon"}[anAttachment.type_]]
             except KeyError:
                 index = -1
         return {tk.NORMAL: index}
 
     def itemEditorClass(self):
         """Retourne la classe de l'éditeur d'éléments."""
-        return dialog.editor.AttachmentEditor  # TODO : a remettre une fois dialog créé
-        log.error("AttachmentViwer.itemEditorClass : dialog.editor.AttachmentEditor à mettre !")
+        return (
+            dialog.editor.AttachmentEditor
+        )  # TODO : a remettre une fois dialog créé
+        log.error(
+            "AttachmentViwer.itemEditorClass : dialog.editor.AttachmentEditor à mettre !"
+        )
 
     def newItemCommandClass(self):
         """Classe de commande pour créer un nouvel élément."""

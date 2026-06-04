@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 # Notre but est de créer la classe BalloonTipManager dans Tkinter, qui gérera l'affichage des info-bulles selon les paramètres de l'application, tout comme la version wxPython.
 #
 # Aperçu de la conversion de balloontips.py
@@ -74,10 +75,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # et nous utilisons super().AddBalloonTip pour lui déléguer l'affichage après avoir effectué la vérification des paramètres et récupéré l'icône.
 #
 # Désactivation : La méthode OnBalloonTipShow désactive l'info-bulle en utilisant settings.setboolean("balloontips", name, False), garantissant que le conseil ne s'affiche qu'une seule fois.
-from taskcoachlib.widgetstk import balloontiptk  # Import de la classe de base BalloonTipManager
-from taskcoachlib.widgetstk.balloontiptk import BalloonTip          # Import de notre classe Tkinter BalloonTip
-from PIL import Image                       # Nécessaire pour l'icône
+from taskcoachlib.widgetstk import (
+    balloontiptk,
+)  # Import de la classe de base BalloonTipManager
+from taskcoachlib.widgetstk.balloontiptk import (
+    BalloonTip,
+)  # Import de notre classe Tkinter BalloonTip
+from PIL import Image  # Nécessaire pour l'icône
 import tkinter as tk  # On utilise tkinter ici, même si l'ArtProvider n'existe pas
+
 # Importation de l'ArtProvider Tkinter et de la constante du client pour le menu
 from taskcoachlib.guitk.artprovidertk import art_provider_tk, ART_MENU
 
@@ -91,18 +97,28 @@ class BalloonTipManager(balloontiptk.BalloonTipManager):
     et utilise l'ArtProvider Tkinter pour l'icône.
     """
 
-    def AddBalloonTip(self, settings, name, target, message=None, title=None, bitmap=None, getRect=None):
+    def AddBalloonTip(
+        self,
+        settings,
+        name,
+        target,
+        message=None,
+        title=None,
+        bitmap=None,
+        getRect=None,
+    ):
         """
         Ajoute et potentiellement affiche une info-bulle si elle est activée
         dans les paramètres de l'utilisateur.
 
-        :param settings: L'objet de configuration de Task Coach.
-        :param name: Le nom unique de l'info-bulle dans les paramètres ("balloontips").
-        :param target: Le widget Tkinter cible.
-        :param message: Le message à afficher.
-        :param title: Le titre de la bulle.
-        :param bitmap: L'image PIL à afficher (simule wx.ArtProvider.GetBitmap).
-        :param getRect: Fonction optionnelle pour obtenir la géométrie du widget cible.
+        Args :
+            settings: L'objet de configuration de Task Coach.
+            name: Le nom unique de l'info-bulle dans les paramètres ("balloontips").
+            target: Le widget Tkinter cible.
+            message: Le message à afficher.
+            title: Le titre de la bulle.
+            bitmap: L'image PIL à afficher (simule wx.ArtProvider.GetBitmap).
+            getRect: Fonction optionnelle pour obtenir la géométrie du widget cible.
         """
         # 1. Vérifie si l'info-bulle est activée dans les paramètres.
         #    On utilise settings.getboolean("section", "nom_du_setting")
@@ -122,7 +138,7 @@ class BalloonTipManager(balloontiptk.BalloonTipManager):
             #    L'icône "lamp_icon" est généralement utilisée pour les conseils/tips.
             #    On simule la taille (16, 16) et le contexte (ART_MENU) de l'original.
             lamp_bitmap = art_provider_tk.GetBitmap(
-                'lamp_icon',
+                "lamp_icon",
                 ART_MENU,
                 (16, 16)
             )
@@ -133,11 +149,17 @@ class BalloonTipManager(balloontiptk.BalloonTipManager):
             #    Appelle la méthode de la classe de base avec le bitmap récupéré.
             #    Le 'bitmap' passé en argument original (s'il y en avait un) est ignoré
             #    pour forcer l'icône de la lampe.
-            super().AddBalloonTip(target=target, message=message, title=title,
-                                  # bitmap=wx.ArtProvider.GetBitmap("lamp_icon", wx.ART_MENU, (16, 16)),
-                                  # bitmap=bitmap,  # On utilise le bitmap fourni si nécessaire
-                                  bitmap=lamp_bitmap,
-                                  getRect=getRect, name=name, settings=settings)
+            super().AddBalloonTip(
+                target=target,
+                message=message,
+                title=title,
+                # bitmap=wx.ArtProvider.GetBitmap("lamp_icon", wx.ART_MENU, (16, 16)),
+                # bitmap=bitmap,  # On utilise le bitmap fourni si nécessaire
+                bitmap=lamp_bitmap,  # Utilise l'icône de la lampe récupérée
+                getRect=getRect,
+                name=name,
+                settings=settings,
+            )
 
     def OnBalloonTipShow(self, name=None, settings=None):
         """

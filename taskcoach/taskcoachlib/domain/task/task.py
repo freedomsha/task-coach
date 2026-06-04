@@ -228,7 +228,9 @@ class Task(
         #    We pass a copy of kwargs to each to avoid modifying the original
         #    kwargs for subsequent calls.
         note.NoteOwner.__init__(self, notes=notes, **kwargs.copy())
-        attachment.AttachmentOwner.__init__(self, attachments=attachments, **kwargs.copy())
+        attachment.AttachmentOwner.__init__(
+            self, attachments=attachments, **kwargs.copy()
+        )
 
         # kwargs["id"] = id
         # kwargs["subject"] = subject
@@ -248,7 +250,9 @@ class Task(
         _kwargs_for_super = kwargs.copy()
         _kwargs_for_super.pop("notes", None)
         _kwargs_for_super.pop("attachments", None)
-        _kwargs_for_super.pop("status", None) # Prevent passing TaskStatus object to SynchronizedObject's internal status
+        _kwargs_for_super.pop(
+            "status", None
+        )  # Prevent passing TaskStatus object to SynchronizedObject's internal status
 
         # # Appels explicites aux constructeurs des classes mixin
         # # Ces appels doivent être faits avant l'appel à super().__init__()
@@ -273,7 +277,9 @@ class Task(
         _kwargs_for_super["subject"] = subject
         _kwargs_for_super["description"] = description
         _kwargs_for_super["id"] = id
-        _kwargs_for_super["categories"] = categories # CategorizableCompositeObject handles this
+        _kwargs_for_super["categories"] = (
+            categories  # CategorizableCompositeObject handles this
+        )
 
         # # Appel explicites des constructeurs des parents pour s'assurer que les champs sont initialisés dans le bon ordre.
         # # Et que __notes et __attachments sont correctement initialisés.
@@ -362,11 +368,12 @@ class Task(
         # 4. Task-specific initialization
         #    Set Task's internal __status to the semantic TaskStatus object
         self.__status = status
-        if isinstance(self.__status, int): # Ensure it's a TaskStatus object
+        if isinstance(self.__status, int):  # Ensure it's a TaskStatus object
             self.__status = mod_status.from_int(self.__status)
 
-        self.__categories = set() if categories is None else set(categories) # This might be redundant if CategorizableCompositeObject handles it
-
+        self.__categories = (
+            set() if categories is None else set(categories)
+        )  # This might be redundant if CategorizableCompositeObject handles it
 
         # print(f"Task.__init__ : Finalement : self.__status = {self.__status}")
         # New single-source-of-truth fields (updated by computeStatus)
@@ -3245,32 +3252,27 @@ class Task(
 
     def addNotes(self, *notes, **kwargs):
         """Méthode plurielle (utilisée par les Commandes)"""
+        # print(f"DEBUG: Task.addNotes called for task {getattr(self,'id', lambda:None)()} with notes={notes}")
         for aNote in notes:
-            # Vérifie l'existence de la note dans les notes de la tâche avant de l'ajouter pour éviter les doublons. Utilise l'accès direct à l'attribut manglé pour éviter toute redéfinition de notes() qui pourrait causer une récursion infinie.
+            # Vérifie l'existence de la note dans les notes de la tâche avant de l'ajouter pour éviter les doublons.
             # Utiliser super().notes() pour accéder à la liste gérée par NoteOwner.
-            if (
-                # aNote not in self.notes()
-                # ):  # This will now call the recursive notes() method
-                # if aNote not in self.__notes:
-                # self.notes().append(aNote)
-                # self.__notes.append(aNote)  # éviter une récursion infinie avec self.notes() qui pourrait être redéfini pour faire autre chose que retourner self.__notes
-                aNote
-                not in super().notes()  # Check against ownNotes directly, not recursive
-                # not in self._NoteOwner__notes  # Access the mangled __notes attribute directly to avoid any overridden notes() method that might cause recursion
-            ):
+            # Ensure we operate on the actual NoteOwner storage attribute
+            notes_attr = getattr(self, "_NoteOwner__notes", None)
+            if notes_attr is None:
+                # Initialize the storage if missing
+                setattr(self, "_NoteOwner__notes", [])
+                notes_attr = getattr(self, "_NoteOwner__notes")
+            if aNote not in notes_attr:
+                # print(f"DEBUG: Adding note {aNote} to task {getattr(self,'id', lambda:None)()}")
                 # Définit le parent de la note
-                aNote.setParent(
-                    self
-                )  # Set the parent of the note to this task. Définit le parent de la note
+                aNote.setParent(self)
                 # Ajoute à la liste gérée par NoteOwner
-                super().notes().append(  # Ajoute à la liste gérée par NoteOwner
-                    # Ajoute directement à la liste interne via l'attribut manglé de NoteOwner
-                    # self._NoteOwner__notes.append(
-                    aNote
-                )  # Directly append to the internal list via super() to avoid any overridden behavior in self.notes() that might cause recursion
-                # CRUCIAL : Notifier pour que TaskFile.needSave passe à True
-                # pub.sendMessage("task.notes.added", task=self, note=aNote)  # Ne sait pas quoi faire de ses arguments !
-                pub.sendMessage("task.notes.added")
+                notes_attr.append(aNote)
+                # Notifier pour que TaskFile.needSave passe à True
+                try:
+                    pub.sendMessage("task.notes.added", task=self, note=aNote)
+                except Exception:
+                    pub.sendMessage("task.notes.added")
 
     def addAttachments(self, param, **kwargs):
         """Ajouter une ou plusieurs pièces jointes à la tâche."""

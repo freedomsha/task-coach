@@ -254,17 +254,10 @@ class Attachment(base.Object, NoteOwner):
             f"DEBUG - Attachment.__init__() appelé avec location={location}, args={args}, kwargs={kwargs}"
         )
         if "subject" not in kwargs:
-            # kwargs["subject"] = location
-            # Use filename without extension as subject, not full path/URL
-            filename = os.path.basename(location)
-            # kwargs["subject"] = (
-            #     os.path.splitext(filename)[0] or location
-            # )  # ❌ Supprime l'extension (.txt)
-            # # os.path.splitext("whatever.txt") retourne ("whatever", ".txt").
-            # # [0] prend uniquement "whatever", ce qui fait échouer le test (le test attend "whatever.txt").
-            kwargs["subject"] = (
-                filename or location
-            )  # ✅ Utilise le nom de fichier complet (avec extension) ou location si filename est vide
+            # Historically the subject for file attachments was set to the
+            # full location. Tests expect the subject attribute in the XML to
+            # equal the attachment location, so default to location here.
+            kwargs["subject"] = location
 
         # On extrait l’attribut propre à Attachment
         self.__location = kwargs.pop("location", location)

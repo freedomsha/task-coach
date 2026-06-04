@@ -82,18 +82,22 @@ OVERRIDE_METHOD = {
 
 
 def effectiveFgColorChangedEventType():
+    """Event type for effective foreground color changes. Subscribed to by UI to update fg color."""
     return "pubsub.effective.fgColor"
 
 
 def effectiveBgColorChangedEventType():
+    """Event type for effective background color changes. Subscribed to by UI to update bg color."""
     return "pubsub.effective.bgColor"
 
 
 def effectiveIconChangedEventType():
+    """Event type for effective icon changes. Subscribed to by UI to update icon."""
     return "pubsub.effective.icon"
 
 
 def effectiveFontChangedEventType():
+    """Event type for effective font changes. Subscribed to by UI to update font."""
     return "pubsub.effective.font"
 
 
@@ -111,19 +115,23 @@ EFFECTIVE_EVENT_TYPES = {
 
 
 def setEffectiveFgColor(obj, value, default, source):
+    """Calls the object's setEffectiveFgColor(value, default, source) setter."""
     obj.setEffectiveFgColor(value, default, source)
 
 
 def setEffectiveBgColor(obj, value, default, source):
+    """Calls the object's setEffectiveBgColor(value, default, source) setter."""
     obj.setEffectiveBgColor(value, default, source)
 
 
 def setEffectiveIcon(obj, value, default, source):
+    """Calls the object's setEffectiveIcon(value, source) setter."""
     # Icon setter doesn't take default
-    obj.setEffectiveIcon(value, source)
+    obj.setEffectiveIcon(value or default, source)
 
 
 def setEffectiveFont(obj, value, default, source):
+    """Calls the object's setEffectiveFont(value, default, source) setter."""
     obj.setEffectiveFont(value, default, source)
 
 

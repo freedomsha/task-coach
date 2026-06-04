@@ -35,7 +35,15 @@ import wx
 import io  # We cannot use CStringIO since unicode strings are used below.
 from ... import tctest
 from taskcoachlib import persistence, config, meta
-from taskcoachlib.domain import base, task, effort, date, category, note, attachment
+from taskcoachlib.domain import (
+    base,
+    task,
+    effort,
+    date,
+    category,
+    note,
+    attachment,
+)
 from taskcoachlib.syncml.config import SyncMLConfigNode
 from taskcoachlib.gui.uicommand.uicommand import AddAttachment
 
@@ -70,9 +78,11 @@ class XMLWriterTest(tctest.TestCase):
         """
         task.Task.settings = config.Settings(load=False)
         # Flux mémoire pour capturer la sortie XML :
-        # self.fd = io.StringIO()  # Cela crée un objet StringIO (Un flux de texte utilisant un tampon de texte en mémoire).
+        self.fd = (
+            io.StringIO()
+        )  # Cela crée un objet StringIO (Un flux de texte utilisant un tampon de texte en mémoire).
         # Use BytesIO for binary data
-        self.fd = io.BytesIO()
+        # self.fd = io.BytesIO()
         self.fd.name = "testfile.tsk"  # Name attribute assignment might not be necessary for StringIO
         # Pour StringIO, encoding n'est plus réglable. utf-8 est automatique.
         # self.fd.encoding = "UTF-8"  # Remove or comment this out if it's present in your code
@@ -89,7 +99,15 @@ class XMLWriterTest(tctest.TestCase):
         # Exemple de note utilisée dans les tests :
         self.note = note.Note()
         # Conteneur de notes utilisé dans les tests :
-        self.noteContainer = note.NoteContainer([self.note])
+        # self.noteContainer = note.NoteContainer([self.note])
+        # NoteContainer([self.note]) ne fonctionnait pas correctement
+        # à cause de l'héritage de CategorizableContainer,
+        # tandis que append() est la méthode standard et fiable.
+        self.noteContainer = note.NoteContainer()
+        self.noteContainer.append(
+            self.note
+        )  # ✅ Ajout explicite avec append()
+        # self.task.addNote(self.note)  # ✅ Ajoutez la note à la tâche ici
         # Dictionnaire pour suivre les modifications dans les objets :
         self.changes = dict()
 
@@ -105,16 +123,18 @@ class XMLWriterTest(tctest.TestCase):
             self.categoryContainer,
             self.noteContainer,
             SyncMLConfigNode("root"),
-            "GUID",
-        )
+            guid={self.task.id(): "GUID"},  # Ajout d'un GUID pour la tâche
+            # guid=self.task.id() or "GUID",  # Ajout d'un GUID pour la tâche
+        )  # TypeError: a bytes-like object is required, not 'str'
         # if isinstance(self.fd.getvalue(), bytes):
         #     return self.fd.getvalue().decode(self. fd.encoding)
         # Vérifie si self.fd a un attribut encoding avant de l'utiliser
         if isinstance(self.fd.getvalue(), bytes):
             encoding = getattr(self.fd, "encoding", "utf-8")
             return self.fd.getvalue().decode(encoding)
-        if isinstance(self.fd.getvalue(), str):
+        elif isinstance(self.fd.getvalue(), str):
             return self.fd.getvalue()
+        return None
 
     def expectInXML(self, xmlFragment):
         """
@@ -127,6 +147,9 @@ class XMLWriterTest(tctest.TestCase):
             AssertionError : Si le fragment attendu n'est pas trouvé dans la sortie XML.
         """
         xml = self.__writeAndRead()
+        print(
+            f"XMLWriterTest.expectInXML : vérifie si xmlFragment={xmlFragment} est dans XML output:\n{xml}\n"
+        )
         self.assertTrue(
             xmlFragment in xml or xmlFragment in xml.replace("&apos;", "'"),
             "%s not in %s" % (str(xmlFragment), str(xml)),
@@ -207,7 +230,9 @@ class XMLWriterTest(tctest.TestCase):
 
     def testTaskActualStartDateTime(self):
         self.task.setActualStartDateTime(date.DateTime(2007, 12, 31, 9, 0, 0))
-        self.expectInXML('actualstartdate="%s"' % str(self.task.actualStartDateTime()))
+        self.expectInXML(
+            'actualstartdate="%s"' % str(self.task.actualStartDateTime())
+        )
         # self.expectInXML('actualstartdate="%s"' % self.task.actualStartDateTime())
 
     def testNoActualStartDateTime(self):
@@ -295,7 +320,9 @@ class XMLWriterTest(tctest.TestCase):
         self.expectNotInXML("<description>")
 
     def testActiveEffort(self):
-        self.task.addEffort(effort.Effort(self.task, date.DateTime(2004, 1, 1)))
+        self.task.addEffort(
+            effort.Effort(self.task, date.DateTime(2004, 1, 1))
+        )
         self.expectInXML(
             '<effort id="%s" status="%d" start="%s" />'
             % (
@@ -339,7 +366,7 @@ class XMLWriterTest(tctest.TestCase):
             cat = category.Category(subject, [self.task])
             self.categoryContainer.append(cat)
             expectedResults.append(
-                '<category '
+                "<category "
                 'id="%s" status="1" creationDateTime="%s" '
                 'subject="%s" categorizables="%s" />'
                 % (cat.id(), cat.creationDateTime(), subject, self.task.id())
@@ -382,7 +409,7 @@ class XMLWriterTest(tctest.TestCase):
             'creationDateTime="%s" subject="parent">\n'
             '<category id="%s" status="1" '
             'creationDateTime="%s" subject="child" categorizables="%s" />\n'
-            '</category>'
+            "</category>"
             % (
                 parent.id(),
                 parent.creationDateTime(),
@@ -442,7 +469,8 @@ class XMLWriterTest(tctest.TestCase):
         self.expectInXML('priority="5"')
 
     def testTaskId(self):
-        self.expectInXML('id="%s"' % self.task.id())
+        # self.expectInXML('id="%s"' % self.task.id())
+        self.expectInXML(f'id="{self.task.id()}"')
 
     def testCategoryId(self):
         aCategory = category.Category(subject="category")
@@ -499,7 +527,8 @@ class XMLWriterTest(tctest.TestCase):
         #     'reminderBeforeSnooze="%s"' % str(self.task.reminder(includeSnooze=False))
         # )
         self.expectInXML(
-            'reminderBeforeSnooze="%s"' % self.task.reminder(includeSnooze=False)
+            'reminderBeforeSnooze="%s"'
+            % self.task.reminder(includeSnooze=False)
         )
 
     def testReminderIsNoneButSnoozedReminderNot(self):
@@ -524,7 +553,8 @@ class XMLWriterTest(tctest.TestCase):
         self.noteContainer.append(aNote)
         self.expectInXML(
             '<note id="id" status="%d" creationDateTime="%s" '
-            "/>" % (base.SynchronizedObject.STATUS_NEW, aNote.creationDateTime())
+            "/>"
+            % (base.SynchronizedObject.STATUS_NEW, aNote.creationDateTime())
         )
 
     def testNoteWithSubject(self):
@@ -565,7 +595,9 @@ class XMLWriterTest(tctest.TestCase):
         Vérifie que la couleur de premier plan (foreground color) d'une catégorie est
         correctement incluse dans le fichier XML.
         """
-        self.categoryContainer.append(category.Category(subject="test", fgColor=wx.RED))
+        self.categoryContainer.append(
+            category.Category(subject="test", fgColor=wx.RED)
+        )
         self.expectInXML('fgColor="(255, 0, 0, 255)"')
 
     def testCategoryBackgroundColor(self):
@@ -573,7 +605,9 @@ class XMLWriterTest(tctest.TestCase):
         Vérifie que la couleur d'arrière-plan (background color) d'une catégorie est
         correctement incluse dans le fichier XML.
         """
-        self.categoryContainer.append(category.Category(subject="test", bgColor=wx.RED))
+        self.categoryContainer.append(
+            category.Category(subject="test", bgColor=wx.RED)
+        )
         self.expectInXML('bgColor="(255, 0, 0, 255)"')
 
     def testDontWriteInheritedCategoryForegroundColor(self):
@@ -634,6 +668,7 @@ class XMLWriterTest(tctest.TestCase):
 
     def testNoteBackgroundColor(self):
         self.note.setBackgroundColor(wx.RED)
+        # self.task.addNote(self.note)  # ✅ Ajoutez la note à la tâche ici
         self.expectInXML('bgColor="(255, 0, 0, 255)"')
 
     def testDontWriteInheritedNoteForegroundColor(self):
@@ -689,7 +724,9 @@ class XMLWriterTest(tctest.TestCase):
 
     def testRecurrenceStopDateTime(self):
         stop_datetime = date.DateTime(2000, 1, 1, 10, 9, 8)
-        self.task.setRecurrence(date.Recurrence("daily", stop_datetime=stop_datetime))
+        self.task.setRecurrence(
+            date.Recurrence("daily", stop_datetime=stop_datetime)
+        )
         # self.expectInXML('stop_datetime="%s"' % str(stop_datetime))
         self.expectInXML('stop_datetime="%s"' % stop_datetime)
 
@@ -698,7 +735,9 @@ class XMLWriterTest(tctest.TestCase):
         self.expectInXML('amount="2"')
 
     def testRecurrenceBasedOnCompletion(self):
-        self.task.setRecurrence(date.Recurrence("daily", recurBasedOnCompletion=True))
+        self.task.setRecurrence(
+            date.Recurrence("daily", recurBasedOnCompletion=True)
+        )
         self.expectInXML('recurBasedOnCompletion="True"')
 
     def testNoAttachments(self):
@@ -715,7 +754,7 @@ class XMLWriterTest(tctest.TestCase):
             '<attachment id="foo" status="1" '
             'creationDateTime="%s" subject="whatever.txt" '
             'type="file" location="whatever.txt" '
-            '/>' % task_attachment.creationDateTime()
+            "/>" % task_attachment.creationDateTime()
         )
 
     def testObjectWithAttachmentWithNote(self):
@@ -727,7 +766,7 @@ class XMLWriterTest(tctest.TestCase):
             '<attachment id="foo" status="1" '
             'creationDateTime="%s" subject="whatever.txt" '
             'type="file" location="whatever.txt">\n'
-            '<note' % att.creationDateTime()
+            "<note" % att.creationDateTime()
         )
 
     def testNoteWithOneAttachment(self):
@@ -737,19 +776,21 @@ class XMLWriterTest(tctest.TestCase):
             '<attachment id="foo" status="1" '
             'creationDateTime="%s" subject="whatever.txt" '
             'type="file" location="whatever.txt" '
-            '/>' % note_attachment.creationDateTime()
+            "/>" % note_attachment.creationDateTime()
         )
 
     def testCategoryWithOneAttachment(self):
         cat = category.Category("cat")
         self.categoryContainer.append(cat)
-        category_attachment = attachment.FileAttachment("whatever.txt", id="foo")
+        category_attachment = attachment.FileAttachment(
+            "whatever.txt", id="foo"
+        )
         cat.addAttachments(category_attachment)
         self.expectInXML(
             '<attachment id="foo" status="1" '
             'creationDateTime="%s" subject="whatever.txt" '
             'type="file" location="whatever.txt" '
-            '/>' % category_attachment.creationDateTime()
+            "/>" % category_attachment.creationDateTime()
         )
 
     def testTaskWithTwoAttachments(self):
@@ -764,7 +805,12 @@ class XMLWriterTest(tctest.TestCase):
                 '<attachment id="%s" status="1" creationDateTime="%s" '
                 'subject="%s" type="file" location="%s" '
                 "/>"
-                % (att.id(), att.creationDateTime(), att.location(), att.location())
+                % (
+                    att.id(),
+                    att.creationDateTime(),
+                    att.location(),
+                    att.location(),
+                )
             )
 
     def testTaskWithNote(self):
@@ -775,6 +821,7 @@ class XMLWriterTest(tctest.TestCase):
         )
 
     def testTaskWithNotes(self):
+        """Tester l'ajout de plusieurs notes à une tâche."""
         anotherNote = note.Note(subject="Another note", id="id")
         self.task.addNote(self.note)
         self.task.addNote(anotherNote)
@@ -790,6 +837,7 @@ class XMLWriterTest(tctest.TestCase):
         )
 
     def testTaskWithNestedNotes(self):
+        """Tester"""
         subNote = note.Note(subject="Subnote", id="id")
         self.note.addChild(subNote)
         self.task.addNote(self.note)
@@ -797,7 +845,11 @@ class XMLWriterTest(tctest.TestCase):
             '>\n<note id="%s" status="1" creationDateTime="%s">\n'
             '<note id="id" status="1" creationDateTime="%s" subject="Subnote" '
             "/>\n</note>\n</task>"
-            % (self.note.id(), self.note.creationDateTime(), subNote.creationDateTime())
+            % (
+                self.note.id(),
+                self.note.creationDateTime(),
+                subNote.creationDateTime(),
+            )
         )
 
     def testTaskWithNoteWithCategory(self):
@@ -846,7 +898,11 @@ class XMLWriterTest(tctest.TestCase):
             '>\n<note id="%s" status="1" creationDateTime="%s">\n'
             '<note id="id" status="1" creationDateTime="%s" subject="Subnote" '
             "/>\n</note>\n</category>"
-            % (self.note.id(), self.note.creationDateTime(), subNote.creationDateTime())
+            % (
+                self.note.id(),
+                self.note.creationDateTime(),
+                subNote.creationDateTime(),
+            )
         )
 
     def testTaskDefaultExpansionState(self):
@@ -907,7 +963,9 @@ class XMLWriterTest(tctest.TestCase):
         self.expectInXML('font="%s"' % wx.SWISS_FONT.GetNativeFontInfoDesc())
 
     def testAttachmentFont(self):
-        att = attachment.FileAttachment("whatever.txt", id="foo", font=wx.SWISS_FONT)
+        att = attachment.FileAttachment(
+            "whatever.txt", id="foo", font=wx.SWISS_FONT
+        )
         self.task.addAttachments(att)
         self.expectInXML('font="%s"' % wx.SWISS_FONT.GetNativeFontInfoDesc())
 
@@ -967,22 +1025,35 @@ class XMLWriterTest(tctest.TestCase):
         self.expectInXML('prerequisites="%s"' % prerequisite.id())
 
     def testMultiplePrerequisites(self):
+        """Vérifie que plusieurs tâches préalables (prerequisites) sont correctement sérialisées
+        dans le fichier XML, même si elles ont le même identifiant."""
         # Use the same id's for both prerequisites because we don't know in
         # what order they will end up in the XML.
+        # prerequisites = [
+        #     task.Task(subject="prereq1", id="id"),
+        #     task.Task(subject="prereq2", id="id"),
+        # ]
+        # self.taskList.extend(prerequisites)
+        # self.task.addPrerequisites(prerequisites)
+        # self.expectInXML('prerequisites="id id"')
+        # Problème : lxml ne supporte pas les ids identiques !
         prerequisites = [
-            task.Task(subject="prereq1", id="id"),
-            task.Task(subject="prereq2", id="id"),
+            task.Task(subject="prereq1", id="id1"),
+            task.Task(subject="prereq2", id="id2"),
         ]
         self.taskList.extend(prerequisites)
         self.task.addPrerequisites(prerequisites)
-        self.expectInXML('prerequisites="id id"')
+        self.expectInXML('prerequisites="id1 id2"')
 
     def testEncodingAttribute(self):
-        self.expectInXML("encoding='utf-8'")
+        # self.expectInXML("encoding='utf-8'")
+        self.expectInXML('encoding="utf-8"')
 
     def testCreationDateTime(self):
         # self.expectInXML('creationDateTime="%s"' % str(self.task.creationDateTime()))
-        self.expectInXML('creationDateTime="%s"' % self.task.creationDateTime())
+        self.expectInXML(
+            'creationDateTime="%s"' % self.task.creationDateTime()
+        )
 
     def testDoNotWriteUnknownCreationDateTime(self):
         task_with_unknown_creation_datetime = task.Task(

@@ -21,13 +21,15 @@ class handles setting and getting a single value with an associated event handle
 values, allowing elements to be added or removed with events triggered accordingly. Both classes utilize the
 `patterns.eventSource` decorator to facilitate event handling.
 
-Ce code Python définit deux classes, `attribut` et` setAttribute`, qui fournissent
+Ce code Python définit deux classes, `Attribut` et` setAttribute`, qui fournissent
 un moyen de gérer les attributs simples et multiples avec la gestion des événements.
 Les classes utilisent des références faibles pour leurs objets
 propriétaires pour éviter les fuites de mémoire.
-La classe `attribut` gère le réglage et l'obtention d'une valeur unique
-avec un gestionnaire d'événements associé. La classe `SetAttribute` gère un ensemble de valeurs, permettant d'ajouter
-ou de supprimer des éléments avec des événements déclenchés en conséquence. Les deux classes utilisent le décorateur
+La classe `Attribut` gère le réglage et l'obtention d'une valeur unique
+avec un gestionnaire d'événements associé.
+La classe `SetAttribute` gère un ensemble de valeurs, permettant d'ajouter
+ou de supprimer des éléments avec des événements déclenchés en conséquence.
+Les deux classes utilisent le décorateur
 `patterns.eventSource' pour faciliter la manipulation des événements.
 
 """
@@ -67,6 +69,11 @@ class Attribute(object):
             value : La valeur initiale de l'attribut.
             owner : L'objet propriétaire de l'attribut. Une référence faible à cet objet est stockée.
             setEvent : La fonction de gestionnaire d'événements à appeler lorsque l'attribut est défini.
+
+        Attributes :
+            - __value : La valeur actuelle de l'attribut.
+            - __owner : La référence faible à l'objet propriétaire.
+            - __setEvent : La fonction de gestionnaire d'événements à appeler lors de la définition de l'attribut.
         """
         super().__init__()
         self.__value = value
@@ -99,7 +106,7 @@ class Attribute(object):
         # Cela peut :
         #     soit planter silencieusement,
         #     soit ne rien faire du tout (ex. pas d'appel à event.addSource).
-        # Lorsque vous accédez Foo.fou Foo().fune méthode est renvoyée;
+        # Lorsque vous accédez Foo.f ou Foo().f une méthode est renvoyée;
         # elle n'est pas liée dans le premier cas et liée dans le second.
         # Une méthode de python est essentiellement une enveloppe autour d'une fonction
         # qui contient également une référence à la classe où il est une méthode.
@@ -117,14 +124,16 @@ class Attribute(object):
         # En accédant à la fonction sous-jacente au lieu d'appeler la méthode,
         # vous supprimez le code de contrôle,
         # et vous pouvez passer tout ce que vous voulez comme premier argument.
-        # Les fonctions ne se soucient pas de leurs types d'arguments, mais les méthodes le font.
+        # Les fonctions ne se soucient pas de leurs types d'arguments,
+        # mais les méthodes le font.
 
         # Notez que dans Python 3, cela a changé;
         # Foo.f retourne simplement la fonction, pas une méthode non liée.
         # Foo().f retournant une méthode immobile, toujours liée,
         # mais il n'y a plus de moyen de créer une méthode non liée.
 
-        # Sous le capot, chaque objet de fonction a un __get__méthode, voici ce qui retourne l'objet de méthode:
+        # Sous le capot, chaque objet de fonction a un __get__méthode,
+        # voici ce qui retourne l'objet de méthode:
 
         # >>> class Foo(object):
         # ...     def f(self): pass
@@ -152,7 +161,8 @@ class Attribute(object):
         # donc passant "manuellement" dans l'instance directement à l'objet de la fonction.
         # Cela permet d'économiser environ 20 % de temps sur les micro-repères existants.
 
-        # Dans ce cas, l’attribut __func__ n’est utilisé que pour implémenter divers attributs, mais pas pour appeler la méthode.
+        # Dans ce cas, l’attribut __func__ n’est utilisé
+        # que pour implémenter divers attributs, mais pas pour appeler la méthode.
         # Lors de la construction d’une nouvelle méthode à partir d’un base_function,
         # nous vérifions que l’objet self est une instance de __objclass__
         # (si une classe a été spécifiée comme parent) et levons une TypeError dans le cas contraire.
@@ -180,16 +190,30 @@ class Attribute(object):
         Returns :
             Vrai si la valeur a été définie avec succès et que l'événement a été déclenché, faux autrement.
         """
+        # Le code de la méthode set a été corrigé pour ne pas utiliser __func__ et pour appeler directement la méthode d'événement.
+        # En Python 3, l'utilisation de __func__ sur une méthode liée peut entraîner des problèmes de contexte, car elle supprime la référence à l'instance (self).
+        # La nouvelle implémentation passe simplement la méthode d'événement, qui est déjà liée à l'instance via le propriétaire.
+        # Cela garantit que le contexte de l'instance est préservé lors de l'appel du gestionnaire d'événements, et évite les erreurs potentielles liées à la manipulation de __func__.
+        # En résumé, la correction technique consiste à appeler directement la méthode d'événement sans tenter de manipuler __func__, ce qui est plus sûr et plus conforme aux conventions de Python 3.
+        # Définition de la méthode set corrigée pour éviter les problèmes liés à __func__ en Python 3.
+        # Définition du propriétaire avec une référence faible pour éviter les fuites de mémoire.:
         owner = self.__owner()
+        # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
         if owner is not None:
+            # Vérifie si la nouvelle valeur est différente de l'actuelle pour éviter les appels d'événements inutiles.
             if value == self.__value:
                 return False
+            # Met à jour la valeur de l'attribut.
             self.__value = value
             # self.__setEvent(owner, event)  # ❌ trop d'arguments
+            print(
+                f"Attribute.set : value={value}, Calling setEvent with owner: {owner} and event: {event}"
+            )  # Debug print
             self.__setEvent(
                 event
             )  # ✅ juste l'event, self est déjà lié via owner
             return True
+        return False
 
 
 class SetAttribute(object):
@@ -199,6 +223,13 @@ class SetAttribute(object):
     La classe «SetAttribute» gère un ensemble de valeurs, permettant à des
     éléments d'être ajoutés ou supprimés avec des événements déclenchés en conséquence.
     Il utilise des références faibles pour son objet propriétaire pour éviter les fuites de mémoire.
+
+    Methods :
+        - get() : Obtenir une copie de l'ensemble actuel des valeurs.
+        - set(values, event=None) : Définit les valeurs de l'attribut et déclenche les événements associés.
+        - add(values, event=None) : Ajoute des valeurs à l'attribut et déclenche les événements associés.
+        - remove(values, event=None) : Supprime des valeurs de l'attribut et déclenche les événements associés.
+        - __nullEvent(*args, **kwargs) : Un gestionnaire d'événements par défaut qui ne fait rien.
     """
 
     __slots__ = (
@@ -229,11 +260,20 @@ class SetAttribute(object):
             removeEvent : Fonction de gestionnaire d'événements en option à appeler lorsque les éléments sont supprimés de l'ensemble.
             changeEvent : Fonction de gestionnaire d'événements facultatif à appeler lorsque l'ensemble change.
             weak : Si vrai, utilisez un WeakSet(réglage faible) pour stocker les valeurs. Par défaut est faux.
+
+        Attributes :
+            - __setClass : La classe utilisée pour stocker les valeurs (set ou WeakSet).
+            - __set : L'ensemble de valeurs de l'attribut.
+            - __owner : La référence faible à l'objet propriétaire.
+            - __addEvent : La fonction de gestionnaire d'événements pour les ajouts.
+            - __removeEvent : La fonction de gestionnaire d'événements pour les suppressions.
+            - __changeEvent : La fonction de gestionnaire d'événements pour les changements.
         """
         self.__setClass = WeakSet if weak else set
         self.__set = self.__setClass(values) if values else self.__setClass()
         self.__owner = weakref.ref(owner)
-        self.__addEvent = (addEvent or self.__nullEvent).__func__
+        # Définit les fonctions de gestionnaire d'événements, en utilisant des gestionnaires par défaut qui ne font rien si aucun n'est fourni.
+        self.__addEvent = (addEvent or self.__nullEvent).__func__  #
         self.__removeEvent = (removeEvent or self.__nullEvent).__func__
         self.__changeEvent = (changeEvent or self.__nullEvent).__func__
 
@@ -258,10 +298,16 @@ class SetAttribute(object):
         Returns :
             Vrai si les valeurs ont été définies avec succès et que les événements ont été déclenchés, faux sinon.
         """
+        # Définition de la méthode set pour SetAttribute, qui met à jour l'ensemble de valeurs et déclenche les événements d'ajout, de suppression et de changement en conséquence.
+        # Le code vérifie d'abord si le propriétaire existe toujours, puis compare les nouvelles valeurs avec les anciennes pour déterminer les éléments ajoutés et supprimés. Ensuite, il met à jour l'ensemble de valeurs et déclenche les événements appropriés.
+        # Définit owner comme propriétaire de référence faible pour éviter les fuites de mémoire.
         owner = self.__owner()
+        # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
         if owner is not None:
+            # Vérifier si les valeurs appartiennent à l'ensemble contenu dans le propriétaire, si c'est le cas, il n'y a pas de changement à faire, donc retourne False.
             if values == set(self.__set):
                 return False
+            # Calculer les éléments ajoutés et supprimés en comparant les nouvelles valeurs avec les anciennes.
             added = values - set(self.__set)
             removed = set(self.__set) - values
             self.__set = self.__setClass(values)
@@ -272,8 +318,10 @@ class SetAttribute(object):
                     owner, event, *removed
                 )  # pylint: disable=W0142
             if added or removed:
+                # Déclenche l'événement de changement avec les nouvelles valeurs de l'ensemble.
                 self.__changeEvent(owner, event, *set(self.__set))
             return True
+        return False
 
     @patterns.eventSource
     def add(self, values, event=None):
@@ -295,6 +343,7 @@ class SetAttribute(object):
             self.__addEvent(owner, event, *values)  # pylint: disable=W0142
             self.__changeEvent(owner, event, *set(self.__set))
             return True
+        return False
 
     @patterns.eventSource
     def remove(self, values, event=None):
@@ -317,6 +366,7 @@ class SetAttribute(object):
             self.__removeEvent(owner, event, *values)  # pylint: disable=W0142
             self.__changeEvent(owner, event, *set(self.__set))
             return True
+        return False
 
     def __nullEvent(self, *args, **kwargs):
         pass

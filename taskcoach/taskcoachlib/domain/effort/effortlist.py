@@ -38,14 +38,31 @@ from . import effort
 
 
 class MaxDateTimeMixin(object):
+    """Classe Mixin qui ajoute la méthode maxDateTime"""
+
     def maxDateTime(self):
+        """
+        Calcule et retourne la dernière date/heure d'arrêt de la liste d'effort
+        contenu dans l'objet.
+
+        Pour tous les efforts de self, si l'effort a une date/heure d'arrêt,
+        celle-ci est enregistré dans la liste stopTimes.
+
+        Returns:
+            La date/heure maximum contenu dans la liste des efforts sinon None.
+        """
+        # Pour tous les effort de self, si l'effort a une date/heure d'arrêt, celle-ci est enregistré dans la liste stopTimes
         stopTimes = [
             effort.getStop() for effort in self if effort.getStop() is not None
         ]
+        # Retourne la date/heure maximum contenu dans stopTimes sinon None
         return max(stopTimes) if stopTimes else None
 
 
 class EffortUICommandNamesMixin(object):
+    """Classe mixin qui définit l'affichage et la commande help de Nouvel effort.
+    """
+
     newItemMenuText = _("&New effort...\tCtrl+E")
     newItemHelpText = help.effortNew
 
@@ -57,6 +74,15 @@ class EffortList(
     EffortList observe une liste de tâches et contient
     tous les enregistrements d'effort de toutes les tâches
     de la liste de tâche sous-jacente.
+
+    Hérite de SetDecorator, MaxDateTimeMixin et EffortUICommandNamesMixin.
+    SetDecorator permettant de décorer un ensemble observable
+    et d'ajouter des comportements supplémentaires
+    tout en notifiant les observateurs des changements dans l'ensemble.
+    MaxDateTimeMixin ajoute la méthode maxDateTime qui calcule
+    et retourne la dernière date/heure d'arrêt de la liste d'effort
+    contenu dans l'objet.
+    EffortUICommandNamesMixin
     """
 
     def __init__(self, *args, **kwargs):

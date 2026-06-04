@@ -20,10 +20,14 @@ import re
 
 # get selection ("wx" or "tk") if available
 try:
-    from taskcoachlib.config.arguments import get_gui  # may raise during early import
+    from taskcoachlib.config.arguments import (
+        get_gui,
+    )  # may raise during early import
 except Exception:
+
     def get_gui() -> Any:  # fallback if config not importable yet
         return None
+
 
 _WX_AVAILABLE = False
 _wx = None
@@ -32,6 +36,7 @@ _wx = None
 if get_gui() != "tk":
     try:
         import wx as _wx  # type: ignore
+
         _WX_AVAILABLE = True
     except Exception:
         _WX_AVAILABLE = False
@@ -47,6 +52,7 @@ else:
     try:
         import tkinter as _tk
         import tkinter.font as _tkfont
+
         _TK_AVAILABLE = True
     except Exception:
         _TK_AVAILABLE = False
@@ -55,6 +61,7 @@ else:
 
     class _ProxyFont:
         """Proxy that provides IsOk(), GetPointSize(), SetPointSize() as wx.Font."""
+
         def __init__(self, source=None, default_size: int = 10):
             self._default_size = default_size
             self._size = default_size

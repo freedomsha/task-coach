@@ -21,10 +21,15 @@ from taskcoachlib import patterns
 
 class Collection(patterns.CompositeSet):
     """
-    Une classe de collection qui étend CompositeSet de taskcoachlib.patterns.
+    Une classe de collection qui étend CompositeSet de taskcoachlib.patterns
+    qui représente un ensemble d'objets composites observables.
+
+    Hérite de CompositeCollection et de ObservableSet
+    pour gérer les composites et leurs relations parent/enfant
+    et avertir les observateurs quand un élément est ajouté ou supprimé.
 
     Cette classe représente une collection d'objets de domaine et
-    fournit une méthode pour récupérer un objet par son ID.
+    fournit la méthode getObjectById pour récupérer un objet par son ID.
     """
 
     def getObjectById(self, domainObjectId):

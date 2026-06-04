@@ -35,3 +35,16 @@ class Note(AttachmentOwner, CategorizableCompositeObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Note: Effective appearance is computed by ComputeStyles polling
+
+    def addAttachments(self, param, **kwargs):
+        """Ajouter une ou plusieurs pièces jointes à la note."""
+        print(
+            f"Task.addAttachments : Ajout de pièces jointes à la note {self.id}."
+        )
+        # self.addAttachments(param)
+
+        # [Previous line repeated 981 more times]
+        # RecursionError: maximum recursion depth exceeded
+        # pub.sendMessage("task.attachments.added")
+        super().addAttachments(param, **kwargs)
+        pass

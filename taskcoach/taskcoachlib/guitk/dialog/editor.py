@@ -28,6 +28,7 @@ types d'objets (tâches, catégories, notes, etc.) dans Task Coach. Il fournit �
 les mécanismes pour observer les changements sur ces objets et les refléter dans
 l'interface utilisateur.
 """
+
 # C'est un bon point de départ car il gère les boîtes de dialogue d'édition pour divers objets.
 #
 # Voici une première version convertie en utilisant le module tkinter et tkinter.ttk pour une apparence plus moderne. J'ai gardé les commentaires en français pour plus de clarté. Notez que j'ai dû simplifier certaines fonctionnalités de WxPython, car elles n'ont pas d'équivalent direct dans Tkinter. J'ai aussi ajouté des commentaires expliquant les choix de conception et les différences entre les deux frameworks.
@@ -237,27 +238,39 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import colorchooser, font as tk_font  # Ajout pour l'apparence
-from tkinter import simpledialog, messagebox # (Utile pour les mocks)
+from tkinter import simpledialog, messagebox  # (Utile pour les mocks)
 from abc import ABC, abstractmethod
 from pubsub import pub
 
 from taskcoachlib.help.balloontipstk import BalloonTipManager
 from taskcoachlib.i18n import _
-from taskcoachlib import meta, widgetstk, patterns, command, operating_system, render
+from taskcoachlib import (
+    meta,
+    widgetstk,
+    patterns,
+    command,
+    operating_system,
+    render,
+)
 from taskcoachlib.guitk.dialog import entrytk as entry
 from taskcoachlib.guitk.dialog import attributesynctk as attributesync
 from taskcoachlib.guitk import viewer, newidtk, windowdimensionstrackertk
 from taskcoachlib.guitk.uicommand import uicommandtk
 from taskcoachlib.guitk.viewer import efforttk, categorytk, tasktk
 from taskcoachlib.guitk.viewer.efforttk import Effortviewer
-from taskcoachlib.guitk.viewer.categorytk import BaseCategoryViewer  # Crée une boucle
+from taskcoachlib.guitk.viewer.categorytk import (
+    BaseCategoryViewer,
+)  # Crée une boucle
+
 # L'import devient local dans LocalCategoryViewer
 from taskcoachlib.guitk.viewer.attachmenttk import Attachmentviewer
 from taskcoachlib.guitk.viewer.notetk import BaseNoteViewer
 from taskcoachlib.guitk.viewer.tasktk import CheckableTaskViewer
+
 # ImportError: cannot import name 'CheckableTaskViewer' from partially initialized module 'taskcoachlib.guitk.viewer.tasktk' (most likely due to a circular import)
 from taskcoachlib.guitk.newidtk import IdProvider
 from taskcoachlib.domain import task, date, note, attachment
+
 # from taskcoachlib.widgetstk import notebooktk, textctrltk, dialogtk, datectrltk
 from taskcoachlib.widgetstk import textctrltk, dialogtk, datectrltk
 from taskcoachlib.widgetstk.notebooktk import BookPage  # circular import !
@@ -280,6 +293,7 @@ class Page(patterns.Observer, widgetstk.notebooktk.BookPage):
     Dans Tkinter, une "page" est simplement un Frame qui sera placé
     dans un widget Notebook.
     """
+
     pageName = "base"
     pageTitle = "Base Page"
     pageIcon = None
@@ -372,6 +386,7 @@ class SubjectPage(Page):
 
     Page d'édition pour modifier le sujet d'un objet dans Task Coach.
     """
+
     # pageTitle = _("Subject")
     pageName = "subject"
     pageTitle = _("Description")
@@ -426,7 +441,9 @@ class SubjectPage(Page):
             else _("Edit to change all subjects")
         )
         try:
-            self.subject_entry = widgetstk.textctrltk.SingleLineTextCtrl(self, current_subject)
+            self.subject_entry = widgetstk.textctrltk.SingleLineTextCtrl(
+                self, current_subject
+            )
             self._subjectSync = attributesync.AttributeSync(
                 "subject",
                 self.subject_entry,
@@ -446,7 +463,7 @@ class SubjectPage(Page):
             self.subject_entry.insert(0, current_subject)
 
             # Binding pour la synchronisation (simplifié)
-            self.subject_entry.bind('<KeyRelease>', self.on_subject_changed)
+            self.subject_entry.bind("<KeyRelease>", self.on_subject_changed)
 
             self.addEntry(_("Subject"), self.subject_entry)
             self.entries_dict["subject"] = self.subject_entry
@@ -459,7 +476,9 @@ class SubjectPage(Page):
         Cette méthode privée calcule le texte à afficher pour la date de modification,
         en tenant compte des dates minimale et maximale.
         """
-        modification_datetimes = [item.modificationDateTime() for item in self.items]
+        modification_datetimes = [
+            item.modificationDateTime() for item in self.items
+        ]
         # TODO: A ESSAYER :
         # modification_datetimes: List[datetime.datetime] = [
         #     item.modificationDateTime() for item in self.items
@@ -479,7 +498,10 @@ class SubjectPage(Page):
         modification_text = render.dateTime(
             min_modification_datetime, humanReadable=True
         )
-        if max_modification_datetime - min_modification_datetime > date.ONE_MINUTE:
+        if (
+            max_modification_datetime - min_modification_datetime
+            > date.ONE_MINUTE
+        ):
             modification_text += " - %s" % render.dateTime(
                 max_modification_datetime, humanReadable=True
             )
@@ -489,10 +511,11 @@ class SubjectPage(Page):
         """
         Ajoute un champ de saisie multiligne pour la description.
         """
+
         def combined_description(items):
-            return "[%s]\n\n" % _("Edit to change all descriptions") + "\n\n".join(
-                item.description() for item in items
-            )
+            return "[%s]\n\n" % _(
+                "Edit to change all descriptions"
+            ) + "\n\n".join(item.description() for item in items)
 
         current_description = (
             self.items[0].description()
@@ -501,7 +524,9 @@ class SubjectPage(Page):
         )
 
         try:
-            self._descriptionEntry = widgetstk.textctrltk.MultiLineTextCtrl(self, current_description)
+            self._descriptionEntry = widgetstk.textctrltk.MultiLineTextCtrl(
+                self, current_description
+            )
             self.addEntry(
                 _("Description"),
                 self._descriptionEntry,
@@ -512,7 +537,9 @@ class SubjectPage(Page):
             desc_frame = ttk.Frame(self)
 
             desc_text = tk.Text(desc_frame, height=4, wrap=tk.WORD)
-            scrollbar = ttk.Scrollbar(desc_frame, orient="vertical", command=desc_text.yview)
+            scrollbar = ttk.Scrollbar(
+                desc_frame, orient="vertical", command=desc_text.yview
+            )
             desc_text.configure(yscrollcommand=scrollbar.set)
 
             desc_text.insert("1.0", current_description)
@@ -538,7 +565,9 @@ class SubjectPage(Page):
         creation_datetimes = [item.creationDateTime() for item in self.items]
         min_creation_datetime = min(creation_datetimes)
         max_creation_datetime = max(creation_datetimes)
-        creation_text = render.dateTime(min_creation_datetime, humanReadable=True)
+        creation_text = render.dateTime(
+            min_creation_datetime, humanReadable=True
+        )
         if max_creation_datetime - min_creation_datetime > date.ONE_MINUTE:
             creation_text += " - %s" % render.dateTime(
                 max_creation_datetime, humanReadable=True
@@ -550,7 +579,9 @@ class SubjectPage(Page):
         """
         Ajoute un champ d'affichage pour la date de modification.
         """
-        modification_text = "Modification date display"  # Simplifié pour l'exemple
+        modification_text = (
+            "Modification date display"  # Simplifié pour l'exemple
+        )
         modification_label = ttk.Label(self, text=modification_text)
         self.addEntry(_("Modification date"), modification_label)
         for eventType in self.items[0].modificationEventTypes():
@@ -614,6 +645,7 @@ class TaskSubjectPage(SubjectPage):
     """
     Page d'édition pour le sujet et la priorité d'une tâche.
     """
+
     # pageTitle = _("Task Subject")
     def addEntries(self):
         """
@@ -630,9 +662,13 @@ class TaskSubjectPage(SubjectPage):
         """
         Ajoute un champ pour modifier la priorité de la tâche.
         """
-        current_priority = self.items[0].priority() if len(self.items) == 1 else 0
+        current_priority = (
+            self.items[0].priority() if len(self.items) == 1 else 0
+        )
 
-        priority_spinbox = tk.Spinbox(self, from_=0, to=10, value=current_priority, width=10)
+        priority_spinbox = tk.Spinbox(
+            self, from_=0, to=10, value=current_priority, width=10
+        )
 
         # il manque cette partie :
         self._prioritySync = attributesync.AttributeSync(
@@ -666,6 +702,7 @@ class CategorySubjectPage(SubjectPage):
     """
     Page d'édition pour le sujet des catégories.
     """
+
     # pageTitle = _("Category Subject")
     def addEntries(self):
         """
@@ -682,7 +719,9 @@ class CategorySubjectPage(SubjectPage):
         Ajoute un champ pour définir si les sous-catégories doivent être exclusives.
         """
         current_exclusivity = (
-            self.items[0].hasExclusiveSubcategories() if len(self.items) == 1 else False
+            self.items[0].hasExclusiveSubcategories()
+            if len(self.items) == 1
+            else False
         )
 
         exclusive_var = tk.BooleanVar(value=current_exclusivity)
@@ -690,7 +729,7 @@ class CategorySubjectPage(SubjectPage):
             self,
             command=command.EditExclusiveSubcategoriesCommand,
             text=_("Mutually exclusive"),
-            variable=exclusive_var
+            variable=exclusive_var,
         )
         # Pour remplacer wx.EVT_CHECKBOX de wxPython par une solution compatible avec Tkinter,
         # utilisez command= dans la méthode Checkbutton de Tkinter.
@@ -715,6 +754,7 @@ class AttachmentSubjectPage(SubjectPage):
     """
     Page d'édition pour les pièces jointes.
     """
+
     # pageTitle = _("Attachment Subject")
     def addEntries(self):
         """
@@ -741,7 +781,9 @@ class AttachmentSubjectPage(SubjectPage):
         location_entry.insert(0, current_location)
         location_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
-        browse_button = ttk.Button(location_frame, text=_("Browse"), command=self.on_browse_location)
+        browse_button = ttk.Button(
+            location_frame, text=_("Browse"), command=self.on_browse_location
+        )
         browse_button.pack(side="right")
 
         self.addEntry(_("Location"), location_frame, growable=True)
@@ -752,6 +794,7 @@ class AttachmentSubjectPage(SubjectPage):
         Ouvre un dialogue de sélection de fichier.
         """
         from tkinter import filedialog
+
         filename = filedialog.askopenfilename()
         if filename:
             self.entries_dict["location"].delete(0, tk.END)
@@ -771,6 +814,7 @@ class TaskAppearancePage(Page):
     Méthodes :
         addEntries (self) : Ajoute les champs d'entrée pour l'édition de l'apparence.
     """
+
     pageName = "appearance"
     pageTitle = _("Appearance")
     # pageIcon = "palette_icon"
@@ -807,7 +851,11 @@ class TaskAppearancePage(Page):
 
     def addColorEntries(self):
         # 1. Couleur de premier plan (Foreground Color)
-        current_fg_color = self.items[0].foregroundColor() if len(self.items) == 1 else "#000000"
+        current_fg_color = (
+            self.items[0].foregroundColor()
+            if len(self.items) == 1
+            else "#000000"
+        )
         self._foregroundColorEntry = entry.ColorEntry(self, current_fg_color)
         # Note : On utilise 'tk.StringVar' ou les événements Tkinter pour simuler wx.EVT_KILL_FOCUS
         self._foregroundColorSync = attributesync.AttributeSync(
@@ -816,13 +864,17 @@ class TaskAppearancePage(Page):
             current_fg_color,
             self.items,
             command.EditForegroundColorCommand,
-            "<<ColorChanged>>", # Événement Tkinter mocké
+            "<<ColorChanged>>",  # Événement Tkinter mocké
             self.items[0].foregroundColorChangedEventType(),
         )
         self.addEntry(_("Foreground color"), self._foregroundColorEntry)
 
         # 2. Couleur d'arrière-plan (Background Color)
-        current_bg_color = self.items[0].backgroundColor() if len(self.items) == 1 else "#FFFFFF"
+        current_bg_color = (
+            self.items[0].backgroundColor()
+            if len(self.items) == 1
+            else "#FFFFFF"
+        )
         self._backgroundColorEntry = entry.ColorEntry(self, current_bg_color)
         self._backgroundColorSync = attributesync.AttributeSync(
             "backgroundColor",
@@ -843,7 +895,9 @@ class TaskAppearancePage(Page):
         )
         colorEntry = entry.ColorEntry(self, currentColor, defaultColor)
         setattr(self, "_%sColorEntry" % colorType, colorEntry)
-        commandClass = getattr(command, "Edit%sColorCommand" % colorType.capitalize())
+        commandClass = getattr(
+            command, "Edit%sColorCommand" % colorType.capitalize()
+        )
         colorSync = attributesync.AttributeSync(
             "%sColor" % colorType,
             colorEntry,
@@ -876,7 +930,11 @@ class TaskAppearancePage(Page):
 
     def addIconEntry(self):
         # 4. Icône (Icon)
-        current_icon = self.items[0].iconName() if len(self.items) == 1 else "task_icon_default"
+        current_icon = (
+            self.items[0].iconName()
+            if len(self.items) == 1
+            else "task_icon_default"
+        )
         self._iconEntry = entry.IconEntry(self, current_icon)
         self._iconSync = attributesync.AttributeSync(
             "iconName",
@@ -884,7 +942,7 @@ class TaskAppearancePage(Page):
             current_icon,
             self.items,
             command.EditIconCommand,
-            "<<IconChanged>>", # Événement Tkinter mocké
+            "<<IconChanged>>",  # Événement Tkinter mocké
             self.items[0].iconNameChangedEventType(),
         )
         self.addEntry(_("Icon"), self._iconEntry)
@@ -911,9 +969,10 @@ class DatesPage(Page):
     """
     Page d'édition pour modifier les dates d'une tâche (début, échéance, récurrence).
     """
+
     pageName = "dates"
     pageTitle = _("Dates")
-    pageIcon = "calendar_icon" # icône de calendrier
+    pageIcon = "calendar_icon"  # icône de calendrier
 
     def __init__(self, items, parent, settings, *args, **kwargs):
         # Initialisation des références pour la synchronisation
@@ -937,7 +996,7 @@ class DatesPage(Page):
         self._startDateSync = attributesync.AttributeSync(
             "startDate",
             self._startDateEntry,
-            self.items[0].startDate(), # Récupérer la valeur actuelle
+            self.items[0].startDate(),  # Récupérer la valeur actuelle
             self.items,
             command.EditStartDateCommand,
             # L'événement Tkinter de DateTimeEntry
@@ -952,7 +1011,7 @@ class DatesPage(Page):
         self._dueDateSync = attributesync.AttributeSync(
             "dueDate",
             self._dueDateEntry,
-            self.items[0].dueDate(), # Récupérer la valeur actuelle
+            self.items[0].dueDate(),  # Récupérer la valeur actuelle
             self.items,
             command.EditDueDateCommand,
             # L'événement Tkinter de DateTimeEntry
@@ -963,11 +1022,15 @@ class DatesPage(Page):
 
         # 3. Récurrence (Recurrence)
         # On utilise entry.RecurrenceEntry pour le contrôle de récurrence
-        self._recurrenceEntry = entry.RecurrenceEntry(self, self.items[0].recurrence(), self.settings)
+        self._recurrenceEntry = entry.RecurrenceEntry(
+            self, self.items[0].recurrence(), self.settings
+        )
         self._recurrenceSync = attributesync.AttributeSync(
             "recurrence",
             self._recurrenceEntry,
-            self.items[0].recurrence(), # Récupérer la valeur actuelle (objet Recurrence)
+            self.items[
+                0
+            ].recurrence(),  # Récupérer la valeur actuelle (objet Recurrence)
             self.items,
             command.EditRecurrenceCommand,
             # L'événement Tkinter de RecurrenceEntry
@@ -990,6 +1053,7 @@ class DatesPage(Page):
 #
 # Nous allons nous appuyer sur vos classes existantes attributesynctk.py et entrytk.py, en supposant que entrytk.py contient des widgets Tkinter pour IntegerEntry et PercentEntry (pour le pourcentage d'achèvement) ou que nous devons les implémenter. Pour être sûr, je vais m'inspirer de la version originale de TaskCoach et utiliser des widgets standards (ou mockés si nécessaire) liés à AttributeSync.
 
+
 # Documentation et Raisonnement
 #
 #     entry.ChoiceEntry pour le Statut : Le statut de la tâche (en attente, démarrée, terminée) est un choix dans une liste. ChoiceEntry (que j'assume exister dans entrytk.py) est l'équivalent Tkinter de wx.Choice ou wx.ComboBox pour cette fonction. J'ai ajouté une logique pour récupérer les valeurs de statut à partir de task_file.
@@ -1001,6 +1065,7 @@ class ProgressPage(Page):
     Page d'édition pour modifier le pourcentage d'achèvement (completion) et
     la priorité (priority) d'une tâche.
     """
+
     pageName = "progress"
     pageTitle = _("Progress")
     pageIcon = "progress_icon"  # icône de progression
@@ -1029,12 +1094,18 @@ class ProgressPage(Page):
         task_file = self.items[0].taskFile()
         # Si task_file est un Mock ou non accessible, nous devons fournir une liste par défaut.
         # Sinon, nous utilisons task_file.statusValues().
-        status_values = getattr(task_file, 'statusValues', lambda: ['pending', 'started', 'complete'])()
+        status_values = getattr(
+            task_file,
+            "statusValues",
+            lambda: ["pending", "started", "complete"],
+        )()
 
         # 1. Statut (Status)
         # On utilise entry.ChoiceEntry pour sélectionner un statut dans une liste.
         # Le status par défaut est 'pending' si l'édition est multiple.
-        current_status = self.items[0].status() if len(self.items) == 1 else 'pending'
+        current_status = (
+            self.items[0].status() if len(self.items) == 1 else "pending"
+        )
 
         self._statusEntry = entry.ChoiceEntry(self, choices=status_values)
         self._statusSync = attributesync.AttributeSync(
@@ -1051,7 +1122,9 @@ class ProgressPage(Page):
 
         # 2. Pourcentage d'achèvement (Progress)
         # On utilise entry.IntEntry pour un nombre entier (0-100)
-        current_progress = self.items[0].progress() if len(self.items) == 1 else 0
+        current_progress = (
+            self.items[0].progress() if len(self.items) == 1 else 0
+        )
 
         self._progressEntry = entry.IntEntry(self, minValue=0, maxValue=100)
         self._progressSync = attributesync.AttributeSync(
@@ -1066,16 +1139,17 @@ class ProgressPage(Page):
         )
         self.addEntry(_("Progress (%)"), self._progressEntry)
 
-
         # 3. Effort estimé (Estimated Effort)
         # On utilise entry.DurationEntry pour une durée (format HH:MM)
-        current_effort = self.items[0].estimatedEffort() if len(self.items) == 1 else 0
+        current_effort = (
+            self.items[0].estimatedEffort() if len(self.items) == 1 else 0
+        )
 
         self._estimatedEffortEntry = entry.DurationEntry(self)
         self._estimatedEffortSync = attributesync.AttributeSync(
             "estimatedEffort",
             self._estimatedEffortEntry,
-            current_effort, # Attribut de type duration
+            current_effort,  # Attribut de type duration
             self.items,
             command.EditEstimatedEffortCommand,
             # L'événement Tkinter de DurationEntry
@@ -1105,9 +1179,10 @@ class BudgetPage(Page):
     """
     Page d'édition pour modifier le budget et le coût d'une tâche.
     """
+
     pageName = "budget"
     pageTitle = _("Budget")
-    pageIcon = "money_icon" # icône de budget/argent
+    pageIcon = "money_icon"  # icône de budget/argent
 
     def __init__(self, items, parent, settings, *args, **kwargs):
         # Initialisation des références pour la synchronisation
@@ -1129,7 +1204,9 @@ class BudgetPage(Page):
 
         # 1. Budget
         # Récupère la valeur actuelle du budget
-        current_budget = self.items[0].budget() if len(self.items) == 1 else 0.0
+        current_budget = (
+            self.items[0].budget() if len(self.items) == 1 else 0.0
+        )
 
         # self._budgetEntry = entry.FloatEntry(self, minValue=0.0)
         self._budgetEntry = entry.AmountEntry(self, minValue=0.0)
@@ -1146,7 +1223,6 @@ class BudgetPage(Page):
         )
         self.addEntry(_("Budget"), self._budgetEntry)
 
-
         # 2. Coût (Cost)
         # Récupère la valeur actuelle du coût
         current_cost = self.items[0].cost() if len(self.items) == 1 else 0.0
@@ -1155,7 +1231,7 @@ class BudgetPage(Page):
         self._costSync = attributesync.AttributeSync(
             "cost",
             self._costEntry,
-            current_cost, # Valeur de type float
+            current_cost,  # Valeur de type float
             self.items,
             command.EditCostCommand,
             # Événement Tkinter pour FloatEntry
@@ -1187,6 +1263,7 @@ class BudgetPage(Page):
 #
 # Voici la version Tkinter de PageWithViewer, à placer dans editortk.py. J'ai adapté la méthode addEntries pour utiliser le système de grille de Tkinter/Ttk, et j'ai remplacé l'appel à wx.CallAfter (qui retarde l'exécution) par une simple exécution, car la suppression des objets Tkinter est souvent synchrone ou gérée par Python/Tkinter lui-même dans ce contexte simple.
 
+
 # Prochaine étape : Le Viewer de Catégories (LocalCategoryViewer)
 #
 # Maintenant que la classe de base est prête, nous devons créer le Viewer réel qui sera utilisé par CategoriesPage.
@@ -1197,18 +1274,26 @@ class PageWithViewer(Page):
     Classe de base pour les pages d'édition qui contiennent un Viewer (Treeview)
     pour afficher et gérer une collection d'éléments (Catégories, Efforts, Notes, etc.).
     """
+
     columns = 1
 
     # Nous n'avons pas besoin de self.viewer = None ici car il sera initialisé
     # dans __init__ après l'appel à super().__init__.
     def __init__(
-            self, items, parent, taskFile, settings, settingsSection, *args, **kwargs
+        self,
+        items,
+        parent,
+        taskFile,
+        settings,
+        settingsSection,
+        *args,
+        **kwargs,
     ):
         # Référence au modèle de données et aux réglages
         self.__taskFile = taskFile
         self.__settings = settings
         self.__settingsSection = settingsSection
-        self.viewer = None # Initialiser la référence
+        self.viewer = None  # Initialiser la référence
 
         super().__init__(items, parent, *args, **kwargs)
         # Note : La méthode addEntries() est appelée ici par les classes
@@ -1245,7 +1330,9 @@ class PageWithViewer(Page):
         Méthode abstraite. Doit être implémentée par les classes enfants
         pour créer le Viewer spécifique (ex: LocalCategoryViewer).
         """
-        raise NotImplementedError("La classe enfant doit implémenter createViewer()")
+        raise NotImplementedError(
+            "La classe enfant doit implémenter createViewer()"
+        )
 
     def close(self):
         """
@@ -1267,7 +1354,7 @@ class PageWithViewer(Page):
         if hasattr(self, "viewer"):
             # Si le widget a une méthode .destroy() (ce qui est le cas pour les Ttk/Tk widgets),
             # nous l'appelons également pour nettoyer les ressources Tkinter.
-            if hasattr(self.viewer, 'destroy'):
+            if hasattr(self.viewer, "destroy"):
                 self.viewer.destroy()
             del self.viewer
 
@@ -1291,10 +1378,11 @@ class CategoriesPage(PageWithViewer):
     Permet d'assigner des catégories à un objet comme une tâche ou une note.
     Elle hérite de PageWithViewer qui gère l'affichage d'un visualiseur de contenu.
     """
+
     # Constantes :
     pageName = "categories"
     pageTitle = _("Categories")
-    pageIcon = "folder_blue_arrow_icon" # Nom de l'icône associée à la page
+    pageIcon = "folder_blue_arrow_icon"  # Nom de l'icône associée à la page
 
     def __init__(self, *args, **kwargs):
         """Initialise la page d'édition des catégories."""
@@ -1315,7 +1403,9 @@ class CategoriesPage(PageWithViewer):
 
         # Pour maintenir la fidélité au code original qui gère 'realized'
         # et appelle addEntries() dans selected():
-        super().__init__(*args, **kwargs) # Ceci initialise self.items, self.parent, etc.
+        super().__init__(
+            *args, **kwargs
+        )  # Ceci initialise self.items, self.parent, etc.
 
     def addEntries(self):
         """
@@ -1351,8 +1441,8 @@ class CategoriesPage(PageWithViewer):
 
         # Enregistrement des observateurs pour rafraîchir la page si les catégories de l'élément changent
         for eventType in (
-                item.categoryAddedEventType(),
-                item.categoryRemovedEventType(),
+            item.categoryAddedEventType(),
+            item.categoryRemovedEventType(),
         ):
             # Utilisation de la méthode d'enregistrement de la classe de base Page/Observer
             self.registerObserver(
@@ -1392,6 +1482,7 @@ class CategoriesPage(PageWithViewer):
 # class EffortSubjectPage(SubjectPage):
 #     pageTitle = _("Effort Subject")
 
+
 class EffortPage(PageWithViewer):
     """
     Page d'édition de l'effort d'une tâche.
@@ -1402,12 +1493,24 @@ class EffortPage(PageWithViewer):
         addEntries (self) : Ajoute les champs d'entrée pour l'édition de l'effort.
                             Lancé dans PageWithViewer.
     """
+
     pageName = "effort"
     pageTitle = _("Effort")
     pageIcon = "clock_icon"
 
-    def __init__(self, items, parent, taskFile, settings, settingsSection, *args, **kwargs):
-        super().__init__(items, parent, taskFile, settings, settingsSection, *args, **kwargs)
+    def __init__(
+        self,
+        items,
+        parent,
+        taskFile,
+        settings,
+        settingsSection,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(
+            items, parent, taskFile, settings, settingsSection, *args, **kwargs
+        )
         self.addEntries()
 
     def createViewer(self, taskFile, settings, settingsSection):
@@ -1450,13 +1553,16 @@ class BaseTreeviewViewerTK(ttk.Frame, patterns.Observer):
     Classe de base pour les Viewers basés sur ttk.Treeview.
     Gère la mise en place du Treeview et les méthodes d'observateur.
     """
+
     def __init__(self, taskFile, settings, settingsSection, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.taskFile = taskFile
         self.settings = settings
         self.settingsSection = settingsSection
-        self.widget = ttk.Treeview(self, selectmode='none', show='tree headings') # Le Treeview lui-même
-        self.widget.pack(expand=True, fill='both')
+        self.widget = ttk.Treeview(
+            self, selectmode="none", show="tree headings"
+        )  # Le Treeview lui-même
+        self.widget.pack(expand=True, fill="both")
 
         # Initialisation de l'observation
         self.taskFile.addObserver(self)
@@ -1480,6 +1586,7 @@ class BaseTreeviewViewerTK(ttk.Frame, patterns.Observer):
     def refresh(self):
         # Recharger les données dans le Treeview (à implémenter dans les classes filles)
         pass
+
 
 # Renommons-le pour correspondre au nom de base requis par LocalCategoryViewer
 # BaseCategoryViewerTK = BaseTreeviewViewerTK
@@ -1519,7 +1626,11 @@ class LocalCategoryViewer(BaseCategoryViewer):
         self.refresh()
 
         # Expansion : Simuler l'expansion des éléments persistants
-        for item in self.domainObjectsToView():  # domainObjectsToView est à mocker/implémenter
+        for (
+            item
+        ) in (
+            self.domainObjectsToView()
+        ):  # domainObjectsToView est à mocker/implémenter
             # Il est dans viewer.category.BaseCategoryViewer
             # Note: Pour une implémentation complète, il faudrait une méthode
             # pour expandre les items du Treeview. Pour l'instant, on ignore
@@ -1544,17 +1655,20 @@ class LocalCategoryViewer(BaseCategoryViewer):
         for category in self.domainObjectsToView():
             tag = "checked" if self.getIsItemChecked(category) else "unchecked"
             self.widget.insert(
-                '',
-                'end',
-                iid=str(id(category)),  # Utilise l'ID de l'objet comme identifiant Tkinter
+                "",
+                "end",
+                iid=str(
+                    id(category)
+                ),  # Utilise l'ID de l'objet comme identifiant Tkinter
                 text=category.subject(),
-                tags=(tag,)
+                tags=(tag,),
             )
 
         # Configurer l'affichage des tags pour simuler les cases à cocher
-        self.widget.tag_configure('checked', foreground='blue') # Exemple visuel
-        self.widget.tag_configure('unchecked', foreground='black')
-
+        self.widget.tag_configure(
+            "checked", foreground="blue"
+        )  # Exemple visuel
+        self.widget.tag_configure("unchecked", foreground="black")
 
     def getIsItemChecked(self, category):
         """Vérifie si la catégorie est associée à AU MOINS un des éléments édités."""
@@ -1594,7 +1708,9 @@ class LocalCategoryViewer(BaseCategoryViewer):
     def _do_toggle_command(self, category):
         """Exécute la commande de bascule de catégorie."""
         # L'événement wxPython est géré directement ici.
-        command.ToggleCategoryCommand(None, self.__items, category=category).do()
+        command.ToggleCategoryCommand(
+            None, self.__items, category=category
+        ).do()
 
     def createCategoryPopupMenu(self, localOnly=True):
         """Appelle la version de la classe de base en forçant localOnly à True."""
@@ -1611,13 +1727,13 @@ class LocalAttachmentViewer(Attachmentviewer):  # pylint: disable=W0223
         self.attachmentOwner = kwargs.pop("owner")
 
         # Crée la liste d'attachements à afficher
-        attachments = attachment.AttachmentList(self.attachmentOwner.attachments())
+        attachments = attachment.AttachmentList(
+            self.attachmentOwner.attachments()
+        )
 
         # Initialisation de la classe de base
         # On passe attachmentsToShow au parent (AttachmentViewerTK)
-        super().__init__(
-            attachmentsToShow=attachments, *args, **kwargs
-        )
+        super().__init__(attachmentsToShow=attachments, *args, **kwargs)
 
     def newItemCommand(self, *args, **kwargs):
         """Crée une commande pour ajouter une nouvelle pièce jointe à l'objet propriétaire."""
@@ -1642,16 +1758,28 @@ class LocalAttachmentViewer(Attachmentviewer):  # pylint: disable=W0223
 
 class AttachmentsPage(PageWithViewer):
     """
-     Page d'édition des pièces jointes d'un objet.
+    Page d'édition des pièces jointes d'un objet.
     """
+
     # Attributs :
     pageName = "attachments"
     pageTitle = _("Attachments")
     pageIcon = "paperclip_icon"
 
-    def __init__(self, items, parent, taskFile, settings, settingsSection, *args, **kwargs):
+    def __init__(
+        self,
+        items,
+        parent,
+        taskFile,
+        settings,
+        settingsSection,
+        *args,
+        **kwargs,
+    ):
         # Cette page crée immédiatement son contenu (le Viewer)
-        super().__init__(items, parent, taskFile, settings, settingsSection, *args, **kwargs)
+        super().__init__(
+            items, parent, taskFile, settings, settingsSection, *args, **kwargs
+        )
 
     def createViewer(self, taskFile, settings, settingsSection):
         """Crée un visualiseur d'attachements local pour l'objet."""
@@ -1681,7 +1809,9 @@ class AttachmentsPage(PageWithViewer):
             # Vider la liste affichée dans le Viewer
             self.viewer.domainObjectsToView().clear()
             # Étendre la liste interne du viewer avec les pièces jointes actuelles
-            self.viewer.domainObjectsToView().extend(self.items[0].attachments())
+            self.viewer.domainObjectsToView().extend(
+                self.items[0].attachments()
+            )
             # Rafraîchir l'affichage du Treeview
             self.viewer.refresh()
 
@@ -1691,6 +1821,7 @@ class AttachmentsPage(PageWithViewer):
         if hasattr(self, "viewer"):
             return dict(firstEntry=self.viewer, attachments=self.viewer)
         return dict()
+
 
 # Continuons avec la conversion des classes de gestion des notes : LocalNoteViewer et NotesPage.
 #
@@ -1741,14 +1872,26 @@ class NotesPage(PageWithViewer):
     Page d'édition des notes d'un objet.
     Permet d'ajouter ou modifier des notes attachées à un objet.
     """
+
     # Attributs :
     pageName = "notes"
     pageTitle = _("Notes")
     pageIcon = "note_icon"
 
-    def __init__(self, items, parent, taskFile, settings, settingsSection, *args, **kwargs):
+    def __init__(
+        self,
+        items,
+        parent,
+        taskFile,
+        settings,
+        settingsSection,
+        *args,
+        **kwargs,
+    ):
         # Cette page crée immédiatement son contenu (le Viewer)
-        super().__init__(items, parent, taskFile, settings, settingsSection, *args, **kwargs)
+        super().__init__(
+            items, parent, taskFile, settings, settingsSection, *args, **kwargs
+        )
         # Note : self.addEntries() est déjà appelé par super().__init__ (PageWithViewer)
 
     def createViewer(self, taskFile, settings, settingsSection):
@@ -1765,12 +1908,12 @@ class NotesPage(PageWithViewer):
 
         # 2. Création et retour du Viewer
         return LocalNoteViewer(
-            self, # Parent (la page elle-même)
+            self,  # Parent (la page elle-même)
             taskFile,
             settings,
             settingsSection=settingsSection,
             use_separate_settings_section=False,
-            owner=item, # Passage de l'objet propriétaire au viewer
+            owner=item,  # Passage de l'objet propriétaire au viewer
         )
 
     def onNotesChanged(self, event):  # pylint: disable=W0613
@@ -1792,7 +1935,9 @@ class NotesPage(PageWithViewer):
 
 
 # Cette classe concrétise les méthodes de vérification pour les prérequis.
-class LocalPrerequisiteViewer(tasktk.CheckableTaskViewer):  # pylint: disable=W0223
+class LocalPrerequisiteViewer(
+    tasktk.CheckableTaskViewer
+):  # pylint: disable=W0223
     """
     Viewer pour l'édition locale des prérequis d'une tâche.
     """
@@ -1820,13 +1965,11 @@ class LocalPrerequisiteViewer(tasktk.CheckableTaskViewer):  # pylint: disable=W0
             # item est l'objet de tâche (le prérequis)
             # is_checked est le nouvel état (True pour coché, False pour décoché)
 
-            checked, unchecked = (
-                ([item], []) if is_checked else ([], [item])
-            )
+            checked, unchecked = ([item], []) if is_checked else ([], [item])
 
             command.TogglePrerequisiteCommand(
                 None,
-                self.__items, # Les tâches en cours d'édition
+                self.__items,  # Les tâches en cours d'édition
                 checkedPrerequisites=checked,
                 uncheckedPrerequisites=unchecked,
             ).do()
@@ -1837,6 +1980,7 @@ class PrerequisitesPage(PageWithViewer):
     """
     Page d'édition des prérequis d'une tâche.
     """
+
     pageName = "prerequisites"
     pageTitle = _("Prerequisites")
     pageIcon = "trafficlight_icon"
@@ -1872,11 +2016,11 @@ class PrerequisitesPage(PageWithViewer):
         self.registerObserver(
             self.onPrerequisitesChanged,
             eventType=item.prerequisitesChangedEventType(),
-            eventSource=item
+            eventSource=item,
         )
 
         return LocalPrerequisiteViewer(
-            self.items, # Passons la liste des items pour qu'elle puisse vérifier item not in self.__items
+            self.items,  # Passons la liste des items pour qu'elle puisse vérifier item not in self.__items
             self,
             taskFile,
             settings,
@@ -1919,6 +2063,7 @@ class EditBook(ttk.Notebook):
     Conteneur principal de l'éditeur dans Task Coach (version Tkinter).
     Équivalent à EditBook de editor.py mais utilisant ttk.Notebook.
     """
+
     # Attributs de classe qui doivent être définis par les sous-classes (TaskEditBook, NoteEditBook, etc.)
     allPageNames = ["subclass responsibility"]
     domainObject = "subclass responsibility"
@@ -1948,8 +2093,10 @@ class EditBook(ttk.Notebook):
         curSel = self.index(self.select())
         curSel = curSel + 1 if forward else curSel - 1
 
-        if 0 <= curSel < self.winfo_children().__len__():  # Utilise le nombre de widgets
-            self.select(curSel) # tk.Notebook.select(index)
+        if (
+            0 <= curSel < self.winfo_children().__len__()
+        ):  # Utilise le nombre de widgets
+            self.select(curSel)  # tk.Notebook.select(index)
 
     def addPages(self):
         """
@@ -1985,7 +2132,7 @@ class EditBook(ttk.Notebook):
     def getPageIndex(self, page_name):
         """Récupère l'index d'une page par son nom."""
         for index, page in enumerate(self.winfo_children()):
-            if page_name == getattr(page, 'pageName', None):
+            if page_name == getattr(page, "pageName", None):
                 return index
         return None
 
@@ -1996,7 +2143,7 @@ class EditBook(ttk.Notebook):
         return 0, 0
 
     def __pages_to_create(self):
-        """Détermine quelles pages doivent être incluses dans l'éditeur. """
+        """Détermine quelles pages doivent être incluses dans l'éditeur."""
         return [
             page_name
             for page_name in self.allPageNames
@@ -2021,7 +2168,13 @@ class EditBook(ttk.Notebook):
         """
         Indique si la page prend en charge l'édition de plusieurs éléments.
         """
-        return page_name in ("subject", "dates", "progress", "budget", "appearance")
+        return page_name in (
+            "subject",
+            "dates",
+            "progress",
+            "budget",
+            "appearance",
+        )
 
     def createPage(self, page_name):
         """
@@ -2038,7 +2191,7 @@ class EditBook(ttk.Notebook):
         page_class = None
 
         # Construction des arguments communs
-        args = [self.items, self] # items, parent
+        args = [self.items, self]  # items, parent
         kwargs = {}
 
         # Logique pour créer chaque type de page
@@ -2048,12 +2201,16 @@ class EditBook(ttk.Notebook):
 
         elif page_name == "dates":
             # Requires items_are_new
-            from . import TaskDatesPage # Supposition d'importation
+            from . import TaskDatesPage  # Supposition d'importation
+
             page_class = TaskDatesPage
-            args.extend([self.settings, self.items_are_new])  # settings, items_are_new
+            args.extend(
+                [self.settings, self.items_are_new]
+            )  # settings, items_are_new
 
         elif page_name == "prerequisites":
             from . import PrerequisitesPage
+
             page_class = PrerequisitesPage
             kwargs = {
                 "taskFile": task_file,
@@ -2063,10 +2220,12 @@ class EditBook(ttk.Notebook):
 
         elif page_name == "progress":
             from . import ProgressPage
+
             page_class = ProgressPage
 
         elif page_name == "categories":
             from . import CategoriesPage
+
             page_class = CategoriesPage
             kwargs = {
                 "taskFile": task_file,
@@ -2076,10 +2235,12 @@ class EditBook(ttk.Notebook):
 
         elif page_name == "budget":
             from . import BudgetPage
+
             page_class = BudgetPage
 
         elif page_name == "effort":
             from . import EffortPage
+
             page_class = EffortPage
             kwargs = {
                 "taskFile": task_file,
@@ -2089,6 +2250,7 @@ class EditBook(ttk.Notebook):
 
         elif page_name == "notes":
             from . import NotesPage
+
             page_class = NotesPage
             kwargs = {
                 "taskFile": task_file,
@@ -2098,6 +2260,7 @@ class EditBook(ttk.Notebook):
 
         elif page_name == "attachments":
             from . import AttachmentsPage
+
             page_class = AttachmentsPage
             kwargs = {
                 "taskFile": task_file,
@@ -2107,6 +2270,7 @@ class EditBook(ttk.Notebook):
 
         elif page_name == "appearance":
             from . import TaskAppearancePage
+
             page_class = TaskAppearancePage
 
         if page_class:
@@ -2114,7 +2278,13 @@ class EditBook(ttk.Notebook):
 
         # Retourne une page de base si la page n'est pas trouvée
         # (devrait être remplacé par une gestion d'erreur appropriée)
-        return Page(self.items, self, self.settings, pageName=page_name, pageTitle=_("Erreur Page"))
+        return Page(
+            self.items,
+            self,
+            self.settings,
+            pageName=page_name,
+            pageTitle=_("Erreur Page"),
+        )
 
     def create_subject_page(self):
         """
@@ -2139,7 +2309,7 @@ class EditBook(ttk.Notebook):
         #     # Notifier la page qu'elle a été sélectionnée
         #     for page in self.pages.values():
         #         page.selected()
-        if hasattr(selected_page, 'selected'):
+        if hasattr(selected_page, "selected"):
             selected_page.selected()
 
         # if operating_system.isMac(): # Non pertinent pour Tkinter dans ce contexte simple
@@ -2160,7 +2330,7 @@ class EditBook(ttk.Notebook):
         # 1. Trouver l'index de la page qui contient la colonne (l'entrée)
         for index in range(self.index("end")):
             page = self.winfo_children()[index]
-            if column_name in getattr(page, 'entries', lambda: {})():
+            if column_name in getattr(page, "entries", lambda: {})():
                 page_index = index
                 break
 
@@ -2169,11 +2339,11 @@ class EditBook(ttk.Notebook):
 
         # 3. Définir le focus sur le contrôle de l'entrée dans la page
         selected_page = self.winfo_children()[page_index]
-        if hasattr(selected_page, 'setFocusOnEntry'):
+        if hasattr(selected_page, "setFocusOnEntry"):
             selected_page.setFocusOnEntry(column_name)
 
     def isDisplayingItemOrChildOfItem(self, targetItem):
-        """Vérifie si un élément donné est en cours de modification ou si l'un de ses enfants est en cours de modification. """
+        """Vérifie si un élément donné est en cours de modification ou si l'un de ses enfants est en cours de modification."""
         ancestors = []
         for item in self.items:
             ancestors.extend(item.ancestors())
@@ -2209,20 +2379,22 @@ class EditBook(ttk.Notebook):
         # Définir le focus sur la page active et appeler selected()
         if self.winfo_children():
             current_page = self.winfo_children()[current_page_index]
-            current_page.focus_set() # Définit le focus Tkinter
-            if hasattr(current_page, 'selected'):
+            current_page.focus_set()  # Définit le focus Tkinter
+            if hasattr(current_page, "selected"):
                 current_page.selected()
 
             for idx in range(self.index("end")):
                 page = self.winfo_children()[idx]
                 # Appeler selected() si la page est affichée (simplification: toutes sont affichées)
-                if hasattr(page, 'selected'):
+                if hasattr(page, "selected"):
                     page.selected()
-
 
     def __save_perspective(self):
         """Enregistre la configuration de mise en page actuelle pour une utilisation ultérieure (simplifié)."""
-        page_names = [self.winfo_children()[index].pageName for index in range(self.index("end"))]
+        page_names = [
+            self.winfo_children()[index].pageName
+            for index in range(self.index("end"))
+        ]
         section = self.settings_section()
 
         # Sauvegarde de l'état actuel de l'onglet sélectionné
@@ -2230,7 +2402,9 @@ class EditBook(ttk.Notebook):
         # Enregistrement des données (perspective est une chaîne complexe en wxPython, ici on simplifie)
 
         # Tkinter n'a pas de LoadPerspective/SavePerspective direct. On sauve les noms de page et l'index actif.
-        self.settings.settext(section, "perspective", f"active_page={current_index}")
+        self.settings.settext(
+            section, "perspective", f"active_page={current_index}"
+        )
         self.settings.setlist(section, "pages", page_names)
 
     def settings_section(self):
@@ -2269,7 +2443,7 @@ class EditBook(ttk.Notebook):
         # for page in self.pages.values():
         #     page.close()
         for page in self.winfo_children():
-            if hasattr(page, 'close'):
+            if hasattr(page, "close"):
                 page.close()  # Appelle la méthode close() de la classe Page
 
         self.__save_perspective()
@@ -2279,9 +2453,19 @@ class TaskEditBook(EditBook):
     """
     Classe d'édition spécifique pour les tâches.
     """
-    allPageNames = ["subject", "dates", "prerequisites", "progress",
-                    "categories", "budget", "effort", "notes",
-                    "attachments", "appearance"]
+
+    allPageNames = [
+        "subject",
+        "dates",
+        "prerequisites",
+        "progress",
+        "categories",
+        "budget",
+        "effort",
+        "notes",
+        "attachments",
+        "appearance",
+    ]
     domainObject = "task"
 
     def create_subject_page(self):
@@ -2298,6 +2482,7 @@ class CategoryEditBook(EditBook):
     """
     Classe d'édition spécifique pour les catégories.
     """
+
     allPageNames = ["subject", "notes", "attachments", "appearance"]
     domainObject = "category"
 
@@ -2309,6 +2494,7 @@ class AttachmentEditBook(EditBook):
     """
     Classe d'édition spécifique pour les pièces jointes.
     """
+
     allPageNames = ["subject", "notes", "appearance"]
     domainObject = "attachment"
 
@@ -2329,6 +2515,7 @@ class NoteEditBook(EditBook):
         - Pièces jointes
         - Apparence
     """
+
     allPageNames = ["subject", "categories", "attachments", "appearance"]
     domainObject = "note"
 
@@ -2340,11 +2527,19 @@ class EffortEditBook(Page):
     Éditeur spécialisé pour l'édition des entrées d'effort (utilise Page et Grid).
     Hérite de la classe Page de base et ajoute des fonctionnalités spécifiques pour modifier les détails de l'effort.
     """
+
     domainObject = "effort"
     columns = 3  # Utilisation de 3 colonnes pour la mise en page Tkinter Grid
 
     def __init__(
-            self, parent, efforts, taskFile, settings, items_are_new, *args, **kwargs
+        self,
+        parent,
+        efforts,
+        taskFile,
+        settings,
+        items_are_new,
+        *args,
+        **kwargs,
     ):  # pylint: disable=W0613
         """Initialise l'éditeur avec les efforts et le fichier de tâches donnés."""
         self._descriptionSync = None
@@ -2355,7 +2550,11 @@ class EffortEditBook(Page):
         task_list = taskFile.tasks()
         self._taskList = task.TaskList(task_list)
         self._taskList.extend(
-            [effort.task() for effort in efforts if effort.task() not in task_list]
+            [
+                effort.task()
+                for effort in efforts
+                if effort.task() not in task_list
+            ]
         )
         self._settings = settings
         self._taskFile = taskFile
@@ -2366,12 +2565,12 @@ class EffortEditBook(Page):
         # En Tkinter, l'appel pub.subscribe doit être adapté ou mocké.
         # pub.subscribe(self.__onChoicesConfigChanged, "settings.feature.sdtcspans_effort")
 
-        self.addEntries() # Appel des entrées après l'initialisation
+        self.addEntries()  # Appel des entrées après l'initialisation
 
     def __onChoicesConfigChanged(self, value=""):
         """Gère le changement de configuration des options de temps relatif pour l'heure d'arrêt."""
         # Mock : Appelle la méthode si elle existe
-        if hasattr(self, '_stopDateTimeEntry'):
+        if hasattr(self, "_stopDateTimeEntry"):
             self._stopDateTimeEntry.LoadChoices(value)
 
     def getPage(self, pageName):  # pylint: disable=W0613
@@ -2395,7 +2594,6 @@ class EffortEditBook(Page):
         self.grid_columnconfigure(self.columns - 1, weight=1)
         self.grid_rowconfigure(self._next_row - 1, weight=1)
 
-
     def __add_task_entry(self):
         """Ajoute l'entrée de sélection de tâche et le bouton d'édition."""
         # Utilisation d'un cadre pour contenir l'entrée de tâche et le bouton d'édition
@@ -2403,7 +2601,9 @@ class EffortEditBook(Page):
 
         current_task = self.items[0].task()
         self._taskEntry = entry.TaskEntry(
-            panel, rootTasks=self._taskList.rootItems(), selectedTask=current_task
+            panel,
+            rootTasks=self._taskList.rootItems(),
+            selectedTask=current_task,
         )
 
         # Synchronisation d'attributs (mockée ou réutilisée)
@@ -2413,24 +2613,26 @@ class EffortEditBook(Page):
             current_task,
             self.items,
             command.EditTaskCommand,
-            event_name="<<TaskEntryChanged>>", # Adaptation Tkinter
+            event_name="<<TaskEntryChanged>>",  # Adaptation Tkinter
             domain_event_type=self.items[0].taskChangedEventType(),
         )
 
-        edit_task_button = ttk.Button(panel, text=_("Edit task"), command=self.onEditTask)
+        edit_task_button = ttk.Button(
+            panel, text=_("Edit task"), command=self.onEditTask
+        )
 
         # Mise en page du panel interne (simulant un BoxSizer Horizontal)
         self._taskEntry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        edit_task_button.pack(side=tk.RIGHT, padx=5) # padx pour l'espacement
-        panel.grid_columnconfigure(0, weight=1) # S'assurer que l'entrée s'étend
+        edit_task_button.pack(side=tk.RIGHT, padx=5)  # padx pour l'espacement
+        panel.grid_columnconfigure(
+            0, weight=1
+        )  # S'assurer que l'entrée s'étend
 
         # Utilisation de la méthode addEntry de Page (qui utilise Grid)
         self.addEntry(_("Task"), panel, flags=[None, tk.NSEW, tk.NSEW])
 
-
     def __add_start_and_stop_entries(self):
-        """Ajoute les entrées d'heure de début et d'arrêt, y compris les options de temps relatif. """
-
+        """Ajoute les entrées d'heure de début et d'arrêt, y compris les options de temps relatif."""
         # Arguments pour DateTimeEntry
         date_time_entry_kw_args = dict(showSeconds=True)
 
@@ -2442,7 +2644,7 @@ class EffortEditBook(Page):
             current_start_date_time,
             noneAllowed=False,
             showRelative=True,
-            **date_time_entry_kw_args
+            **date_time_entry_kw_args,
         )
         # Pas d'équivalent direct pour HideRelativeButton, on l'ignore ou on le mocke.
         # wx.CallAfter(self._startDateTimeEntry.HideRelativeButton)
@@ -2457,14 +2659,18 @@ class EffortEditBook(Page):
             domain_event_type=self.items[0].startChangedEventType(),
             callback=self.__onStartDateTimeChanged,
         )
-        self._startDateTimeEntry.bind("<<DateTimeEntryChanged>>", self.onDateTimeChanged)
+        self._startDateTimeEntry.bind(
+            "<<DateTimeEntryChanged>>", self.onDateTimeChanged
+        )
 
-        start_from_last_effort_button = self.__create_start_from_last_effort_button()
+        start_from_last_effort_button = (
+            self.__create_start_from_last_effort_button()
+        )
         self.addEntry(
             _("Start"),
             self._startDateTimeEntry,
             start_from_last_effort_button,
-            flags=[tk.W, tk.NSEW, tk.W], # Adaptation des flags
+            flags=[tk.W, tk.NSEW, tk.W],  # Adaptation des flags
         )
 
         # Entrée Heure d'arrêt
@@ -2481,7 +2687,7 @@ class EffortEditBook(Page):
                 (_("Day(s)"), 24 * 3600),
                 (_("Week(s)"), 7 * 24 * 3600),
             ],
-            **date_time_entry_kw_args
+            **date_time_entry_kw_args,
         )
 
         self._stopDateTimeSync = attributesync.AttributeSync(
@@ -2501,7 +2707,12 @@ class EffortEditBook(Page):
         stop_now_button = self.__create_stop_now_button()
         self._invalidPeriodMessage = self.__create_invalid_period_message()
 
-        self.addEntry(_("Stop"), self._stopDateTimeEntry, stop_now_button, flags=[tk.W, tk.NSEW, tk.W])
+        self.addEntry(
+            _("Stop"),
+            self._stopDateTimeEntry,
+            stop_now_button,
+            flags=[tk.W, tk.NSEW, tk.W],
+        )
 
         # Mise à jour et message d'erreur
         self.__onStartDateTimeChanged(current_start_date_time)
@@ -2512,24 +2723,30 @@ class EffortEditBook(Page):
         # MOCK : La liaison EVT_TIME_CHOICES_CHANGE est ignorée car c'est une fonctionnalité wxPython complexe
         # self._stopDateTimeEntry.bind(sdtc.EVT_TIME_CHOICES_CHANGE, self.__onChoicesChanged)
 
-        self.addEntry("", self._invalidPeriodMessage) # Message d'erreur sans label
-
+        self.addEntry(
+            "", self._invalidPeriodMessage
+        )  # Message d'erreur sans label
 
     def __onStartDateTimeChanged(self, value):
         """Met à jour le point de départ des options de temps relatif pour l'heure d'arrêt."""
         self._stopDateTimeEntry.SetRelativeChoicesStart(start=value)
 
-
     def __create_start_from_last_effort_button(self):
         """Crée un bouton pour démarrer l'effort à partir du dernier effort arrêté."""
-        button = ttk.Button(self, text=_("Start tracking from last stop time"), command=self.onStartFromLastEffort)
+        button = ttk.Button(
+            self,
+            text=_("Start tracking from last stop time"),
+            command=self.onStartFromLastEffort,
+        )
         if self._effortList.maxDateTime() is None:
-            button.configure(state=tk.DISABLED) # Désactiver le bouton
+            button.configure(state=tk.DISABLED)  # Désactiver le bouton
         return button
 
     def __create_stop_now_button(self):
         """Crée un bouton pour arrêter l'effort en cours."""
-        button = ttk.Button(self, text=_("Stop tracking now"), command=self.onStopNow)
+        button = ttk.Button(
+            self, text=_("Stop tracking now"), command=self.onStopNow
+        )
         return button
 
     def __create_invalid_period_message(self):
@@ -2591,7 +2808,7 @@ class EffortEditBook(Page):
             # Comparer (nécessite que les mocks retournent des objets comparables, comme datetime)
             return start_value < stop_value
         except AttributeError:
-            return True # Entries not created yet
+            return True  # Entries not created yet
 
     def onEditTask(self):
         """Ouvre l'éditeur de tâches pour la tâche sélectionnée."""
@@ -2602,17 +2819,22 @@ class EffortEditBook(Page):
         #     None, [task_to_edit], self._settings, self._taskFile
         # ).show()
         # Pour le mock, on simule l'action avec un message de console.
-        print(f"Ouverture de l'éditeur pour la tâche: {task_to_edit.subject()}")
+        print(
+            f"Ouverture de l'éditeur pour la tâche: {task_to_edit.subject()}"
+        )
 
     def addDescriptionEntry(self):
         # pylint: disable=W0201
         """Ajoute l'entrée de description."""
+
         def combined_description(items):
             distinctDescriptions = set(item.description() for item in items)
             if len(distinctDescriptions) == 1 and distinctDescriptions.pop():
                 return items[0].description()
             lines = ["[%s]" % _("Edit to change all descriptions")]
-            lines.extend(item.description() for item in items if item.description())
+            lines.extend(
+                item.description() for item in items if item.description()
+            )
             return "\n\n".join(lines)
 
         current_description = (
@@ -2620,7 +2842,9 @@ class EffortEditBook(Page):
             if len(self.items) == 1
             else combined_description(self.items)
         )
-        self._descriptionEntry = widgetstk.textctrltk.MultiLineTextCtrl(self, current_description)
+        self._descriptionEntry = widgetstk.textctrltk.MultiLineTextCtrl(
+            self, current_description
+        )
         # La gestion des polices est complexe en Tkinter et est ignorée pour l'instant.
 
         self._descriptionSync = attributesync.AttributeSync(
@@ -2643,17 +2867,19 @@ class EffortEditBook(Page):
         if hasattr(item, "setTask"):
             return self.items[0] == item  # Effort régulier
         else:
-            return item.mayContain(self.items[0])  # Effort composite (tâche/catégorie)
+            return item.mayContain(
+                self.items[0]
+            )  # Effort composite (tâche/catégorie)
 
     def entries(self):
         """Renvoie les entrées clés de l'éditeur."""
         return dict(
-            firstEntry=getattr(self, '_startDateTimeEntry', None),
-            task=getattr(self, '_taskEntry', None),
-            period=getattr(self, '_stopDateTimeEntry', None),
-            description=getattr(self, '_descriptionEntry', None),
-            timeSpent=getattr(self, '_stopDateTimeEntry', None),
-            revenue=getattr(self, '_taskEntry', None),
+            firstEntry=getattr(self, "_startDateTimeEntry", None),
+            task=getattr(self, "_taskEntry", None),
+            period=getattr(self, "_stopDateTimeEntry", None),
+            description=getattr(self, "_descriptionEntry", None),
+            timeSpent=getattr(self, "_stopDateTimeEntry", None),
+            revenue=getattr(self, "_taskEntry", None),
         )
 
     def close_edit_book(self):
@@ -2685,7 +2911,9 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
     EditBookClass = None  # À définir dans les sous-classes
 
     # def __init__(self, parent, items, **kwargs):
-    def __init__(self, parent, items, settings, container, task_file, *args, **kwargs):
+    def __init__(
+        self, parent, items, settings, container, task_file, *args, **kwargs
+    ):
         """Initialise l'éditeur."""
         # super().__init__(parent, **kwargs)
         super().__init__(parent)
@@ -2698,7 +2926,9 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         self.__timer = None
         self.__timer_id = None
 
-        self.transient(parent)  # Rendre la fenêtre modale par rapport au parent
+        self.transient(
+            parent
+        )  # Rendre la fenêtre modale par rapport au parent
         self.grab_set()  # Rendre la fenêtre modale
 
         # 1. Définir le titre
@@ -2725,10 +2955,16 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
 
         # 3. Définir le focus initial
         # Logique simplifiée pour trouver le nom de colonne de la page sélectionnée/initiale
-        if not column_name and hasattr(self._interior, "getPageCount") and self._interior.index("end") > 0:
+        if (
+            not column_name
+            and hasattr(self._interior, "getPageCount")
+            and self._interior.index("end") > 0
+        ):
             try:
                 selected_index = self._interior.index(self._interior.select())
-                column_name = self._interior.winfo_children()[selected_index].pageName
+                column_name = self._interior.winfo_children()[
+                    selected_index
+                ].pageName
             except Exception:
                 column_name = "subject"
         else:
@@ -2736,7 +2972,9 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
 
         if column_name:
             # On appelle setFocus sur le Toplevel, qui le délègue à l'intérieur
-            self.after(0, lambda: self._interior.setFocus(column_name)) # Utilisation de after pour assurer que le widget est mappé
+            self.after(
+                0, lambda: self._interior.setFocus(column_name)
+            )  # Utilisation de after pour assurer que le widget est mappé
 
         # 4. Gérer les événements de notification (TaskCoach Publisher)
         patterns.Publisher().registerObserver(
@@ -2763,7 +3001,9 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         # 6. Minuterie macOS (adaptée à Tkinter.after)
         if operating_system.isMac():
             self.__timer_id = IdProvider.get()
-            self.__timer = self.after(1000, self.__on_timer) # Démarrer la minuterie Tkinter
+            self.__timer = self.after(
+                1000, self.__on_timer
+            )  # Démarrer la minuterie Tkinter
 
         # Centrer sur le parent
         self.center_on_parent()
@@ -2813,7 +3053,9 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         ok_button = ttk.Button(button_frame, text=_("OK"), command=self.on_ok)
         ok_button.pack(side="right", padx=(5, 0))
 
-        cancel_button = ttk.Button(button_frame, text=_("Cancel"), command=self.on_cancel)
+        cancel_button = ttk.Button(
+            button_frame, text=_("Cancel"), command=self.on_cancel
+        )
         cancel_button.pack(side="right")
 
     def __create_ui_commands(self):
@@ -2826,7 +3068,7 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         self.__redo_command = uicommandtk.EditRedo()
 
         effort_page = self._interior.getPage("effort")
-        effort_viewer = getattr(effort_page, 'viewer', None)
+        effort_viewer = getattr(effort_page, "viewer", None)
 
         self.__new_effort_command = uicommandtk.EffortNew(
             viewer=effort_viewer,
@@ -2838,9 +3080,15 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         # 2. Définir les raccourcis clavier Tkinter (bind_all pour les commandes globales)
         # <Command> = Ctrl sur Win/Linux, Cmd sur macOS
         # Utilisation d'une lambda pour exécuter la commande mockée
-        self.bind_all("<Command-z>", lambda event: self.__undo_command.execute())
-        self.bind_all("<Command-y>", lambda event: self.__redo_command.execute())
-        self.bind_all("<Command-e>", lambda event: self.__new_effort_command.execute())
+        self.bind_all(
+            "<Command-z>", lambda event: self.__undo_command.execute()
+        )
+        self.bind_all(
+            "<Command-y>", lambda event: self.__redo_command.execute()
+        )
+        self.bind_all(
+            "<Command-e>", lambda event: self.__new_effort_command.execute()
+        )
 
     def SetTitle(self):
         """Met à jour le titre de la fenêtre."""
@@ -2870,8 +3118,16 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         height = self.winfo_height()
 
         # Calculer la position pour centrer
-        x = self.master.winfo_x() + (self.master.winfo_width() // 2) - (width // 2)
-        y = self.master.winfo_y() + (self.master.winfo_height() // 2) - (height // 2)
+        x = (
+            self.master.winfo_x()
+            + (self.master.winfo_width() // 2)
+            - (width // 2)
+        )
+        y = (
+            self.master.winfo_y()
+            + (self.master.winfo_height() // 2)
+            - (height // 2)
+        )
 
         self.geometry(f"{width}x{height}+{x}+{y}")
 
@@ -2879,10 +3135,18 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         """Centre la fenêtre de l'éditeur sur la fenêtre parente."""
         width = self.winfo_reqwidth()
         height = self.winfo_reqheight()
-        parent_x = parent.winfo_rootx() if parent else self.winfo_screenwidth() // 2
-        parent_y = parent.winfo_rooty() if parent else self.winfo_screenheight() // 2
-        parent_width = parent.winfo_width() if parent else self.winfo_screenwidth()
-        parent_height = parent.winfo_height() if parent else self.winfo_screenheight()
+        parent_x = (
+            parent.winfo_rootx() if parent else self.winfo_screenwidth() // 2
+        )
+        parent_y = (
+            parent.winfo_rooty() if parent else self.winfo_screenheight() // 2
+        )
+        parent_width = (
+            parent.winfo_width() if parent else self.winfo_screenwidth()
+        )
+        parent_height = (
+            parent.winfo_height() if parent else self.winfo_screenheight()
+        )
 
         # Centrage sur le parent
         x = parent_x + (parent_width - width) // 2
@@ -2892,7 +3156,7 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
         x = max(0, x)
         y = max(0, y)
 
-        self.geometry(f'+{x}+{y}')
+        self.geometry(f"+{x}+{y}")
 
     def __on_timer(self):
         """Gère l'événement de minuterie (équivalent macOS)."""
@@ -2958,15 +3222,17 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
     def on_item_removed(self, event):
         """Gère l'événement de suppression d'un élément."""
         # Utiliser self.after(0, ...) pour exécuter la vérification après la boucle d'événements courante
-        self.after(0, lambda: self.__close_if_item_is_deleted(list(event.values())))
+        self.after(
+            0, lambda: self.__close_if_item_is_deleted(list(event.values()))
+        )
 
     def __close_if_item_is_deleted(self, items):
         """Ferme l'éditeur si l'élément modifié ou un de ses ancêtres est supprimé."""
         for item in items:
             # item not in self._taskFile est la condition pour la suppression
             if (
-                    self._interior.isDisplayingItemOrChildOfItem(item)
-                    and item not in self._taskFile
+                self._interior.isDisplayingItemOrChildOfItem(item)
+                and item not in self._taskFile
             ):
                 self.on_close_editor()
                 break
@@ -2986,6 +3252,7 @@ class Editor(BalloonTipManager, widgetstk.dialogtk.Dialog):
 
 class TaskEditor(Editor):
     """Éditeur pour les tâches."""
+
     plural_title = _("Multiple tasks")
     singular_title = _("%s (task)")
     # NOTE: TaskEditBook doit être définie dans editortk.py et hériter de EditBook
@@ -2995,6 +3262,7 @@ class TaskEditor(Editor):
 
 class CategoryEditor(Editor):
     """Éditeur pour les catégories."""
+
     plural_title = _("Multiple categories")
     singular_title = _("%s (category)")
     # NOTE: CategoryEditBook doit être définie
@@ -3004,6 +3272,7 @@ class CategoryEditor(Editor):
 
 class NoteEditor(Editor):
     """Éditeur pour les notes."""
+
     plural_title = _("Multiple notes")
     singular_title = _("%s (note)")
     # NOTE: NoteEditBook doit être définie
@@ -3013,6 +3282,7 @@ class NoteEditor(Editor):
 
 class AttachmentEditor(Editor):
     """Éditeur pour les pièces jointes."""
+
     plural_title = _("Multiple attachments")
     singular_title = _("%s (attachment)")
     # NOTE: AttachmentEditBook doit être définie
@@ -3022,6 +3292,7 @@ class AttachmentEditor(Editor):
 
 class EffortEditor(Editor):
     """Éditeur pour les efforts (utilise EffortEditBook qui n'a pas d'onglets)."""
+
     plural_title = _("Multiple efforts")
     singular_title = _("%s (effort)")
     # NOTE: EffortEditBook doit être définie (nous l'avons convertie précédemment)

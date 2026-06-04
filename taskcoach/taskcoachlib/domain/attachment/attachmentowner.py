@@ -25,12 +25,25 @@ class AttachmentOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
     # __metaclass__ = base.DomainObjectOwnerMetaclass
     __ownedType__ = "Attachment"
 
+    def __init__(self, *args, **kwargs):
+        self.__attachments = kwargs.pop("attachments", [])
+        # safe_super_init(AttachmentOwner, self, *args, **kwargs)
+        # Transmet les arguments uniquement si le parent **n'est pas `object`**
+        # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
+        if type(self).__mro__[1] is not object:
+            try:
+                super().__init__(*args, **kwargs)
+            except TypeError:
+                super().__init__()
+        else:
+            super().__init__()  # Sécurisé pour `object`
+
     @classmethod
     def attachmentAddedEventType(class_):
         # like taskcoachlib/patterns/observer/addItemEventType
         # and taskcoachlib/domain/base/owner/noteAddedEventType
         # return '%s.add' % cls
-        return f"{class_}.added"
+        return f"{class_}.add"
         pass
 
     @classmethod
@@ -38,9 +51,10 @@ class AttachmentOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
         # like taskcoachlib/patterns/observer/removeItemEventType
         # and taskcoachlib/domain/base/owner/noteRemovedEventType
         # return '%s.remove' % cls
-        return f"{class_}.removed"
+        return f"{class_}.remove"
         pass
 
     def attachments(self):
         print("AttachmentOwner.attachments est appelé !")
+        return self.__attachments
         pass

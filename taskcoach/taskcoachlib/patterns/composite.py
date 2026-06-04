@@ -26,11 +26,29 @@ log = logging.getLogger(__name__)
 
 class Composite(object):
     """
-    Une classe représentant un objet composite dans le modèle composite.
+    Une classe représentant un objet Composite dans le modèle composite.
+
+    Un objet Composite peut avoir un parent et des enfants, formant ainsi une hiérarchie d'objets composites.
 
     Attributs :
         __parent (weakref) : Référence faible au composite parent.
         __children (list) : Liste des composites enfants.
+
+    Méthodes :
+        __init__(children=None, parent=None) : Initialisez le composite avec une liste facultative d'enfants et de parents.
+        __getstate__() : Obtenez l'état de l'objet composite.
+        __setstate__(state) : Définir l'état à partir de state.
+        __getcopystate__() : Obtenez l'état pour la copie.
+        parent() : Obtenez le composite parent.
+        ancestors() : Récupère la liste des ancêtres du composite.
+        family() : Obtenez la famille du composite (ses ancêtres, lui-même et ses enfants).
+        setParent(parent) : Définir le composite parent.
+        children(recursive=False) : Récupère les enfants du composite.
+        siblings(recursive=False) : Obtenez les frères et sœurs du composite.
+        copy() : Créer une copie du composite.
+        newChild() : Créez un nouveau composite enfant.
+        addChild(child) : Ajouter un composite enfant à la liste d'enfants et définir le parent de cet enfant.
+        removeChild(child) : Supprimer un composite enfant.
     """
 
     def __init__(self, children=None, parent=None):
@@ -47,7 +65,8 @@ class Composite(object):
         # Ne réinitialiser __parent que si pas déjà défini par un setParent précédent
         if (
             not hasattr(self, "_Composite__parent")
-            or self._Composite__parent is None
+            or self._Composite__parent  # Utiliser plutôt la méthode super() !?
+            is None
         ):
             # self.__parent = parent if parent is None else weakref.ref(parent)
             self.__parent = parent
@@ -79,6 +98,7 @@ class Composite(object):
     def __setstate__(self, state):
         """
         Définir l'état à partir de state.
+
         self.__parent est une référence faible à state["parent"].
         self.__children est state["children"]
 
@@ -141,10 +161,11 @@ class Composite(object):
 
     def family(self):
         """
-        Obtenez la famille du composite (ses ancêtres, lui-même et ses enfants).
+        Obtenez la famille du composite
+        (liste de ses ancêtres, lui-même et ses enfants).
 
-        Renvoie :
-            (liste) : La famille du composite.
+        Returns :
+            (list) : La famille du composite.
         """
         return self.ancestors() + [self] + self.children(recursive=True)
 
@@ -168,6 +189,7 @@ class Composite(object):
         Returns :
             (list) : La liste des enfants.
         """
+        # Attention : cela doit satisfaire les mêmes conditions de sortie que allItemSorted().
         if recursive:
             result = self.__children[:]
             for child in self.__children:
@@ -221,10 +243,14 @@ class Composite(object):
 
     def addChild(self, child):
         """
-        Ajoutez un composite enfant.
+        Ajouter un composite enfant à la liste d'enfants
+        et définir le parent de cet enfant.
 
         Args :
             child (Composite) : Le composite enfant à ajouter.
+
+        Attributes :
+            __children : La liste des enfants.
         """
         self.__children.append(child)
         child.setParent(self)
@@ -244,7 +270,18 @@ class Composite(object):
 class ObservableComposite(Composite):
     """
     Une classe représentant un objet composite observable dans le modèle composite.
-    Hérite de Composite et ajoute une fonctionnalité de modèle d'observateur.
+
+    Hérite de Composite et ajoute une fonctionnalité de modèle d'observateur sur la gestion des enfants.
+
+    Méthodes :
+        - __setstate__(state, event=None) : Définissez l'état de l'objet composite observable avec la notification d'événement.
+        - addChild(child, event=None) : Ajoutez un composite enfant avec notification d'événement et créez un événement d'ajout d'enfant.
+        - addChildEvent(event, *children) : Avertir les observateurs de l'ajout d'enfants.
+        - addChildEventType(class_) : Obtenez le type d'événement pour l'ajout d'enfants.
+        - removeChild(child, event=None) : Supprimer un composite enfant avec notification d'événement et créez un événement de suppression d'enfant.
+        - removeChildEvent(event, *children) : Avertir les observateurs du retrait des enfants.
+        - removeChildEventType(class_) : Obtenez le type d'événement pour supprimer les enfants.
+        - modificationEventTypes(class_) : Obtenez la liste des types d'événements de modification.
     """
 
     @observer.eventSource
@@ -365,18 +402,26 @@ class ObservableComposite(Composite):
 
 class CompositeCollection(object):
     """
-    Une collection d'objets composites.
+    Classe représentant une collection d'objets composites.
+
+    Cette collection d'objets composites est une liste ou un ensemble
+    qui a des méthodes pour gérer les composites et leurs relations parent-enfant.
 
     Méthodes :
-        append (composite) : Ajoutez un composite à la collection.
-        extend (composites) : Ajoutez plusieurs composites à la collection.
-        remove (composite) : Supprimez un composite de la collection.
-        removeItems (composites) : Supprimez plusieurs composites de la collection.
-        rootItems () : Obtenez les éléments racine de la collection.
-        allItemsSorted () : Obtenez tous les éléments triés par hiérarchie.
+        - __init__(initList=None, *args, **kwargs) : Initialisez la collection avec une liste facultative de composites initiaux.
+        - append (composite) : Ajoutez un composite à la collection.
+        - extend (composites) : Ajoutez plusieurs composites à la collection.
+        - _compositesAndAllChildren (composites) : Obtenez tous les composites et leurs enfants de manière récursive.
+        - _addCompositesToParent (composites, event) : Ajoutez des composites à leur parent.
+        - remove (composite) : Supprimez un composite de la collection.
+        - removeItems (composites) : Supprimez plusieurs composites de la collection.
+        - _removeCompositesFromParent (composites, event) : Supprimer les composites de leur parent.
+        - rootItems () : Obtenez les éléments racine de la collection.
+        - allItemsSorted () : Obtenez tous les éléments triés par hiérarchie.
     """
 
     def __init__(self, initList=None, *args, **kwargs):
+        # def __init__(self, *args, **kwargs):
         """
         Initialisez la collection avec une liste facultative de composites initiaux.
 
@@ -384,7 +429,11 @@ class CompositeCollection(object):
             initList (list) : (facultatif) Liste initiale de composites.
         """
         super().__init__(*args, **kwargs)
-        self.extend(initList or [])
+        # # self.extend(initList or [])
+        if initList:
+            self.extend(initList)  # ✅ Ajoute les éléments passés en argument
+        # if args:
+        #     self.extend(args[0])
 
     def append(self, composite, event=None):
         """
@@ -421,6 +470,7 @@ class CompositeCollection(object):
             "CompositeCollection.extend : ajoute les composites et tous leurs enfants à la collection."
         )
         super().extend(compositesAndAllChildren, event=event)
+        # self.extend(compositesAndAllChildren, event=event)
         print(
             "CompositeCollection.extend : ajoute les composites à leur parent."
         )
@@ -437,9 +487,22 @@ class CompositeCollection(object):
         Returns :
             list : La liste des composites et de leurs enfants.
         """
-        compositesAndAllChildren = set(composites)
+        # compositesAndAllChildren = set(composites)
+        # for composite in composites:
+        #     compositesAndAllChildren |= set(composite.children(recursive=True))
+        compositesAndAllChildren = set()
         for composite in composites:
-            compositesAndAllChildren |= set(composite.children(recursive=True))
+            print(
+                f"CompositeCollection._compositesAndAllChildren : traite le composite {composite}."
+            )
+            compositesAndAllChildren.add(composite)
+            print(
+                f"CompositeCollection._compositesAndAllChildren : ajoute le composite {composite}."
+            )
+            compositesAndAllChildren.update(composite.children(recursive=True))
+        print(
+            f"CompositeCollection._compositesAndAllChildren : pour les composites suivants {composites}, les composites et tous leurs enfants sont : {compositesAndAllChildren}."
+        )
         return compositesAndAllChildren
 
     def _addCompositesToParent(self, composites, event):
@@ -511,8 +574,15 @@ class CompositeCollection(object):
         return [
             composite
             for composite in self
-            if composite.parent() is None or composite.parent() not in self
+            if composite.parent() is None  # si il n'a pas de parent
+            or composite.parent()
+            not in self  # ou si son parent n'est pas dans cette collection
+            # in self or not in self ?,
         ]
+        # Conséquence :
+        #
+        # Une note dont le parent est une tâche (dans taskList) sera considérée comme un root item dans noteContainer, car note.parent() not in noteContainer est True.
+        # Résultat : La note est écrite au niveau racine du XML au lieu d'être nestée sous sa tâche.
 
     def allItemsSorted(self):
         """
@@ -521,6 +591,9 @@ class CompositeCollection(object):
         Returns :
             (list) : La liste de tous les éléments triés par hiérarchie.
         """
+        # Retourne une liste des items et de leurs enfants,
+        # ainsi si B est un enfant, direct ou pas, de A,
+        # quand A viendra en premier dans la liste.
         result = []
         for item in self.rootItems():
             result.append(item)
@@ -529,12 +602,22 @@ class CompositeCollection(object):
 
 
 class CompositeSet(CompositeCollection, observer.ObservableSet):
-    """Un ensemble d'objets composites observables."""
+    """Un ensemble d'objets composites observables.
+
+    Hérite de CompositeCollection et de ObservableSet
+    pour gérer les composites et leurs relations parent/enfant
+    et avertir les observateurs quand un élément est ajouté ou supprimé.
+    """
 
     pass
 
 
 class CompositeList(CompositeCollection, observer.ObservableList):
-    """Une liste d'objets composites observables."""
+    """Une liste d'objets composites observables.
+
+    Hérite de CompositeCollection et de ObservableList
+    pour gérer les composites et leurs relations parent/enfant
+    et avertir les observateurs quand un élément est ajouté ou supprimé de la liste.
+    """
 
     pass

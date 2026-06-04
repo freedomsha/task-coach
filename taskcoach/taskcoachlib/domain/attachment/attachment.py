@@ -193,18 +193,20 @@ class Attachment(base.Object, NoteOwner):
     pour gérer l'emplacement d'une pièce jointe
     et pour notifier les modifications apportées à cet emplacement.
 
-    Attributs clés
+    Elle hérite de Object pour les attributs et fonctionnalités communs
+    et de NoteOwner pour pouvoir contenir des notes.
 
-        location : l'emplacement de la pièce jointe.
+    Attribut clé :
+        location : Emplacement de la pièce jointe.
 
     Méthodes clés
-
-        __init__ : initialise la pièce jointe avec un emplacement donné.
-        location : obtient l'emplacement de la pièce jointe.
-        setLocation : définit l'emplacement de la pièce jointe et informe les auditeurs.
-        open : ouvre la pièce jointe (méthode abstraite, implémentée par les sous-classes).
-        __getstate__ et __setstate__ : méthodes de sérialisation et de désérialisation.
-        __getcopystate__ : méthode de création de copies de la pièce jointe.
+        - __init__ : Initialiser la pièce jointe avec un emplacement donné.
+        - location : Obtenir l'emplacement de la pièce jointe.
+        - setLocation : Définir l'emplacement de la pièce jointe et informer les auditeurs.
+        - locationChangedEventType : Définir un type d'événement pour les changements d'emplacement.
+        - open : Ouvrir la pièce jointe (méthode abstraite, implémentée par les sous-classes).
+        - __getstate__ et __setstate__ : Méthodes de sérialisation et de désérialisation.
+        - __getcopystate__ : Méthode de création de copies de la pièce jointe.
 
     Observations et améliorations potentielles
 
@@ -376,10 +378,16 @@ class Attachment(base.Object, NoteOwner):
         return new_attachment
 
     def data(self):
-        """Retourne"""
+        """Retourne None."""
         return None
 
     def setParent(self, parent):
+        """
+        Règle le parent de la pièce jointe.
+
+        Args:
+            parent : Parent.
+        """
         # FIXME: We shouldn't assume that pasted items are composite
         # in PasteCommand.
         pass
@@ -389,6 +397,12 @@ class Attachment(base.Object, NoteOwner):
         return self.__location
 
     def setLocation(self, location):
+        """
+        Règle l'emplacement de la pièce jointe.
+
+        Args:
+            location : Nouvel emplacement.
+        """
         if location != self.__location:
             self.__location = location
             self.markDirty()
@@ -400,6 +414,7 @@ class Attachment(base.Object, NoteOwner):
 
     @classmethod
     def locationChangedEventType(class_):  # better use cls not class_
+        """Définir un type d'événement pour les changements d'emplacement."""
         # def locationChangedEventType(cls):  # better use cls not class_
         # class_ is a specific cls
         return "pubsub.attachment.location"

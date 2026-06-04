@@ -47,15 +47,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # from builtins import map # S'assure que 'map' est la fonction native de mappage.
 # from past.utils import old_div # Compatibilité pour la division entière avec Python 2.
 import logging
-from taskcoachlib.tools import wxhelper  # Utilitaires wxPython pour Task Coach.
+from taskcoachlib.tools import (
+    wxhelper,
+)  # Utilitaires wxPython pour Task Coach.
 import wx  # La bibliothèque principale wxPython.
 import wx.lib.colourselect as csel  # Contrôle de sélection de couleur.
-from wx.lib import sized_controls  # Contrôles wxPython qui gèrent le dimensionnement automatique.
-from taskcoachlib.i18n import _  # Fonction pour la traduction des chaînes de caractères.
+from wx.lib import (
+    sized_controls,
+)  # Contrôles wxPython qui gèrent le dimensionnement automatique.
+from taskcoachlib.i18n import (
+    _,
+)  # Fonction pour la traduction des chaînes de caractères.
+
 # TODO: trouver une alternative à wxScheduler
-from taskcoachlib.thirdparty.wxScheduler import wxSCHEDULER_DAILY, \
-    wxSCHEDULER_WEEKLY, wxSCHEDULER_MONTHLY, wxSCHEDULER_HORIZONTAL, \
-    wxSCHEDULER_VERTICAL  # Constantes pour les types de vue et d'orientation du calendrier.
+from taskcoachlib.thirdparty.wxScheduler import (
+    wxSCHEDULER_DAILY,
+    wxSCHEDULER_WEEKLY,
+    wxSCHEDULER_MONTHLY,
+    wxSCHEDULER_HORIZONTAL,
+    wxSCHEDULER_VERTICAL,
+)  # Constantes pour les types de vue et d'orientation du calendrier.
 
 log = logging.getLogger(__name__)
 
@@ -76,9 +87,13 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
     VIEWTYPES = [wxSCHEDULER_DAILY, wxSCHEDULER_WEEKLY, wxSCHEDULER_MONTHLY]
     VIEWORIENTATIONS = [wxSCHEDULER_HORIZONTAL, wxSCHEDULER_VERTICAL]
     # Les filtres sont des tuples (show_no_start, show_no_due, show_unplanned)
-    VIEWFILTERS = [(False, False, False), (False, True, False),
-                   (True, False, False), (True, True, False),
-                   (True, True, True)]
+    VIEWFILTERS = [
+        (False, False, False),
+        (False, True, False),
+        (True, False, False),
+        (True, True, False),
+        (True, True, True),
+    ]
 
     def __init__(self, settings, settingsSection, *args, **kwargs):
         """
@@ -91,19 +106,31 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
             **kwargs: Arguments nommés à passer au constructeur de la classe parente (SizedDialog).
         """
         log.debug("CalendarConfigDialog.__init__ : Lancé.")
-        self._settings = settings  # Stocke la référence à l'objet de paramètres.
+        self._settings = (
+            settings  # Stocke la référence à l'objet de paramètres.
+        )
         self._settingsSection = settingsSection  # Stocke la section des paramètres spécifique au calendrier.
-        super().__init__(*args, **kwargs)  # Appelle le constructeur de la classe parente.
+        super().__init__(
+            *args, **kwargs
+        )  # Appelle le constructeur de la classe parente.
 
-        pane = self.GetContentsPane()  # Récupère le panneau principal de la boîte de dialogue.
-        pane.SetSizerType("form")  # Définit le type de sizer pour le panneau principal comme un formulaire.
-                                   # Cela arrange les contrôles en paires label/contrôle.
+        pane = (
+            self.GetContentsPane()
+        )  # Récupère le panneau principal de la boîte de dialogue.
+        pane.SetSizerType(
+            "form"
+        )  # Définit le type de sizer pour le panneau principal comme un formulaire.
+        # Cela arrange les contrôles en paires label/contrôle.
 
-        self.createInterior(pane)  # Appelle une méthode pour créer et organiser les contrôles internes.
+        self.createInterior(
+            pane
+        )  # Appelle une méthode pour créer et organiser les contrôles internes.
 
         # Crée les boutons standard OK et Annuler.
         buttonSizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        self.SetButtonSizer(buttonSizer)  # Attache les boutons à la boîte de dialogue.
+        self.SetButtonSizer(
+            buttonSizer
+        )  # Attache les boutons à la boîte de dialogue.
         self.Fit()  # Redimensionne la boîte de dialogue pour s'adapter à son contenu.
         self.SetMinSize(self.GetSize())
         # Lie l'événement de clic du bouton OK à la méthode 'ok' de cette classe.
@@ -123,12 +150,24 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         Args:
             pane (wx.Panel): Le panneau sur lequel les contrôles doivent être placés.
         """
-        log.debug("CalendarConfigDialog.createInterior : Crée les différents groupes de contrôles.")
-        self.createPeriodEntry(pane)  # Crée les contrôles pour la période et le nombre de périodes.
-        self.createOrientationEntry(pane)  # Crée les contrôles pour l'orientation du calendrier.
-        self.createDisplayEntry(pane)  # Crée les contrôles pour les filtres d'affichage des tâches.
-        self.createLineEntry(pane)  # Crée les contrôles pour l'affichage de la ligne de temps actuelle.
-        self.createColorEntry(pane)  # Crée les contrôles pour la sélection de la couleur de surbrillance.
+        log.debug(
+            "CalendarConfigDialog.createInterior : Crée les différents groupes de contrôles."
+        )
+        self.createPeriodEntry(
+            pane
+        )  # Crée les contrôles pour la période et le nombre de périodes.
+        self.createOrientationEntry(
+            pane
+        )  # Crée les contrôles pour l'orientation du calendrier.
+        self.createDisplayEntry(
+            pane
+        )  # Crée les contrôles pour les filtres d'affichage des tâches.
+        self.createLineEntry(
+            pane
+        )  # Crée les contrôles pour l'affichage de la ligne de temps actuelle.
+        self.createColorEntry(
+            pane
+        )  # Crée les contrôles pour la sélection de la couleur de surbrillance.
 
     def createPeriodEntry(self, pane):
         """
@@ -141,34 +180,57 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         Args:
             pane (wx.Panel): Le panneau sur lequel les contrôles doivent être placés.
         """
-        log.debug(f"CalendarConfigDialog.createPeriodEntry : crée les contrôles pour configurer le type et le nombre de périodes affichées.")
-        label = wx.StaticText(pane,
-                              label=_("Kind of period displayed and its count"))  # Label descriptif.
+        log.debug(
+            f"CalendarConfigDialog.createPeriodEntry : crée les contrôles pour configurer le type et le nombre de périodes affichées."
+        )
+        label = wx.StaticText(
+            pane, label=_("Kind of period displayed and its count")
+        )  # Label descriptif.
         # label = wx.TextCtrl(pane,  # Ligne commentée: utilisation d'un TextCtrl au lieu de StaticText.
         #                     value=_("Kind of period displayed and its count"))
         # Définit les propriétés de sizer pour le label (alignement vertical au centre).
-        label.SetSizerProps(valign="center")  # Unresolved attribute reference 'SetSizerProps' for class 'StaticText'
+        label.SetSizerProps(
+            valign="center"
+        )  # Unresolved attribute reference 'SetSizerProps' for class 'StaticText'
 
-        panel = sized_controls.SizedPanel(pane)  # Crée un sous-panneau pour regrouper les contrôles de période.
-        panel.SetSizerType("horizontal")  # Le sizer du sous-panneau est horizontal.
+        panel = sized_controls.SizedPanel(
+            pane
+        )  # Crée un sous-panneau pour regrouper les contrôles de période.
+        panel.SetSizerType(
+            "horizontal"
+        )  # Le sizer du sous-panneau est horizontal.
 
         # Crée un SpinCtrl pour le nombre de périodes, avec une valeur par défaut de 1 et un minimum de 1.
-        self._spanCount = wx.SpinCtrl(panel, value="1", min=1)  # pylint: disable=W0201 # Affectation dans __init__ est ok.
-        self._spanCount.SetSizerProps(valign="center")  # Alignement vertical au centre pour le SpinCtrl.
+        self._spanCount = wx.SpinCtrl(
+            panel, value="1", min=1
+        )  # pylint: disable=W0201 # Affectation dans __init__ est ok.
+        self._spanCount.SetSizerProps(
+            valign="center"
+        )  # Alignement vertical au centre pour le SpinCtrl.
 
         # Définition des options pour le type de période (traduisibles).
         periods = (_("Day(s)"), _("Week(s)"), _("Month"))
         # Crée un wx.Choice (liste déroulante) pour le type de période.
-        self._spanType = wx.Choice(panel, choices=periods)  # pylint: disable=W0201 # Affectation dans __init__ est ok.
-        self._spanType.SetSizerProps(valign="center")  # Alignement vertical au centre pour le Choice.
+        self._spanType = wx.Choice(
+            panel, choices=periods
+        )  # pylint: disable=W0201 # Affectation dans __init__ est ok.
+        self._spanType.SetSizerProps(
+            valign="center"
+        )  # Alignement vertical au centre pour le Choice.
 
         # Charge la valeur du nombre de périodes depuis les paramètres et l'applique au SpinCtrl.
-        self._spanCount.SetValue(self._settings.getint(self._settingsSection, "periodcount"))
+        self._spanCount.SetValue(
+            self._settings.getint(self._settingsSection, "periodcount")
+        )
         # Charge le type de vue depuis les paramètres et sélectionne l'option correspondante dans le Choice.
-        selection = self.VIEWTYPES.index(self._settings.getint(self._settingsSection, "viewtype"))
+        selection = self.VIEWTYPES.index(
+            self._settings.getint(self._settingsSection, "viewtype")
+        )
         self._spanType.SetSelection(selection)
 
-        panel.SetSizerProps(valign="center")  # Alignement vertical au centre pour le sous-panneau.
+        panel.SetSizerProps(
+            valign="center"
+        )  # Alignement vertical au centre pour le sous-panneau.
         panel.Fit()  # Ajuste la taille du sous-panneau à son contenu.
         # Lie l'événement de changement de sélection du Choice à la méthode onChangeViewType.
         self._spanType.Bind(wx.EVT_CHOICE, self.onChangeViewType)
@@ -180,16 +242,25 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         Args:
             pane (wx.Panel): Le panneau sur lequel les contrôles doivent être placés.
         """
-        log.debug(f"CalendarConfigDialog.createOrientationEntry : Lancé sur pane={pane}.")
-        label = wx.StaticText(pane, label=_("Calendar orientation"))  # Label descriptif.
+        log.debug(
+            f"CalendarConfigDialog.createOrientationEntry : Lancé sur pane={pane}."
+        )
+        label = wx.StaticText(
+            pane, label=_("Calendar orientation")
+        )  # Label descriptif.
         label.SetSizerProps(valign="center")  # Alignement vertical au centre.
 
-        orientations = (_("Horizontal"), _("Vertical"))  # Options d'orientation (traduisibles).
+        orientations = (
+            _("Horizontal"),
+            _("Vertical"),
+        )  # Options d'orientation (traduisibles).
         # Crée un wx.Choice pour sélectionner l'orientation.
         self._orientation = wx.Choice(
             pane, choices=orientations
         )  # pylint: disable=W0201 # Affectation dans __init__ est ok.
-        self._orientation.SetSizerProps(valign="center")  # Alignement vertical au centre.
+        self._orientation.SetSizerProps(
+            valign="center"
+        )  # Alignement vertical au centre.
 
         # Charge l'orientation depuis les paramètres et sélectionne l'option correspondante.
         selection = self.VIEWORIENTATIONS.index(
@@ -207,7 +278,9 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         Args:
             pane (wx.Panel): Le panneau sur lequel les contrôles doivent être placés.
         """
-        label = wx.StaticText(pane, label=_("Which tasks to display"))  # Label descriptif.
+        label = wx.StaticText(
+            pane, label=_("Which tasks to display")
+        )  # Label descriptif.
         label.SetSizerProps(valign="center")  # Alignement vertical au centre.
 
         # Options de filtrage des tâches (traduisibles).
@@ -222,7 +295,9 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         self._display = wx.Choice(
             pane, choices=choices
         )  # pylint: disable=W0201 # Affectation dans __init__ est ok.
-        self._display.SetSizerProps(valign="center")  # Alignement vertical au centre.
+        self._display.SetSizerProps(
+            valign="center"
+        )  # Alignement vertical au centre.
 
         # Charge les trois booléens de filtre depuis les paramètres.
         # Trouve l'index correspondant dans la liste VIEWFILTERS et sélectionne l'option.
@@ -231,7 +306,9 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
                 self._settings.getboolean(
                     self._settingsSection, "shownostart"
                 ),  # Afficher les tâches sans date de début planifiée.
-                self._settings.getboolean(self._settingsSection, "shownodue"),  # Afficher les tâches sans date d'échéance.
+                self._settings.getboolean(
+                    self._settingsSection, "shownodue"
+                ),  # Afficher les tâches sans date d'échéance.
                 self._settings.getboolean(
                     self._settingsSection, "showunplanned"
                 ),  # Afficher les tâches non planifiées.
@@ -250,11 +327,15 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         label = wx.StaticText(
             pane, label=_("Draw a line showing the current time")
         )  # Label descriptif.
-        label.SetSizerProps(valign="center") # Alignement vertical au centre.
+        label.SetSizerProps(valign="center")  # Alignement vertical au centre.
 
         # Crée une case à cocher (CheckBox) pour l'option d'affichage de la ligne de temps.
-        self._shownow = wx.CheckBox(pane)  # pylint: disable=W0201 # Affectation dans __init__ est ok.
-        self._shownow.SetSizerProps(valign="center")  # Alignement vertical au centre.
+        self._shownow = wx.CheckBox(
+            pane
+        )  # pylint: disable=W0201 # Affectation dans __init__ est ok.
+        self._shownow.SetSizerProps(
+            valign="center"
+        )  # Alignement vertical au centre.
         # Charge la valeur booléenne depuis les paramètres et l'applique à la CheckBox.
         self._shownow.SetValue(
             self._settings.getboolean(self._settingsSection, "shownow")
@@ -271,7 +352,7 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         label = wx.StaticText(
             pane, label=_("Color used to highlight the current day")
         )  # Label descriptif.
-        label.SetSizerProps(valign="center") # Alignement vertical au centre.
+        label.SetSizerProps(valign="center")  # Alignement vertical au centre.
 
         # Tente de récupérer la couleur de surbrillance depuis les paramètres.
         hcolor = self._settings.get(self._settingsSection, "highlightcolor")
@@ -290,14 +371,20 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
             # Si une couleur est définie dans les paramètres (format "R,G,B").
             # Convertit la chaîne "R,G,B" en un tuple d'entiers et crée un objet wx.Colour.
             color = wx.Colour(
-                *tuple(map(int, hcolor.split(",")))  # pylint: disable=W0141 # Utilisation de map est ok.
+                *tuple(
+                    map(int, hcolor.split(","))
+                )  # pylint: disable=W0141 # Utilisation de map est ok.
             )
         # Crée un contrôle ColourSelect pour permettre à l'utilisateur de choisir une couleur.
         self._highlight = csel.ColourSelect(
             pane, size=(100, 20)  # Définit la taille du contrôle.
         )  # pylint: disable=W0201 # Affectation dans __init__ est ok.
-        label.SetSizerProps(valign="center")  # Ré-aligne le label après la création du contrôle.
-        self._highlight.SetColour(color)  # Définit la couleur initiale du sélecteur de couleur.
+        label.SetSizerProps(
+            valign="center"
+        )  # Ré-aligne le label après la création du contrôle.
+        self._highlight.SetColour(
+            color
+        )  # Définit la couleur initiale du sélecteur de couleur.
 
     def onChangeViewType(self, event):  # pylint: disable=W0613
         """
@@ -311,11 +398,16 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
             event (wx.Event): L'événement de changement de sélection du wx.Choice.
         """
         # Vérifie si le type de vue sélectionné est wxSCHEDULER_MONTHLY.
-        if self.VIEWTYPES[self._spanType.GetSelection()] == wxSCHEDULER_MONTHLY:
+        if (
+            self.VIEWTYPES[self._spanType.GetSelection()]
+            == wxSCHEDULER_MONTHLY
+        ):
             self._spanCount.SetValue(1)  # Définit le nombre de périodes à 1.
             self._spanCount.Enable(False)  # Désactive le SpinCtrl.
         else:
-            self._spanCount.Enable(True)  # Réactive le SpinCtrl pour les autres vues.
+            self._spanCount.Enable(
+                True
+            )  # Réactive le SpinCtrl pour les autres vues.
 
     def ok(self, event=None):  # pylint: disable=W0613
         """
@@ -327,7 +419,10 @@ class CalendarConfigDialog(sized_controls.SizedDialog):
         Args:
             event (wx.Event, optional): L'événement de clic du bouton (peut être None si appelé manuellement).
         """
-        settings, section = self._settings, self._settingsSection # Accès plus facile aux paramètres et à la section.
+        settings, section = (
+            self._settings,
+            self._settingsSection,
+        )  # Accès plus facile aux paramètres et à la section.
 
         # Sauvegarde le nombre de périodes dans les paramètres (converti en chaîne).
         settings.set(section, "periodcount", str(self._spanCount.GetValue()))

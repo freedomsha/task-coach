@@ -76,6 +76,7 @@ class AddAttachmentCommand(base.BaseCommand):
 
     @patterns.eventSource
     def addAttachments(self, event=None):
+        """Ajouter les attachements à tous les items concernés."""
         log.debug(
             f"attachmentCommands.AddAttachmentsCommand.addAttachments : 🛠️ DEBUG - Création d'une tâche self={self} avec attachements: {self.__attachments}, event={event}"
         )
@@ -89,6 +90,10 @@ class AddAttachmentCommand(base.BaseCommand):
 
     @patterns.eventSource
     def removeAttachments(self, event=None):
+        """Supprimer les attachements de tous les items concernés."""
+        log.debug(
+            f"attachmentCommands.RemoveAttachmentsCommand.removeAttachments : 🛠️ DEBUG - Suppression des attachements self={self} avec attachements: {self.__attachments}, event={event}"
+        )
         kwargs = dict(event=event)
         for owner in self.owners:
             owner.removeAttachments(
@@ -118,6 +123,7 @@ class RemoveAttachmentCommand(base.BaseCommand):
 
     @patterns.eventSource
     def addAttachments(self, event=None):
+        """Ajoute les pièces jointes aux éléments ciblés par la commande."""
         log.debug(
             f"attachmentsCommands.RemoveAttachmentCommand.addAttachments : 🛠️ DEBUG - Création d'une tâche self={self} avec attachements: {self._attachments}, event={event}"
         )
@@ -130,6 +136,7 @@ class RemoveAttachmentCommand(base.BaseCommand):
 
     @patterns.eventSource
     def removeAttachments(self, event=None):
+        """Supprime les pièces jointes des éléments ciblés par la commande."""
         kwargs = dict(event=event)
         for item in self.items:
             item.removeAttachments(
@@ -151,18 +158,26 @@ class RemoveAttachmentCommand(base.BaseCommand):
 
 class CutAttachmentCommand(base.CutCommandMixin, RemoveAttachmentCommand):
     def itemsToCut(self):
+        """Retourne les pièces jointes à couper."""
         return self._attachments
 
     def sourceOfItemsToCut(self):
+        """Retourne les éléments à partir desquels les pièces jointes seront coupées."""
         class Wrapper(object):
+            """Un wrapper pour les éléments ciblés par la commande, afin de pouvoir appeler addAttachments/removeAttachments sur eux."""
             def __init__(self, items):
                 self.__items = items
 
             def extend(self, attachments):
+                """Ajouter les pièces jointes à tous les éléments ciblés par la commande."""
                 for item in self.__items:
                     item.addAttachments(*attachments)
 
             def removeItems(self, attachments):  # utilisé souvent !
+                """Supprimer les pièces jointes de tous les éléments ciblés par la commande."""
+                log.debug(
+                    f"attachmentCommands.CutAttachmentCommand.sourceOfItemsToCut : 🛠️ DEBUG - Suppression des attachements self={self} avec attachements: {attachments}"
+                )
                 for item in self.__items:
                     item.removeAttachments(*attachments)
 

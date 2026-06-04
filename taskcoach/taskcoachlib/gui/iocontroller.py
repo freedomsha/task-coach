@@ -33,7 +33,9 @@ from pubsub import pub
 from taskcoachlib import meta, persistence, patterns, operating_system
 from taskcoachlib.application import gui_name
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty import lockfile
+
+# from taskcoachlib.thirdparty import lockfile
+import lockfile
 from taskcoachlib.widgets import GetPassword
 from taskcoachlib.workarounds import ExceptionAsUnicode
 

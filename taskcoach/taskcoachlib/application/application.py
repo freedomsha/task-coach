@@ -380,8 +380,31 @@ class Application(object, metaclass=patterns.Singleton):
         # impossible de mock, impossible de tester sans GUI, crash wx
         """La méthode init est appelée avant le démarrage de l'application.
 
-        Elle configure divers aspects de l'application, notamment la langue, le correcteur orthographique,
-        la gestion des signaux et la création d'icônes de barre des tâches."""
+        Elle configure divers aspects de l'application, notamment la langue,
+        le correcteur orthographique,
+        la gestion des signaux et la création d'icônes de barre des tâches.
+
+        Args :
+            options (Namespace, optional) : Les options de ligne de commande analysées. La valeur par défaut est None.
+            args (list, optional) : Les arguments supplémentaires transmis à l'application. La valeur par défaut est None.
+            **kwargs : Arguments supplémentaires pour la configuration de l'application.
+
+        Attributes :
+            __message_checker : Vérificateur de messages pour les notifications.
+            __version_checker : Vérificateur de version pour les mises à jour.
+            mainwindow : La fenêtre principale de l'application.
+            iocontroller : Contrôleur d'entrée/sortie pour la gestion des fichiers.
+            __auto_backup : Gestionnaire de sauvegarde automatique.
+            __auto_exporter : Gestionnaire d'exportation automatique.
+            __auto_saver : Gestionnaire de sauvegarde automatique.
+            taskFile : Fichier de tâches actuellement ouvert.
+            __early_lock_result : Résultat précoce de la tentative de verrouillage du fichier INI.
+            _options : Options de ligne de commande analysées.
+            _args : Arguments supplémentaires transmis à l'application.
+            _wx_app : Instance de wx.App pour la gestion de l'interface graphique.
+            settings : Paramètres de l'application.
+            sessionMonitor : Moniteur de session pour gérer les événements de fin de session sur les systèmes compatibles.
+        """
         # ... (initialisation des attributs d'instance)
         # log.critical("🔥 Application.__init__() APPELÉE")
         # traceback.print_stack()
@@ -1771,7 +1794,8 @@ Break the lock?""") % filename,
             wx.GetApp().ExitMainLoop()
 
         def _stack_for_thread(t, frames=None):
-            import sys, traceback
+            import sys
+            import traceback
 
             frames = frames or sys._current_frames()
             if not t.is_alive():

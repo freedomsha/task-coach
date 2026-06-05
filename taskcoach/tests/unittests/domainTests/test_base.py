@@ -58,6 +58,8 @@ from taskcoachlib.domain import base, date
 
 
 class SynchronizedObjectTest(tctest.TestCase):
+    """Tests for base.SynchronizedObject."""  # pylint: disable=W0105
+
     def setUp(self):
         super().setUp()
         self.object = base.SynchronizedObject()
@@ -66,14 +68,18 @@ class SynchronizedObjectTest(tctest.TestCase):
     def onEvent(self, event):
         self.events.append(event)
 
-    def registerObserver(self, eventType, eventSource=None):  # pylint: disable=W0221
+    def registerObserver(
+        self, eventType, eventSource=None
+    ):  # pylint: disable=W0221
         patterns.Publisher().registerObserver(self.onEvent, eventType)
 
     def assertObjectStatus(self, expectedStatus):
         self.assertEqual(expectedStatus, self.object.getStatus())
 
     def assertOneEventReceived(self, eventSource, eventType, *values):
-        self.assertEqual([patterns.Event(eventType, eventSource, *values)], self.events)
+        self.assertEqual(
+            [patterns.Event(eventType, eventSource, *values)], self.events
+        )
 
     def testInitialStatus(self):
         self.assertObjectStatus(base.SynchronizedObject.STATUS_NEW)
@@ -86,7 +92,9 @@ class SynchronizedObjectTest(tctest.TestCase):
         self.registerObserver(self.object.markDeletedEventType())
         self.object.markDeleted()
         self.assertOneEventReceived(
-            self.object, self.object.markDeletedEventType(), self.object.getStatus()
+            self.object,
+            self.object.markDeletedEventType(),
+            self.object.getStatus(),
         )
 
     def testMarkNewObjectAsNotDeleted(self):
@@ -103,7 +111,9 @@ class SynchronizedObjectTest(tctest.TestCase):
         self.registerObserver(self.object.markNotDeletedEventType())
         self.object.cleanDirty()
         self.assertOneEventReceived(
-            self.object, self.object.markNotDeletedEventType(), self.object.getStatus()
+            self.object,
+            self.object.markNotDeletedEventType(),
+            self.object.getStatus(),
         )
 
     def testSetStateToDeletedCausesNotification(self):
@@ -113,7 +123,9 @@ class SynchronizedObjectTest(tctest.TestCase):
         self.registerObserver(self.object.markDeletedEventType())
         self.object.__setstate__(state)
         self.assertOneEventReceived(
-            self.object, self.object.markDeletedEventType(), self.object.STATUS_DELETED
+            self.object,
+            self.object.markDeletedEventType(),
+            self.object.STATUS_DELETED,
         )
 
     def testSetStateToNotDeletedCausesNotification(self):
@@ -122,7 +134,9 @@ class SynchronizedObjectTest(tctest.TestCase):
         self.registerObserver(self.object.markNotDeletedEventType())
         self.object.__setstate__(state)
         self.assertOneEventReceived(
-            self.object, self.object.markNotDeletedEventType(), self.object.STATUS_NEW
+            self.object,
+            self.object.markNotDeletedEventType(),
+            self.object.STATUS_NEW,
         )
 
 
@@ -134,16 +148,20 @@ class ObjectTest(tctest.TestCase):
     def setUp(self):
         super().setUp()
         self.tcobject = base.Object()
-        print(f"ObjectTest.setUp : initialisation self.tcobject={self.tcobject}")
+        print(
+            f"ObjectTest.setUp : initialisation self.tcobject={self.tcobject}, id={self.tcobject.id()}, creationDateTime={self.tcobject.creationDateTime()}, modificationDateTime={self.tcobject.modificationDateTime()}, subject={self.tcobject.subject()}, description={self.tcobject.description()}, status={self.tcobject.getStatus()}, fgColor={self.tcobject.foregroundColor()}, bgColor={self.tcobject.backgroundColor()}, font={self.tcobject.font()}, icon={self.tcobject.icon()}, selectedIcon={self.tcobject.selectedIcon()}"
+        )
         self.subclassObject = ObjectSubclass()
         self.eventsReceived = []
         for eventType in (
-                self.tcobject.subjectChangedEventType(),
-                self.tcobject.descriptionChangedEventType(),
-                self.tcobject.appearanceChangedEventType(),
+            self.tcobject.subjectChangedEventType(),
+            self.tcobject.descriptionChangedEventType(),
+            self.tcobject.appearanceChangedEventType(),
         ):
             patterns.Publisher().registerObserver(self.onEvent, eventType)
-        print(f"ObjectTest.setUp : fin de setUp self.tcobject={self.tcobject}")
+        print(
+            f"ObjectTest.setUp : fin de setUp self.tcobject={self.tcobject}, id={self.tcobject.id()}, creationDateTime={self.tcobject.creationDateTime()}, modificationDateTime={self.tcobject.modificationDateTime()}, subject={self.tcobject.subject()}, description={self.tcobject.description()}, status={self.tcobject.getStatus()}, fgColor={self.tcobject.foregroundColor()}, bgColor={self.tcobject.backgroundColor()}, font={self.tcobject.font()}, icon={self.tcobject.icon()}, selectedIcon={self.tcobject.selectedIcon()}"
+        )
 
     def onEvent(self, event):
         self.eventsReceived.append(event)
@@ -215,10 +233,14 @@ class ObjectTest(tctest.TestCase):
     def testSetModificationDateTimeOnCreation(self):
         modification_datetime = date.DateTime(2012, 12, 12, 10, 0, 0)
         domain_object = base.Object(modificationDateTime=modification_datetime)
-        self.assertEqual(modification_datetime, domain_object.modificationDateTime())
+        self.assertEqual(
+            modification_datetime, domain_object.modificationDateTime()
+        )
 
     def testModificationDateTimeIsNotSetWhenNotPassed(self):
-        self.assertEqual(date.DateTime.min, self.tcobject.modificationDateTime())
+        self.assertEqual(
+            date.DateTime.min, self.tcobject.modificationDateTime()
+        )
 
     # Subject tests:
 
@@ -237,7 +259,9 @@ class ObjectTest(tctest.TestCase):
         self.tcobject.setSubject("New subject")
         self.assertEqual(
             patterns.Event(
-                self.tcobject.subjectChangedEventType(), self.tcobject, "New subject"
+                self.tcobject.subjectChangedEventType(),
+                self.tcobject,
+                "New subject",
             ),
             self.eventsReceived[0],
         )
@@ -268,7 +292,9 @@ class ObjectTest(tctest.TestCase):
         self.assertEqual("New description", self.tcobject.description())
 
     def testSetDescriptionCausesNotification(self):
-        self.tcobject.setDescription("New description")  # On modifie la description
+        self.tcobject.setDescription(
+            "New description"
+        )  # On modifie la description
         self.assertEqual(
             patterns.Event(
                 self.tcobject.descriptionChangedEventType(),  # Type d’événement
@@ -416,10 +442,14 @@ class ObjectTest(tctest.TestCase):
     def testCopy_CreationDateTimeIsNotCopied(self):
         copy = self.tcobject.copy()
         # Use >= to prevent failures on fast computers with low time granularity
-        self.assertTrue(copy.creationDateTime() >= self.tcobject.creationDateTime())
+        self.assertTrue(
+            copy.creationDateTime() >= self.tcobject.creationDateTime()
+        )
 
     def testCopy_ModificationDateTimeIsNotCopied(self):
-        self.tcobject.setModificationDateTime(date.DateTime(2013, 1, 1, 1, 0, 0))
+        self.tcobject.setModificationDateTime(
+            date.DateTime(2013, 1, 1, 1, 0, 0)
+        )
         copy = self.tcobject.copy()
         self.assertEqual(date.DateTime.min, copy.modificationDateTime())
 
@@ -438,12 +468,16 @@ class ObjectTest(tctest.TestCase):
     def testCopy_ForegroundColorIsCopied(self):
         self.tcobject.setForegroundColor(wx.RED)
         copy = self.tcobject.copy()
-        self.assertEqual(copy.foregroundColor(), self.tcobject.foregroundColor())
+        self.assertEqual(
+            copy.foregroundColor(), self.tcobject.foregroundColor()
+        )
 
     def testCopy_BackgroundColorIsCopied(self):
         self.tcobject.setBackgroundColor(wx.RED)
         copy = self.tcobject.copy()
-        self.assertEqual(copy.backgroundColor(), self.tcobject.backgroundColor())
+        self.assertEqual(
+            copy.backgroundColor(), self.tcobject.backgroundColor()
+        )
 
     def testCopy_FontIsCopied(self):
         self.tcobject.setFont(wx.SWISS_FONT)
@@ -470,7 +504,9 @@ class ObjectTest(tctest.TestCase):
 
     def testSetForegroundColorWithTupleColor(self):
         self.tcobject.setForegroundColor((255, 0, 0, 255))
-        self.assertEqual(wx.Colour(255, 0, 0, 255), self.tcobject.foregroundColor())
+        self.assertEqual(
+            wx.Colour(255, 0, 0, 255), self.tcobject.foregroundColor()
+        )
 
     def testSetForegroundColorOnCreation(self):
         domainObject = base.Object(fgColor=wx.GREEN)
@@ -489,7 +525,9 @@ class ObjectTest(tctest.TestCase):
 
     def testSetBackgroundColorWithTupleColor(self):
         self.tcobject.setBackgroundColor((255, 0, 0, 255))
-        self.assertEqual(wx.Colour(255, 0, 0, 255), self.tcobject.backgroundColor())
+        self.assertEqual(
+            wx.Colour(255, 0, 0, 255), self.tcobject.backgroundColor()
+        )
 
     def testSetBackgroundColorOnCreation(self):
         domainObject = base.Object(bgColor=wx.GREEN)
@@ -574,8 +612,9 @@ class ObjectTest(tctest.TestCase):
         # Vérifie que toutes les clés sont 'publiques' (pas de noms mangle)
         for key in state:
             self.assertFalse(
-                key.startswith('_Object__') or key.startswith('_SynchronizedObject__'),
-                f"L'état contient une clé privée indésirable : {key}"
+                key.startswith("_Object__")
+                or key.startswith("_SynchronizedObject__"),
+                f"L'état contient une clé privée indésirable : {key}",
             )
 
 
@@ -618,7 +657,8 @@ class CompositeObjectTest(tctest.TestCase):
             expandedContexts=["context1", "context2"]
         )
         self.assertEqual(
-            ["context1", "context2"], sorted(compositeObject.expandedContexts())
+            ["context1", "context2"],
+            sorted(compositeObject.expandedContexts()),
         )
 
     def testExpandInContext_DoesNotChangeExpansionStateInDefaultContext(self):
@@ -640,7 +680,9 @@ class CompositeObjectTest(tctest.TestCase):
         self.addChild(subject="child")  # Ajoute un enfant avec son sujet
         print(f"[TEST DEBUG] self.child.subject() = {self.child.subject()!r}")
         # self.child.setSubject("child")
-        self.assertEqual("parent -> child", self.child.subject(recursive=True))  # Test la chaîne récursive
+        self.assertEqual(
+            "parent -> child", self.child.subject(recursive=True)
+        )  # Test la chaîne récursive
 
     def testSubjectNotification(self):
         self.addChild(subject="child")
@@ -653,7 +695,9 @@ class CompositeObjectTest(tctest.TestCase):
         self.assertEqual(
             [
                 patterns.Event(
-                    self.compositeObject.subjectChangedEventType(), self.child, "child"
+                    self.compositeObject.subjectChangedEventType(),
+                    self.child,
+                    "child",
                 )
             ],
             self.eventsReceived,
@@ -664,7 +708,9 @@ class CompositeObjectTest(tctest.TestCase):
         self.compositeObject.setForegroundColor(wx.RED)
         self.assertEqual(wx.RED, self.child.foregroundColor(recursive=True))
 
-    def testSubItemDoesNotUseParentForegroundColorIfItHasItsOwnForegroundColor(self):
+    def testSubItemDoesNotUseParentForegroundColorIfItHasItsOwnForegroundColor(
+        self,
+    ):
         self.addChild(fgColor=wx.RED)
         self.compositeObject.setForegroundColor(wx.BLUE)
         self.assertEqual(wx.RED, self.child.foregroundColor(recursive=True))
@@ -684,7 +730,9 @@ class CompositeObjectTest(tctest.TestCase):
         self.compositeObject.setBackgroundColor(wx.RED)
         self.assertEqual(wx.RED, self.child.backgroundColor(recursive=True))
 
-    def testSubItemDoesNotUseParentBackgroundColorIfItHasItsOwnBackgroundColor(self):
+    def testSubItemDoesNotUseParentBackgroundColorIfItHasItsOwnBackgroundColor(
+        self,
+    ):
         self.addChild(bgColor=wx.RED)
         self.compositeObject.setBackgroundColor(wx.BLUE)
         self.assertEqual(wx.RED, self.child.backgroundColor(recursive=True))
@@ -766,14 +814,22 @@ class CompositeObjectTest(tctest.TestCase):
 
     def testCompositeWithChildrenUsesPluralIconIfAvailable(self):
         self.compositeObject.setIcon("book_icon")
-        self.assertEqual("book_icon", self.compositeObject.icon(recursive=True))
+        self.assertEqual(
+            "book_icon", self.compositeObject.icon(recursive=True)
+        )
         self.addChild()
-        self.assertEqual("books_icon", self.compositeObject.icon(recursive=True))
-        self.assertEqual("book_icon", self.compositeObject.icon(recursive=False))
+        self.assertEqual(
+            "books_icon", self.compositeObject.icon(recursive=True)
+        )
+        self.assertEqual(
+            "book_icon", self.compositeObject.icon(recursive=False)
+        )
 
     def testCompositeWithChildrenUsesPluralSelectedIconIfAvailable(self):
         self.compositeObject.setSelectedIcon("book_icon")
-        self.assertEqual("book_icon", self.compositeObject.selectedIcon(recursive=True))
+        self.assertEqual(
+            "book_icon", self.compositeObject.selectedIcon(recursive=True)
+        )
         self.addChild()
         self.assertEqual(
             "books_icon", self.compositeObject.selectedIcon(recursive=True)
@@ -784,10 +840,16 @@ class CompositeObjectTest(tctest.TestCase):
 
     def testCompositeWithoutChildrenDoesNotUseSingularIconIfAvailable(self):
         self.compositeObject.setIcon("books_icon")
-        self.assertEqual("books_icon", self.compositeObject.icon(recursive=False))
-        self.assertEqual("books_icon", self.compositeObject.icon(recursive=True))
+        self.assertEqual(
+            "books_icon", self.compositeObject.icon(recursive=False)
+        )
+        self.assertEqual(
+            "books_icon", self.compositeObject.icon(recursive=True)
+        )
 
-    def testCompositeWithoutChildrenDoesNotUseSingularSelectedIconIfAvailable(self):
+    def testCompositeWithoutChildrenDoesNotUseSingularSelectedIconIfAvailable(
+        self,
+    ):
         self.compositeObject.setSelectedIcon("books_icon")
         self.assertEqual(
             "books_icon", self.compositeObject.selectedIcon(recursive=False)
@@ -809,9 +871,13 @@ class CompositeObjectTest(tctest.TestCase):
     def testParentUsesSingularIconAfterChildRemoved(self):
         self.compositeObject.setIcon("book_icon")
         self.addChild()
-        self.assertEqual("books_icon", self.compositeObject.icon(recursive=True))
+        self.assertEqual(
+            "books_icon", self.compositeObject.icon(recursive=True)
+        )
         self.removeChild()
-        self.assertEqual("book_icon", self.compositeObject.icon(recursive=True))
+        self.assertEqual(
+            "book_icon", self.compositeObject.icon(recursive=True)
+        )
 
     def testParentUsesSingularSelectedIconAfterChildRemoved(self):
         self.compositeObject.setSelectedIcon("book_icon")
@@ -820,7 +886,9 @@ class CompositeObjectTest(tctest.TestCase):
             "books_icon", self.compositeObject.selectedIcon(recursive=True)
         )
         self.removeChild()
-        self.assertEqual("book_icon", self.compositeObject.selectedIcon(recursive=True))
+        self.assertEqual(
+            "book_icon", self.compositeObject.selectedIcon(recursive=True)
+        )
 
     def testCopy(self):
         self.compositeObject.expand(context="some_viewer")
@@ -843,13 +911,16 @@ class CompositeObjectTest(tctest.TestCase):
             self.compositeObject,
             base.CompositeObject.STATUS_DELETED,
         )
-        expectedEvent.addSource(self.child, base.CompositeObject.STATUS_DELETED)
+        expectedEvent.addSource(
+            self.child, base.CompositeObject.STATUS_DELETED
+        )
         self.assertEqual([expectedEvent], self.eventsReceived)
 
     def testMarkDirty(self):
         self.addChild()
         patterns.Publisher().registerObserver(
-            self.onEvent, eventType=base.CompositeObject.markNotDeletedEventType()
+            self.onEvent,
+            eventType=base.CompositeObject.markNotDeletedEventType(),
         )
         self.compositeObject.markDeleted()
         self.compositeObject.markDirty(force=True)
@@ -858,13 +929,16 @@ class CompositeObjectTest(tctest.TestCase):
             self.compositeObject,
             base.CompositeObject.STATUS_CHANGED,
         )
-        expectedEvent.addSource(self.child, base.CompositeObject.STATUS_CHANGED)
+        expectedEvent.addSource(
+            self.child, base.CompositeObject.STATUS_CHANGED
+        )
         self.assertEqual([expectedEvent], self.eventsReceived)
 
     def testMarkNew(self):
         self.addChild()
         patterns.Publisher().registerObserver(
-            self.onEvent, eventType=base.CompositeObject.markNotDeletedEventType()
+            self.onEvent,
+            eventType=base.CompositeObject.markNotDeletedEventType(),
         )
         self.compositeObject.markDeleted()
         self.compositeObject.markNew()
@@ -879,7 +953,8 @@ class CompositeObjectTest(tctest.TestCase):
     def testCleanDirty(self):
         self.addChild()
         patterns.Publisher().registerObserver(
-            self.onEvent, eventType=base.CompositeObject.markNotDeletedEventType()
+            self.onEvent,
+            eventType=base.CompositeObject.markNotDeletedEventType(),
         )
         self.compositeObject.markDeleted()
         self.compositeObject.cleanDirty()
@@ -917,4 +992,6 @@ class BaseCollectionTest(tctest.TestCase):
     def testLookupIdWhenObjectIsInCollection(self):
         domainObject = base.CompositeObject()
         self.collection.append(domainObject)
-        self.assertEqual(domainObject, self.collection.getObjectById(domainObject.id()))
+        self.assertEqual(
+            domainObject, self.collection.getObjectById(domainObject.id())
+        )

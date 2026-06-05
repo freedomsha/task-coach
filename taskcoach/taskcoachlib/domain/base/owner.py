@@ -19,6 +19,8 @@ Ce fichier définit une métaclasse qui génère dynamiquement des méthodes
 pour gérer des objets de domaine spécifiques.
 """
 
+# Python 3.6+ est requis pour les f-strings utilisées dans ce code.
+# Python 3 utilise un typage dynamique, ce qui permet de créer des méthodes et des propriétés à la volée.
 from taskcoachlib import patterns
 
 
@@ -58,6 +60,21 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
     Returns :
         type : La classe nouvellement créée avec des méthodes et des propriétés ajoutées.
+
+    Raises :
+        AttributeError : Si la classe cible n'a pas d'attribut `__ownedType__` ou si ce n'est pas une chaîne.
+
+    Examples :
+        class NoteOwner(metaclass=DomainObjectOwnerMetaclass):
+            __ownedType__ = "Note"
+
+        note_owner = NoteOwner()
+        note_owner.addNote(Note())
+        print(note_owner.notes())  # Affiche la liste des notes possédées
+        def added_handler(event):
+            print("Note ajoutée :", event.sources())
+
+    Utilisé dans AttachmentOwner pour gérer les pièces jointes, et dans NoteOwner pour gérer les notes.
     """
     #
 
@@ -101,7 +118,9 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # setattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower()),
         #         kwargs.pop(klass.__ownedType__.lower() + "s", []))
         # setattr(instance, owned_attr_name(), kwargs.pop(klass.__ownedType__.lower() + "s", []))
-        setattr(instance, _attribute_name(""), kwargs.pop(f"{owned_type}s", []))
+        setattr(
+            instance, _attribute_name(""), kwargs.pop(f"{owned_type}s", [])
+        )
         # super(klass, instance).__new__(klass)
         super(klass, instance).__init__(*args, **kwargs)
 
@@ -146,11 +165,23 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         return f"{klass}.{owned_type}{event_type}"
 
     # setattr(klass, f"{klass.__ownedType__.lower()}sChangedEventType", classmethod(generate_event_type("s")))
-    setattr(klass, f"{owned_type}sChangedEventType", classmethod(lambda cls: generate_event_name("")))
+    setattr(
+        klass,
+        f"{owned_type}sChangedEventType",
+        classmethod(lambda cls: generate_event_name("")),
+    )
     # setattr(klass, f"{klass.__ownedType__.lower()}AddedEventType", classmethod(generate_event_type(".added")))
-    setattr(klass, f"{owned_type}AddedEventType", classmethod(lambda cls: generate_event_name(".added")))
+    setattr(
+        klass,
+        f"{owned_type}AddedEventType",
+        classmethod(lambda cls: generate_event_name(".added")),
+    )
     # setattr(klass, f"{klass.__ownedType__.lower()}RemovedEventType", classmethod(generate_event_type(".removed")))
-    setattr(klass, f"{owned_type}RemovedEventType", classmethod(lambda cls: generate_event_name(".removed")))
+    setattr(
+        klass,
+        f"{owned_type}RemovedEventType",
+        classmethod(lambda cls: generate_event_name(".removed")),
+    )
 
     # Ajouter les types d'événements de modification
     # @classmethod
@@ -204,7 +235,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # owned_objects = getattr(instance, owned_attr_name())
         owned_objects = getattr(instance, _attribute_name(""))
         # Filtrer les objets supprimés
-        result = [obj for obj in owned_objects if obj is not None and not obj.isDeleted()]
+        result = [
+            obj
+            for obj in owned_objects
+            if obj is not None and not obj.isDeleted()
+        ]
         # Inclure les enfants récursivement si nécessaire
         if recursive:
             for obj in result[:]:
@@ -283,16 +318,18 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
     def removedEvent(instance, event, *objects):
         """
-         Ajoute un événement supprimé à l'événement donné.
+        Ajoute un événement supprimé à l'événement donné.
 
-         Args :
-             instance : L'instance qui possède les objets.
-             event : L'événement pour ajouter l'événement supprimé.
-             *objects : Les objets qui ont été supprimés.
-         """
+        Args :
+            instance : L'instance qui possède les objets.
+            event : L'événement pour ajouter l'événement supprimé.
+            *objects : Les objets qui ont été supprimés.
+        """
         # event.addSource(instance, *objects,
         #                 **dict(type=removedEventType(instance.__class__)))
-        event.addSource(instance, *objects, type=generate_event_name(".removed"))
+        event.addSource(
+            instance, *objects, type=generate_event_name(".removed")
+        )
         # print(f"Événement envoyé par removedEvent: {event}")
 
         # Forcer l'ajout explicite de la source
@@ -382,9 +419,10 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
     @patterns.eventSource
     def removeObject(instance, ownedObject, event=None):
-        """Supprimez un seul objet possédé.
+        """
+        Supprimer un seul objet possédé.
 
-        Supprimez un seul objet détenu de l'instance.
+        Supprimer un seul objet détenu de l'instance.
 
         Cette méthode supprime l'objet propriétaire spécifié de la liste des objets possédés.
         Il déclenche également «Changeevent» et «RemovedEvent» pour informer les observateurs du changement.
@@ -411,7 +449,8 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
     @patterns.eventSource
     def removeObjects(instance, *ownedObjects, **kwargs):
-        """Supprimez plusieurs objets possédés.
+        """
+        Supprimer plusieurs objets possédés.
 
         Remove multiple owned objects from the instance.
 
@@ -424,16 +463,19 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             **kwargs :
                 event : Objet d'événement facultatif à passer aux gestionnaires d'événements.
         """
+        # Vérifier si des objets sont fournis avant de tenter de les supprimer
         if not ownedObjects:
             return
         for ownedObject in ownedObjects:
             try:
+                # Récupérer la liste des objets possédés et supprimer l'objet actuel
                 # getattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower())).remove(ownedObject)
                 # getattr(instance, f"_{name}__{klass.__ownedType__.lower()}s").remove(ownedObject)
                 # getattr(instance, owned_attr_name()).remove(ownedObject)
                 getattr(instance, _attribute_name("")).remove(ownedObject)
             except ValueError:
                 pass
+        # Récupérer l'événement à partir des kwargs pour le passer aux gestionnaires d'événements
         event = kwargs.pop("event", None)
         changedEvent(instance, event, *ownedObjects)
         removedEvent(instance, event, *ownedObjects)
@@ -457,7 +499,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         y compris la liste des objets propriétaires.
 
         Args :
-            instance : L'instance pour obtenir l'état de.
+            instance : L'instance pour obtenir l'état de l'objet.
 
         Returns :
             dict : Un dictionnaire représentant l'état de l'instance.
@@ -467,7 +509,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # except AttributeError:
         #     state = dict()
         # state = getattr(super(klass, instance), "__getstate__", lambda: {})()
-        state = super(klass, instance).__getstate__() if hasattr(super(klass, instance), "__getstate__") else {}
+        state = (
+            super(klass, instance).__getstate__()
+            if hasattr(super(klass, instance), "__getstate__")
+            else {}
+        )
         # state[klass.__ownedType__.lower() + "s"] = getattr(
         #     instance, "_%s__%ss" % (name, klass.__ownedType__.lower())
         # )[:]
@@ -487,7 +533,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         fourni, y compris la liste des objets possédés.
 
         Args :
-            instance : L'instance pour définir l'état.
+            instance : L'instance pour définir son état.
             state (dict) : Un dictionnaire représentant l'état de l'instance.
             event : Objet d'événement facultatif à passer aux gestionnaires d'événements.
         """
@@ -496,7 +542,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # except AttributeError:
         #     pass
         # getattr(super(klass, instance), "__setstate__", lambda *_: None)(state, event=event)
-        super(klass, instance).__setstate__(state, event=event) if hasattr(super(klass, instance), "__setstate__") else None
+        (
+            super(klass, instance).__setstate__(state, event=event)
+            if hasattr(super(klass, instance), "__setstate__")
+            else None
+        )
         # setObjects(instance, state[klass.__ownedType__.lower() + "s"], event=event)
         # setObjects(instance, state.get(klass.__ownedType__.lower() + "s", []), event=event)
         setObjects(instance, state[f"{owned_type}s"], event=event)
@@ -522,7 +572,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # except AttributeError:
         #     state = dict()
         # state = getattr(super(klass, instance), "__getcopystate__", lambda: {})()
-        state = super(klass, instance).__getcopystate__() if hasattr(super(klass, instance), "__getcopystate__") else {}
+        state = (
+            super(klass, instance).__getcopystate__()
+            if hasattr(super(klass, instance), "__getcopystate__")
+            else {}
+        )
         # state["%ss" % klass.__ownedType__.lower()] = [
         #     ownedObject.copy() for ownedObject in objects(instance)
         # ]

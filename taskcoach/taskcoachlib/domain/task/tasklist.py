@@ -29,7 +29,7 @@ from . import task
 
 class TaskListQueryMixin(object):
     """
-    Classe mixin.
+    Classe mixin qui fournit un id et la méthode nrOfTasksPerStatus qui retourne le nombre de tâches pour chaque status.
     """
 
     def __init__(self, *args, **kwargs):
@@ -44,7 +44,8 @@ class TaskListQueryMixin(object):
         Calculer le nombre de tâches pour chaque statut possible.
 
         Elle parcourt les tâches (en ignorant celles qui sont supprimées)
-        et compte leur statut, puis retourne un dictionnaire avec ces totaux.
+        et compte leur statut, puis retourne un dictionnaire avec ces totaux
+        pour chaque status.
 
         Returns :
             count (dict) : Un dictionnaire dont les clés sont les statuts possibles.
@@ -60,10 +61,14 @@ class TaskListQueryMixin(object):
 
 class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
     """
+    Ensemble de tâches qui est à la fois une collection d'objets de tâche
+    et un mixin de requête pour obtenir des statistiques sur les tâches.
+
+
     Hérite de TaskListQueryMixin pour accéder à nrOfTasksParStatus() et
     de categorizable.CategorizableContainer qui indique que TaskList est
     une collection d'éléments qui peuvent être catégorisés,
-    et qu'elle fournit probablement des méthodes pour gérer ces éléments
+    et qu'elle fournit des méthodes pour gérer ces éléments
     (ajouter, supprimer, itérer, etc.).
 
     Attributs :
@@ -75,7 +80,6 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
                           provenant de help.taskNew.
 
     Méthodes principales :
-
         nrBeingTracked() : Retourne le nombre de tâches actuellement suivies (en cours).
 
         tasksBeingTracked() : Retourne une liste de tâches qui sont actuellement suivies.
@@ -118,7 +122,7 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
         return [eachTask for eachTask in self if eachTask.isBeingTracked()]
 
     def efforts(self):
-        """Collecte tous les efforts de toutes les tâches de la liste."""
+        """Collecte et retourne tous les efforts de toutes les tâches de la liste."""
         result = []
         print(
             "TaskList.efforts() : called, iterating over tasks to collect efforts..."
@@ -141,6 +145,11 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
         """
         Fournir un moyen de contourner la méthode __len__ des décorateurs.
 
+        Fournit la longueur originale de la liste de tâches,
+        en excluant les tâches marquées comme supprimées.
+        Cela contourne potentiellement la méthode __len__
+        si elle a été modifiée par des décorateurs.
+
         Returns :
             (int) : Le nombre de tâches dans la liste, en excluant celles qui sont marquées comme supprimées.
         """
@@ -156,7 +165,12 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
         return max(self.__allPriorities())
 
     def __allPriorities(self):
-        """Récupère toutes les priorités des tâches non supprimées."""
+        """Retourne toutes les priorités des tâches non supprimées.
+
+        Une méthode privée qui récupère toutes les priorités
+        des tâches non supprimées, retournant (0,)
+        si aucune tâche n'est trouvée pour éviter une erreur
+        min() ou max() sur une liste vide."""
         return [task.priority() for task in self if not task.isDeleted()] or (
             0,
         )  # pylint: disable=W0621

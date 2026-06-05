@@ -673,6 +673,17 @@ class XMLReader(object):  # nouvelle classe
 
         Args :
             fd : Fichier par défaut.
+
+        Attributes:
+            __fd : Fichier par défaut.
+            __default_font_size : Taille de la police par défaut, déterminée en fonction du backend GUI utilisé (wx ou tk).
+            categories : Dictionnaire des catégories, initialisé comme un dictionnaire vide.
+            __modification_datetimes : Dictionnaire pour stocker les dates et heures de modification des éléments, initialisé comme un dictionnaire vide.
+            __prerequisites : Dictionnaire pour stocker les prérequis des tâches, initialisé comme un dictionnaire vide.
+            __categorizables : Dictionnaire pour stocker les relations entre les catégories et les objets catégorisables (tâches, notes, etc.), initialisé comme un dictionnaire vide.
+            __id_registry : Dictionnaire pour suivre tous les IDs et leurs emplacements dans le fichier pour la détection de doublons, initialisé comme un dictionnaire vide.
+            __current_path : Liste utilisée comme une pile pour suivre l'emplacement hiérarchique actuel lors du parsing, initialisée comme une liste vide.
+            __tskversion : Version du fichier de tâches .tsk en cours de lecture, initialisée à None.
         """
         #
         # Fichier
@@ -1170,9 +1181,13 @@ class XMLReader(object):  # nouvelle classe
             changes = dict()
             # print(f"XMLReader.read : Création des Informations de modification du fichier delta : changes = {changes}")
         # print("XMLReader.read avant retour :")
-        log.debug(
-            f"XMLReader.read : {len(tasks)} Tâches lues avant retour : {[(the_task.id(), the_task.status()) for the_task in tasks]}, tasks[0].completed() = {tasks[0].completed()}"
-        )
+        # Avoid indexing tasks[0] when tasks may be empty which causes IndexError
+        if tasks:
+            log.debug(
+                f"XMLReader.read : {len(tasks)} Tâches lues avant retour : {[(the_task.id(), the_task.status()) for the_task in tasks]}, tasks[0].completed() = {tasks[0].completed()}"
+            )
+        else:
+            log.debug(f"XMLReader.read : {len(tasks)} Tâches lues avant retour : []")
         log.debug(
             f"XMLReader.read : {len(categories)} Catégories lues : {[the_category.id() for the_category in categories]}"
         )
@@ -1914,6 +1929,18 @@ class XMLReader(object):  # nouvelle classe
         # ---------------------------
         # 3️⃣ associer catégories ↔ objets
         # ---------------------------
+        # log.debug(
+        print(
+            f"XMLReader.__resolve_categories : DEBUG : relations catégories à résoudre = {self.__categorizables}"
+        )
+        # log.debug(f"XMLReader.__resolve_categories : DEBUG : self.__categorizables.items() = {self.__categorizables.items()}")
+        print(
+            f"XMLReader.__resolve_categories : DEBUG : self.__categorizables.items() = {self.__categorizables.items()}"
+        )
+        # log.debug(f"XMLReader.__resolve_categories : DEBUG : list(self.__categorizables.items()) = {list(self.__categorizables.items())}")
+        print(
+            f"XMLReader.__resolve_categories : DEBUG : list(self.__categorizables.items()) = {list(self.__categorizables.items())}"
+        )
 
         for categoryId, categorizableIds in list(
             self.__categorizables.items()
@@ -2313,6 +2340,8 @@ class XMLReader(object):  # nouvelle classe
     def __parse_category_node(self, category_node):
         """Analyser récursivement les catégories du nœud et renvoyer une instance de catégorie.
 
+        Parse un nœud XML <category> et crée un objet Category.
+
         * Analyse un nœud XML de catégorie et retourne une instance de `category.Category`.
         Analyse un nœud XML <category> et crée un objet Category.
             * Récupère les attributs de base du nœud composite à l'aide de `__parse_base_composite_attributes`.
@@ -2327,6 +2356,7 @@ class XMLReader(object):  # nouvelle classe
 
         Cette méthode :
             - lit les attributs XML de la catégorie
+              Les attributs de base (comme id, subject, etc.) sont lus via __parse_base_composite_attributes.
             - construit les arguments nécessaires à la création de category.Category
             - enregistre les objets catégorisables (tâches / notes)
             - ajoute la catégorie dans le mapping interne self.categories
@@ -2426,6 +2456,11 @@ class XMLReader(object):  # nouvelle classe
             categorizable_ids = category_node.attrib.get("tasks", "")
         else:
             categorizable_ids = category_node.attrib.get("categorizables", "")
+            # # Lire l'attribut 'categorizables' au lieu de 'categorizableIds'
+            # categorizable_ids = self.getAttribute(
+            #     category_node, "categorizables", ""
+            # ).split()
+            categorizable_ids = category_node.attrib.get("categorizables", "")
         # categorizable_ids = category_node.attrib.get("categorizables", "") if self.__tskversion >= 19 else category_node.attrib.get("tasks", "")
 
         # Pour les versions >20 : analyser les pièces jointes
@@ -2521,7 +2556,8 @@ class XMLReader(object):  # nouvelle classe
             for i in categorizable_ids.split(
                 " "
             )  # découpe des IDs dans l'attribut XML
-            if i  # ignore les chaînes vides
+            if i  # filtre pour ne garder que les IDs non vides (ignore les chaînes vides)
+            # if i != " "  # ignore les chaînes vides
         ]
 
         # Enregistrement des associations catégorie → objets
@@ -2562,6 +2598,22 @@ class XMLReader(object):  # nouvelle classe
 
         # Sortie du chemin courant de parsing
         self.__current_path.pop()
+
+        # Lire l'attribut categorizableIds depuis le nœud XML
+        # categorizableIds = self.getAttribute(  # AttributeError: 'XMLReader' object has no attribute 'getAttribute'. Did you mean: '__getattribute__'?
+        #     category_node, "categorizableIds", ""
+        # ).split()
+        categorizableIds = category_node.get("categorizableIds", "").split()
+
+        # Remplir self.__categorizables avec les IDs des objets catégorisables
+        category_id = kwargs.get(
+            "id"
+        )  # ou self.getAttribute(category_node, 'id')
+        if category_id:
+            self.__categorizables.setdefault(category_id, []).extend(
+                categorizableIds
+            )
+
         log.debug(
             f"XMLReader.__parse_category_node : DEBUG - self.categories après ajout : {len(self.categories)}"
         )

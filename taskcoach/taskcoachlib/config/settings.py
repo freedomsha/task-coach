@@ -697,12 +697,15 @@ class Settings(CachingConfigParser):
             # pub.sendMessage("settings.%s.%s" % (section, option), value=value)
             topic = f"settings.{section}.{option}"
             pub.sendMessage(  # Attention à la signature de pub.sendMessage, elle peut varier selon la version de pypubsub utilisée.
-                "settings.%s.%s" % (section, option),
+                # "settings.%s.%s" % (section, option),
+                # # event=f"{section}.{option}",
+                # event=topic,
+                topic,
                 # value=value,
-                # event=f"{section}.{option}",
-                event=topic,
+                value=value,
             )
             # pub.sendMessage(f"settings.{section}.{option}", value=value)
+            # pubsub.core.topicargspec.SenderMissingReqdMsgDataError: Some required args missing in call to sendMessage('settings.effortviewer.round', event): value
 
     setvalue = settuple = setlist = setdict = setint = setboolean
 

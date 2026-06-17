@@ -574,40 +574,70 @@ def AttachmentFactory(location, type_=None, *args, **kwargs):
     Vérifie si l'attachement a un emplacement défini et valide
     et retourne l'attachement.
     """
-    if not location:
-        print(
-            f"⚠️ [DEBUG] L'attachement a un emplacement vide ! kwargs={kwargs}"
-        )
-    else:
-        print(f"✅ [DEBUG] Attachement valide : {location}")
-    return None if not location else Attachment(location, *args, **kwargs)
-
+    # 1. Valider la localisation
+    # if not location:
+    #     print(
+    #         f"⚠️ [DEBUG] L'attachement a un emplacement vide ! kwargs={kwargs}"
+    #     )
+    # else:
+    #     print(f"✅ [DEBUG] Attachement valide : {location}")
+    #     #     return None if not location else Attachment(location, *args, **kwargs)
+    #
+    # Validate location
     if not location or not isinstance(location, str):
         print(
             f"attachment.AttachmentFactory : ⚠️ WARNING - Emplacement d'attachement invalide : {location}"
         )
         return None
-    if type_ is None:
-        if location.startswith("URI:"):
-            return URIAttachment(
-                location[4:], subject=location[4:], description=location[4:]
-            )
-        elif location.startswith("FILE:"):
-            return FileAttachment(
-                location[5:], subject=location[5:], description=location[5:]
-            )
-        elif location.startswith("MAIL:"):
-            return MailAttachment(
-                location[5:], subject=location[5:], description=location[5:]
-            )
 
-        return FileAttachment(location, subject=location, description=location)
+    # if type_ is None:
+    #     # if location.startswith("URI:"):
+    #     #     return URIAttachment(
+    #     #         location[4:], subject=location[4:], description=location[4:]
+    #     #     )
+    #     # elif location.startswith("FILE:"):
+    #     #     return FileAttachment(
+    #     #         location[5:], subject=location[5:], description=location[5:]
+    #     #     )
+    #     # elif location.startswith("MAIL:"):
+    #     #     return MailAttachment(
+    #     #         location[5:], subject=location[5:], description=location[5:]
+    #     #     )
+    #     #
+    #     # return FileAttachment(location, subject=location, description=location)
 
-    try:
-        return {
-            "file": FileAttachment,
-            "uri": URIAttachment,
-            "mail": MailAttachment,
-        }[type_](location, *args, **kwargs)
-    except KeyError:
-        raise TypeError("Unknown attachment type: %s" % type_)
+    # 2. Utiliser le type_ explicitement fourni si présent
+    if type_ is not None:
+        try:
+            # S'assurer que les kwargs sont passés correctement
+            return {
+                "file": FileAttachment,
+                "uri": URIAttachment,
+                "mail": MailAttachment,
+            }[type_](location, *args, **kwargs)
+        except KeyError:
+            raise TypeError("Unknown attachment type: %s" % type_)
+
+    # 3. Inférer le type si type_ n'est pas fourni
+    #    Les préfixes sont retirés de la location passée au constructeur
+    # No explicit type: infer from location prefixes used in old XML formats
+    if location.startswith("URI:"):
+        loc = location[4:]
+        # return URIAttachment(loc, subject=loc, description=loc)
+        # Passer la location sans préfixe et les autres kwargs
+        return URIAttachment(loc, *args, **kwargs)
+    if location.startswith("FILE:"):
+        loc = location[5:]
+        # return FileAttachment(loc, subject=loc, description=loc)
+        # Passer la location sans préfixe et les autres kwargs
+        return FileAttachment(loc, *args, **kwargs)
+    if location.startswith("MAIL:"):
+        loc = location[5:]
+        # return MailAttachment(loc, subject=loc, description=loc)
+        # Passer la location sans préfixe et les autres kwargs
+        return MailAttachment(loc, *args, **kwargs)
+
+    # Default to FileAttachment for plain locations
+    # return FileAttachment(location, subject=location, description=location)
+    # 4. Par défaut, si aucun préfixe n'est trouvé et aucun type n'est spécifié, c'est un FileAttachment
+    return FileAttachment(location, *args, **kwargs)

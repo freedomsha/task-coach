@@ -62,7 +62,7 @@ class Composite(object):
         log.debug("Composite : Initialisation.")
         super().__init__()
         # self.__parent = parent if parent is None else weakref.ref(parent)
-        # Ne réinitialiser __parent que si pas déjà défini par un setParent précédent
+        # # Ne réinitialiser __parent que si pas déjà défini par un setParent précédent
         if (
             not hasattr(self, "_Composite__parent")
             or self._Composite__parent  # Utiliser plutôt la méthode super() !?
@@ -81,6 +81,15 @@ class Composite(object):
                 f"Composite : Ajout de l'enfant {child} à {self}"
             )
             child.setParent(self)
+        log.debug(
+            "Après Composite.__init__ : %s enfants=%s",
+            self,
+            len(self.children())
+        )
+        log.debug(
+            "Après Composite.__init__ : parent=%s",
+            self.parent()
+        )
         log.debug("Composite : Initialisé.")
 
     def __getstate__(self):
@@ -143,11 +152,26 @@ class Composite(object):
         """
         Obtenez le parent du composite.
 
+        Retourne le parent du nœud composite.
+
+        Compatibilité :
+        - remplace l'ancien usage weakref()
+        - garantit une API stable pour tout le projet
+
         Renvoie :
             (Composite) : Le composite parent.
         """
         # return None if self.__parent is None else self.__parent()
         return self.__parent  # Référence forte (suppression des weakrefs)
+
+    def hasParent(self):
+        """
+        Vérifiez si le composite a un parent.
+
+        Returns :
+            (bool) : True si le composite a un parent, False sinon.
+        """
+        return self.__parent is not None
 
     def ancestors(self):
         """
@@ -171,13 +195,22 @@ class Composite(object):
 
     def setParent(self, parent):
         """
-        Définir le composite parent.
+        Définit le parent du composite.
+
+        Migration propre :
+        - stockage en référence forte
+        - compatibilité API via getter
 
         Args :
             parent (Composite) : Le composite parent en référence faible.
         """
         # self.__parent = None if parent is None else weakref.ref(parent)
-        self.__parent = parent  # Référence forte (suppression des weakrefs)
+        self.__parent = (
+            parent  # Référence forte volontaire (suppression des weakrefs)
+        )
+        # self.__parent.set(
+        #     parent, event=event
+        # )  # Non, ne fonctinne pas comme Object
 
     def children(self, recursive=False) -> list | None:
         """

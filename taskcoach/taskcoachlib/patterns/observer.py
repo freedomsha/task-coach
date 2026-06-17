@@ -448,7 +448,7 @@ class Event(object):
 
         currentValues = set(sources.setdefault(source_key, tuple()))
         currentValues |= set(values)
-        print(
+        log.debug(
             f"Event.addSource : Ajoute les valeurs : {values} à la source : {source} (clé : {source_key}) dans le dictionnaire de sources : {sources}."
         )
         sources[source_key] = tuple(currentValues)

@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    from .. import base
 # except ImportError:
 from taskcoachlib.domain import base
+from pubsub import pub
 
 #  Importe la métaclasse DomainObjectOwnerMetaclass depuis le module taskcoachlib.domain.base
 
@@ -100,9 +101,86 @@ class NoteOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
         # pass
         return f"{class_.__module__.split('.')[-1]}.{class_.__ownedType__.lower()}.remove"
 
-    def notes(self):
-        # pass
+    # def notes(self):
+    #     # pass
+    #     print(
+    #         f"DEBUG: NoteOwner.notes() called for {self} (id: {self.id() if hasattr(self, 'id') else 'N/A'}, returning {len(self.__notes)} notes: {self.__notes}"
+    #     )
+    #     return self.__notes
+
+    # Nouvelles lignes :
+    # Décommenter si nécessaire mais ne fonctionne pas encore:
+    # def __lt__(self, other):
+    #     """Compare deux tâches par leur ID."""
+    #     return self.id < other.id
+
+    # def addNote(self, aNote):
+    #     # pass
+    #     if aNote not in self._notes:
+    #         self._notes.append(aNote)
+    #         # On notifie pour que TaskFile puisse passer needSave à True
+    #         pub.sendMessage('task.notes.added', task=self, note=aNote)
+
+    def addNote(self, aNote, **kwargs):
+        """Méthode singulière (utilisée par ton test)"""
+        self.addNotes(aNote, **kwargs)
+
+    def notes(self, recursive=False):
+        """
+        Retourne la liste des notes de la tâche.
+        Si recursive est True, inclut aussi les notes des sous-tâches.
+        """
         print(
-            f"DEBUG: NoteOwner.notes() called for {self} (id: {self.id() if hasattr(self, 'id') else 'N/A'}, returning {len(self.__notes)} notes: {self.__notes}"
+            # f"DEBUG: Task.notes() called for task {self.id()} (subject: {self.subject()}) with recursive={recursive}"
+            f"DEBUG: NoteOwner.notes() called for task {self.id()} (subject: {self.subject()}) with recursive={recursive}"
         )
-        return self.__notes
+        # Utiliser super().notes() pour accéder à la méthode de NoteOwner
+        ownNotes = (
+            super().notes()
+        )  # This gets the notes directly attached to this task via NoteOwner
+        # # Accès direct à l'attribut manglé de Noteowner pour éviter toute redéfinition de notes() qui pourrait causer une récursion infinie
+        # ownNotes = self._NoteOwner__notes
+        # print(f"DEBUG: Task.notes() - ownNotes for {self.id()}: {ownNotes}")
+        print(
+            f"DEBUG: NoteOwner.notes() - ownNotes for {self.id()}: {ownNotes}"
+        )
+
+        childNotes = []
+        if recursive:
+            for child in self.children():
+                print(
+                    # f"DEBUG: Task.notes() - Getting notes for child task {child.id()} (subject: {child.subject()})"
+                    f"DEBUG: NoteOwner.notes() - Getting notes for child task {child.id()} (subject: {child.subject()})"
+                )
+                childNotes.extend(child.notes(recursive=True))
+
+        allNotes = ownNotes + childNotes
+        print(
+            # f"DEBUG: Task.notes() - Returning allNotes for {self.id()}: {allNotes}"
+            f"DEBUG: NoteOwner.notes() - Returning allNotes for {self.id()}: {allNotes}"
+        )
+        return allNotes
+
+    def addNotes(self, *notes, **kwargs):
+        """Méthode plurielle (utilisée par les Commandes)"""
+        # print(f"DEBUG: Task.addNotes called for task {getattr(self,'id', lambda:None)()} with notes={notes}")
+        for aNote in notes:
+            # Vérifie l'existence de la note dans les notes de la tâche avant de l'ajouter pour éviter les doublons.
+            # Utiliser super().notes() pour accéder à la liste gérée par NoteOwner.
+            # Ensure we operate on the actual NoteOwner storage attribute
+            notes_attr = getattr(self, "_NoteOwner__notes", None)
+            if notes_attr is None:
+                # Initialize the storage if missing
+                setattr(self, "_NoteOwner__notes", [])
+                notes_attr = getattr(self, "_NoteOwner__notes")
+            if aNote not in notes_attr:
+                # print(f"DEBUG: Adding note {aNote} to task {getattr(self,'id', lambda:None)()}")
+                # Définit le parent de la note
+                aNote.setParent(self)
+                # Ajoute à la liste gérée par NoteOwner
+                notes_attr.append(aNote)
+                # Notifier pour que TaskFile.needSave passe à True
+                try:
+                    pub.sendMessage("task.notes.added", task=self, note=aNote)
+                except Exception:
+                    pub.sendMessage("task.notes.added")

@@ -34,6 +34,10 @@ class CategorizableCompositeObject(base.CompositeObject):
     supplémentaires pour gérer les objets enfants et leur état.
 
     Des exemples d'objets composites catégorisables sont les tâches et les notes.
+
+    Attributes :
+        __categories : Un SetAttribute qui stocke les catégories auxquelles cet objet composite catégorisable appartient.
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -445,7 +449,12 @@ class CategorizableCompositeObject(base.CompositeObject):
 
     @classmethod
     def categorySubjectChangedEventType(class_):
-        """"""
+        """
+        Renvoyer
+
+        Returns:
+
+        """
         return "categorizable.category.subject"
 
     def categorySubjectChangedEvent(self, event, subject):

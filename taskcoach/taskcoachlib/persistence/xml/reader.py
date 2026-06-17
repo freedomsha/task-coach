@@ -352,13 +352,10 @@ class PIParser(ET.XMLParser):
             data (str) : Données associées à l'instruction, pouvant contenir des métadonnées
                          comme tskversion="123".
 
-        Returns :
-            None
-
         Exemple :
             Pour une instruction de traitement comme :
             <?taskcoach tskversion="78"?>
-            Cette méthode extraira 78 et définira self.tskversion = 78.
+            Cette méthode extraira 78 et définira la version du fichier .tsk self.tskversion = 78.
         """
         # log.debug(f"PIParser.handle_pi : self = {self}, target = {target}, data = {data}.")
         if target == "taskcoach":
@@ -423,6 +420,18 @@ class XMLReader(object):  # nouvelle classe
     Register the ID and parse base compostie attributes.
     Extract category names from task nodes and create unique category objects.
     ...
+
+    **Attributs**
+
+    * __fd : Fichier par défaut.
+    * __default_font_size : Taille de la police par défaut, déterminée en fonction du backend GUI utilisé (wx ou tk).
+    * categories : Dictionnaire des catégories, initialisé comme un dictionnaire vide.
+    * __modification_datetimes : Dictionnaire pour stocker les dates et heures de modification des éléments, initialisé comme un dictionnaire vide.
+    * __prerequisites : Dictionnaire pour stocker les prérequis des tâches, initialisé comme un dictionnaire vide.
+    * __categorizables : Dictionnaire pour stocker les relations entre les catégories et les objets catégorisables (tâches, notes, etc.), initialisé comme un dictionnaire vide.
+    * __id_registry : Dictionnaire pour suivre tous les IDs et leurs emplacements dans le fichier pour la détection de doublons, initialisé comme un dictionnaire vide.
+    * __current_path : Liste utilisée comme une pile pour suivre l'emplacement hiérarchique actuel lors du parsing, initialisée comme une liste vide.
+    * __tskversion : Version du fichier de tâches .tsk en cours de lecture, initialisée à None.
 
     **Méthodes**
 
@@ -674,7 +683,7 @@ class XMLReader(object):  # nouvelle classe
         Args :
             fd : Fichier par défaut.
 
-        Attributes:
+        Attributes :
             __fd : Fichier par défaut.
             __default_font_size : Taille de la police par défaut, déterminée en fonction du backend GUI utilisé (wx ou tk).
             categories : Dictionnaire des catégories, initialisé comme un dictionnaire vide.
@@ -815,7 +824,8 @@ class XMLReader(object):  # nouvelle classe
         """
         # wx.LogDebug(f"XMLReader.read : self.__fd={self.__fd} est de type {type(self.__fd)}.")  # le type est pompeux !
         # wx.LogDebug(f"XMLReader.read : Lit self.__fd={self.__fd}.")  # Le type de classe est déjà dans self.__fd !
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.read : Lit self.__fd={self.__fd}."
         )  # Le type de classe est déjà dans self.__fd !
         # self.__fd=<_io.TextIOWrapper name='/home/sylvain/.local/share/Task Coach/templates/dueTomorrow.tsktmpl' mode='r' encoding='UTF-8'> est de type <class '_io.TextIOWrapper'>
@@ -842,7 +852,7 @@ class XMLReader(object):  # nouvelle classe
                 f"XMLReader.read : Type de self.__fd inattendu : {type(self.__fd)}. Attendu io.StringIO ou io.BytesIO."
             )
             raise TypeError(
-                f"Type de self.__fd inattendu : {type(self.__fd)}. Attendu io.StringIO, io.BytesIO ou io.BufferedReader."
+                f"Type de self.__fd inattendu : {type(self.__fd)}. Attendu io.StringIO, io.BytesIO, io.BufferedReader ou io.TextIOWrapper."
             )
 
             # REMPLACER CE BLOC :
@@ -899,6 +909,7 @@ class XMLReader(object):  # nouvelle classe
         unique_fd.seek(0)
         if self.__has_broken_lines():
             self.__fix_broken_lines()
+            unique_fd = self.__fd
         # print("XMLReader.read : Sauts de ligne corrigés")
 
         # Lire la première ligne du fichier pour récupérer l'instruction de traitement
@@ -929,7 +940,8 @@ class XMLReader(object):  # nouvelle classe
         if match:
             tskversion = int(match.group(1))
 
-        log.debug(
+        # log.debug(
+        print(
             f"✅ XMLReader.read : tskversion du fichier lu extrait avant parsing = {tskversion}"
         )
         #
@@ -953,7 +965,8 @@ class XMLReader(object):  # nouvelle classe
         # log.debug(
         #     f"XMLReader.read : Contenu du fichier :\n{self.__fd.read()}"
         # )  # Vérifie le contenu lu
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.read : Contenu du fichier :\n{unique_fd.read()}"
         )  # Vérifie le contenu lu
         # self.__fd.seek(0)  # Reviens au début avant parsing
@@ -979,7 +992,7 @@ class XMLReader(object):  # nouvelle classe
         root = tree.getroot()
         # root = ET.fromstring(content.encode('utf-8')) # Parse depuis une chaîne UTF-8 encodée
         # root = ET.fromstring(self.__fd.read().encode('utf-8'))  # Parse depuis une chaîne UTF-8 encodée
-        # print(f"XMLReader.read : root = {root}")
+        print(f"XMLReader.read : root = {root}")
         # print(f"XMLReader.read : root.tag = {root.tag}")
         # print(f"XMLReader.read : Dictionnaire d'attributs root.attrib = {root.attrib}")
         # print(f"ET.dump(root) = {ET.dump(root)}")
@@ -1074,8 +1087,9 @@ class XMLReader(object):  # nouvelle classe
         # print("XMLReader.read: 6. ANALYSE DES DIFFERENTS ELEMENTS DU FICHIER.")
         # print(f"XMLReader.read : 6.a Analyse des noeuds de tâche de : root = {root} avec _parse_task_nodes.")
         tasks = self.__parse_task_nodes(root)
-        log.debug(
-            f"XMLReader.read : Tâches lues avec status: {[(the_task, the_task.id(), the_task.getStatus()) for the_task in tasks]}"
+        # log.debug(
+        print(
+            f"XMLReader.read : {len(tasks)} Tâches lues avec status: {[(the_task, the_task.id(), the_task.getStatus()) for the_task in tasks]}"
         )  # TODO : a retirer.
         # print(f"XMLReader.read : Résultat d'analyse des noeuds de tâche : tasks = {tasks}")
         # print(f"XMLReader.read : DEBUG - Après parsing : tasks[0].completed() = {tasks[0].completed()}")
@@ -1086,49 +1100,68 @@ class XMLReader(object):  # nouvelle classe
         # * Analyse les nœuds de notes.
         # print(f"XMLReader.read : 6.c Analyse des noeuds de notes de root = {root} avec ")
         notes = self.__parse_note_nodes(root)
-        # print(f"XMLReader.read : __parse_note_nodes : notes = {notes}")
-        # # * (si version du fichier > 13) : Analyse les noeuds de catégories.
-        # print(f"XMLReader.read : Version du fichier: {self.__tskversion} si <=13,"
+        print(f"XMLReader.read : __parse_note_nodes : notes = {notes}")
+        # # * (si version du fichier > 13) : Analyse les nœuds de catégories.
+        # print(f"XMLReader.read : Version du fichier : {self.__tskversion} si <=13,"
         #       f" utilisation de __parse_category_nodes_from_task_nodes sinon __parse_category_nodes")
-        # print(f"XMLReader.read : 6.d Analyse des noeuds de cateorie de root = {root} :")
+        # print(f"XMLReader.read : 6.d Analyse des nœuds de catégorie de root = {root} :")
         if self.__tskversion <= 13:
             # * (si version du fichier <= 13) : Analyse les catégories à partir des nœuds de tâches (ancienne version).
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.read : tskversion<=13, utilisation de __parse_category_nodes_from_task_nodes(root)."
             )
             categories = self.__parse_category_nodes_from_task_nodes(root)
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.read : __parse_category_nodes_from_task_nodes(root) a récupéré {len(categories)} catégories."
             )
         else:
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.read : tskversion>13, utilisation de __parse_category_nodes(root)."
             )
             categories = self.__parse_category_nodes(root)
-            log.debug(
+            # Ne doit contenir que les catégories de root sans les catégories imbriquées !
+            # log.debug(
+            print(
                 f"XMLReader.read : __parse_category_nodes(root) a récupéré {len(categories)} catégories."
+            )
+            print(
+                "XMLReader.read : Category",
+                root.attrib.get("subject"),
+                "contains",
+                [
+                    child.attrib.get("subject")
+                    for child in root.findall("category")
+                ],
             )
         # print(f"XMLReader.read : 📂 DEBUG - Catégories de la tâche 'subject': categories = {categories}")
 
         # print(f"DEBUG: XMLReader.read - Tâches extraites après lecture du XML : {[the_task.id() for the_task in tasks]}")
         # for the_task in tasks:
         #     print(f"DEBUG: Tâche {the_task.id()} - Enfants XML : {[child.id() for child in the_task.children()]}")
-        log.debug(
+        # log.debug(
+        print(
             f"DEBUG: XMLReader.read - Catégories après lecture : ids = {[the_category.id() for the_category in categories]}"
         )
         # print(f"DEBUG: XMLReader.read : Avant résolution des catégories, self.categories = {self.categories}")
         # * Associe les catégories aux tâches et aux notes.
-        log.debug(
+        # log.debug(
+        print(
             "XMLReader.read : Associe les catégories aux tâches et aux notes."
         )
-        log.debug(
+        # log.debug(
+        print(
             f"DEBUG XMLReader : avant __resolve_categories, self.__categorizables = {self.__categorizables}."
         )
         self.__resolve_categories(categories, tasks, notes)
-        log.info(
+        # log.info(
+        print(
             f"XMLReader.read - Catégories lues après parsing: categories={categories}"
         )
-        log.info(
+        # log.info(
+        print(
             f"XMLReader.read : Après résolution des catégories, self.categories = {self.categories}"
         )
         for cat in categories:
@@ -1183,15 +1216,21 @@ class XMLReader(object):  # nouvelle classe
         # print("XMLReader.read avant retour :")
         # Avoid indexing tasks[0] when tasks may be empty which causes IndexError
         if tasks:
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.read : {len(tasks)} Tâches lues avant retour : {[(the_task.id(), the_task.status()) for the_task in tasks]}, tasks[0].completed() = {tasks[0].completed()}"
             )
         else:
-            log.debug(f"XMLReader.read : {len(tasks)} Tâches lues avant retour : []")
-        log.debug(
+            # log.debug(
+            print(
+                f"XMLReader.read : {len(tasks)} Tâches lues avant retour : []"
+            )
+        # log.debug(
+        print(
             f"XMLReader.read : {len(categories)} Catégories lues : {[the_category.id() for the_category in categories]}"
         )
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.read : {len(notes)} Notes lues : {[the_note.id() for the_note in notes]}"
         )
         # print(f"Syncml_config lue : {[syncml_config]}")
@@ -1201,7 +1240,10 @@ class XMLReader(object):  # nouvelle classe
         #     print(f"XMLReader.read : 🔍 DEBUG - Tâche {task.id()} | Catégories finales : {task.categories()}")
         #     for child in task.children():
         #         print(f"XMLReader.read : 🔍 DEBUG - Sous-tâche {child.id()} | Catégories finales : {child.categories()}")
-
+        print(
+            f"XMLReader.read : retourne tasks={tasks}, categories={categories}, notes={notes}, syncml_config={syncml_config}, changes={changes}, guid={guid}"
+        )
+        # Les catégories ne doivent être que celles de roots dans <tasks> sans les catégories imbriquées !
         return tasks, categories, notes, syncml_config, changes, guid
         # avec try:
         # except ET.XMLSyntaxError as e:
@@ -1221,7 +1263,7 @@ class XMLReader(object):  # nouvelle classe
         # )  # <class '_io.BufferedReader'>
         log.warning(
             f"XMLReader.__has_broken_lines : Type de self.__fd: {type(self.__fd)}"
-        )  # <class '_io.BufferedReader'>
+        )  # <class '_io.BufferedReader'>, <class '_io.StringIO'>
         # has_broken_lines = (
         #     b"><spds><sources><TaskCoach-\n" in self.__fd.read()
         # )  # TODO : Est-ce que le 'b' est indispensable ? Sinon le retirer !
@@ -1355,28 +1397,44 @@ class XMLReader(object):  # nouvelle classe
 
         * Analyse de manière récursive tous les noeuds de tâches de l'arbre XML et renvoie une liste d'instances de tâches.
         """
-        log.debug(f"XMLReader.__parse_task_nodes : sur node = {node}")
+        # log.debug(f"XMLReader.__parse_task_nodes : sur node = {node}")
+        print(f"XMLReader.__parse_task_nodes : sur node = {node}")
         # Initialisation de la liste des instances de tâches.
         # task_return = [self.__parse_task_node(child) for child in node.findall("task")]
         # Pour tout avoir récursivement, il est peut-être préférable d'utiliser iter !? -> Non, ne fonctionne pas, c'est pire !
+        ###
+        # Ligne python 2.7 :
         # task_return = [self.__parse_task_node(child) for child in node.iter("task")]
+        ###
         task_return = []
         # notes = [self.__parse_note_node(child) for child in node.findall("note")]
         for task_to_parse in node.findall(
             "task"
         ):  # Voir si ce ne serait plus rapide avec iter ?
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.__parse_task_nodes : Parse le noeud {task_to_parse.tag} d'attributs {task_to_parse.attrib}."
             )
             task_parsed = self.__parse_task_node(task_to_parse)
             # log.debug(f"XMLReader.__parse_task_nodes : 🔍 Tâche créée : {task_parsed.id()} | Instance mémoire : {id(task_parsed)}")
             # for subchild in task_parsed.children():
             #     log.debug(f"XMLReader.__perse_task_nodes : 🔍 Enfant : {subchild.id()} | Instance mémoire : {id(subchild)}")
-            task_return.append(
-                task_parsed
-            )  # Ajoute explicite de la tâche task_parsed à la liste de tâches
-            # log.debug(f"XMLReader.__perse_task_nodes : ✅ Sous-Note ajoutée : {task_parsed.id()} dans la liste des tâches {task_return}")
-        log.debug(
+            if task_parsed is not None:
+                task_return.append(
+                    task_parsed
+                )  # Ajoute explicite de la tâche task_parsed à la liste de tâches
+                log.debug(
+                    f"XMLReader.__perse_task_nodes : ✅ Sous-Note ajoutée : {task_parsed.id()} dans la liste des tâches {task_return}"
+                )
+                print(
+                    f"XMLReader.__parse_task_nodes : Tâche ajoutée : {task_parsed.id()}"
+                )
+            else:
+                log.warning(
+                    "XMLReader.__parse_task_nodes : Tâche non ajoutée car parsing a échoué."
+                )
+        # log.debug(
+        print(
             f"XMLReader.__parse_task_nodes retourne la liste de tâches ! : {task_return}"
         )
         return task_return
@@ -1890,8 +1948,41 @@ class XMLReader(object):  # nouvelle classe
         log.debug(
             f"XMLReader.__resolve_categories : DEBUG : relations catégories avant __resolve_categories = {self.__categorizables}"
         )
+        print("XMLReader.__resolve_categories : DEBUG categories connues :")
+        for cid, category in self.categories.items():
+            print(f"  {cid} -> {category}")
+
+        print(
+            "DEBUG __resolve_categories : type(self.categories)=",
+            type(self.categories),
+        )
+        print(
+            "DEBUG __resolve_categories : self.categories=",
+            self.categories,
+        )
+        print(
+            "DEBUG __resolve_categories : keys=",
+            list(self.categories.keys()),
+        )
         # dictionnaire id -> catégorie
         categoryMap = {}
+
+        def add_category_recursive(cat, category_map):
+            """
+            Ajoute récursivement une catégorie et toutes ses sous-catégories
+            dans le dictionnaire de résolution.
+            """
+            cid = self.__normalize_id(cat.id())
+            category_map[cid] = cat
+
+            print(
+                f"ADD CATEGORY MAP : {cat.subject()} "
+                f"id={cid} "
+                f"children={[child.subject() for child in cat.children()]}"
+            )
+
+            for child in cat.children():
+                add_category_recursive(child, category_map)
 
         # dictionnaire id -> objet catégorisable
         categorizableMap = {}
@@ -1902,24 +1993,74 @@ class XMLReader(object):  # nouvelle classe
         # ---------------------------
         # 1️⃣ enregistrer les catégories, construire les maps avec normalisation
         # ---------------------------
-
+        print("DEBUG categories passées à __resolve_categories :")
         for cat in categories:
-            # normalisation de l'identifiant
-            cid = self.__normalize_id(cat.id())  # garantit str uniforme
-
-            # ajout dans la map
-            categoryMap[cid] = cat  # enregistre la catégorie
+            print(
+                f"  {cat.subject()} "
+                f"id={cat.id()} "
+                f"children={[c.subject() for c in cat.children()]}"
+            )
+        # for cat in categories:
+        #     # normalisation de l'identifiant
+        #     cid = self.__normalize_id(cat.id())  # garantit str uniforme
+        #
+        #     # ajout dans la map
+        #     categoryMap[cid] = cat  # enregistre la catégorie
+        for cat in categories:
+            # Ajouter récursivement les catégories ou sous-catégories dans le dictionnaire
+            add_category_recursive(cat, categoryMap)
 
         # ---------------------------
         # 2️⃣ enregistrer les objets catégorisables
         # ---------------------------
+        # Incomplete Nested/Note/Attachment Category Resolution:
+        #       • Issue: In  __resolve_categories , notes and pieces of
+        #       attachments owned by tasks/subtasks were not recursively
+        #       mapped. Thus, when resolving category associations with
+        #       note IDs, it raised  IndexError  (list index out of range)
+        #       or failed assertions because the note instances couldn't be
+        #       resolved.
+        #       • Fix: Implemented a recursive mapping helper  add_to_map
+        #       in  __resolve_categories  to properly traverse all child
+        #       tasks, notes, and attachments, guaranteeing that any
+        #       descendant object is correctly indexed for categorization.
+        def add_to_map(item):
+            """
 
-        for obj in tasks + notes:
-            # normalisation de l'identifiant
-            oid = self.__normalize_id(obj.id())  # convertit bytes/str
+            Args:
+                item:
 
-            # ajout dans la map
-            categorizableMap[oid] = obj  # stocke l'objet
+            Returns:
+
+            """
+            if item is None:
+                return
+            oid = self.__normalize_id(item.id())
+            if oid in categorizableMap:
+                return
+            categorizableMap[oid] = item
+
+            if hasattr(item, "children"):
+                try:
+                    for child in item.children():
+                        add_to_map(child)
+                except Exception:
+                    pass
+            if hasattr(item, "notes"):
+                try:
+                    for anot in item.notes():
+                        add_to_map(anot)
+                except Exception:
+                    pass
+            if hasattr(item, "attachments"):
+                try:
+                    for att in item.attachments():
+                        add_to_map(att)
+                except Exception:
+                    pass
+
+        for obj in categories + tasks + notes:
+            add_to_map(obj)
 
         log.debug(
             f"XMLReader.__resolve_categories : {len(categoryMap)} catégories, "
@@ -1941,27 +2082,53 @@ class XMLReader(object):  # nouvelle classe
         print(
             f"XMLReader.__resolve_categories : DEBUG : list(self.__categorizables.items()) = {list(self.__categorizables.items())}"
         )
+        print("\n===== CATEGORY MAP =====")
+        for cid, cat in categoryMap.items():
+            print(
+                f"cid={repr(cid)} "
+                f"subject={cat.subject()} "
+                f"id()={repr(cat.id())}"
+            )
+        print("========================\n")
 
+        # Pour chaque catégorie avec liste des objets catégorisables dans la liste des catégorisables :
         for categoryId, categorizableIds in list(
             self.__categorizables.items()
         ):
 
             # normalisation de l'id catégorie
             categoryId = self.__normalize_id(categoryId)
-
+            print(
+                "DEBUG lookup : categoryId=",
+                repr(categoryId),
+                type(categoryId),
+            )
+            # enregistrer le contenu de la catégorie dans une variable locale
             a_category = categoryMap.get(categoryId)
+            print(
+                f"XMLReader.__resolve_categories : DEBUG - la catégorie {categoryId} contient {a_category}."
+            )
+
+            # Si la clé n'existe pas dans categoryMap, tenter un fallback par subject
+            if a_category is None:
+                # fallback: categoryId peut être en fait le sujet de la catégorie
+                for cat_obj in categoryMap.values():
+                    if self.__normalize_id(cat_obj.subject()) == categoryId:
+                        a_category = cat_obj
+                        break
 
             if a_category is None:
                 log.warning(f"Catégorie inconnue ignorée : {categoryId}")
                 continue
 
-            # vérifie existence catégorie
-            if categoryId not in categoryMap:
-                log.warning(f"Catégorie introuvable : {categoryId}")
-                continue
-
-            # récupération catégorie
-            theCategory = categoryMap[categoryId]
+            # # vérifie existence de la catégorie
+            # if categoryId not in categoryMap:
+            #     log.warning(f"Catégorie introuvable : {categoryId}")
+            #     continue
+            #
+            # # récupération de l'objet catégorie correspondante à la catégorie
+            # theCategory = categoryMap[categoryId]
+            theCategory = a_category
 
             # parcourir les objets associés
             for categorizableId in categorizableIds:
@@ -1994,8 +2161,13 @@ class XMLReader(object):  # nouvelle classe
                         f"Catégorie '{theCategory.subject()}' "
                         f"assignée à '{theObject.subject()}'"
                     )
-        log.debug(
-            f"XMLReader.__resolve_categories : DEBUG : relations catégories finales = {self.__categorizables}"
+        print(f"XMLReader.__resolve_categories : pour self = {self},")
+        # log.debug(
+        print(
+            f"XMLReader.__resolve_categories : DEBUG : relations catégories finales self.__categorizables = {self.__categorizables}"
+        )
+        print(
+            f"XMLReader.__resolve_categories : Dictionnaire des catégories : self.categories = {self.categories}."
         )
         # ---------------------------
         # 4️⃣ notifier le système
@@ -2005,8 +2177,19 @@ class XMLReader(object):  # nouvelle classe
 
         log.debug("XMLReader.__resolve_categories : fin")
 
+    #  Parsing Categories inside the  <categories>  Wrapper:
+    #       • Issue: Since version 38, categories are grouped inside a
+    #       <categories>  container under the root element. The
+    #       existing  __parse_category_nodes  only checked for
+    #       <category>  elements directly under the root, causing the
+    #       categories list to be returned empty.
+    #       • Fix: Updated  __parse_category_nodes  to parse
+    #       <category>  elements directly under the current element,
+    #       and additionally look inside a  <categories>  container if
+    #       present.
     def __parse_category_nodes(self, node):
         """
+        Depuis la version 13,
         Analyse de manière récursive tous les nœuds de catégorie de l'arbre XML
         et renvoie une liste d'instances de catégorie.
 
@@ -2021,188 +2204,209 @@ class XMLReader(object):  # nouvelle classe
         Returns :
             categories_extracted : Liste des catégories extraites.
         """
-        # return [self.__parse_category_node(child)
-        #         for child in node.findall("category")]
-        # categories_extracted = [self.__parse_category_node(child) for child in node.findall("category")]
-        # print(f"DEBUG - XMLReader.__parse_category_nodes : root = {ET.tostring(node, pretty_print=True).decode()}")
+        category_nodes = node.findall("category")
+        categories_container = node.find("categories")
+        if categories_container is not None:
+            category_nodes.extend(categories_container.findall("category"))
 
-        # # # Récupère toutes les catégories
-        # # # Combine les catégories trouvées directement et celles sous <categories>
-        # # # category_nodes = node.findall("categories/category")
-        # # category_nodes = node.findall("category") + node.findall(
-        # #     "categories/category"
+        return [self.__parse_category_node(child) for child in category_nodes]
+        # # # #
+        # # categories_extracted = [self.__parse_category_node(child) for child in node.findall("category")]
+        # # print(f"DEBUG - XMLReader.__parse_category_nodes : root = {ET.tostring(node, pretty_print=True).decode()}")
+        #
+        # # # # Récupère toutes les catégories
+        # # # # Combine les catégories trouvées directement et celles sous <categories>
+        # # # # category_nodes = node.findall("categories/category")
+        # # # category_nodes = node.findall("category") + node.findall(
+        # # #     "categories/category"
+        # # # )
+        # # <categories> est inutile car elles sont toutes récupérées où qu'elles soient !
+        # # category_nodes_direct = node.findall("category")
+        # # category_nodes_nested = node.findall("category/category")
+        # # category_nodes = category_nodes_direct + category_nodes_nested
+        # #
+        # # # log.debug(f"XMLReader.__parse_category_nodes : DEBUG : {len(category_nodes)} category_nodes trouvés = {category_nodes}")
+        # # log.debug(
+        # #     f"XMLReader.__parse_category_nodes: A trouvé {len(category_nodes_direct)} catégories directes et {len(category_nodes_nested)} catégories imbriquées dans node={node.tag}."
         # # )
-        # category_nodes_direct = node.findall("category")
-        # category_nodes_nested = node.findall("category/category")
-        # category_nodes = category_nodes_direct + category_nodes_nested
+        # # log.debug(
+        # #     f"XMLReader.__parse_category_nodes: Total de {len(category_nodes)} nœuds de catégorie à traiter."
+        # # )
         #
-        # # log.debug(f"XMLReader.__parse_category_nodes : DEBUG : {len(category_nodes)} category_nodes trouvés = {category_nodes}")
-        # log.debug(
-        #     f"XMLReader.__parse_category_nodes: A trouvé {len(category_nodes_direct)} catégories directes et {len(category_nodes_nested)} catégories imbriquées dans node={node.tag}."
-        # )
-        # log.debug(
-        #     f"XMLReader.__parse_category_nodes: Total de {len(category_nodes)} nœuds de catégorie à traiter."
-        # )
-
-        # print(f"XMLReader.__parse_category_nodes: Catégories extraites : {categories_extracted}")  # Debug
-        # for theCategory in categories_extracted:
-        #     parent = theCategory.parent()  # Récupère le parent de la catégorie
-        #     if parent and parent.id() in self.categories:  # Vérifie que le parent existe
-        #         print(f"Ajout de la sous-catégorie {theCategory} à {parent}")  # Debug
-        #         parent.addChild(theCategory)  # Ajoute la sous-catégorie au parent
+        # # print(f"XMLReader.__parse_category_nodes: Catégories extraites : {categories_extracted}")  # Debug
+        # # for theCategory in categories_extracted:
+        # #     parent = theCategory.parent()  # Récupère le parent de la catégorie
+        # #     if parent and parent.id() in self.categories:  # Vérifie que le parent existe
+        # #         print(f"Ajout de la sous-catégorie {theCategory} à {parent}")  # Debug
+        # #         parent.addChild(theCategory)  # Ajoute la sous-catégorie au parent
+        # #
+        # # return categories_extracted
+        # # print(f"XMLReader.__parse_category_nodes pour node = {node}:")
         #
-        # return categories_extracted
-        # print(f"XMLReader.__parse_category_nodes pour node = {node}:")
-
-        # liste finale des catégories
-        all_categories = []  # contiendra tous les objets Category créés
-        # categories = [self.__parse_category_node(child) for child in node.findall("category")]
-
-        log.debug(
-            f"DEBUG XMLReader.__parse_category_nodes : noeud racine = {node.tag}, (tasks is OK) !"
-            f"children={[child.tag for child in node]}"
-        )
-
-        # # récupérer le conteneur <categories> !!! Il n'existe pas ! Les catégories sont directement à la racine !
-        # # # categories_root = node.find("categories")
-        # # categories_root = node.findall("category")  # parse_recursive fiat aussi une recherche findall donc inutile !
-        # categories_root = node
-        # We need to find all <category> nodes, regardless of depth, for the intial parsing.
-        # The recursive call will then handle the children.
-        # The 'node' passed to __parse_category_nodes is typically the root XML element.
-
-        # # si aucune section catégories
-        # if categories_root is None:
-        #     log.debug(
-        #         "XMLReader._parse_category_nodes : aucune section <categories> trouvée."
-        #     )
-        #     return categories
-        # THis check is not needed if we iterate over all category XML nodes
-
-        # 📌 **Boucle sur toutes les catégories trouvées**
-        # def parse_recursive(category_nodes, parent=None):
-        def parse_recursive(xml_node, parent=None):
-            """
-            Fonction interne récursive pour analyser les catégories.
-
-            Args:
-                xml_node (Element): nœud XML courant
-                parent (Category|None): catégorie parent
-
-            Returns:
-                categories(list):
-            """
-            # parcourir tous les enfants <category>
-            # for child in node.findall("categories/category"):
-            # for child in category_nodes:
-            # for child in xml_node.findall("category"):
-            # Iterate over direct <category> children of the current XML node:
-            for child_xml_node in xml_node.findall("category"):
-                # # print(f"🔍 DEBUG - Analyse du nœud catégorie : {ET.tostring(child, pretty_print=True).decode()}")
-                # log.debug(
-                #     f"XMLReader.__parse_category_nodes: Traitement du nœud XML de catégorie: {ET.tostring(child, encoding='unicode', pretty_print=False).strip()} pour child={child}."
-                # )
-                # créer l'objet Category correspondant
-                # theCategory = self.__parse_category_node(child)
-                theCategory = self.__parse_category_node(child_xml_node)
-                # theCategory = self.__parse_category_node(child, node)
-                log.debug(
-                    f"XMLReader.__parse_category_nodes : DEBUG - Catégorie analysée : theCategory id={theCategory.id() if theCategory else 'None'}"
-                )
-                # # si création échoue, Vérifier si la catégorie a été bien créée
-                if theCategory is not None:
-                    #     # category_id = child.attrib.get("id", None)
-                    #     # print(f"DEBUG - Catégorie détectée : id={category_id}")  # Vérifie si l'ID est bien extrait
-                    #     # print(f"✅ DEBUG - Catégorie analysée : {theCategory}, id={category_id}")
-                    #     # if category_id:  # Vérifie si l'ID est valide
-                    #     # acategory = category.Category(category_id)
-                    #     # categoryMap[category_id] = acategory
-                    #     # categoryMap[category_id] = acategory  # Utilisation de self.categoryMap au lieu de categoryMap
-                    #     # log.debug(f"✅ DEBUG - Catégorie analysée : {theCategory}, ID={category_id}")
-                    #     log.debug(
-                    #         f"XMLReader.__parse_category_nodes : ✅ DEBUG - Catégorie analysée : theCategory, ID={theCategory.id()}, Subject='{theCategory.subject()}"
-                    #     )
-                    #     # print(
-                    #     #     f"✅ DEBUG - Catégorie ajoutée à self.categoryMap : {category_id} -> {acategory}")  # Vérifie si l'ajout est bien fait
-
-                    # # **Ajout dans `self.categories`**
-                    # # ajouter dans la liste globale
-                    # # self.categories[theCategory.id()] = theCategory
-                    # # # ajoute toutes les catégories y compris les sous-catégories
-                    # # categories.append(theCategory)
-                    all_categories.append(
-                        theCategory
-                    )  # Add ALL parsed categories to the list
-                    #
-                    # # n'ajoute que les catégories racines (parent is None)
-                    # if parent is None:
-                    #     categories.append(theCategory)
-                    # # print(f"✅ DEBUG - Catégorie ajoutée : {theCategory.id()} dans self.categories")
-                    # # else:
-                    # #     print(f"⚠️ WARNING - Catégorie ignorée car ID invalide : {child}")
-
-                    # # 📌 Vérifie et ajoute les sous-catégories
-                    # for child_category_node in child.findall("category"):
-                    #     child_category = self.__parse_category_node(child_category_node)   # 📌 Crée l'objet enfant
-                    #     if child_category :
-                    #         theCategory.addChild(child_category)  # 🟢 Ajoute la catégorie imbriquée comme enfant de la catégorie parent
-                    #         print(f"✅ Sous-catégorie ajoutée : {child_category.id()} sous {theCategory.id()}")
-                    #         # print(f"📂 Catégorie: {theCategory.subject()}, Enfants: {[c.subject() for c in theCategory.children()]}")
-
-                    # si un parent existe
-                    if parent is not None:
-                        # associer la sous-catégorie au parent
-                        parent.addChild(theCategory)
-
-                        log.debug(
-                            "XMLReader.__parse_category_nodes : "
-                            f"sous-catégorie '{theCategory.subject()}' "
-                            f"ajoutée sous '{parent.subject()}'"
-                        )
-
-                    # # appel récursif pour analyser les sous-catégories enfants
-                    # parse_recursive(child, theCategory)
-                    # Recursive call to find children of this category
-                    parse_recursive(child_xml_node, theCategory)
-                else:
-                    # wx.LogWarning(f"XMLReader.__parse_category_nodes : ⚠️ WARNING - self.__parse_category_node() a retourné None pour {child}")
-                    # log.error(
-                    #     f"XMLReader.__parse_category_nodes : ⚠️ self.__parse_category_node() a retourné None pour {child.attrib}"
-                    # )
-                    log.error(
-                        f"XMLReader.__parse_category_nodes : ⚠️ self.__parse_category_node() a retourné None pour {child_xml_node.attrib}"
-                    )
-                    # log.warning(
-                    #     f"XMLReader.__parse_category_nodes: ⚠️ WARNING - self.__parse_category_node() a retourné None pour le nœud: {ET.tostring(child, encoding='unicode', pretty_print=False).strip()}"
-                    # )
-                    log.warning(
-                        "XMLReader.__parse_category_nodes : "
-                        # f"catégorie invalide ignorée : {child}"
-                        f"catégorie invalide ignorée : {child_xml_node}"
-                    )
-
-        log.debug(
-            # f"XMLReader.__parse_category_nodes : lance l'analyse récursive dans les {len(categories_root)} catégories de {categories_root}."
-            f"XMLReader.__parse_category_nodes : lance l'analyse récursive depuis le noeud XML racine {node.tag}."
-        )
-        # # # lancer l'analyse depuis la racine
-        # # parse_recursive(node)
-        # # démarrer depuis <categories>
-        # parse_recursive(categories_root)
-        parse_recursive(
-            node
-        )  # Start the recursive parsing from the main XML node
-        # # parse_recursive(category_nodes)
-
-        # print(f"XMLReader.__parse_category_nodes : ✅ Liste des catégories ajouté à categories : {categories}")
-        # print(f"XMLReader.__parse_category_nodes : DEBUG - Catégories trouvées: {categories}")
-        log.debug(
-            # f"XMLReader.__parse_category_nodes : 📂 Retourne la liste finale des {len(categories)} catégories extraites !"
-            f"XMLReader.__parse_category_nodes : 📂 Retourne la liste finale des {len(all_categories)} catégories extraites !"
-        )
-        # retourner la liste finale
-        # return categories
-        return all_categories
+        # # liste finale des catégories
+        # all_categories = []  # contiendra tous les objets Category créés
+        # # categories = [self.__parse_category_node(child) for child in node.findall("category")]
+        #
+        # # log.debug(
+        # print(
+        #     f"DEBUG XMLReader.__parse_category_nodes : noeud racine = {node.tag}, (tasks is OK) !"
+        #     f"children={[child.tag for child in node]}"
+        # )
+        #
+        # # # récupérer le conteneur <categories> !!! Il n'existe pas ! Les catégories sont directement à la racine !
+        # # # # categories_root = node.find("categories")
+        # # # categories_root = node.findall("category")  # parse_recursive fiat aussi une recherche findall donc inutile !
+        # # categories_root = node
+        # # We need to find all <category> nodes, regardless of depth, for the intial parsing.
+        # # The recursive call will then handle the children.
+        # # The 'node' passed to __parse_category_nodes is typically the root XML element.
+        #
+        # # # si aucune section catégories
+        # # if categories_root is None:
+        # #     log.debug(
+        # #         "XMLReader._parse_category_nodes : aucune section <categories> trouvée."
+        # #     )
+        # #     return categories
+        # # THis check is not needed if we iterate over all category XML nodes
+        #
+        # # 📌 **Boucle sur toutes les catégories trouvées**
+        # # def parse_recursive(category_nodes, parent=None):
+        # def parse_recursive(xml_node, parent=None):
+        #     """
+        #     Fonction interne récursive pour analyser les catégories.
+        #
+        #     Args:
+        #         xml_node (Element): nœud XML courant
+        #         parent (Category|None): catégorie parent
+        #
+        #     Returns:
+        #         None
+        #     """
+        #     # parcourir tous les enfants <category>
+        #     # for child in node.findall("categories/category"):
+        #     # for child in category_nodes:
+        #     # for child in xml_node.findall("category"):
+        #     # Iterate over direct <category> children of the current XML node:
+        #     for child_xml_node in xml_node.findall("category"):
+        #         # # print(f"🔍 DEBUG - Analyse du nœud catégorie : {ET.tostring(child, pretty_print=True).decode()}")
+        #         # log.debug(
+        #         #     f"XMLReader.__parse_category_nodes: Traitement du nœud XML de catégorie: {ET.tostring(child, encoding='unicode', pretty_print=False).strip()} pour child={child}."
+        #         # )
+        #         # créer l'objet Category correspondant
+        #         # theCategory = self.__parse_category_node(child)
+        #         theCategory = self.__parse_category_node(child_xml_node)
+        #         # theCategory = self.__parse_category_node(child, node)
+        #         # log.debug(
+        #         print(
+        #             f"XMLReader.__parse_category_nodes : DEBUG - Catégorie analysée : theCategory id={theCategory.id() if theCategory else 'None'}"
+        #         )
+        #         # # si création échoue, Vérifier si la catégorie a été bien créée
+        #         # Si la catégorie existe
+        #         if theCategory is not None:
+        #             #     # category_id = child.attrib.get("id", None)
+        #             #     # print(f"DEBUG - Catégorie détectée : id={category_id}")  # Vérifie si l'ID est bien extrait
+        #             #     # print(f"✅ DEBUG - Catégorie analysée : {theCategory}, id={category_id}")
+        #             #     # if category_id:  # Vérifie si l'ID est valide
+        #             #     # acategory = category.Category(category_id)
+        #             #     # categoryMap[category_id] = acategory
+        #             #     # categoryMap[category_id] = acategory  # Utilisation de self.categoryMap au lieu de categoryMap
+        #             #     # log.debug(f"✅ DEBUG - Catégorie analysée : {theCategory}, ID={category_id}")
+        #             #     log.debug(
+        #             #         f"XMLReader.__parse_category_nodes : ✅ DEBUG - Catégorie analysée : theCategory, ID={theCategory.id()}, Subject='{theCategory.subject()}"
+        #             #     )
+        #             #     # print(
+        #             #     #     f"✅ DEBUG - Catégorie ajoutée à self.categoryMap : {category_id} -> {acategory}")  # Vérifie si l'ajout est bien fait
+        #
+        #             # # **Ajout dans `self.categories`**
+        #             # # ajouter dans la liste globale des catégories à retourner
+        #             # # self.categories[theCategory.id()] = theCategory
+        #             # # # ajoute toutes les catégories y compris les sous-catégories
+        #             # # categories.append(theCategory)
+        #             all_categories.append(
+        #                 theCategory
+        #             )  # Add ALL parsed categories to the list
+        #             #
+        #             # # n'ajoute que les catégories racines (parent is None)
+        #             # if parent is None:
+        #             #     categories.append(theCategory)
+        #             # # print(f"✅ DEBUG - Catégorie ajoutée : {theCategory.id()} dans self.categories")
+        #             # # else:
+        #             # #     print(f"⚠️ WARNING - Catégorie ignorée car ID invalide : {child}")
+        #
+        #             # # 📌 Vérifie et ajoute les sous-catégories
+        #             # for child_category_node in child.findall("category"):
+        #             #     child_category = self.__parse_category_node(child_category_node)   # 📌 Crée l'objet enfant
+        #             #     if child_category :
+        #             #         theCategory.addChild(child_category)  # 🟢 Ajoute la catégorie imbriquée comme enfant de la catégorie parent
+        #             #         print(f"✅ Sous-catégorie ajoutée : {child_category.id()} sous {theCategory.id()}")
+        #             #         # print(f"📂 Catégorie: {theCategory.subject()}, Enfants: {[c.subject() for c in theCategory.children()]}")
+        #
+        #             # si un parent existe
+        #             if parent is not None:
+        #                 # associer la sous-catégorie au parent
+        #                 parent.addChild(theCategory)
+        #
+        #                 # log.debug(
+        #                 print(
+        #                     "XMLReader.__parse_category_nodes : "
+        #                     f"sous-catégorie '{theCategory.subject()}' "
+        #                     f"ajoutée sous '{parent.subject()}'"
+        #                 )
+        #
+        #             # # appel récursif pour analyser les sous-catégories enfants
+        #             # parse_recursive(child, theCategory)
+        #             # Recursive call to find children of this category
+        #             # parse_recursive(child_xml_node, theCategory)
+        #             # Non, la récursivité est sensée se dérouler dans __parse_category_node !
+        #         else:
+        #             # wx.LogWarning(f"XMLReader.__parse_category_nodes : ⚠️ WARNING - self.__parse_category_node() a retourné None pour {child}")
+        #             # log.error(
+        #             #     f"XMLReader.__parse_category_nodes : ⚠️ self.__parse_category_node() a retourné None pour {child.attrib}"
+        #             # )
+        #             log.error(
+        #                 f"XMLReader.__parse_category_nodes : ⚠️ self.__parse_category_node() a retourné None pour {child_xml_node.attrib}"
+        #             )
+        #             # log.warning(
+        #             #     f"XMLReader.__parse_category_nodes: ⚠️ WARNING - self.__parse_category_node() a retourné None pour le nœud: {ET.tostring(child, encoding='unicode', pretty_print=False).strip()}"
+        #             # )
+        #             log.warning(
+        #                 "XMLReader.__parse_category_nodes : "
+        #                 # f"catégorie invalide ignorée : {child}"
+        #                 f"catégorie invalide ignorée : {child_xml_node}"
+        #             )
+        #
+        # # log.debug(
+        # print(
+        #     # f"XMLReader.__parse_category_nodes : lance l'analyse récursive dans les {len(categories_root)} catégories de {categories_root}."
+        #     f"XMLReader.__parse_category_nodes : lance l'analyse récursive depuis le noeud XML racine {node.tag}."
+        # )
+        # # # # lancer l'analyse depuis la racine
+        # # # parse_recursive(node)
+        # # # démarrer depuis <categories>
+        # # parse_recursive(categories_root)
+        # parse_recursive(
+        #     node
+        # )  # Start the recursive parsing from the main XML node
+        # # # parse_recursive(category_nodes)
+        #
+        # # print(f"XMLReader.__parse_category_nodes : ✅ Liste des catégories ajouté à categories : {categories}")
+        # # print(f"XMLReader.__parse_category_nodes : DEBUG - Catégories trouvées: {categories}")
+        # # log.debug(
+        # # Filter to return only top-level categories (those with no parent)
+        # # top_level_categories = [
+        # #     cat for cat in all_categories if cat.parent() is None
+        # # ]
+        # # Non, au lieu de filtrer, il faut imbriquer les enfants dans les parents !
+        #
+        # print(
+        #     # f"XMLReader.__parse_category_nodes : 📂 Retourne la liste finale des {len(categories)} catégories extraites !"
+        #     f"XMLReader.__parse_category_nodes : 📂 Retourne la liste finale des {len(all_categories)} catégories extraites !"
+        #     # f"XMLReader.__parse_category_nodes : 📂 Retourne la liste finale des {len(top_level_categories)} catégories de premier niveau extraites !"
+        # )
+        # # retourner la liste finale
+        # # return categories
+        # return all_categories
+        # # return top_level_categories
 
     # # Voici une version robuste et récursive qui :
     # #
@@ -2321,7 +2525,15 @@ class XMLReader(object):  # nouvelle classe
         for child in node.findall(
             "note"
         ):  # Voir si ce ne serait plus rapide avec iter ?
+            # for child in node.iter(
+            #     "note"
+            # ):  # Fait planter testCategoryNotesDontGetAddedToOverallNotesList
+            # for child in node.findall(".//note"):  # Fait aussi planter testCategoryNotesDontGetAddedToOverallNotesList
             child_note = self.__parse_note_node(child)
+            # # IMPORTANT : récursion dangereuse car les children de sont déjà gérés par __parse_base_composite_attributes()
+            # # child_note.children = self.__parse_note_nodes(child)
+            # child_note.AddChild()  # ?
+            # kwargs["children"] = # ?
             notes.append(
                 child_note
             )  # Ajoute explicite de l'enfant child_note à la liste de notes
@@ -2334,7 +2546,9 @@ class XMLReader(object):  # nouvelle classe
         #         notes.append(sub_child_note)  # 🟢 Ajoute la note imbriquée comme enfant de la note parent
         #         print(f"✅ Sous-Note imbriquée ajoutée : {sub_child_note.id()} sous {notes}")
 
-        # print(f"XMLReader.__parse_note_nodes : Retourne la liste des notes ajoutées : {notes}")
+        print(
+            f"XMLReader.__parse_note_nodes : Retourne la liste des notes ajoutées : {notes}"
+        )
         return notes
 
     def __parse_category_node(self, category_node):
@@ -2368,7 +2582,8 @@ class XMLReader(object):  # nouvelle classe
         # Deux problèmes sont :
         # 1️ kwargs peut ne pas contenir subject ni id selon ce que renvoie __parse_base_composite_attributes.
         # 2️ l'association dans self.__categorizables peut créer des IDs invalides ou vides, ce qui perturbe __resolve_categories.
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.__parse_category_node : analyse le noeud category {category_node}, categories avant ajout : {len(self.categories)}"
         )
         # Lecture du sujet de la catégorie depuis l'attribut XML
@@ -2383,14 +2598,16 @@ class XMLReader(object):  # nouvelle classe
         category_id = category_node.attrib.get("id", "")  # récupère l'ID XML
         # print(f"category_id = {category_id}")
 
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.__parse_category_node : Category parsed: subject={subject}, id={category_id} de type {type(category_id)}."
         )
 
         # sécurité : éviter les catégories invalides
         if not subject:
-            log.warning("Catégorie ignorée (subject vide)")
-            return None
+            log.warning("Catégorie avec un sujet vide.")
+            # return None  # Ne pas retourner None car il existe expandedContexts
+            # Voir le test Version20 CategoryExpansion
 
         # Enregistre l'ID dans le registre interne pour détecter les duplications
         self.__register_id(category_id, "Category", subject)
@@ -2399,16 +2616,16 @@ class XMLReader(object):  # nouvelle classe
 
         # Récupération des attributs de base (CompositeObject)
         # Récupère les attributs de base du nœud composite à l'aide de `__parse_base_composite_attributes`.
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.__parse_category_node : Récupère les attributs de base du nœud composite {category_node} à l'aide de `__parse_base_composite_attributes`."
         )
         #
         kwargs = self.__parse_base_composite_attributes(
             category_node, self.__parse_category_nodes
         )
-        log.debug(
-            f"XMLReader.__parse_category_node : kwargs récupéré = {kwargs}"
-        )
+        # log.debug(
+        print(f"XMLReader.__parse_category_node : kwargs récupéré = {kwargs}")
 
         # Sécurisation : garantir que subject et id existent
         kwargs.setdefault("subject", subject)  # injecte le sujet si absent
@@ -2419,7 +2636,8 @@ class XMLReader(object):  # nouvelle classe
         if not kwargs:
             # wx.LogWarning(
             #     f"⚠️ WARNING - __parse_base_composite_attributes a retourné un dictionnaire vide pour {category_node}")
-            log.warning(
+            # log.warning(
+            print(
                 f"⚠️ WARNING - __parse_base_composite_attributes a retourné un dictionnaire vide pour {category_node}"
             )
 
@@ -2444,7 +2662,8 @@ class XMLReader(object):  # nouvelle classe
                 exclusiveSubcategories=exclusive,
             )
         )
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.__parse_category_node : 🔍 DEBUG - kwargs avant création de Category : {kwargs}"
         )
 
@@ -2460,7 +2679,7 @@ class XMLReader(object):  # nouvelle classe
             # categorizable_ids = self.getAttribute(
             #     category_node, "categorizables", ""
             # ).split()
-            categorizable_ids = category_node.attrib.get("categorizables", "")
+
         # categorizable_ids = category_node.attrib.get("categorizables", "") if self.__tskversion >= 19 else category_node.attrib.get("tasks", "")
 
         # Pour les versions >20 : analyser les pièces jointes
@@ -2475,6 +2694,18 @@ class XMLReader(object):  # nouvelle classe
         #     print(f"🔄 Catégorie déjà existante détectée : {self.categories[category_id].subject()} (ID: {category_id})")
         #     return self.categories[category_id]  # On renvoie la catégorie existante
 
+        print("CATEGORY =", kwargs.get("subject"))
+        print("KWARGS =", kwargs)
+
+        print(
+            "Category",
+            category_node.attrib.get("subject"),
+            "contains",
+            [
+                child.attrib.get("subject")
+                for child in category_node.findall("category")
+            ],
+        )
         # Création de l'objet Category
         # Crée l'objet Category
         # 🔹 Si la catégorie n'existe pas encore, on la crée normalement
@@ -2482,7 +2713,13 @@ class XMLReader(object):  # nouvelle classe
         # theCategory = category.Category(**kwargs)  # pylint: disable=W0142
         try:
             theCategory = category.Category(**kwargs)
-            # print(f"✅ DEBUG - Catégorie créée avec succès : {theCategory}")
+            print(f"✅ DEBUG - Catégorie créée avec succès : {theCategory}")
+            print(
+                "CREATED",
+                theCategory.subject(),
+                "children =",
+                [child.subject() for child in theCategory.children()],
+            )
         except Exception as e:
             # wx.LogError(f"❌ ERREUR - Impossible de créer la catégorie : {e}")
             log.error(
@@ -2492,6 +2729,18 @@ class XMLReader(object):  # nouvelle classe
             self.__current_path.pop()
             return None
 
+        print(
+            f"DEBUG category ids : "
+            f"kwargs['id']={kwargs.get('id')} "
+            f"theCategory.id()={theCategory.id()}"
+        )
+        for child in theCategory.children():
+            print(
+                "PARENT CHECK",
+                child.subject(),
+                "parent =",
+                child.parent().subject() if child.parent() else None,
+            )
         # Création d'un boucle infinie :
         # # Cela établira la relation parent→enfant,
         # # et les sous-catégories auront parent() != None,
@@ -2510,7 +2759,13 @@ class XMLReader(object):  # nouvelle classe
                     child is not None and child.parent() is None
                 ):  # La garde child.parent() is None évite le double addChild si Composite.__init__ l'a déjà fait.
                     theCategory.addChild(child)
-
+        for child in theCategory.children():
+            print(
+                "Après établisement de hiérarchie, PARENT",
+                child.subject(),
+                "parent =",
+                child.parent().subject() if child.parent() else None,
+            )
         # # Enregistrement immédiat dans le mapping interne
         # # Ajoute cette catégorie dans le mapping des catégories de l'instance (pour y accéder plus tard)
         # self.categories[theCategory.id()] = (
@@ -2522,8 +2777,9 @@ class XMLReader(object):  # nouvelle classe
                 theCategory  # Mais la relation parent/enfant n'est jamais établie !  # Il faut utiliser append() dans taskfile.py !
             )
             # self.categories.append(theCategory)
-            log.debug(
-                f"DEBUG XMLReader : catégorie créée : {theCategory.subject()}"
+            # log.debug(
+            print(
+                f"DEBUG XMLReader.__parse_category_node : catégorie créée : {theCategory.subject()}"
             )
         # print(f"DEBUG - Ajout dans self.__categorizables[{theCategory.id()}] = {categorizable_ids.split(' ')}")
 
@@ -2568,7 +2824,12 @@ class XMLReader(object):  # nouvelle classe
             ),  # normalisation de l'id de catégorie
             list(),  # list() ? alors qu'il s'agit d'une CategoryList() !
         ).extend(ids)
-
+        print(
+            f"XMLReaser.__parse_category_node : DEBUG - ajout de self.__categorizables[{theCategory.id()}] = {self.__categorizables[theCategory.id()]}"
+        )
+        print(
+            f"XMLReader.__parse_category_node : Résultat : Dictionnaire des relations entre les catégories et les objets catégorisables (tâches, notes, etc.) self.__categorizables = {self.__categorizables}"
+        )
         # Vérification du parent
         # Vérifier que l'association parent/enfant est bien gérée :
         # parent_id = category_node.get("parent")  # Obtenir l'ID du parent
@@ -2606,12 +2867,18 @@ class XMLReader(object):  # nouvelle classe
         categorizableIds = category_node.get("categorizableIds", "").split()
 
         # Remplir self.__categorizables avec les IDs des objets catégorisables
-        category_id = kwargs.get(
-            "id"
-        )  # ou self.getAttribute(category_node, 'id')
+        # category_id = kwargs.get(
+        #     "id"
+        # )  # ou self.getAttribute(category_node, 'id')
+        # Normaliser l'id de catégorie et les identifiants catégorisables lus
+        category_id = self.__normalize_id(kwargs.get("id"))
         if category_id:
+            normalized_categorizable_ids = [
+                self.__normalize_id(i) for i in categorizableIds if i
+            ]
             self.__categorizables.setdefault(category_id, []).extend(
-                categorizableIds
+                # categorizableIds
+                normalized_categorizable_ids
             )
 
         log.debug(
@@ -2633,50 +2900,84 @@ class XMLReader(object):  # nouvelle classe
             root : Noeud racine.
 
         Returns :
-
+            list[category.Category] : Liste des catégories uniques extraites des nœuds de tâche.
         """
-        log.debug("XMLReader.__parse_category_nodes_from_task_nodes")
+        # log.debug("XMLReader.__parse_category_nodes_from_task_nodes")
+        print("XMLReader.__parse_category_nodes_from_task_nodes")
+        # Récupère la liste des nœuds de tâche
         task_nodes = root.findall(".//task")  # serait-ce là l'erreur ?
+        # Récupère tous les nœuds de tâche et construit un mappage entre les identifiants de tâche et les catégories associées.
         category_mapping = self.__parse_category_nodes_within_task_nodes(
             task_nodes
         )
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.__parse_category_nodes_from_task_nodes : category_mapping reçu = {category_mapping}"
         )
+        # Crée un mappage distinct pour les catégories uniques.
         subject_category_mapping = {}
+        # Pour chaque tâche et ses catégories du mappage entre les identifiants de tâche et les catégories :
         # for task_id, categories in category_mapping.items():
         for task_id, categories in list(category_mapping.items()):
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.__parse_category_nodes_from_task_nodes : task = {task_id} et categories = {categories}."
             )
+            # Pour chaque catégorie de la tâche :
             for subject in categories:
+                # Si la catégorie est déjà dans le mappage des catégories uniques :
                 if subject in subject_category_mapping:
-                    log.debug(
+                    # log.debug(
+                    print(
                         f"XMLReader.__parse_category_nodes_from_task_nodes : subject {subject} est dans subject_category_mapping {subject_category_mapping}"
                     )
+                    # récupération de la catégorie du mappage des catégories uniques
                     cat = subject_category_mapping[subject]
                 else:
-                    log.debug(
+                    # log.debug(
+                    print(
                         f"XMLReader.__parse_category_nodes_from_task_nodes : subject {subject} n'est pas dans subject_category_mapping {subject_category_mapping}"
                     )
-                    cat = category.Category(subject)
+                    # enregistrement de la catégorie dans le mappage des catégories uniques
+                    # cat = category.Category(subject)
+                    # Crée la catégorie en réutilisant le sujet comme identifiant
+                    # pour assurer la compatibilité avec les anciens fichiers
+                    # où seules les balises <category> dans les tâches contenaient
+                    # le nom (subject) de la catégorie.
+                    normalized_id = self.__normalize_id(subject)
+                    cat = category.Category(subject, id=normalized_id)
+                    # Enregistrer la catégorie nouvellement créée dans self.categories
+                    # pour qu'elle soit disponible globalement comme les catégories
+                    # créées via <category>...</category>.
+                    self.categories[cat.id()] = cat
                 log.debug(
                     f"XMLReader.__parse_category_nodes_from_task_nodes : cat = {cat}"
                 )
+                # enregistrement de la catégorie dans le mappage des catégories uniques pour la catégorie correspondante
                 subject_category_mapping[subject] = cat
-                log.debug(
-                    f"XMLReader.__parse_category_nodes_from_task_nodes : subject_category_mapping[subject] = cat {subject_category_mapping[subject]}"
+                # log.debug(
+                print(
+                    f"XMLReader.__parse_category_nodes_from_task_nodes : subject_category_mapping[subject] = {subject_category_mapping[subject]}"
                 )
-                self.__categorizables.setdefault(cat.id(), list()).append(
-                    task_id
-                )
-                log.debug(
+                # association de la tâche à la catégorie dans le dictionnaire
+                # des relations entre les catégories et les objets catégorisables (tâches, notes, etc.)
+                # self.__categorizables.setdefault(cat.id(), list()).append(
+                #     task_id
+                # )
+                self.__categorizables.setdefault(
+                    self.__normalize_id(cat.id()), list()
+                ).append(self.__normalize_id(task_id))
+                # log.debug(
+                print(
                     f"XMLReader.__parse_category_nodes_from_task_nodes : self.__categorizables[cat.id()] = self.__categorizables[{cat.id()}] = {self.__categorizables[cat.id()]}"
                 )
+        # Retourne le dictionnaire/la liste des catégories uniques
         # return subject_category_mapping.values()
-        log.debug(
+        # log.debug(
+        print(
             f"XMLReader.__parse_category_nodes_from_task_nodes : DEBUG - Catégories trouvées: {subject_category_mapping}"
         )
+        # Attention values() retourne un dictionnaire.
         return list(subject_category_mapping.values())
 
     # @staticmethod
@@ -2722,11 +3023,11 @@ class XMLReader(object):  # nouvelle classe
             # #     for child in node.findall("category")
             # # ]
             # # # Pour être compatible avec toutes les anciennes variantes XML :
-            # categories = [
-            #     child.attrib.get("subject") or child.text
-            #     for child in node.findall("category")
-            #     if (child.attrib.get("subject") or child.text)
-            # ]
+            # # categories = [
+            # #     child.attrib.get("subject") or child.text
+            # #     for child in node.findall("category")
+            # #     if (child.attrib.get("subject") or child.text)
+            # # ]
             categories = []  # Liste temporaire des catégories pour cette tâche
 
             for child in node.findall(
@@ -2744,14 +3045,16 @@ class XMLReader(object):  # nouvelle classe
                 if subject:  # Si une catégorie valide a été trouvée
                     categories.append(subject)  # On l'ajoute à la liste
 
-            log.debug(
+            # log.debug(
+            print(
                 f"XMLReader.__parse_category_nodes_within_task_nodes : DEBUG - TASK {node.attrib.get('id')} -> categories = {categories}"
             )
             category_mapping.setdefault(task_id, []).extend(
                 categories
             )  # Ajout des catégories dans le mapping
-        log.debug(
-            f"XMLReader.__parse_category_nodes_within_task_nodes : DEBUG - Catégories trouvées: category_mapping = {category_mapping}"
+        # log.debug(
+        print(
+            f"XMLReader.__parse_category_nodes_within_task_nodes : DEBUG - Catégories trouvées: category_mapping = {category_mapping} !"
         )
         return category_mapping  # Retour du dictionnaire final
 
@@ -2791,6 +3094,9 @@ class XMLReader(object):  # nouvelle classe
         kwargs = self.__parse_base_composite_attributes(
             task_node, self.__parse_task_nodes
         )
+        print(
+            f"XMLReader.__parse_task_node : Récupère les attributs de base du nœud composite {task_node} à l'aide de `__parse_base_composite_attributes` dans kwargs = {kwargs}"
+        )
         # print(f"📂 DEBUG - Tâche '{kwargs['subject']}' reçoit les tâches : {kwargs.get('task_node', set())}")
         #
         # print(f"Si {task_node} est un Element, alors on peut utiliser tag (task_node.tag = {task_node.tag}) et attrib (task_node.attrib = {task_node.attrib} ")
@@ -2800,6 +3106,16 @@ class XMLReader(object):  # nouvelle classe
         # print("!!! UPDATE DE kwargs !!!")
         # print(
         #     f"🔍 DEBUG - Status brut avant conversion : {task_node.attrib.get('status')} ({type(task_node.attrib.get('status'))})")
+        notes = self.__parse_note_nodes(task_node)
+
+        # print("DEBUG TASK NOTES =", notes, "count =", len(notes))
+        print(
+            "DEBUG TASK NOTES IDS =",
+            [id(note) for note in notes],
+            "count =",
+            len(notes),
+        )
+
         kwargs.update(
             dict(
                 plannedStartDateTime=date.parseDateTime(
@@ -2846,17 +3162,22 @@ class XMLReader(object):  # nouvelle classe
                     )
                 ),
                 efforts=self.__parse_effort_nodes(task_node),
-                notes=self.__parse_note_nodes(task_node),
-                recurrence=self.__parse_recurrence(task_node),
+                # notes=self.__parse_note_nodes(task_node),
+                notes=notes,
+                recurrence=self.__parse_recurrence(
+                    task_node
+                ),  # peut contenir attachment versions<=19
                 # 🔹 Ajout de l'attribut status
-                status=task_node.attrib.get(
-                    "status", "inactive"
-                ),  # Par défaut 1 si absent
+                # status=task_node.attrib.get(
+                #     "status",
+                #     # "inactive",
+                #     1,
+                # ),  # Par défaut 1 si absent, sauf que satus est sensé être enregistré en amont dans __parse_base_attributes depuis la version 22.
             )
         )
         # print(f"XMLReader.__parse_task-node : kwargs['completionDateTime']={kwargs['completionDateTime']}")
 
-        # print(f"XMLReader.__parse_task_node : kwargs updated = {kwargs}")
+        print(f"XMLReader.__parse_task_node : kwargs après update = {kwargs}")
         # kwargs["status"] = status  # Mise à jour
         # print(f"XMLReader.__parse-task-node : ✅ DEBUG - Status après kwargs.update et conversion en int : {kwargs['status']} ({type(kwargs['status'])})")
 
@@ -2865,13 +3186,17 @@ class XMLReader(object):  # nouvelle classe
             for id_ in task_node.attrib.get("prerequisites", "").split(" ")
             if id_
         ]
-        if self.__tskversion > 20:
+        if self.__tskversion > 20:  # Sinon voir __parse_base_attributes
             kwargs["attachments"] = self.__parse_attachments(task_node)
+
         # return self.__save_modification_datetime(
         #     task.Task(**kwargs)
         # )  # pylint: disable=W0142
-        # print(f"XMLReader.__parse_task_node : 🛠 FINAL kwargs avant création de la tâche : {kwargs}")
-        # 🔹 Création de l'instance de tâche à renvoyer
+
+        print(
+            f"XMLReader.__parse_task_node : 🛠 FINAL kwargs avant création de la tâche : {kwargs}"
+        )
+        # 🔹 Création de l'instance de tâche à renvoyer ***
         # print("Création de la tâche.")
         # task_id = task_node.get("id")
         # print(f"🔍 DEBUG - Tentative de création de la tâche {task_id}")
@@ -2883,8 +3208,13 @@ class XMLReader(object):  # nouvelle classe
         theTask = self.__save_modification_datetime(task.Task(**kwargs))
         # self.__parsed_tasks[task_id] = theTask  # Stocker la tâche pour éviter de la recréer
         # print(f"✅ Tâche créée : {task_id} | Instance mémoire : {id(task)}")
-        # print(f"XMLReader.__parse_task_node : avant les sous-tâches, theTask = {theTask}, type={type(theTask)}, status={theTask.status()}, getstatus={theTask.getStatus()}")
-        if theTask is None or theTask == "":
+        print(
+            f"XMLReader.__parse_task_node : kwargs = {kwargs}, l'attribut attachments de la tâche = {theTask.attachments()}."
+        )
+        print(
+            f"XMLReader.__parse_task_node : avant les sous-tâches, theTask = {theTask}, type={type(theTask)}, status={theTask.status()}, getstatus={theTask.getStatus()}"
+        )
+        if theTask is None or theTask == "" or theTask == []:
             # wx.LogDebug(f"!!! ATTENTION la tâche {theTask} est VIDE !!!")
             log.warning(f"!!! ATTENTION la tâche {theTask} est VIDE !!!")
         # print(f"XMLReader.__parse_task_node : theTask.id = {theTask.id}")
@@ -2902,8 +3232,13 @@ class XMLReader(object):  # nouvelle classe
                     cat_id = cat_node.text.strip()
                 else:
                     continue  # Si aucun texte, ignorer
-            # Ajoute l'id de la tâche dans le mapping des catégories associées
-            self.__categorizables.setdefault(cat_id, []).append(theTask.id())
+            # # Ajoute l'id de la tâche dans le mapping des catégories associées
+            # self.__categorizables.setdefault(cat_id, []).append(theTask.id())
+            # Normaliser la clé catégorie et l'id de la tâche avant de les stocker
+            cat_key = self.__normalize_id(cat_id)
+            self.__categorizables.setdefault(cat_key, []).append(
+                self.__normalize_id(theTask.id())
+            )
 
         # # 🔹 Ajout des sous-tâches
         # for sub_task_node in task_node.findall("task"):  # Trouve les sous-tâches
@@ -2928,6 +3263,9 @@ class XMLReader(object):  # nouvelle classe
             parse_kwargs = self.__parse_recurrence_attributes_from_task_node
         else:
             parse_kwargs = self.__parse_recurrence_node
+        # print(
+        #     f"XMLReader.__parse_recurrence : Parser de récurrences à utiliser : parse_kwargs = {parse_kwargs}"
+        # )
         # print(f"XMLReader.__parse_recurrence : résultat parse_kwargs = {parse_kwargs}")
         # print(f"XMLReader.__parse_recurrence : retourne {date.Recurrence(**parse_kwargs(task_node))}")
         return date.Recurrence(**parse_kwargs(task_node))
@@ -3016,6 +3354,9 @@ class XMLReader(object):  # nouvelle classe
             kwargs["attachments"] = self.__parse_attachments(note_node)
             # theNote.setAttachments(self.__parse_attachments(note_node))  # ✅ Ajoute les pièces jointes si nécessaire
 
+        print(
+            f"NOTE {kwargs.get('id')} children={kwargs.get('children')}"
+        )  # Si children est remplit alors __parse_base_composite_attributes() gère déjà la récursion
         theNote = note.Note(
             **kwargs
         )  # ✅ Créer l'objet Note AVANT d'ajouter les enfants
@@ -3075,16 +3416,20 @@ class XMLReader(object):  # nouvelle classe
             ordering=int(node.attrib.get("ordering", "0")),
         )
 
-        if self.__tskversion <= 20:
+        if self.__tskversion <= 20:  # Sinon voir __parse_task_node().
             attributes["attachments"] = (
                 self.__parse_attachments_before_version21(node)
             )
-        if self.__tskversion >= 22:
-            attributes["status"] = int(node.attrib.get("status", "1"))
+            print(
+                f"XMLReader.__parse_base_attributes : crée attachments={attributes['attachments']} dans attributes={attributes}"
+            )
+        if self.__tskversion >= 22:  # Sinon voir __parse_
+            attributes["status"] = int(
+                node.attrib.get("status", "1")
+            )  # Convert status to int
 
-        log.debug(
-            f"__parse_base_attributes : retourne attributes={attributes}"
-        )
+        # log.debug(
+        print(f"__parse_base_attributes : retourne attributes={attributes}")
         return attributes
 
     def __parse_base_composite_attributes(
@@ -3101,6 +3446,9 @@ class XMLReader(object):  # nouvelle classe
         """
         # Récupère les attributs de base :
         kwargs = self.__parse_base_attributes(node)
+        print(
+            f"XMLReader.__parse_base_composite_attributes : récupère les attributs de base pour le noeud {node} dans kwargs = {kwargs}"
+        )
         # Ajoute également le parsing des enfants et des contextes étendus.
         # Analyse les enfants à l'aide de la fonction `parse_children` fournie en argument.
         kwargs["children"] = parse_children(node, *parse_children_args)
@@ -3119,6 +3467,9 @@ class XMLReader(object):  # nouvelle classe
         expanded_contexts = node.attrib.get("expandedContexts", "")
         kwargs["expandedContexts"] = self.__parse_tuple(expanded_contexts, [])
         # Retourne un dictionnaire contenant tous les attributs.
+        print(
+            f"XMLReader.__parse_base_composite_attributes : retourne kwargs={kwargs}."
+        )
         return kwargs
 
     def __parse_attachments_before_version21(self, parent):
@@ -3137,6 +3488,9 @@ class XMLReader(object):  # nouvelle classe
         name = os.path.splitext(name)[0]
         # attdir = os.path.normpath(os.path.join(path, name + "_attachments"))
         attdir = os.path.normpath(os.path.join(path, f"{name}_attachments"))
+        print(
+            f"XMLReader.__parse_attachments_before_version21 : Répertoire ou chemin des pièces jointes : attdir = {attdir}"
+        )
 
         # Liste des pièces jointes :
         # Itère sur les nœuds "attachment" et crée des instances de `attachment.AttachmentFactory`.
@@ -3153,11 +3507,21 @@ class XMLReader(object):  # nouvelle classe
                 )
                 description = self.__parse_description(node)
                 kwargs = dict(subject=description, description=description)
+            print(
+                f"XMLReader.__parse_attachments_before_version21 : récupération des args={args} et kwargs={kwargs}."
+            )
             try:
                 # Crée des instances de `attachment.AttachmentFactory`.
                 # pylint: disable=W0142
-                attachments.append(
-                    attachment.AttachmentFactory(*args, **kwargs)
+                # attachments.append(
+                #     attachment.AttachmentFactory(*args, **kwargs)
+                # )
+                attachment_instance = attachment.AttachmentFactory(
+                    *args, **kwargs
+                )
+                attachments.append(attachment_instance)
+                print(
+                    f"XMLReader.__parse_attachments_before_version21 : Attachment created: {attachment_instance}"
                 )
                 # # Vérifie si 'location' est None avant de créer un attachement
                 # if location:
@@ -3172,6 +3536,9 @@ class XMLReader(object):  # nouvelle classe
                 # Gère les erreurs d'entrée/sortie (IOError) pour les pièces jointes (par exemple, les pièces jointes de courriel).
                 # Mail attachment, file doesn't exist. Ignore this.
                 pass
+        print(
+            f"XMLReader.__parse_attachments_before_version21 : retourne attachments={attachments}."
+        )
         return attachments
 
     def __parse_effort_nodes(self, node):
@@ -3395,6 +3762,7 @@ class XMLReader(object):  # nouvelle classe
             description = node.attrib.get("description", "")
         else:
             description = self.__parse_text(node.find("description"))
+        print(f"XMLReader.__parse_desciption : retourne {description}.")
         return description
 
     def __parse_text(self, node):
@@ -3402,19 +3770,47 @@ class XMLReader(object):  # nouvelle classe
 
         * Supprime les sauts de ligne en début et fin de texte pour les versions >= 24.
 
+        Nettoie les retours ligne et espaces parasites introduits par l'indentation XML.
+
+        Args:
+            node: élément XML contenant du texte
+
         Returns :
+            texte nettoyé ou chaîne vide
             Une chaîne vide si le nœud est `None` ou si son texte est vide.
         """
-        # TODO : A revoir !
-        # text = "" if node is None else node.text or ""
-        text = "" if (node is None or "") else node.text
-        if self.__tskversion >= 24:
-            # Strip newlines
-            if text.startswith("\n"):
-                text = text[1:]
-            if text.endswith("\n"):
-                text = text[:-1]
-        return text
+        # # text = "" if node is None else node.text or ""
+        # text = "" if (node is None or "") else node.text
+        # Si le nœud est absent, on retourne une chaîne vide
+        if node is None:  # Vérifie l'existence du nœud XML
+            return ""  # Retourne une chaîne vide sécurisée
+
+        # Récupère le texte brut du nœud (peut être None)
+        text = node.text or ""  # Remplace None par chaîne vide
+
+        # if self.__tskversion >= 24:
+        #     # Strip newlines
+        #     if text.startswith("\n"):
+        #         text = text[1:]
+        #     if text.endswith("\n"):
+        #         text = text[:-1]
+        # Nettoyage standard des espaces et retours ligne
+        return (
+            text.strip()
+        )  # Supprime \n, espaces, tabulations en début et fin
+        # Point important (architecture)
+        #
+        # Le champ __tskversion >= 24 dans ton code n’est probablement plus utile ici.
+        #
+        # 👉 Si tu gardes une condition de version, elle doit être justifiée par :
+        #
+        # compatibilité legacy XML
+        # ou formats historiques différents
+        #
+        # Mais pas pour du simple trimming, sinon tu risques :
+        #
+        # des divergences de parsing selon versions
+        # des bugs difficiles à reproduire
 
     @classmethod
     def __parse_int_attribute(cls, node, attribute_name, default_value=0):

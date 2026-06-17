@@ -113,7 +113,8 @@ class TaskStatus(object):
         Returns :
             (str) : Une représentation sous forme de chaîne de l'objet.
         """
-        return "%s(%s)" % (self.__class__.__name__, self.statusString)
+        # return "%s(%s)" % (self.__class__.__name__, self.statusString)
+        return f"{self.__class__.__name__}({self.statusString})"
 
     def __str__(self):
         """
@@ -149,7 +150,9 @@ class TaskStatus(object):
         """
         # Because of __eq__
         # return hash(id(self))
-        return hash(self.statusString)
+        return hash(
+            self.statusString
+        )  # TODO : id(self) ou self.statusString ? AI!
 
     def __neq__(self, other):
         """
@@ -171,9 +174,6 @@ class TaskStatus(object):
             (bool) : toujours vrai.
         """
         return True
-
-    def __hash__(self) -> int:
-        return hash(self.statusString)
 
 
 # Définition des statuts
@@ -235,12 +235,12 @@ completed = TaskStatus(
 
 # Mapping des valeurs numériques vers les instances de TaskStatus
 _status_map = {
-    2: completed,
-    3: overdue,
-    4: duesoon,
-    5: active,
-    6: inactive,
-    7: late,
+    4: completed,
+    5: overdue,
+    6: duesoon,
+    7: active,
+    8: inactive,
+    9: late,
 }
 
 

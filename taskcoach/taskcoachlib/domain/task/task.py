@@ -64,6 +64,8 @@ import logging
 import ast
 import weakref
 
+from authlib.jose.rfc7518.jws_algs import NoneAlgorithm
+
 # from taskcoachlib.config.arguments import get_gui
 #
 # GUI_NAME = get_gui()
@@ -145,7 +147,30 @@ class Task(
             completionDateTime (DateTime) : La date d'achèvement de la tâche.
             budget (TimeDelta) : Le temps alloué à la tâche.
             plannedDuration (TimeDelta) : La durée planifiée de la tâche.
-
+            __categories : Les catégories associées à la tâche.
+            __computed_status : Le statut calculé de la tâche, basé sur les dates et autres attributs
+            __status_text : Texte descriptif du statut (ex: "Overdue", "Due Soon", "Completed")
+            __status_icon : Icône représentant le statut
+            __status_source : Explication de la raison pour laquelle la tâche a ce statut
+            __dueSoonHours : Nombre d'heures avant l'échéance pour considérer une tâche comme "due soon"
+            __dueDateTime :
+            __plannedStartDateTime :
+            __actualStartDateTime :
+            __completionDateTime :
+            __percentageComplete :
+            __budget :
+            __plannedDuration :
+            __plannedDurationMode :
+            _efforts :
+            __priority :
+            __hourlyFee :
+            __fixedFee :
+            __reminder :
+            __reminderBeforeSnooze :
+            __recurrence :
+            __prerequisites :
+            __dependencies :
+            __shouldMarkCompletedWhenAllChildrenCompleted :
     """
 
     # L'approche précédente avec l'attribut manglé était une mauvaise solution
@@ -185,7 +210,8 @@ class Task(
         percentageComplete=0,
         prerequisites=None,
         dependencies=None,
-        status=mod_status.inactive,
+        # status=mod_status.inactive,
+        # status=None,
         notes=None,  # Ajout explicite de 'notes' comme argument nommé
         attachments=None,  # Ajout explicite de 'attachments' comme argument nommé
         *args,
@@ -219,18 +245,19 @@ class Task(
             dependencies (list) : Liste des tâches dépendantes.
             status (TaskStatus) : Statut initial de la tâche.
         """
-        log.debug(
-            f"Task.__init__ : kwargs['status'] = {kwargs.get('status')}, status = {status}"
-        )
+        # log.debug(
+        # print(
+        #     f"Task.__init__ : kwargs['status'] = {kwargs.get('status')}, status = {status}"
+        # )
 
         # 1. Initialize mixin parents explicitly, passing their specific args
         #    and any remaining kwargs that they might consume.
         #    We pass a copy of kwargs to each to avoid modifying the original
         #    kwargs for subsequent calls.
-        note.NoteOwner.__init__(self, notes=notes, **kwargs.copy())
-        attachment.AttachmentOwner.__init__(
-            self, attachments=attachments, **kwargs.copy()
-        )
+        # note.NoteOwner.__init__(self, notes=notes, **kwargs.copy())
+        # attachment.AttachmentOwner.__init__(
+        #     self, attachments=attachments, **kwargs.copy()
+        # )
 
         # kwargs["id"] = id
         # kwargs["subject"] = subject
@@ -250,9 +277,13 @@ class Task(
         _kwargs_for_super = kwargs.copy()
         _kwargs_for_super.pop("notes", None)
         _kwargs_for_super.pop("attachments", None)
-        _kwargs_for_super.pop(
-            "status", None
-        )  # Prevent passing TaskStatus object to SynchronizedObject's internal status
+        # _kwargs_for_super.pop(
+        #     "status", None
+        # )  # Prevent passing TaskStatus object to SynchronizedObject's internal status
+        print(
+            f"Task.__init__ : récupère status de kwargs, _kwargs_for_super = {_kwargs_for_super}."
+        )
+        print(f"Task.__init__ : donc kwargs reste = {kwargs}.")
 
         # # Appels explicites aux constructeurs des classes mixin
         # # Ces appels doivent être faits avant l'appel à super().__init__()
@@ -274,10 +305,14 @@ class Task(
         #     **kwargs,  # Inclure tous les autres kwargs non nommés
         # }
         # Arguments for CategorizableCompositeObject / Object
-        _kwargs_for_super["subject"] = subject
-        _kwargs_for_super["description"] = description
-        _kwargs_for_super["id"] = id
-        _kwargs_for_super["categories"] = (
+        # _kwargs_for_super["subject"] = subject
+        kwargs["subject"] = subject
+        # _kwargs_for_super["description"] = description
+        kwargs["description"] = description
+        # _kwargs_for_super["id"] = id
+        kwargs["id"] = id
+        # _kwargs_for_super["categories"] = (
+        kwargs["categories"] = (
             categories  # CategorizableCompositeObject handles this
         )
 
@@ -286,13 +321,38 @@ class Task(
         # # note.NoteOwner.__init__(self, *args, **kwargs)
         # # attachment.AttachmentOwner.__init__(self, *args, **kwargs)
         # # 3️⃣ Appel du constructeur parent
-        # # super().__init__(*args, **kwargs)
+        print(
+            f"Task.__init__ : vérification avant super : attachments = {attachments}, kwargs = {kwargs}."
+        )
+        # AttachmentOwner a besoin de l'argument attachments !
+        kwargs["attachments"] = attachments
+        # Idem pour NoteOwner
+        kwargs["notes"] = notes
+        super().__init__(*args, **kwargs)
         # # # super().__init__(status=status, *args, **kwargs)
         # # Appeler le constructeur parent avec le dictionnaire combiné
         # # Chaque classe dans le MRO popera les arguments qu'elle reconnaît.
         # super().__init__(*args, **_combined_kwargs)
         # 3. Call the main parent constructor chain
-        super().__init__(*args, **_kwargs_for_super)
+        # super().__init__(*args, **_kwargs_for_super)
+        # Remarque importante (structure TaskCoach)
+        #
+        # Ce pattern est typique dans TaskCoach :
+        #
+        # les mixins (AttachmentOwner, NoteOwner, etc.)
+        # récupèrent leurs données via kwargs
+        # pour éviter des constructeurs trop rigides dans l’héritage multiple
+        # Point d’attention (anticipation bug)
+        #
+        # Ce que tu as fait est correct, mais vérifie toujours :
+        #
+        # que super().__init__() ne consomme pas déjà attachments ou notes ailleurs
+        # que l’ordre MRO (Method Resolution Order) ne crée pas de double initialisation
+        #
+        # Si tu veux, je peux aussi t’aider à :
+        #
+        # vérifier le MRO de Task
+        # ou sécuriser l’initialisation pour éviter les doubles créations de notes/pièces jointes
 
         # La ligne self.__categories est redondante si CategorizableCompositeObject gère 'categories'
         # et devrait être supprimée ou ajustée si nécessaire.
@@ -360,16 +420,19 @@ class Task(
         #     # print(f"Task.__init__ : ✅ self.__status corrigé : {self.__status}")
 
         # print(f"Task.__init__ : 🛠 status reçu = {status}")  # Ajoute cette ligne !
-        # self.__status = None  # status cache
+        self.__task_status = None  # status cache
         #  Task.__init__() ignore complètement status.
         # if "status" in kwargs:
         #     self.__status = kwargs["status"]
         #     # print(f"✅ Task.__init__ : Statut initial reçu = {self.__status}")
         # 4. Task-specific initialization
         #    Set Task's internal __status to the semantic TaskStatus object
-        self.__status = status
-        if isinstance(self.__status, int):  # Ensure it's a TaskStatus object
-            self.__status = mod_status.from_int(self.__status)
+        # self.__status = status
+        print(
+            f"Task.__init__ : récupère l'argument task_status = {self.__task_status}."
+        )
+        # if isinstance(self.__status, int):  # Ensure it's a TaskStatus object
+        #     self.__status = mod_status.from_int(self.__status)
 
         self.__categories = (
             set() if categories is None else set(categories)
@@ -508,8 +571,7 @@ class Task(
                 #     - date.TimeDelta(hours=self.__dueSoonHours)
                 # )
                 dueSoonDateTime = (
-                    self.dueDateTime()
-                    # due_val
+                    self.dueDateTime()  # due_val
                     + date.ONE_SECOND
                     - date.TimeDelta(hours=self.__dueSoonHours)
                 )
@@ -634,7 +696,7 @@ class Task(
 
     def __getstate__(self):
         """
-        Récupérer l
+        Récupérer l'état de la tâche à partir d'un dictionnaire d'état désérialisé.
 
         Returns:
             state(dict) : Dictionnaire de l'ensemble des attributs d'état de la tâche.
@@ -906,7 +968,9 @@ class Task(
             ]
             # # return min(childrenDueDateTimes + [self.__dueDateTime])
             # return min(childrenDueDateTimes + [self.__dueDateTime.get()])
+            # Si
             if hasattr(self.__dueDateTime, "get"):
+                # Retourne
                 return min(childrenDueDateTimes + [self.__dueDateTime.get()])
             return min(childrenDueDateTimes + [self.__dueDateTime])
         else:
@@ -980,6 +1044,9 @@ class Task(
 
     @classmethod
     def dueDateTimeChangedEventType(class_):
+        """
+        Retourne le type d'événement publié lorsque la date d'échéance change.
+        """
         return "pubsub.task.dueDateTime"
 
     def onOverDue(self):
@@ -1280,7 +1347,7 @@ class Task(
             )
             if parent:
                 oldParentPriority = parent.priority(recursive=True)
-            self.__status = None
+            self.__status = None  # TODO : __status ou __task_status ?
             self.__completionDateTime = completionDateTime
             if parent and parent.priority(recursive=True) != oldParentPriority:
                 parent.sendPriorityChangedMessage()
@@ -1322,7 +1389,7 @@ class Task(
         """When the completion date time changes, update the status, percentage
         completed of children, parent's completion date time and send messages
         to update the UI."""
-        self.__status = None
+        self.__status = None  # TODO : __status ou __task_status ou les deux ?
         # Use direct datetime comparison instead of self.completed() because
         # computedStatus() cache is stale at this point (not yet recomputed).
         completionDateTime = self.completionDateTime()
@@ -1519,19 +1586,19 @@ class Task(
             and self.completionDateTime() != self.maxDateTime
         ):
             # print(f"✅ Task.status : {self.subject()} est terminé (completed)")
-            self.__status = mod_status.completed
+            self.__task_status = mod_status.completed
         else:
             # print("Task.status :    ⚠️ La tâche n'est pas terminée, on continue l'analyse...")
             now = date.Now()
             if self.dueDateTime() < now:
                 # print(f"Task.status :    ✅ Statut de {self.subject()} = overdue (3)")
-                self.__status = mod_status.overdue
+                self.__task_status = mod_status.overdue
             elif 0 <= self.timeLeft().hours() < self.__dueSoonHours:
                 # print(f"Task.status :    ✅ Statut de {self.subject()} = duesoon (4)")
-                self.__status = mod_status.duesoon
+                self.__task_status = mod_status.duesoon
             elif self.actualStartDateTime() <= now:
                 # print(f"Task.status :    ✅ Statut de {self.subject()} = active (1)")
-                self.__status = mod_status.active
+                self.__task_status = mod_status.active
             # Don't call prerequisite.completed() because it will lead to infinite
             # recursion in the case of circular dependencies:
             elif any(
@@ -1543,17 +1610,19 @@ class Task(
                 ]
             ):
                 # print("Task.status :    ✅ Statut = inactive (0) (à cause des prérequis)")
-                self.__status = mod_status.inactive
+                self.__task_status = mod_status.inactive
             elif self.plannedStartDateTime() < now:
                 # print("Task.status :    ✅ Statut = late (5)")
-                self.__status = mod_status.late
+                self.__task_status = mod_status.late
             else:
                 # print("Task.status :    ✅ Statut = inactive (0)")
-                self.__status = mod_status.inactive
+                self.__task_status = mod_status.inactive
         print(
-            f"DEBUG - Task.status() : statut calculé pour {self.subject()} = {self.__status}"
+            f"DEBUG - Task.status() : statut calculé pour {self.subject()} = {self.__task_status}, son __hash__ = {self.__task_status.__hash__()}."
         )
-        return self.__status
+        return (
+            self.__task_status
+        )  # Problème de double emploi avec object.__status
 
     @classmethod
     def statusChangedEventType(class_):
@@ -1631,6 +1700,8 @@ class Task(
 
     def computeStoredStatus(self):
         """Compute and store status fields for this task instance.
+
+        Calcule et enregistre les
 
         Called from:
         - Task.__init__() — initial population on load
@@ -2406,7 +2477,7 @@ class Task(
 
     @patterns.eventSource
     def recomputeAppearance(self, recursive=False, event=None):
-        self.__status = None  # !!!
+        self.__status = None  # !!! __status ou __task_status ?
         # Need to prepare for AttributeError because the cached recursive values
         # are not set in __init__ for performance reasons
         try:
@@ -3203,77 +3274,6 @@ class Task(
             class_.shouldMarkCompletedWhenAllChildrenCompletedChangedEventType(),
         ]
 
-    # Nouvelles lignes :
-    # Décommenter si nécessaire mais ne fonctionne pas encore:
-    # def __lt__(self, other):
-    #     """Compare deux tâches par leur ID."""
-    #     return self.id < other.id
-
-    # def addNote(self, aNote):
-    #     # pass
-    #     if aNote not in self._notes:
-    #         self._notes.append(aNote)
-    #         # On notifie pour que TaskFile puisse passer needSave à True
-    #         pub.sendMessage('task.notes.added', task=self, note=aNote)
-
-    def addNote(self, aNote, **kwargs):
-        """Méthode singulière (utilisée par ton test)"""
-        self.addNotes(aNote, **kwargs)
-
-    def notes(self, recursive=False):
-        """
-        Retourne la liste des notes de la tâche.
-        Si recursive est True, inclut aussi les notes des sous-tâches.
-        """
-        print(
-            f"DEBUG: Task.notes() called for task {self.id()} (subject: {self.subject()}) with recursive={recursive}"
-        )
-        # Utiliser super().notes() pour accéder à la méthode de NoteOwner
-        ownNotes = (
-            super().notes()
-        )  # This gets the notes directly attached to this task via NoteOwner
-        # # Accès direct à l'attribut manglé de Noteowner pour éviter toute redéfinition de notes() qui pourrait causer une récursion infinie
-        # ownNotes = self._NoteOwner__notes
-        print(f"DEBUG: Task.notes() - ownNotes for {self.id()}: {ownNotes}")
-
-        childNotes = []
-        if recursive:
-            for child in self.children():
-                print(
-                    f"DEBUG: Task.notes() - Getting notes for child task {child.id()} (subject: {child.subject()})"
-                )
-                childNotes.extend(child.notes(recursive=True))
-
-        allNotes = ownNotes + childNotes
-        print(
-            f"DEBUG: Task.notes() - Returning allNotes for {self.id()}: {allNotes}"
-        )
-        return allNotes
-
-    def addNotes(self, *notes, **kwargs):
-        """Méthode plurielle (utilisée par les Commandes)"""
-        # print(f"DEBUG: Task.addNotes called for task {getattr(self,'id', lambda:None)()} with notes={notes}")
-        for aNote in notes:
-            # Vérifie l'existence de la note dans les notes de la tâche avant de l'ajouter pour éviter les doublons.
-            # Utiliser super().notes() pour accéder à la liste gérée par NoteOwner.
-            # Ensure we operate on the actual NoteOwner storage attribute
-            notes_attr = getattr(self, "_NoteOwner__notes", None)
-            if notes_attr is None:
-                # Initialize the storage if missing
-                setattr(self, "_NoteOwner__notes", [])
-                notes_attr = getattr(self, "_NoteOwner__notes")
-            if aNote not in notes_attr:
-                # print(f"DEBUG: Adding note {aNote} to task {getattr(self,'id', lambda:None)()}")
-                # Définit le parent de la note
-                aNote.setParent(self)
-                # Ajoute à la liste gérée par NoteOwner
-                notes_attr.append(aNote)
-                # Notifier pour que TaskFile.needSave passe à True
-                try:
-                    pub.sendMessage("task.notes.added", task=self, note=aNote)
-                except Exception:
-                    pub.sendMessage("task.notes.added")
-
     def addAttachments(self, param, **kwargs):
         """Ajouter une ou plusieurs pièces jointes à la tâche."""
         print(
@@ -3285,14 +3285,16 @@ class Task(
         # RecursionError: maximum recursion depth exceeded
         # pub.sendMessage("task.attachments.added")
         super().addAttachments(param, **kwargs)
-        pass
+        # pass
 
     @classmethod
     def attachmentsChangedEventType(cls):
         """Retourne le type d'événement à publier lorsque les pièces jointes changent."""
-        pass
+        # pass
+        return "pubsub.task.attachments"
 
     @classmethod
     def notesChangedEventType(cls):
         """Retourne le type d'événement à publier lorsque les notes changent."""
-        pass
+        # pass
+        return "pubsub.task.notes"

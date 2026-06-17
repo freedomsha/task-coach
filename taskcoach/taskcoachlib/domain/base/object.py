@@ -268,7 +268,9 @@ class SynchronizedObject(object):
             self.__status = (
                 self.STATUS_NEW
             )  # On met STATUS_NEW UNIQUEMENT si rien n'est défini
-        # print(f"SynchronizedObject.__init__ : ✅ Après assignation : self.__status = {self.__status}")
+        print(
+            f"SynchronizedObject.__init__ : ✅ Après assignation : self.__status = {self.__status}"
+        )
         # print(
         #     f"SynchronizedObject.__init__ : 🔍 Avant super().__init__() : self.__status = {getattr(self, '__status', 'Non défini')}")
         # super().__init__(*args, **kwargs)  # ← Problème possible ici ! Peut-être le mettre avant self.__status !?
@@ -395,7 +397,7 @@ class SynchronizedObject(object):
 
         # log.debug(
         print(
-            f"✅ SynchronizedObject.getStatus renvoie {self.__status} - de type {type(self.__status)}"
+            f"✅ SynchronizedObject.getStatus renvoie {self.__status} - de type {type(self.__status)} pour l'objet {self}."
         )
         return self.__status
 
@@ -2037,6 +2039,9 @@ class CompositeObject(
 
     Attributes :
         - __expandedContexts : Un ensemble privé pour stocker les contextes développés de l'objet composite.
+
+    Examples :
+
 
     """
 

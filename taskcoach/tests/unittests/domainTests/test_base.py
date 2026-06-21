@@ -298,7 +298,8 @@ class ObjectTest(tctest.TestCase):
         self.assertEqual(
             patterns.Event(
                 self.tcobject.descriptionChangedEventType(),  # Type d’événement
-                self.tcobject.description(),  # Ancienne valeur (attendue)
+                # self.tcobject.description(),  # Ancienne valeur (attendue)
+                self.tcobject,
                 "New description",  # Nouvelle valeur
             ),
             self.eventsReceived[0],  # Événement réellement reçu

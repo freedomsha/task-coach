@@ -35,6 +35,16 @@ class BaseCommand(patterns.Command):
 
     Cette classe fournit une structure de base pour les commandes qui peuvent être exécutées,
     annulées et répétées. Elle gère également les dates de modification des objets concernés.
+
+    Attributes :
+        list: La liste à laquelle les éléments appartiennent.
+        items: Les éléments concernés par la commande.
+        __oldModificationDatetimes: Les dates de modification des éléments modifiés.
+        __now: La date actuelle.
+        *args: Arguments supplémentaires.
+        **kwargs: Arguments de mots-clés supplémentaires.
+        singular_name: Le nom de la commande au singulier.
+        plural_name: Le nom de la commande au pluriel.
     """
 
     def __init__(
@@ -51,10 +61,12 @@ class BaseCommand(patterns.Command):
         super().__init__(*args, **kwargs)
         self.list = list
         self.items = [item for item in items] if items else []
+        self.__oldModificationDatetimes = []
+        self.__now = date.Now()
         self.save_modification_datetimes()
 
     def save_modification_datetimes(self):
-        """Sauvegarde les dates de modification des éléments modifiés."""
+        """Sauvegarder les dates de modification des éléments modifiés."""
         self.__oldModificationDatetimes = [
             (item, item.modificationDateTime())
             for item in self.modified_items()
@@ -72,8 +84,8 @@ class BaseCommand(patterns.Command):
     def name(self):
         """Retourne le nom de la commande.
 
-        Returns:
-            str: Le nom de la commande, soit au singulier, soit au pluriel selon le nombre d'éléments.
+        Returns :
+            (str) : Le nom de la commande, soit au singulier, soit au pluriel selon le nombre d'éléments.
         """
         return (
             self.singular_name % self.name_subject(self.items[0])
@@ -96,32 +108,32 @@ class BaseCommand(patterns.Command):
     def items_are_new(self):
         """Détermine si les éléments sont nouveaux.
 
-        Returns:
-            bool: True si les éléments sont nouveaux, False sinon.
+        Returns :
+            (bool) : True si les éléments sont nouveaux, False sinon.
         """
         return False
 
     def getItems(self):
         """Retourne les éléments sur lesquels la commande opère.
 
-        Returns:
-            list: La liste des éléments concernés par la commande.
+        Returns :
+            (list) : La liste des éléments concernés par la commande.
         """
         return self.items
 
     def modified_items(self):
         """Retourne les éléments qui sont modifiés par cette commande.
 
-        Returns:
-            list: La liste des éléments modifiés.
+        Returns :
+            (list) : La liste des éléments modifiés.
         """
         return self.items
 
     def canDo(self):
         """Vérifie si la commande peut être exécutée.
 
-        Returns:
-            bool: True si la commande peut être exécutée, False sinon.
+        Returns :
+            (bool) : True si la commande peut être exécutée, False sinon.
         """
         return bool(self.items)
 
@@ -180,7 +192,13 @@ class BaseCommand(patterns.Command):
 
 class SaveStateMixin(object):
     """Mixin class for commands that need to keep the states of objects.
-    Objects should provide __getstate__ and __setstate__ methods."""
+    Objects should provide __getstate__ and __setstate__ methods.
+
+    Attributes :
+        objectsToBeSaved: La liste des objets dont les états doivent être sauvegardés.
+        oldStates: La liste des états des objets avant la modification.
+        newStates: La liste des états des objets après la modification.
+    """
 
     # pylint: disable=W0201
 
@@ -240,6 +258,10 @@ class CompositeMixin(object):
     Mixin class for commands that deal with composites.
 
     Récupère les états des objets sauvegardés.
+
+    Attributes :
+        items: La liste des éléments concernés par la commande.
+        list: La liste à laquelle les éléments appartiennent.
     """
 
     def getAncestors(self, composites):  # Method may be 'static'
@@ -287,7 +309,14 @@ class CompositeMixin(object):
 
 
 class NewItemCommand(BaseCommand):
-    """Commande pour créer de nouveaux éléments."""
+    """Commande pour créer de nouveaux éléments.
+
+    Attributes :
+        list: La liste à laquelle les éléments appartiennent.
+        items: Les éléments à créer.
+        singular_name: Le nom de la commande au singulier.
+        plural_name: Le nom de la commande au pluriel.
+    """
 
     def name(self):
         """Retourne le nom de la commande.
@@ -297,7 +326,9 @@ class NewItemCommand(BaseCommand):
         """
         # Override to always return the singular name without a subject. The
         # subject would be something like "New task", so not very interesting.
-        return self.singular_name
+        return (
+            self.singular_name
+        )  # TODO : vérifier s'il faut aussi utiliser la commande pluriel !
 
     def items_are_new(self):
         """Détermine si les éléments sont nouveaux.
@@ -362,7 +393,7 @@ class NewSubItemCommand(NewItemCommand):
             subitem: Le sous-élément.
 
         Returns:
-            str: Le sujet du parent du sous-élément.
+            (str) : Le sujet du parent du sous-élément.
         """
         # Override to use the subject of the parent of the new subitem instead
         # of the subject of the new subitem itself, which wouldn't be very
@@ -372,8 +403,8 @@ class NewSubItemCommand(NewItemCommand):
     def modified_items(self):
         """Retourne les éléments modifiés par cette commande.
 
-        Returns:
-            list: La liste des parents des sous-éléments créés.
+        Returns :
+            (list) : La liste des parents des sous-éléments créés.
         """
         return [item.parent() for item in self.items]
 
@@ -385,9 +416,9 @@ class CopyCommand(BaseCommand):
     singular_name = _('Copy "%s"')
 
     def do_command(self):
-        """Exécute la commande de copie.
+        """Exécuter la commande de copie.
 
-        Sauvegarde les copies des éléments dans le presse-papiers.
+        Sauvegarder les copies des éléments dans le presse-papiers.
         """
         self.__copies = [
             item.copy() for item in self.items
@@ -413,7 +444,7 @@ class DeleteCommand(BaseCommand, SaveStateMixin):
     def __init__(self, *args, **kwargs):
         """Initialise une commande de suppression.
 
-        Args:
+        Args :
             *args: Arguments supplémentaires.
             **kwargs: Arguments de mots-clés supplémentaires.
         """

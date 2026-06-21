@@ -46,9 +46,12 @@ class ChangeMonitor(Observer):
     Cette classe surveille les modifications apportées à l'objet
     en fonction de chaque attribut.
 
+    Elle hérite de Observer pour gérer l'enregistrement et la suppression
+    d'observateurs.
     Elle utilise un dictionnaire pour suivre les changements,
     où les clés sont les IDs des objets
     et les valeurs sont des ensembles de changements associés à ces objets.
+
     Les méthodes de cette classe permettent de geler
     ou dégeler la surveillance, de réinitialiser les changements,
     de surveiller ou de ne plus surveiller des classes
@@ -95,6 +98,12 @@ class ChangeMonitor(Observer):
     """
 
     def __init__(self, id_=None):
+        """Initialiser le moniteur de surveillance des changements.
+
+        Initialise la liste des observateurs et initialise les différents
+        attributs (__guid (str), __frozen (bool), __collections (list),
+        _changes (dict), _classes (set))
+        """
         # super(ChangeMonitor, self).__init__()
         super().__init__()
 
@@ -107,12 +116,15 @@ class ChangeMonitor(Observer):
         self.reset()
 
     def freeze(self):
+        """Geler le moniteur pour qu'il ne surveille plus les changements."""
         self.__frozen = True
 
     def thaw(self):
+        """Dégeler le moniteur pour qu'il recommence à surveiller les changements."""
         self.__frozen = False
 
     def guid(self):
+        """Retourner l'identifiant unique du moniteur de changements."""
         return self.__guid
 
     def reset(self):
@@ -132,42 +144,64 @@ class ChangeMonitor(Observer):
         self._classes = set()
 
     def monitorClass(self, klass):
+        """
+        Commence à surveiller les changements pour une classe spécifique.
+
+        Args:
+            klass: Classe à surveiller.
+        """
+        # Si la classe n'est pas dans l'ensemble de classes surveillées.
         if klass not in self._classes:
+            # Pour chaque attribut de la liste de ceux surveillés :
             for name in klass.monitoredAttributes():
+                # Créer un événement de changement ChangedEventType
                 # eventType = getattr(klass, "%sChangedEventType" % name)()
                 eventType = getattr(klass, f"{name}ChangedEventType")()
+                # Si cet événement commence par pubsub
                 if eventType.startswith("pubsub"):
+                    # utiliser la méthode pubsub.subscribe
                     pub.subscribe(self.onAttributeChanged, eventType)
                 else:
+                    # sinon utiliser l'ancienne méthode dépréciée Observer.registerObserver
                     self.registerObserver(
                         self.onAttributeChanged_Deprecated, eventType
                     )
+                # Ajouter la classe à l'ensemble des classes surveillées.
                 self._classes.add(klass)
+            # Si la classe contient des objets observables
             if issubclass(klass, ObservableComposite):
+                # utiliser l'ancienne méthode Observer.registerObserver pour ajouter les méthodes observatrices d'ajout/suppression d'enfant.
                 self.registerObserver(
                     self.onChildAdded, klass.addChildEventType()
                 )
                 self.registerObserver(
                     self.onChildRemoved, klass.removeChildEventType()
                 )
+            # Si la classe contient des objets catégorisables
             if issubclass(klass, CategorizableCompositeObject):
+                # utiliser l'ancienne méthode pour ajouter les méthodes d'ajout/suppression de catégorie
                 self.registerObserver(
                     self.onCategoryAdded, klass.categoryAddedEventType()
                 )
                 self.registerObserver(
                     self.onCategoryRemoved, klass.categoryRemovedEventType()
                 )
+            # Si la classe contient une tâche
             if issubclass(klass, Task):
+                # utiliser la méthode pubsub pour l'ajout/suppression d'effort
                 pub.subscribe(
                     self.onEffortAddedOrRemoved, Task.effortsChangedEventType()
                 )
+                # utiliser la méthode pubsub pour le changement de prérequis.
                 pub.subscribe(
                     self.onPrerequisitesChanged,
                     Task.prerequisitesChangedEventType(),
                 )
                 # pubsub.core.callables.ListenerMismatchError: Listener "ChangeMonitor.onEffortAddedOrRemoved"
                 # (from module "taskcoachlib.changes.monitor") inadequate: needs to accept 1 more args (newValue)
+            # Si la classe contient des notes
             if issubclass(klass, NoteOwner):
+                # utiliser l'ancienne méthode pour l'ajout/suppression d'autres objets
                 # Unresolved attribute reference 'noteAddedEventType' for class 'NoteOwner'
                 self.registerObserver(
                     self.onOtherObjectAdded, klass.noteAddedEventType()
@@ -176,7 +210,9 @@ class ChangeMonitor(Observer):
                 self.registerObserver(
                     self.onOtherObjectRemoved, klass.noteRemovedEventType()
                 )
+            # Si la classe contient des pièces jointes
             if issubclass(klass, AttachmentOwner):
+                # utiliser l'ancienne méthode pour l'ajout/suppression d'autres objets
                 # Cannot find reference 'attachmentAddedEventType' in 'AttachmentOwner | AttachmentOwner'
                 self.registerObserver(
                     self.onOtherObjectAdded, klass.attachmentAddedEventType()
@@ -186,13 +222,23 @@ class ChangeMonitor(Observer):
                     self.onOtherObjectRemoved,
                     klass.attachmentRemovedEventType(),
                 )
+            # Si la classe contient des efforts
             if issubclass(klass, Effort):
+                # utiliser la nouvelle méthode pubsub.subscribe pour le changement d'effort
                 pub.subscribe(
                     self.onEffortTaskChanged, Effort.taskChangedEventType()
                 )
 
     def unmonitorClass(self, klass):
+        """
+        Arrête de surveiller les changements pour une classe spécifique.
+
+        Args:
+            klass: Classe à arrêter de surveiller.
+        """
+        # Si la classe est dans l'ensemble de classes surveillées.
         if klass in self._classes:
+            # Défaire les enregistrements de monitorClass():
             for name in klass.monitoredAttributes():
                 # eventType = getattr(klass, "%sChangedEventType" % name)()
                 eventType = getattr(klass, f"{name}ChangedEventType")()
@@ -246,7 +292,15 @@ class ChangeMonitor(Observer):
             self._classes.remove(klass)
 
     def monitorCollection(self, collection):
+        """
+        Commence à surveiller les changements pour une collection spécifique.
+
+        Args:
+            collection: Collection à surveiller.
+        """
+        # Ajouter la collection à la liste de collections surveillées.
         self.__collections.append(collection)
+        # Utiliser l'ancienne méthode pour l'objet ajouté/supprimé.
         self.registerObserver(
             self.onObjectAdded,
             collection.addItemEventType(),
@@ -259,7 +313,15 @@ class ChangeMonitor(Observer):
         )
 
     def unmonitorCollection(self, collection):
+        """
+        Arrêter de surveiller les changements pour une collection spécifique.
+
+        Args:
+            collection: Collection à surveiller.
+        """
+        # Retirer la collection de la liste des collections surveillées.
         self.__collections.remove(collection)
+        # Utiliser l'ancienne méthode pour retirer l'observation de l'objet ajouté/supprimé.
         self.removeObserver(
             self.onObjectAdded,
             collection.addItemEventType(),
@@ -272,35 +334,68 @@ class ChangeMonitor(Observer):
         )
 
     def onAttributeChanged(self, newValue, sender, topic=pub.AUTO_TOPIC):
+        """Gère les événements de changement d'attribut.
+
+        Args :
+            newValue :
+            sender : Objet à observer qui a un id et des attributs.
+            topic :
+
+        Attributes :
+            __frozen : Indique si le moniteur est gelé (ne surveille pas les changements).
+            _changes (dict) : Un dictionnaire pour suivre les changements, où les clés sont les IDs des objets et les valeurs sont des ensembles de changements associés à ces objets.
+        """
+        # Vérifie si le moniteur est gelé
         if self.__frozen:
             return
 
+        # Pour tous les attributs de
         for name in sender.monitoredAttributes():
             # Unresolved attribute reference 'getNameTuple' for class 'AUTO_TOPIC'
             # getModule , getID, getRawFunction, getAllArgs, getOptionalArgs, getRequiredArgs, getArgs from pub?
             # or method getNameTuple() is from pubsub.core.topicobj.Topic ?
             # if name in topic.getNameTuple():  # TODO : !
+            # Si l'id de l'objet est dans le dictionnaire de suivi des changements
             if (
                 sender.id() in self._changes
+                # et qu'il n'est pas vide ! (TODO : pourquoi pas vide ? inutile ?!)
                 and self._changes[sender.id()] is not None
             ):
+                # Ajouter l'attribut au dictionnaire de suivi des changements
                 self._changes[sender.id()].add(name)
 
     def onAttributeChanged_Deprecated(self, event):
+        """Méthode dépréciée pour gérer les événements de changement d'attribut.
+
+        Args :
+            event : Événement
+
+        Attributes :
+            __frozen : Indique si le moniteur est gelé (ne surveille pas les changements).
+            _changes (dict) : Un dictionnaire pour suivre les changements, où les clés sont les IDs des objets et les valeurs sont des ensembles de changements associés à ces objets.
+        """
+        # Vérifie si le moniteur est gelé
         if self.__frozen:
             return
 
+        # Vieille méthode :
+        # Pour le type et la valeur de la source contenu dans le dictionnaire d'évènement
         for type_, valBySource in list(
             event.sourcesAndValuesByType().items()
         ):  # TODO : problème potentiel
+            # Pour chaque clé de la liste des clés des valeurs sources :
             for obj in list(valBySource.keys()):
+                # Pour chaque attribut surveillé de la clé :
                 for name in obj.monitoredAttributes():
+                    # Si la clé qui contient un changement est de type
                     # if type_ == getattr(obj, "%sChangedEventType" % name)():
                     if type_ == getattr(obj, f"{name}ChangedEventType")():
+                        # Si l'id de la clé est dans le dictionnaire des changements et que sa valeur n'est pas None
                         if (
                             obj.id() in self._changes
                             and self._changes[obj.id()] is not None
                         ):
+                            # Ajouter sa valeur au dictionnaire de changements
                             self._changes[obj.id()].add(name)
 
     def _objectAdded(self, obj):

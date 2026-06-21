@@ -232,14 +232,24 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         Returns :
             list : Une liste d'objets possédés.
         """
+        # ownedObjects = getattr(instance, "_%s__%ss" % (name, owned_type))
         # owned_objects = getattr(instance, owned_attr_name())
         owned_objects = getattr(instance, _attribute_name(""))
+
+        if owned_objects is None:
+            print(
+                "DEBUG DomainObjectOwnerMetaclass.objects :",
+                instance,
+                type(instance),
+                instance.__dict__,
+                _attribute_name(""),
+            )
         # Filtrer les objets supprimés
         result = [
             obj
-            for obj in owned_objects
+            for obj in owned_objects  # TypeError: 'NoneType' object is not iterable  -> corrigé dans tast.py
             if obj is not None and not obj.isDeleted()
-        ]
+        ] or []
         # Inclure les enfants récursivement si nécessaire
         if recursive:
             for obj in result[:]:

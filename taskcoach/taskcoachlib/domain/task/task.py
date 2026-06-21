@@ -275,8 +275,8 @@ class Task(
         # 2. Prepare kwargs for the main inheritance chain (CategorizableCompositeObject -> Object -> SynchronizedObject)
         #    Remove args already handled by mixins or that should not go up the chain
         _kwargs_for_super = kwargs.copy()
-        _kwargs_for_super.pop("notes", None)
-        _kwargs_for_super.pop("attachments", None)
+        _kwargs_for_super.pop("notes", [])  # Liste vide plutôt que None !
+        _kwargs_for_super.pop("attachments", [])
         # _kwargs_for_super.pop(
         #     "status", None
         # )  # Prevent passing TaskStatus object to SynchronizedObject's internal status
@@ -324,10 +324,11 @@ class Task(
         print(
             f"Task.__init__ : vérification avant super : attachments = {attachments}, kwargs = {kwargs}."
         )
+        # établir le contrat attendu par NoteOwner et AttachmentOwner, à savoir que ces collections sont toujours itérables.
         # AttachmentOwner a besoin de l'argument attachments !
-        kwargs["attachments"] = attachments
+        kwargs["attachments"] = attachments or []
         # Idem pour NoteOwner
-        kwargs["notes"] = notes
+        kwargs["notes"] = notes or []
         super().__init__(*args, **kwargs)
         # # # super().__init__(status=status, *args, **kwargs)
         # # Appeler le constructeur parent avec le dictionnaire combiné

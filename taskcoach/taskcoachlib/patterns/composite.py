@@ -84,12 +84,9 @@ class Composite(object):
         log.debug(
             "Après Composite.__init__ : %s enfants=%s",
             self,
-            len(self.children())
+            len(self.children()),
         )
-        log.debug(
-            "Après Composite.__init__ : parent=%s",
-            self.parent()
-        )
+        log.debug("Après Composite.__init__ : parent=%s", self.parent())
         log.debug("Composite : Initialisé.")
 
     def __getstate__(self):
@@ -465,6 +462,8 @@ class CompositeCollection(object):
         # # self.extend(initList or [])
         if initList:
             self.extend(initList)  # ✅ Ajoute les éléments passés en argument
+        else:
+            self.extend([])  # ✅ Ajoute une liste vide
         # if args:
         #     self.extend(args[0])
 

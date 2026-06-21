@@ -1548,8 +1548,8 @@ class Object(SynchronizedObject):
         Returns :
             (str) : Le type d'événement pour la description des événements a changé.
         """
-        return "%s.description" % class_
-        # return f"{class_}.description"  # Alternative plus moderne mais moins compatible avec les anciennes versions de Python.
+        # return "%s.description" % class_
+        return f"{class_}.description"  # Alternative plus moderne mais moins compatible avec les anciennes versions de Python.
 
     @staticmethod
     def descriptionSortFunction(**kwargs):

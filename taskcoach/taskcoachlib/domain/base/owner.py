@@ -17,11 +17,125 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Ce fichier définit une métaclasse qui génère dynamiquement des méthodes
 pour gérer des objets de domaine spécifiques.
+
+Rôle de DomainObjectOwnerMetaclass
+Pourquoi une métaclasse ?
+
+Objectif : Cette métaclasse permet de créer dynamiquement des méthodes et propriétés pour une classe qui gère un type spécifique d'objets du domaine (ex : Note, Attachment).
+Exemple concret :
+Si tu as une classe NoteOwner avec __ownedType__ = "Note", la métaclasse va automatiquement ajouter des méthodes comme :
+
+addNote
+removeNote
+notes
+notesChangedEventType
+etc.
+
+Comment ça marche ?
+
+Étape 1 : Définition du type géré
+
+La classe qui utilise cette métaclasse doit définir un attribut __ownedType__ (ex : __ownedType__ = "Note").
+La métaclasse récupère cette valeur pour générer les noms des méthodes et propriétés.
+
+Étape 2 : Création dynamique des méthodes
+
+Pour chaque type (ex : Note), la métaclasse ajoute :
+
+Méthodes de gestion :
+    addNote(obj) → Ajoute un objet Note à la liste interne.
+    removeNote(obj) → Supprime un objet Note.
+    notes() → Retourne la liste des Note.
+
+Propriétés :
+    _notes → Liste interne qui stocke les objets.
+
+Événements :
+    notesChangedEventType → Type d'événement déclenché quand la liste change.
+    noteAddedEventType → Type d'événement quand un Note est ajouté.
+    noteRemovedEventType → Type d'événement quand un Note est supprimé.
+
+
+Étape 3 : Gestion des observateurs
+
+La métaclasse ajoute aussi une méthode __notifyObservers
+pour notifier les observateurs (pattern Observer)
+quand un objet est ajouté/supprimé.
+
+Exemple avec NoteOwner
+Supposons que tu as :
+
+class NoteOwner(metaclass=DomainObjectOwnerMetaclass):
+    __ownedType__ = "Note"
+
+La métaclasse va transformer cette classe en :
+
+class NoteOwner:
+    __ownedType__ = "Note"
+    _notes = []  # Liste interne
+
+    def addNote(self, note):
+        self._notes.append(note)
+        self.__notifyObservers(self.noteAddedEventType())
+
+    def removeNote(self, note):
+        self._notes.remove(note)
+        self.__notifyObservers(self.noteRemovedEventType())
+
+    def notes(self):
+        return self._notes
+
+    @property
+    def notesChangedEventType(self):
+        return f"{self.__ownedType__}sChanged"
+
+    # ... etc.
+
+Qui fait quoi ?
+
+      Couche Métaclasse (DomainObjectOwnerMetaclass)
+      Rôle de la métaclasse :
+      Crée dynamiquement les méthodes et propriétés pour gérer un type d'objet.
+      Exemple : Ajoute addNote, removeNote, etc.
+
+      Couche Classe (NoteOwner, AttachmentOwner)
+      Rôle de la classe :
+      Utilise les méthodes générées pour manipuler les objets.
+      Exemple : note_owner.addNote(my_note)
+
+
+      Couche Objet du domaine (Note, Attachment)
+      Rôle de l'objet :
+      Représente une entité métier (ex : une note, une pièce jointe).
+      Exemple : my_note = Note(title="Réunion")
+
+Problèmes courants et solutions
+Problème 1 : "Je ne vois pas où est définie la méthode addNote !"
+Solution :
+            Elle est générée dynamiquement par la métaclasse.
+            Cherche dans owner.py la partie où la métaclasse ajoute les méthodes
+            (ex : setattr(klass, f"add{owned_type_capitalized}", add_method)).
+
+Problème 2 : "Comment déboguer si une méthode ne marche pas ?"
+Solution :
+            Vérifie que la classe a bien __ownedType__ défini.
+            Affiche les attributs de la classe avec dir(NoteOwner) pour voir les méthodes générées.
+            Utilise print(NoteOwner.__dict__) pour voir ce qui a été ajouté.
+
+Problème 3 : "C'est trop magique, je veux comprendre le flux !"
+Solution :
+            Ajoute des print dans la métaclasse pour voir quand les méthodes sont créées.
+Exemple :
+    print(f"Création de la méthode add{owned_type_capitalized} pour {name}")
+
 """
 
 # Python 3.6+ est requis pour les f-strings utilisées dans ce code.
 # Python 3 utilise un typage dynamique, ce qui permet de créer des méthodes et des propriétés à la volée.
+import logging
 from taskcoachlib import patterns
+
+log = logging.getLogger(__name__)
 
 
 # DomainObjectOwnerMetaclass est utilisé par :
@@ -75,17 +189,65 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             print("Note ajoutée :", event.sources())
 
     Utilisé dans AttachmentOwner pour gérer les pièces jointes, et dans NoteOwner pour gérer les notes.
+
+    Objectif : Cette métaclasse permet de créer dynamiquement des méthodes
+    et propriétés pour une classe qui gère un type spécifique d'objets du
+    domaine (ex : Note, Attachment).
+
+    Exemple concret :
+    Si tu as une classe NoteOwner avec __ownedType__ = "Note", la métaclasse va automatiquement ajouter des méthodes comme :
+
+    addNote
+    removeNote
+    notes
+    notesChangedEventType
+    etc.
+
     """
     #
-
+    # print(
+    #     f"owner.DomainObjectOwnerMetaclass : pour la classe {name}, avec bases {bases} et ns {ns}."
+    # )
     # Cette métaclasse est une fonction au lieu d'une sous-classe de type
     # car comme nous remplaçons __init__, nous ne voulons pas que la métaclasse
     # soit héritée par les enfants.
     # Mais est-ce que la méthode __New__ ne résoud pas ce problème ?
     klass = type(name, bases, ns)
 
-    # Définition du type d'objet géré (donné dans la classe qui l'utilise !)
+    # Définition du type d'objet géré (donné dans la classe qui l'utilise ! voir NoteOwner ou AttachmentOwner !)
     owned_type = klass.__ownedType__.lower()
+
+    # Si on veux utiliser une classe plutôt qu'une fonction :
+    # Avantages :
+    # Plus "standard" (utilisation de type).
+    # Permet d'utiliser __init__ pour l'initialisation.
+    #
+    # Inconvénient :
+    # La métaclasse sera héritée par les sous-classes (ce que tu veux éviter).
+    # Sinon tu désactiver l'héritage dans __new__ ou utiliser un décorateur pour appliquer la métaclass uniquement aux classes que tu veux.
+    #
+    # class DomainObjectOwnerMetaclass(type):
+    #     def __new__(cls, name, bases, ns):
+    #         # Désactiver l'héritage en vérifiant bases dans __new__ :
+    #         # Vérifier que la classe parente n'est pas déjà une sous-classe
+    #         if any(isinstance(base, DomainObjectOwnerMetaclass) for base in bases):
+    #             raise TypeError("Cette métaclasse ne peut pas être héritée")
+    #         # Récupérer __ownedType__ depuis ns
+    #         owned_type = ns.get('__ownedType__')
+    #         if not owned_type:
+    #             raise AttributeError(f"{name} doit définir __ownedType__")
+    #
+    #         # Créer la classe avec type.__new__
+    #         klass = super().__new__(cls, name, bases, ns)
+    #
+    #         # Ajouter les méthodes dynamiques (comme dans ta fonction actuelle)
+    #         # Exemple : ajouter addNote, removeNote, etc.
+    #         def add_method(self, obj):
+    #             # Logique pour ajouter un objet
+    #             pass
+    #         setattr(klass, f"add{owned_type}", add_method)
+    #
+    #         return klass
 
     # Définir des méthodes et des propriétés dynamiques pour la classe
     # owned_attr_name = lambda: f"_{name}__{klass.__ownedType__.lower()}s"
@@ -94,14 +256,21 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
     # Utilitaire pour générer un nom d'attribut privé
     def _attribute_name(suffix):
         """
-        Génère un nom d'attribut privé pour le suffixe donné.
+        Génère un nom d'attribut privé pour le suffixe donné dans la classe de nom donné pour un type spécifique.
 
         Args :
             suffix (str) : Le suffixe à ajouter au nom d'attribut.
 
         Returns :
             str : Le nom d'attribut généré.
+
+        Examples :
+            Pour __ownedType__ = "Note", suffix = "foo" et le nom de la classe créé name = "cls",
+            retourne le nom de l'attribut "_cls__foonotes"
         """
+        print(
+            f"owner.DomainObjectOwnerMetaclass._attribute_name : retourne l'attribut _{name}__{suffix}{owned_type}s pour la classe {name}."
+        )
         return f"_{name}__{suffix}{owned_type}s"
 
     # Définir le constructeur
@@ -115,14 +284,19 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             **kwargs : Arguments de mots clés arbitraires.
         """
         # NB: we use a simple list here. Maybe we should use a container type.
+        print(
+            f"Owner.constructor : Initialise l'instance avec la liste des objets possédés pour {name}."
+        )
         # setattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower()),
         #         kwargs.pop(klass.__ownedType__.lower() + "s", []))
         # setattr(instance, owned_attr_name(), kwargs.pop(klass.__ownedType__.lower() + "s", []))
         setattr(
             instance, _attribute_name(""), kwargs.pop(f"{owned_type}s", [])
         )
+        print("AVANT SUPER :", instance.__dict__)
         # super(klass, instance).__new__(klass)
         super(klass, instance).__init__(*args, **kwargs)
+        print("APRES SUPER :", instance.__dict__)
 
     klass.__init__ = constructor
 
@@ -162,6 +336,9 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         Returns :
             str : Le nom de l'événement généré.
         """
+        print(
+            f"owner.generate_event_name : génère et retourne le nom de l'événement {klass}.{owned_type}{event_type} pour {name}."
+        )
         return f"{klass}.{owned_type}{event_type}"
 
     # setattr(klass, f"{klass.__ownedType__.lower()}sChangedEventType", classmethod(generate_event_type("s")))
@@ -201,7 +378,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             # eventTypes = []
         # # if eventTypes is None:
         # #     eventTypes = []
+        print(
+            f"owner.modificationEventTypes : liste des types d’événements liés aux modifications eventTypes = {eventTypes}."
+        )
         # parent_events = getattr(super(klass, class_), "modificationEventTypes", lambda: [])()
+
         # return eventTypes + [changedEventType(class_)]
         # return parent_events + [class_.foosChangedEventType()]
         # return parent_events + [f"{class_}.{klass.__ownedType__.lower()}s"]
@@ -238,7 +419,15 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
         if owned_objects is None:
             print(
-                "DEBUG DomainObjectOwnerMetaclass.objects :",
+                "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est None.",
+                instance,
+                type(instance),
+                instance.__dict__,
+                _attribute_name(""),
+            )
+        else:
+            print(
+                "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est :",
                 instance,
                 type(instance),
                 instance.__dict__,
@@ -254,6 +443,9 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         if recursive:
             for obj in result[:]:
                 result.extend(obj.children(recursive=True))
+        print(
+            f"owner.objects : retourne la liste des objets possédés par {name}, incluant éventuellement leurs enfants : {result}"
+        )
         return result
 
     # setattr(klass, "%ss" % klass.__ownedType__.lower(), objects)
@@ -270,6 +462,10 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             newObjects (list) : La nouvelle liste des objets possédés.
             event : L'événement à déclencher.
         """
+        print("\n=== SETOBJECTS ===")
+        print("ID(instance) =", id(instance))
+        print("TYPE(instance) =", type(instance))
+        print("DICT =", instance.__dict__)
         if newObjects == objects(instance):
             return
         # setattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower()),
@@ -295,14 +491,18 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             event : L'événement pour ajouter l'événement modifié.
             *objects : Les objets qui ont changé.
         """
+        print(
+            f"owner.changedEvent : Ajoute l'événement {objects} modifié à {event}."
+        )
         # event.addSource(instance, *objects,
         #                 **dict(type=changedEventType(instance.__class__)))
         event.addSource(instance, *objects, type=generate_event_name(""))
-        # print(f"Événement envoyé par changedEvent: {event}")
+        print(f"owner.changedEvent : Événement créé par changedEvent: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
             event.addSource(instance)
+        # NON, pas deux fois !
 
     # setattr(klass, "%ssChangedEvent" % klass.__ownedType__.lower(), changedEvent)
 
@@ -318,7 +518,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # event.addSource(instance, *objects,
         #                 **dict(type=addedEventType(instance.__class__)))
         event.addSource(instance, *objects, type=generate_event_name(".added"))
-        # print(f"Événement envoyé par addedEvent: {event}")
+        print(f"Événement envoyé par addedEvent: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -340,7 +540,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         event.addSource(
             instance, *objects, type=generate_event_name(".removed")
         )
-        # print(f"Événement envoyé par removedEvent: {event}")
+        print(f"Événement envoyé par removedEvent: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -384,7 +584,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         getattr(instance, _attribute_name("")).append(ownedObject)
         changedEvent(instance, event, ownedObject)
         addedEvent(instance, event, ownedObject)
-        # print(f"Événement envoyé par addObject: {event}")
+        print(f"Événement envoyé par addObject: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -418,7 +618,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         event = kwargs.pop("event", None)
         changedEvent(instance, event, *ownedObjects)
         addedEvent(instance, event, *ownedObjects)
-        # print(f"Événement envoyé par addObjects: {event}")
+        print(f"Événement envoyé par addObjects: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -448,11 +648,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         getattr(instance, _attribute_name("")).remove(ownedObject)
         changedEvent(instance, event, ownedObject)
         removedEvent(instance, event, ownedObject)
-        # print(f"Événement envoyé par removeObject: {event}")
 
-        # Forcer l'ajout explicite de la source
         if event is not None:
+            # Forcer l'ajout explicite de la source
             event.addSource(instance)
+        print(f"Événement envoyé par removeObject: {event}")
 
     # setattr(klass, "remove%s" % klass.__ownedType__, removeObject)
     setattr(klass, f"remove{klass.__ownedType__}", removeObject)
@@ -489,11 +689,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         event = kwargs.pop("event", None)
         changedEvent(instance, event, *ownedObjects)
         removedEvent(instance, event, *ownedObjects)
-        # print(f"Événement envoyé par removeObjects: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
             event.addSource(instance)
+        print(f"Événement envoyé par removeObjects: {event}")
 
     # setattr(klass, "remove%ss" % klass.__ownedType__, removeObjects)
     setattr(klass, f"remove{klass.__ownedType__}s", removeObjects)
@@ -505,6 +705,12 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
         Obtenez l'état de l'instance de sérialisation.
 
+        Construit l'état sérialisable de l'objet Owner.
+
+        - Récupère l'état du parent sans le modifier.
+        - Ajoute uniquement les objets possédés.
+        - Ne supprime aucune clé héritée (status, id, etc.).
+
         Cette méthode renvoie un dictionnaire contenant l'état de l'instance,
         y compris la liste des objets propriétaires.
 
@@ -514,21 +720,139 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         Returns :
             dict : Un dictionnaire représentant l'état de l'instance.
         """
+        # nettoyer correctement, parce que là tu as surtout un mélange dangereux de :
+        #
+        # debug massif (utile mais qui brouille)
+        # double appel super().__getstate__
+        # state = {} qui écrase tout héritage
+        # clés dynamiques non garanties (foos vs _OwnerUnderTest__foos)
+        # et surtout : tu perds les clés du parent
+        # 🎯 Objectif du nettoyage
+        #
+        # On veut :
+        #
+        # ✔ conserver totalement l’état du parent
+        # ✔ ajouter seulement l’attribut “owned”
+        # ✔ éviter toute transformation destructive
+        # ✔ garantir compatibilité Object.__setstate__ (donc status toujours présent)
+        # ✔ supprimer les zones instables
+        print("\n=== GETSTATE ===")
+        print("INSTANCE TYPE =", type(instance))
+        print("INSTANCE ID =", id(instance))
+        print(
+            "INSTANCE DICT =",
+            getattr(instance, "__dict__", "<pas de __dict__>"),
+        )
+        print("DICT COMPLET avant super :", instance.__dict__)
+        s = super(klass, instance)
+
+        print("SUPER =", s)
+        print("SUPER TYPE =", type(s))
+        print("MRO =", instance.__class__.__mro__)
+        print("SUPER GETSTATE =", getattr(s, "__getstate__", None))
         # try:
+        #     # !!! La méthode super regarde peut-être le mauvais objet !
         #     state = super(klass, instance).__getstate__()
         # except AttributeError:
         #     state = dict()
-        # state = getattr(super(klass, instance), "__getstate__", lambda: {})()
-        state = (
+        # # state = getattr(super(klass, instance), "__getstate__", lambda: {})()
+        # # if hasattr(super(klass, instance), "getstate"):
+        # #     print("La méthode super a un getstate.")
+        # # if hasattr(super(klass, instance), "__getstate__"):
+        # #     print("La méthode super a un __getstate__.")
+        # # state = (
+        # #     super(klass, instance).__getstate__()
+        # #     if hasattr(super(klass, instance), "__getstate__")
+        # #     else {}
+        # # )
+        # print(
+        #     f"owner.getstate : instance contient les attributs suivants : {instance.__dict__}."
+        # )
+        state = {}
+        # try:
+        #     state.update(super(klass, instance).__getstate__())
+        # except AttributeError:
+        #     pass
+        # super(klass, instance) n'est pas forcément équivalent à ce qu'il était super(OwnerUndertest, self) dans le code Pyhton 2 d'origine.
+        # Les méthodes générées dynamiquement par DomainObjectOwnerMetaclass sont précisément l'endroit où Python 2 → Python 3 casse souvent la sérialisation.
+        print("\n=== APRES SUPER ===")
+        print("STATE TYPE =", type(state))
+        print("STATE ID =", id(state))
+        print("STATE =", state)
+        print("id(instance) =", id(instance))
+        print("DICT COMPLET après super:", instance.__dict__)
+        print(
+            "_OwnerUnderTest__foos dans dict ?",
+            "_OwnerUnderTest__foos" in instance.__dict__,
+        )
+        print("ATTRIBUT RECHERCHÉ :", _attribute_name(""))
+        print("TYPE :", type(instance))
+        print("HASATTR :", hasattr(instance, _attribute_name("")))
+        # print("DICT :", instance.__dict__.keys())
+        print("owned_type =", owned_type)
+        print("klass =", klass)
+        print("klass.__ownedType__ =", klass.__ownedType__)
+        print("_attribute_name =", _attribute_name(""))
+        print(
+            "valeur réelle =",
+            getattr(instance, "_OwnerUnderTest__foos", "<absent>"),
+        )
+        print(
+            "valeur utilisée =",
+            getattr(instance, _attribute_name(""), "<absent>"),
+        )
+        parent_state = (
             super(klass, instance).__getstate__()
             if hasattr(super(klass, instance), "__getstate__")
             else {}
         )
-        # state[klass.__ownedType__.lower() + "s"] = getattr(
-        #     instance, "_%s__%ss" % (name, klass.__ownedType__.lower())
-        # )[:]
-        # state[klass.__ownedType__.lower() + "s"] = list(getattr(instance, owned_attr_name()))
-        state[f"{owned_type}s"] = getattr(instance, _attribute_name(""))[:]
+        print("\n=== ANALYSE PARENT_STATE ===")
+        print("parent_state.keys() =", sorted(parent_state.keys()))
+
+        print(
+            "_OwnerUnderTest__foos dans parent_state ?",
+            "_OwnerUnderTest__foos" in parent_state,
+        )
+
+        if "_OwnerUnderTest__foos" in parent_state:
+            print(
+                "VALEUR =",
+                parent_state["_OwnerUnderTest__foos"],
+            )
+        print("TYPE parent_state =", type(parent_state))
+        print("parent_state =", parent_state)
+        # print("INSTANCE =", instance)
+        print("ID =", id(instance))
+        print("DICT =", instance.__dict__)
+
+        try:
+            print("DIRECT =", instance.__dict__["_OwnerUnderTest__foos"])
+        except KeyError:
+            print("ABSENT DANS DICT")
+        # # state[klass.__ownedType__.lower() + "s"] = getattr(
+        # #     instance, "_%s__%ss" % (name, klass.__ownedType__.lower())
+        # # )[:]
+        # # state[klass.__ownedType__.lower() + "s"] = list(getattr(instance, owned_attr_name()))
+        # state[f"{owned_type}s"] = getattr(instance, _attribute_name(""), [])[:]
+        # # state["foos"] = instance._OwnerUnderTest__foos[:]
+        attr_name = _attribute_name("")
+
+        print("ID INSTANCE =", id(instance))
+        print("ATTR =", attr_name)
+        print("DICT =", instance.__dict__)
+        print("attr_name =", attr_name)
+        print("instance.__dict__.keys() =", instance.__dict__.keys())
+
+        value = instance.__dict__.get(attr_name, "<ABSENT DANS DICT>")
+        print("VALUE =", value)
+
+        # state[f"{owned_type}s"] = value[:] if isinstance(value, list) else []
+        if attr_name in instance.__dict__:
+            state[f"{owned_type}s"] = instance.__dict__[attr_name][:]
+        else:
+            print("ABSENT DU __dict__")
+            state[f"{owned_type}s"] = []
+        print(f"owner.getstate : retourne state : {state}.")
         return state
 
     klass.__getstate__ = getstate
@@ -547,19 +871,20 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             state (dict) : Un dictionnaire représentant l'état de l'instance.
             event : Objet d'événement facultatif à passer aux gestionnaires d'événements.
         """
-        # try:
-        #     super(klass, instance).__setstate__(state, event=event)
-        # except AttributeError:
-        #     pass
-        # getattr(super(klass, instance), "__setstate__", lambda *_: None)(state, event=event)
-        (
+        try:
             super(klass, instance).__setstate__(state, event=event)
-            if hasattr(super(klass, instance), "__setstate__")
-            else None
-        )
-        # setObjects(instance, state[klass.__ownedType__.lower() + "s"], event=event)
-        # setObjects(instance, state.get(klass.__ownedType__.lower() + "s", []), event=event)
-        setObjects(instance, state[f"{owned_type}s"], event=event)
+        except AttributeError:
+            pass
+        # # getattr(super(klass, instance), "__setstate__", lambda *_: None)(state, event=event)
+        # (
+        #     super(klass, instance).__setstate__(state, event=event)
+        #     if hasattr(super(klass, instance), "__setstate__")
+        #     else None
+        # )
+        # # # setObjects(instance, state[klass.__ownedType__.lower() + "s"], event=event)
+        # # # setObjects(instance, state.get(klass.__ownedType__.lower() + "s", []), event=event)
+        # setObjects(instance, state[f"{owned_type}s"], event=event)
+        setObjects(instance, state.get(f"{owned_type}s", []), event=event)
 
     klass.__setstate__ = setstate
 
@@ -593,6 +918,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # state[klass.__ownedType__.lower() + "s"] = [obj.copy() for obj in objects(instance)]
         state[f"{owned_type}s"] = [obj.copy() for obj in objects(instance)]
         # state["children"] = [child.copy() for child in self.children()]  # Créer de nouveaux objets
+        print(f"owner.getcopystate : retourne state : {state}.")
         return state
 
     klass.__getcopystate__ = getcopystate

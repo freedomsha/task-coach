@@ -130,6 +130,14 @@ Exemple :
 
 """
 
+# Tu as un pattern hérité Python 2 :
+# sérialisation multi-couches via metaclass
+# 👉 donc règle stricte :
+# 🚨 NE JAMAIS FAIRE :
+# . state = {}
+# . state = {...} reconstruction manuelle
+# . pop() sur les clés du parent
+
 # Python 3.6+ est requis pour les f-strings utilisées dans ce code.
 # Python 3 utilise un typage dynamique, ce qui permet de créer des méthodes et des propriétés à la volée.
 import logging
@@ -736,123 +744,30 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # ✔ éviter toute transformation destructive
         # ✔ garantir compatibilité Object.__setstate__ (donc status toujours présent)
         # ✔ supprimer les zones instables
-        print("\n=== GETSTATE ===")
-        print("INSTANCE TYPE =", type(instance))
-        print("INSTANCE ID =", id(instance))
-        print(
-            "INSTANCE DICT =",
-            getattr(instance, "__dict__", "<pas de __dict__>"),
-        )
-        print("DICT COMPLET avant super :", instance.__dict__)
-        s = super(klass, instance)
+        # 🔹 Récupère la méthode __getstate__ du parent si elle existe
+        parent_getstate = getattr(super(klass, instance), "__getstate__", None)
 
-        print("SUPER =", s)
-        print("SUPER TYPE =", type(s))
-        print("MRO =", instance.__class__.__mro__)
-        print("SUPER GETSTATE =", getattr(s, "__getstate__", None))
-        # try:
-        #     # !!! La méthode super regarde peut-être le mauvais objet !
-        #     state = super(klass, instance).__getstate__()
-        # except AttributeError:
-        #     state = dict()
-        # # state = getattr(super(klass, instance), "__getstate__", lambda: {})()
-        # # if hasattr(super(klass, instance), "getstate"):
-        # #     print("La méthode super a un getstate.")
-        # # if hasattr(super(klass, instance), "__getstate__"):
-        # #     print("La méthode super a un __getstate__.")
-        # # state = (
-        # #     super(klass, instance).__getstate__()
-        # #     if hasattr(super(klass, instance), "__getstate__")
-        # #     else {}
-        # # )
-        # print(
-        #     f"owner.getstate : instance contient les attributs suivants : {instance.__dict__}."
-        # )
-        state = {}
-        # try:
-        #     state.update(super(klass, instance).__getstate__())
-        # except AttributeError:
-        #     pass
-        # super(klass, instance) n'est pas forcément équivalent à ce qu'il était super(OwnerUndertest, self) dans le code Pyhton 2 d'origine.
-        # Les méthodes générées dynamiquement par DomainObjectOwnerMetaclass sont précisément l'endroit où Python 2 → Python 3 casse souvent la sérialisation.
-        print("\n=== APRES SUPER ===")
-        print("STATE TYPE =", type(state))
-        print("STATE ID =", id(state))
-        print("STATE =", state)
-        print("id(instance) =", id(instance))
-        print("DICT COMPLET après super:", instance.__dict__)
-        print(
-            "_OwnerUnderTest__foos dans dict ?",
-            "_OwnerUnderTest__foos" in instance.__dict__,
-        )
-        print("ATTRIBUT RECHERCHÉ :", _attribute_name(""))
-        print("TYPE :", type(instance))
-        print("HASATTR :", hasattr(instance, _attribute_name("")))
-        # print("DICT :", instance.__dict__.keys())
-        print("owned_type =", owned_type)
-        print("klass =", klass)
-        print("klass.__ownedType__ =", klass.__ownedType__)
-        print("_attribute_name =", _attribute_name(""))
-        print(
-            "valeur réelle =",
-            getattr(instance, "_OwnerUnderTest__foos", "<absent>"),
-        )
-        print(
-            "valeur utilisée =",
-            getattr(instance, _attribute_name(""), "<absent>"),
-        )
-        parent_state = (
-            super(klass, instance).__getstate__()
-            if hasattr(super(klass, instance), "__getstate__")
-            else {}
-        )
-        print("\n=== ANALYSE PARENT_STATE ===")
-        print("parent_state.keys() =", sorted(parent_state.keys()))
+        # 🔹 Appel du parent ou dictionnaire vide si absent
+        state = parent_getstate() if parent_getstate else {}
 
-        print(
-            "_OwnerUnderTest__foos dans parent_state ?",
-            "_OwnerUnderTest__foos" in parent_state,
-        )
+        # 🔹 Sécurité : on copie pour éviter effets de bord
+        state = dict(state)
 
-        if "_OwnerUnderTest__foos" in parent_state:
-            print(
-                "VALEUR =",
-                parent_state["_OwnerUnderTest__foos"],
-            )
-        print("TYPE parent_state =", type(parent_state))
-        print("parent_state =", parent_state)
-        # print("INSTANCE =", instance)
-        print("ID =", id(instance))
-        print("DICT =", instance.__dict__)
-
-        try:
-            print("DIRECT =", instance.__dict__["_OwnerUnderTest__foos"])
-        except KeyError:
-            print("ABSENT DANS DICT")
-        # # state[klass.__ownedType__.lower() + "s"] = getattr(
-        # #     instance, "_%s__%ss" % (name, klass.__ownedType__.lower())
-        # # )[:]
-        # # state[klass.__ownedType__.lower() + "s"] = list(getattr(instance, owned_attr_name()))
-        # state[f"{owned_type}s"] = getattr(instance, _attribute_name(""), [])[:]
-        # # state["foos"] = instance._OwnerUnderTest__foos[:]
+        # 🔹 Nom de l'attribut privé (ex: _OwnerUnderTest__foos)
         attr_name = _attribute_name("")
 
-        print("ID INSTANCE =", id(instance))
-        print("ATTR =", attr_name)
-        print("DICT =", instance.__dict__)
-        print("attr_name =", attr_name)
-        print("instance.__dict__.keys() =", instance.__dict__.keys())
+        # 🔹 Récupération des objets possédés
+        owned_objects = getattr(instance, attr_name, [])
 
-        value = instance.__dict__.get(attr_name, "<ABSENT DANS DICT>")
-        print("VALUE =", value)
+        # 🔹 Ajout dans le state SANS supprimer le reste
+        state[f"{owned_type}s"] = list(owned_objects)
 
-        # state[f"{owned_type}s"] = value[:] if isinstance(value, list) else []
-        if attr_name in instance.__dict__:
-            state[f"{owned_type}s"] = instance.__dict__[attr_name][:]
-        else:
-            print("ABSENT DU __dict__")
-            state[f"{owned_type}s"] = []
-        print(f"owner.getstate : retourne state : {state}.")
+        # 🔹 Debug minimal utile
+        print(
+            f"[Owner.getstate] {klass.__name__} -> {len(owned_objects)} objets"
+        )
+
+        # 🔹 Retour du state complet (parent + owned)
         return state
 
     klass.__getstate__ = getstate
@@ -863,6 +778,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
         Définissez l'état de l'instance pendant la désérialisation.
 
+        Reconstruit l'état de l'objet Owner depuis un dictionnaire sérialisé.
+
+        - Applique d'abord l'état du parent (Object/SynchronizedObject)
+        - Puis restaure les objets possédés
+
         Cette méthode définit l'état de l'instance en fonction du dictionnaire
         fourni, y compris la liste des objets possédés.
 
@@ -871,20 +791,21 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             state (dict) : Un dictionnaire représentant l'état de l'instance.
             event : Objet d'événement facultatif à passer aux gestionnaires d'événements.
         """
-        try:
-            super(klass, instance).__setstate__(state, event=event)
-        except AttributeError:
-            pass
-        # # getattr(super(klass, instance), "__setstate__", lambda *_: None)(state, event=event)
-        # (
-        #     super(klass, instance).__setstate__(state, event=event)
-        #     if hasattr(super(klass, instance), "__setstate__")
-        #     else None
-        # )
-        # # # setObjects(instance, state[klass.__ownedType__.lower() + "s"], event=event)
-        # # # setObjects(instance, state.get(klass.__ownedType__.lower() + "s", []), event=event)
-        # setObjects(instance, state[f"{owned_type}s"], event=event)
-        setObjects(instance, state.get(f"{owned_type}s", []), event=event)
+        # 🔹 Récupère __setstate__ du parent si existant
+        parent_setstate = getattr(super(klass, instance), "__setstate__", None)
+
+        # 🔹 Applique l'état parent (IMPORTANT pour status, id, etc.)
+        if parent_setstate:
+            parent_setstate(state, event=event)
+
+        # 🔹 Nom de l'attribut privé
+        attr_name = _attribute_name("")
+
+        # 🔹 Récupère les objets sérialisés (ex: foos)
+        owned_objects = state.get(f"{owned_type}s", [])
+
+        # 🔹 Applique la liste restaurée
+        setObjects(instance, owned_objects, event=event)
 
     klass.__setstate__ = setstate
 

@@ -240,6 +240,11 @@ class SynchronizedObject(object):
 
     """
 
+    SERIALIZATION_CORE_KEYS = frozenset(
+        [
+            "status",
+        ]
+    )
     STATUS_NONE = 0
     STATUS_NEW = 1
     STATUS_CHANGED = 2
@@ -273,6 +278,7 @@ class SynchronizedObject(object):
         )
         # print(
         #     f"SynchronizedObject.__init__ : 🔍 Avant super().__init__() : self.__status = {getattr(self, '__status', 'Non défini')}")
+
         # super().__init__(*args, **kwargs)  # ← Problème possible ici ! Peut-être le mettre avant self.__status !?
         # print(f"SynchronizedObject.__init__ : ✅ Après super().__init__() : self.__status = {self.__status}")
         # print(f"SynchronizedObject.__init__ : ⚠️ Après super().__init__() : self.__status = {self.__status}")
@@ -312,6 +318,16 @@ class SynchronizedObject(object):
     # les fichiers .tsk sans les corrompre.
     # Le passage à Python 3 a changé la façon dont les attributs privés sont gérés,
     # obligeant à filtrer manuellement ce qu'on sauvegarde.
+    def validate_state(self, state):
+        """Valide l'état minimal de SynchronizedObject."""
+        missing = self.SERIALIZATION_CORE_KEYS.difference(state)
+
+        assert not missing, (
+            f"État de sérialisation invalide pour "
+            f"{type(self).__name__}. "
+            f"Clés manquantes : {sorted(missing)}"
+        )
+
     def __getstate__(self):
         """
         Étends l'état sérialisé de l'objet avec les informations de synchronisation.
@@ -693,6 +709,31 @@ class Object(SynchronizedObject):
         - modificationEventTypes : Fournit les types d'événements de modification pour les classes dérivées.
     """
 
+    # Attributs que Object.__getstate__() et Object.__setstate__() gèrent :
+    # Jamais dans __init__, sinon chaque instance sérialise cette constante, ce qui pollue les états.
+    # SERIALIZATION_CORE_KEYS = {
+    SERIALIZATION_CORE_KEYS = (
+        SynchronizedObject.SERIALIZATION_CORE_KEYS
+        | frozenset(
+            [
+                # "status",
+                "id",
+                "creationDateTime",
+                "modificationDateTime",
+                "subject",
+                "description",
+                "fgColor",
+                "bgColor",
+                "font",
+                "icon",
+                "ordering",
+                "selectedIcon",
+            ]
+        )
+        # }
+    )
+    # Owner, Task, Category et les futures classes du domaine héritent de Object.
+
     rx_attributes = re.compile(
         r"\[(\w+):(.+)\]"
     )  # Expression régulière pour parser les attributs
@@ -744,7 +785,9 @@ class Object(SynchronizedObject):
         selfRef = weakref.ref(self)
 
         # On récupère la liste des clés à traiter localement
+        # accepted_keys = [
         accepted_keys = [
+            # "status",
             "id",
             "subject",
             "description",
@@ -1006,7 +1049,8 @@ class Object(SynchronizedObject):
             (str) : La représentation sous forme de chaîne.
         """
         return self.subject()
-        # return str(self.subject()) or __repr__(self.subject())
+        # # return str(self.subject()) or __repr__(self.subject())
+        # return f"<{self.__class__.__name__} id={id(self)}>"
 
     def __eq__(self, other):
         if not isinstance(other, Object):
@@ -1020,6 +1064,70 @@ class Object(SynchronizedObject):
 
     def __hash__(self):
         return hash(self.id())
+
+    # Audit commun
+    @staticmethod
+    def safe_super_state(instance, klass):
+        """Retourne l'état fourni par la classe parente.
+
+        Récupère l'état du parent de manière sécurisée.
+        Garantit toujours un dict exploitable.
+        """
+        # parent_getstate = getattr(super(klass, instance), "__getstate__", None)
+        #
+        # if parent_getstate:
+        #     state = parent_getstate()
+        # else:
+        #     state = {}
+        #
+        # return dict(state)  # protection anti-effets de bord
+        # Les méthodes générées dans owner.py peuvent l'utiliser !
+        try:
+            return dict(super(klass, instance).__getstate__())
+        except AttributeError:
+            return {}
+
+    # @staticmethod
+    def validate_state(self, state):
+        """Valide l'état sérialisé.
+
+        Vérifie qu'aucune clé de sérialisation fondamentale n'a disparu.
+        """
+        super().validate_state(state)
+        # # missing = [key for key in SERIALIZATION_CORE_KEYS if key not in state]
+        # # missing = [key for key in accepted_keys if key not in state]
+        # missing = Object.SERIALIZATION_CORE_KEYS.difference(state)
+        missing = self.SERIALIZATION_CORE_KEYS.difference(state)
+
+        # # assert not missing, f"Clés manquantes dans le state : {missing}"
+        # assert not missing, "Clés de sérialisation perdues : %s" % sorted(
+        #     missing
+        # )
+        assert not missing, (
+            f"État incomplet pour {type(self).__name__}. "
+            f"Clés manquantes : {sorted(missing)}"
+        )
+
+        # return state
+
+    # def protect_parent_keys(old_state, new_state):
+    #     protected = set(old_state.keys()) & {"status", "id", "creationDateTime"}
+    #
+    #     for key in protected:
+    #         new_state[key] = old_state[key]
+    #
+    #     return new_state
+
+    @staticmethod
+    def protect_parent_keys(parent_state, child_state):
+        """
+        Vérifie que les clés héritées n'ont pas disparu.
+        """
+
+        for key in parent_state:
+            assert key in child_state, f"Clé héritée perdue : {key}"
+
+        return child_state
 
     def __getstate__(self):
         """
@@ -1035,22 +1143,38 @@ class Object(SynchronizedObject):
         Returns :
             (dict) : Un dictionnaire nettoyé représentant l'état de l'objet.
         """
+        # Définition des invariants de sérialisation
+        # assert state["status"] == new_state["status"]
+        # assert state["id"] == new_state["id"]
+        # assert state["subject"] == new_state["subject"]
+        # assert state["description"] == new_state["description"]
+        # assert state["creationDateTime"] == new_state["creationDateTime"]
+        # assert (
+        #     state["modificationDateTime"] == new_state["modificationDateTime"]
+        # )
+        # assert state["fgColor"] == new_state["fgColor"]
+        # assert state["bgColor"] == new_state["bgColor"]
+        # assert state["font"] == new_state["font"]
+        # assert state["icon"] == new_state["icon"]
+        # assert state["ordering"] == new_state["ordering"]
+        # assert state["selectedIcon"] == new_state["selectedIcon"]
+
         # Construction explicite du dictionnaire d'état.
+        print("Object.__getstate__() : Appelé par ", self)
         try:
             # On récupère l'état hérité (ex : depuis SynchronizedObject)
             state = super().__getstate__()
         except AttributeError:
             state = dict()
-        # print(f"DEBUG - Object.__getstate__() avant update: {state}")
+        print(f"Object.__getstate__() après super et avant update: {state}")
         # log.debug(f"Object.__getstate__() : state avant update: {state}")
         # log.debug(f"DEBUG - Object.__getstate__() avant update subject.get() : {self.__subject.get()}")
         # if hasattr(self, 'subject'):
         #     log.debug(f"Object.__setstate__() - subject avant update: {self.subject}")
         # else:
         if not hasattr(self, "subject"):
-            log.debug(
-                "Object.__setstate__() - subject non défini avant update."
-            )
+            # log.debug(
+            print("Object.__setstate__() - subject non défini avant update.")
 
         # On ajoute uniquement les champs publics attendus,
         # extraits via les attributs "Attribute"
@@ -1069,22 +1193,37 @@ class Object(SynchronizedObject):
                 selectedIcon=self.__selectedIcon.get(),  # Ordre d'affichage ou de tri
             )
         )
-        # On supprime les clés privées (souvent nommées _NomClasse__attribut)
-        # Ici, on retire tous les attributs privés de 'Object' (ex: _Object__subject)
-        private_prefixes = [
-            f"_{self.__class__.__name__}__",
-            "_SynchronizedObject__",
-        ]
-        keys_to_remove = [
-            key
-            for key in state
-            if any(key.startswith(prefix) for prefix in private_prefixes)
-        ]
-        for key in keys_to_remove:
-            del state[key]
+        # Object.__getstate__ ne doit JAMAIS filtrer les attributs des sous-classes
+        # # # On supprime les clés privées (souvent nommées _NomClasse__attribut)
+        # # # Ici, on retire tous les attributs privés de 'Object' (ex: _Object__subject)
+        # # private_prefixes = [
+        # #     f"_{self.__class__.__name__}__",
+        # #     "_SynchronizedObject__",
+        # # ]
+        # # On supprime uniquement les attributs STRICTEMENT internes de Object/SynchronizedObject
+        # private_prefixes = [
+        #     "_Object__",
+        #     "_SynchronizedObject__",
+        # ]
+        # keys_to_remove = [
+        #     key
+        #     for key in state
+        #     if any(key.startswith(prefix) for prefix in private_prefixes)
+        # ]
+        # for key in keys_to_remove:
+        #     del state[key]
+
+        self.validate_state(state)
+        # ⚠️ Nettoyage uniquement des classes du framework, pas des subclasses métier
+        for key in list(state.keys()):
+            if key.startswith("_Object__") or key.startswith(
+                "_SynchronizedObject__"
+            ):
+                del state[key]
 
         # DEBUG : Affichage de l'état sérialisé pour vérification
         # log.debug(f"DEBUG - Object.__getstate__() renvoie : {state}")
+        print(f"DEBUG - Object.__getstate__() renvoie : {state}")
         #
         return state
 

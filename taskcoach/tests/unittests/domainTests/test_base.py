@@ -618,6 +618,133 @@ class ObjectTest(tctest.TestCase):
                 f"L'état contient une clé privée indésirable : {key}",
             )
 
+    # Tests for serialization safety (validate_state and protect_parent_keys)
+
+    def testValidateState_RaisesAssertionErrorWhenStatusIsMissing(self):
+        """
+        Vérifie que validate_state() lève une AssertionError quand une clé requise est absente.
+        """
+        incomplete_state = {
+            "subject": "test",
+            "description": "test",
+            # 'status' est manquant
+        }
+        with self.assertRaises(AssertionError) as context:
+            self.tcobject.validate_state(incomplete_state)
+        self.assertIn("status", str(context.exception))
+
+    def testValidateState_PassesWhenAllCoreKeysPresent(self):
+        """
+        Vérifie que validate_state() ne lève pas d'exception quand toutes les clés requises sont présentes.
+        """
+        complete_state = self.tcobject.__getstate__()
+        # La validation ne doit pas lever d'exception
+        try:
+            self.tcobject.validate_state(complete_state)
+        except AssertionError:
+            self.fail("validate_state() should not raise AssertionError with complete state")
+
+    def testProtectParentKeys_RaisesWhenParentKeyIsLost(self):
+        """
+        Vérifie que protect_parent_keys() détecte quand une clé héritée disparaît.
+        """
+        parent_state = {"id": "123", "status": 1, "subject": "test"}
+        child_state = {"subject": "test"}  # 'id' et 'status' manquent
+
+        with self.assertRaises(AssertionError) as context:
+            base.Object.protect_parent_keys(parent_state, child_state)
+        # Vérifier que le message d'erreur mentionne la clé perdue
+        error_msg = str(context.exception)
+        self.assertIn("Clé héritée perdue", error_msg)
+
+    def testProtectParentKeys_PassesWhenAllKeysArePresent(self):
+        """
+        Vérifie que protect_parent_keys() ne lève pas d'exception quand toutes les clés du parent sont présentes.
+        """
+        parent_state = {"id": "123", "status": 1, "subject": "test"}
+        child_state = {"id": "123", "status": 1, "subject": "test", "description": "new"}
+
+        # La méthode ne doit pas lever d'exception
+        try:
+            result = base.Object.protect_parent_keys(parent_state, child_state)
+            self.assertEqual(child_state, result)
+        except AssertionError:
+            self.fail("protect_parent_keys() should not raise AssertionError when all keys are present")
+
+    def testSerializationPreservesCoreAttributes(self):
+        """
+        Vérifie que la sérialisation préserve tous les attributs essentiels.
+        """
+        # Modifier plusieurs attributs de l'objet
+        self.tcobject.setSubject("Test Subject")
+        self.tcobject.setDescription("Test Description")
+        self.tcobject.setForegroundColor(wx.RED)
+        self.tcobject.setBackgroundColor(wx.GREEN)
+
+        # Sérialiser l'état
+        state = self.tcobject.__getstate__()
+
+        # Vérifier que tous les attributs essentiels sont présents
+        essential_keys = {"id", "status", "subject", "description", "creationDateTime",
+                         "modificationDateTime", "fgColor", "bgColor", "font", "icon",
+                         "selectedIcon", "ordering"}
+        for key in essential_keys:
+            self.assertIn(key, state, f"Key {key} missing from serialized state")
+
+        # Vérifier que les valeurs sont correctes
+        self.assertEqual("Test Subject", state["subject"])
+        self.assertEqual("Test Description", state["description"])
+        self.assertEqual(wx.RED, state["fgColor"])
+        self.assertEqual(wx.GREEN, state["bgColor"])
+
+    def testStateRoundTrip_PreservesAllData(self):
+        """
+        Vérifie que les données ne sont pas perdues lors d'une sérialisation/désérialisation complète.
+        """
+        # Configurer un objet avec des valeurs
+        self.tcobject.setSubject("Test Subject")
+        self.tcobject.setDescription("Test Description")
+        self.tcobject.setForegroundColor(wx.RED)
+        self.tcobject.setBackgroundColor(wx.GREEN)
+        self.tcobject.setFont(wx.SWISS_FONT)
+        self.tcobject.setIcon("test_icon")
+        self.tcobject.setSelectedIcon("selected_icon")
+        self.tcobject.setOrdering(42)
+
+        # Obtenir l'état
+        original_state = self.tcobject.__getstate__()
+
+        # Créer un nouvel objet et lui donner le même état
+        new_object = base.Object()
+        new_object.__setstate__(original_state)
+
+        # Obtenir le nouvel état
+        new_state = new_object.__getstate__()
+
+        # Vérifier que les états sont identiques
+        self.assertEqual(original_state, new_state)
+
+    def testSynchronizedObjectSerializationPreservesStatus(self):
+        """
+        Vérifie que le status de SynchronizedObject est préservé lors de la sérialisation.
+        """
+        # Marquer l'objet comme supprimé
+        self.tcobject.markDeleted()
+
+        # Sérialiser
+        state = self.tcobject.__getstate__()
+
+        # Vérifier que le status est préservé
+        self.assertIn("status", state)
+        self.assertEqual(base.SynchronizedObject.STATUS_DELETED, state["status"])
+
+        # Créer un nouvel objet et restaurer l'état
+        new_object = base.Object()
+        new_object.__setstate__(state)
+
+        # Vérifier que le status a été restauré
+        self.assertEqual(base.SynchronizedObject.STATUS_DELETED, new_object.getStatus())
+
 
 class CompositeObjectTest(tctest.TestCase):
     def setUp(self):

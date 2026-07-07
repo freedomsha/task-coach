@@ -182,6 +182,9 @@ Considérations supplémentaires :
 En abordant ces points, vous pouvez améliorer davantage la classe Object et la rendre plus robuste, maintenable et adaptable aux exigences futures.
 """
 
+# Règle d’or
+# 👉 Chaque classe doit gérer uniquement ses propres clés, et laisser les parents inchangés
+
 # TODO : faire log !
 import functools
 import logging

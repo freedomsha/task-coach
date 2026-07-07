@@ -138,10 +138,29 @@ Exemple :
 # . state = {...} reconstruction manuelle
 # . pop() sur les clés du parent
 
+# Étape 1 : Commencer par la version "Safe mais minimal"
+#
+# Appliquer les 4 règles à Owner, Task, et Category.
+# Ajouter les verrous architecturaux (assert, protect_parent_keys) pour éviter les régressions.
+# Tester en profondeur : Vérifie que status, id, et les autres clés parent sont toujours présentes.
+# → Cela résoudra le bug actuel et te donnera une base solide.
+
+# Étape 2 : Passe à la version "Framework de sérialisation"
+#
+# Créer un SerializationMixin qui implémente __getstate__ et __setstate__ de manière générique.
+# Faire hériter Owner, Task, etc. de ce mixin.
+# Supprimer les overrides manuels au fur et à mesure.
+# → Cela permettra de scaler sans risque.
+
+# Étape 3 (Optionnelle) : Auto-génération si besoin
+#
+# Si beaucoup de nouvelles classes >100 ou des règles de sérialisation complexes, passer à l'introspection.
+
 # Python 3.6+ est requis pour les f-strings utilisées dans ce code.
 # Python 3 utilise un typage dynamique, ce qui permet de créer des méthodes et des propriétés à la volée.
 import logging
 from taskcoachlib import patterns
+from taskcoachlib.domain.base import Object
 
 log = logging.getLogger(__name__)
 
@@ -719,6 +738,13 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         - Ajoute uniquement les objets possédés.
         - Ne supprime aucune clé héritée (status, id, etc.).
 
+        Sérialisation sûre de Owner.
+
+        Règles :
+        - ne touche jamais aux clés du parent
+        - ajoute uniquement les objets possédés
+        - toujours append-only
+
         Cette méthode renvoie un dictionnaire contenant l'état de l'instance,
         y compris la liste des objets propriétaires.
 
@@ -738,17 +764,37 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # 🎯 Objectif du nettoyage
         #
         # On veut :
-        #
         # ✔ conserver totalement l’état du parent
         # ✔ ajouter seulement l’attribut “owned”
         # ✔ éviter toute transformation destructive
         # ✔ garantir compatibilité Object.__setstate__ (donc status toujours présent)
         # ✔ supprimer les zones instables
+        # # 1. état parent (CRITIQUE : status/id viennent de là)
+        # state = safe_super_state(instance, klass)
         # 🔹 Récupère la méthode __getstate__ du parent si elle existe
-        parent_getstate = getattr(super(klass, instance), "__getstate__", None)
+        # parent_getstate = getattr(super(klass, instance), "__getstate__", None)
+        # parent_getstate = instance.safe_super_state(instance, klass)  # TypeError: 'dict' object is not callable
+        # parent_getstate = dict(super(klass, instance).__getstate__()) else {}
+        parent_getstate = super(klass, instance).__getstate__()
+        # parent_getstate = Object.validate_state(
+        #     super(klass, instance).__getstate__()
+        # )
+        print("OWNER parent_getstate =", parent_getstate)
+
+        # # Les assertions servent à vérifier que le parent a bien fourni son état.
+        # missing = SERIALIZATION_CORE_KEYS - set(parent_getstate.keys())
+        #
+        # assert not missing, (
+        #     f"Sérialisation incomplète dans " f"{klass.__name__}: {missing}"
+        # )
+        # Vérifier l'état de l'instance avant de l'appeler
+        instance.validate_state(parent_getstate)
 
         # 🔹 Appel du parent ou dictionnaire vide si absent
-        state = parent_getstate() if parent_getstate else {}
+        # state = parent_getstate() if parent_getstate else {}
+        # state = parent_getstate()
+        state = dict(parent_getstate)
+        # state = parent_getstate.copy()
 
         # 🔹 Sécurité : on copie pour éviter effets de bord
         state = dict(state)
@@ -756,11 +802,16 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # 🔹 Nom de l'attribut privé (ex: _OwnerUnderTest__foos)
         attr_name = _attribute_name("")
 
-        # 🔹 Récupération des objets possédés
+        # 🔹 Récupération des objets possédés safe
         owned_objects = getattr(instance, attr_name, [])
 
         # 🔹 Ajout dans le state SANS supprimer le reste
         state[f"{owned_type}s"] = list(owned_objects)
+        # state[f"{owned_type}s"] = list(
+        #     getattr(instance, _attribute_name(""), [])
+        # )
+
+        Object.protect_parent_keys(parent_getstate, state)
 
         # 🔹 Debug minimal utile
         print(
@@ -779,9 +830,11 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         Définissez l'état de l'instance pendant la désérialisation.
 
         Reconstruit l'état de l'objet Owner depuis un dictionnaire sérialisé.
+        Désérialisation sûre.
 
-        - Applique d'abord l'état du parent (Object/SynchronizedObject)
-        - Puis restaure les objets possédés
+        Règles :
+        - toujours en premier, appliquer d'abord l'état du parent (Object/SynchronizedObject)
+        - puis restauration locale des objets possédés
 
         Cette méthode définit l'état de l'instance en fonction du dictionnaire
         fourni, y compris la liste des objets possédés.
@@ -794,17 +847,21 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # 🔹 Récupère __setstate__ du parent si existant
         parent_setstate = getattr(super(klass, instance), "__setstate__", None)
 
+        # Les assertions servent à vérifier que le parent a bien fourni son état.
+        missing = Object.SERIALIZATION_CORE_KEYS - set(state.keys())
+
+        assert not missing, (
+            f"Etat corrompu pour " f"{klass.__name__}: {missing}"
+        )
+
         # 🔹 Applique l'état parent (IMPORTANT pour status, id, etc.)
         if parent_setstate:
             parent_setstate(state, event=event)
 
-        # 🔹 Nom de l'attribut privé
-        attr_name = _attribute_name("")
-
         # 🔹 Récupère les objets sérialisés (ex: foos)
         owned_objects = state.get(f"{owned_type}s", [])
 
-        # 🔹 Applique la liste restaurée
+        # 🔹 Applique la liste restaurée, injection contrôlée
         setObjects(instance, owned_objects, event=event)
 
     klass.__setstate__ = setstate

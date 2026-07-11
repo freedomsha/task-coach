@@ -196,7 +196,7 @@ class Attribute(object):
         # Cela garantit que le contexte de l'instance est préservé lors de l'appel du gestionnaire d'événements, et évite les erreurs potentielles liées à la manipulation de __func__.
         # En résumé, la correction technique consiste à appeler directement la méthode d'événement sans tenter de manipuler __func__, ce qui est plus sûr et plus conforme aux conventions de Python 3.
         # Définition de la méthode set corrigée pour éviter les problèmes liés à __func__ en Python 3.
-        # Définition du propriétaire avec une référence faible pour éviter les fuites de mémoire.:
+        # Définition du propriétaire avec une référence faible pour éviter les fuites de mémoire. :
         owner = self.__owner()
         # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
         if owner is not None:

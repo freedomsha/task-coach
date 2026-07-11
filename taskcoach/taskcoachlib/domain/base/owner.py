@@ -460,16 +460,19 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
                 instance.__dict__,
                 _attribute_name(""),
             )
+
         # Filtrer les objets supprimés
         result = [
             obj
             for obj in owned_objects  # TypeError: 'NoneType' object is not iterable  -> corrigé dans tast.py
             if obj is not None and not obj.isDeleted()
         ] or []
+
         # Inclure les enfants récursivement si nécessaire
         if recursive:
             for obj in result[:]:
                 result.extend(obj.children(recursive=True))
+
         print(
             f"owner.objects : retourne la liste des objets possédés par {name}, incluant éventuellement leurs enfants : {result}"
         )

@@ -28,14 +28,19 @@ class GetRelativePathTest(tctest.TestCase):
         self.assertEqual("", attachment.getRelativePath("/test", "/test"))
 
     def testPathIsSubDirOfBase(self):
-        self.assertEqual("subdir", attachment.getRelativePath("/test/subdir", "/test"))
+        self.assertEqual(
+            "subdir", attachment.getRelativePath("/test/subdir", "/test")
+        )
 
     def testBaseIsSubDirOfPath(self):
-        self.assertEqual("..", attachment.getRelativePath("/test", "/test/subdir"))
+        self.assertEqual(
+            "..", attachment.getRelativePath("/test", "/test/subdir")
+        )
 
     def testBaseAndPathAreDifferent(self):
         self.assertEqual(
-            os.path.join("..", "bar"), attachment.getRelativePath("/bar", "/foo")
+            os.path.join("..", "bar"),
+            attachment.getRelativePath("/bar", "/foo"),
         )
 
 
@@ -69,7 +74,8 @@ class FileAttachmentTest(tctest.TestCase):
         att = attachment.FileAttachment("/home/frank/attachment.txt")
         att.open("/home/jerome", openAttachment=self.openAttachment)
         self.assertEqual(
-            os.path.normpath(os.path.join("/home/frank/attachment.txt")), self.filename
+            os.path.normpath(os.path.join("/home/frank/attachment.txt")),
+            self.filename,
         )
 
     def testCopy(self):
@@ -78,11 +84,18 @@ class FileAttachmentTest(tctest.TestCase):
         # print(f"dir(copy)={dir(copy)}")
         # print(f"type(self.attachment.location)={type(self.attachment.location)}")
         # print(f"dir(self.attachment.location)={dir(self.attachment.location)}")
-        self.assertEqual(copy.location(), self.attachment.location)
-        self.attachment.setDescription("new")  # Attention, risque d'écraser self.__description
+        print("ORIGINAL LOCATION =", self.attachment.location())
+        print("COPY LOCATION     =", copy.location())
+
+        print("ORIGINAL SUBJECT =", self.attachment.subject())
+        print("COPY SUBJECT     =", copy.subject())
+        self.assertEqual(copy.location(), self.attachment.location())
+        self.attachment.setDescription(
+            "new"
+        )  # Attention, risque d'écraser self.__description
         # self.assertTrue(callable(copy.description), "description n'est plus une méthode !")
 
-        self.assertEqual(copy.location(), self.attachment.location)
+        self.assertEqual(copy.location(), self.attachment.location())
 
     def testLocationNotification(self):
         pub.subscribe(self.onEvent, self.attachment.locationChangedEventType())

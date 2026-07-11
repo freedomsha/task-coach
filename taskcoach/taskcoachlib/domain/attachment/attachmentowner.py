@@ -22,9 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Cette analyse approfondie fournit une base solide pour comprendre et corriger les problèmes rencontrés lors de la migration de TaskCoach vers Python 3.X, en s’appuyant sur les logs, le code source et les spécificités des versions de Python.
 
 from taskcoachlib.domain import base
+from taskcoachlib.domain.base import owner
+from taskcoachlib.domain.base.owner import DomainObjectOwnerMetaclass
 
 
-class AttachmentOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
+class AttachmentOwner(object, metaclass=DomainObjectOwnerMetaclass):
     """Classe Mixin pour d'autres objets de domaine pouvant avoir des pièces jointes.
 
     Attributes :
@@ -35,42 +37,58 @@ class AttachmentOwner(object, metaclass=base.DomainObjectOwnerMetaclass):
     # __metaclass__ = base.DomainObjectOwnerMetaclass
     __ownedType__ = "Attachment"
 
-    def __init__(self, *args, **kwargs):
-        self.__attachments = kwargs.pop("attachments", [])
-        # safe_super_init(AttachmentOwner, self, *args, **kwargs)
-        print(
-            f"AttachmentOwner.__init__ : récupère attachments = {self.__attachments}."
-        )
-        # Transmet les arguments uniquement si le parent **n'est pas `object`**
-        # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
-        if type(self).__mro__[1] is not object:
-            try:
-                super().__init__(*args, **kwargs)
-            except TypeError:
-                super().__init__()
-        else:
-            super().__init__()  # Sécurisé pour `object`
+    # Laisser la métaclasse DomainObjectOwnerMetaclass fournir
+    # automatiquement le constructeur (owner.constructor). Ne
+    # redéfinissons pas __init__ ici car cela empêche la
+    # métaclasse d'initialiser correctement la liste des pièces
+    # jointes (et casse la logique de copie).
 
-    @classmethod
-    def attachmentAddedEventType(class_):
-        """Retourner la commande d'ajout d'une pièce jointe sous forme de chaîne de caractères."""
-        # like taskcoachlib/patterns/observer/addItemEventType
-        # and taskcoachlib/domain/base/owner/noteAddedEventType
-        # return '%s.add' % cls
-        return f"{class_}.add"
-        pass
-
-    @classmethod
-    def attachmentRemovedEventType(class_):
-        """Retourner la commande de suppression d'une pièce jointe sous forme de chaîne de caractères."""
-        # like taskcoachlib/patterns/observer/removeItemEventType
-        # and taskcoachlib/domain/base/owner/noteRemovedEventType
-        # return '%s.remove' % cls
-        return f"{class_}.remove"
-        pass
-
-    def attachments(self):
-        """Retourne la liste des pièces jointes."""
-        print("AttachmentOwner.attachments est appelé !")
-        return self.__attachments
-        pass
+    # Toutes ces méthodes sont définies dans owner.py !
+    # @classmethod
+    # def attachmentAddedEventType(class_):
+    #     """Retourner la commande d'ajout d'une pièce jointe sous forme de chaîne de caractères."""
+    #     # like taskcoachlib/patterns/observer/addItemEventType
+    #     # and taskcoachlib/domain/base/owner/noteAddedEventType
+    #     # return '%s.add' % cls
+    #     return f"{class_}.add"
+    #     pass
+    #
+    # @classmethod
+    # def attachmentRemovedEventType(class_):
+    #     """Retourner la commande de suppression d'une pièce jointe sous forme de chaîne de caractères."""
+    #     # like taskcoachlib/patterns/observer/removeItemEventType
+    #     # and taskcoachlib/domain/base/owner/noteRemovedEventType
+    #     # return '%s.remove' % cls
+    #     return f"{class_}.remove"
+    #     pass
+    #
+    # def attachments(self):
+    #     """Retourne la liste des pièces jointes."""
+    #     print(
+    #         f"AttachmentOwner.attachments est appelé et retourne {self.__attachments}!"
+    #     )
+    #     return self.__attachments
+    #     pass
+    #
+    # def addAttachments(self, param, **kwargs):
+    #     """Ajouter une ou plusieurs pièces jointes à la tâche."""
+    #     print(
+    #         f"Task.addAttachments : Ajout de pièces jointes à la tâche {self.id}."
+    #     )
+    #     print(f"AVANT addAttachment : {self.attachments()}")
+    #     # self.addAttachments(param)
+    #
+    #     # [Previous line repeated 981 more times]
+    #     # RecursionError: maximum recursion depth exceeded
+    #     # pub.sendMessage("task.attachments.added")
+    #     super().addAttachments(param, **kwargs)
+    #     # pass
+    #     print(
+    #         f"AtachmentOwner.addAttachments : APRES super().addAttachment : {self.attachments()}"
+    #     )
+    #
+    # @classmethod
+    # def attachmentsChangedEventType(cls):
+    #     """Retourne le type d'événement à publier lorsque les pièces jointes changent."""
+    #     # pass
+    #     return "pubsub.task.attachments"

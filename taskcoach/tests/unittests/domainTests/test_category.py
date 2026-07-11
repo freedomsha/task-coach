@@ -31,7 +31,9 @@ class CategoryTest(tctest.TestCase):
         self.categorizable = categorizable.CategorizableCompositeObject(
             subject="parent"
         )
-        self.child = categorizable.CategorizableCompositeObject(subject="child")
+        self.child = categorizable.CategorizableCompositeObject(
+            subject="child"
+        )
 
     # State:
 
@@ -48,7 +50,9 @@ class CategoryTest(tctest.TestCase):
         self.assertEqual(None, self.category.__getstate__()["bgColor"])
 
     def testGetState_ExclusiveSubcategories(self):
-        self.assertEqual(False, self.category.__getstate__()["exclusiveSubcategories"])
+        self.assertEqual(
+            False, self.category.__getstate__()["exclusiveSubcategories"]
+        )
 
     def testSetState_ExclusiveSubcategories(self):
         state = self.category.__getstate__()
@@ -96,7 +100,9 @@ class CategoryTest(tctest.TestCase):
         eventType = category.Category.subjectChangedEventType()
         self.registerObserver(eventType)
         self.category.setSubject("New")
-        self.assertEqual([patterns.Event(eventType, self.category, "New")], self.events)
+        self.assertEqual(
+            [patterns.Event(eventType, self.category, "New")], self.events
+        )
 
     def testSetSubjectCausesNoNotificationWhenNewSubjectEqualsOldSubject(self):
         eventType = category.Category.subjectChangedEventType()
@@ -176,8 +182,12 @@ class CategoryTest(tctest.TestCase):
     # Equality:
 
     def testEquality_SameSubjectAndNoParents(self):
-        self.assertNotEqual(category.Category(self.category.subject()), self.category)
-        self.assertNotEqual(self.category, category.Category(self.category.subject()))
+        self.assertNotEqual(
+            category.Category(self.category.subject()), self.category
+        )
+        self.assertNotEqual(
+            self.category, category.Category(self.category.subject())
+        )
 
     def testEquality_SameSubjectDifferentParents(self):
         self.category.addChild(self.subCategory)
@@ -245,7 +255,13 @@ class CategoryTest(tctest.TestCase):
     def testCopy_ChildrenAreCopied(self):
         self.category.addChild(self.subCategory)
         copy = self.category.copy()
-        self.assertEqual(self.subCategory.subject(), copy.children()[0].subject())
+        print("Category.__mro__ :", category.Category.__mro__)
+        print(type(self.category).__mro__)
+        print("self.category.children() :", self.category.children())
+        print("copy.children() :", copy.children())
+        self.assertEqual(
+            self.subCategory.subject(), copy.children()[0].subject()
+        )
         #                                            ~~~~~~~~~~~~~~~^^^
         # IndexError: list index out of range
 
@@ -305,12 +321,16 @@ class CategoryTest(tctest.TestCase):
     def testSubCategoryWithoutForegroundColorHasParentForegroundColor(self):
         self.category.addChild(self.subCategory)
         self.category.setForegroundColor(wx.RED)
-        self.assertEqual(wx.RED, self.subCategory.foregroundColor(recursive=True))
+        self.assertEqual(
+            wx.RED, self.subCategory.foregroundColor(recursive=True)
+        )
 
     def testSubCategoryWithoutBackgroundColorHasParentBackgroundColor(self):
         self.category.addChild(self.subCategory)
         self.category.setBackgroundColor(wx.RED)
-        self.assertEqual(wx.RED, self.subCategory.backgroundColor(recursive=True))
+        self.assertEqual(
+            wx.RED, self.subCategory.backgroundColor(recursive=True)
+        )
 
     def testSubCategoryWithoutForegroundColorHasNoOwnForegroundColor(self):
         self.category.addChild(self.subCategory)
@@ -345,7 +365,9 @@ class CategoryTest(tctest.TestCase):
         self.registerObserver(eventType)
         self.category.addCategorizable(self.categorizable)
         self.category.setIcon("icon")
-        self.assertEqual([patterns.Event(eventType, self.categorizable)], self.events)
+        self.assertEqual(
+            [patterns.Event(eventType, self.categorizable)], self.events
+        )
 
     def testSelectedIconChangedNotification(self):
         eventType = (
@@ -354,7 +376,9 @@ class CategoryTest(tctest.TestCase):
         self.registerObserver(eventType)
         self.category.addCategorizable(self.categorizable)
         self.category.setSelectedIcon("icon")
-        self.assertEqual([patterns.Event(eventType, self.categorizable)], self.events)
+        self.assertEqual(
+            [patterns.Event(eventType, self.categorizable)], self.events
+        )
 
     # Notes:
 
@@ -385,7 +409,9 @@ class CategoryTest(tctest.TestCase):
         eventType = category.Category.exclusiveSubcategoriesChangedEventType()
         self.registerObserver(eventType)
         self.category.makeSubcategoriesExclusive()
-        self.assertEqual([patterns.Event(eventType, self.category, True)], self.events)
+        self.assertEqual(
+            [patterns.Event(eventType, self.category, True)], self.events
+        )
 
     def testNoExclusiveSubcategoriesNotificationWhenNotChanged(self):
         eventType = category.Category.exclusiveSubcategoriesChangedEventType()
@@ -416,6 +442,7 @@ class CategoryTest(tctest.TestCase):
                 self.category.categorizableAddedEventType(),
                 self.category.categorizableRemovedEventType(),
                 self.category.exclusiveSubcategoriesChangedEventType(),
+                self.category.stylePriorityChangedEventType(),
             ],
             self.category.modificationEventTypes(),
         )

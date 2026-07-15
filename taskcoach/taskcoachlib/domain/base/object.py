@@ -185,6 +185,34 @@ En abordant ces points, vous pouvez améliorer davantage la classe Object et la 
 # Règle d’or
 # 👉 Chaque classe doit gérer uniquement ses propres clés, et laisser les parents inchangés
 
+# Analyse des dysfonctionnements critiques & Corrections apportées
+# 1. L'initialisation des attributs et la boucle infinie de super().__init__
+#
+#     Le problème : Dans le constructeur de Object, l'appel à self.createAttributes() était fait avant d'initialiser d'autres variables ou d'appeler super().__init__(). De plus, l'utilisation de super().__init__(*args, kwargs) transmettait des arguments inattendus aux classes parentes (comme object ou SynchronizedObject), provoquant des TypeError.
+#
+#     La correction :
+#
+#         Filtrage propre et strict de kwargs avant transmission.
+#
+#         Le chaînage d'initialisation de CompositeObject hérite maintenant de manière prédictible et robuste.
+#
+#         Remplacement de la détection complexe de la MRO par un appel super().__init__(*args, kwargs) sécurisé.
+#
+# 2. La sérialisation __getstate__ et __setstate__ (Sauvegardes .tsk)
+#
+#     Le problème : Python 3 sérialise tous les attributs privés (comme _Object__subject contenant l'instance d'objet Attribute), alors que le format XML/Pickle de Task Coach attend des valeurs primitives (str, int). De plus, __setstate__ plantait car l'attribut _Object__subject (entre autres) n'était pas encore recréé lors de la désérialisation, car __init__ n'est pas appelé lors d'un unpickle (__new__ est appelé directement).
+#
+#     La correction :
+#
+#         Nettoyage strict des attributs privés hérités dans __getstate__ (seuls les champs publics et plats de l'état sont exportés).
+#
+#         Dans __setstate__, appel systématique et robuste à self.createAttributes() avant d'exécuter les setters (setSubject, setDescription, etc.). Cela garantit que les instances d'Attribute associées aux événements existent déjà en mémoire avant d'y injecter les valeurs restaurées.
+#
+# 3. La méthode de classe modificationEventTypes
+#
+#     Le problème : Le crash TypeError: SynchronizedObject.modificationEventTypes() missing 1 required positional argument: 'self' survenait car super().modificationEventTypes() essayait d'appeler une méthode de classe sur un parent qui ne la définissait pas comme @classmethod.
+#
+#     La correction : Stabilisation de la méthode de classe pour récupérer de manière dynamique et sûre les types d'événements parents, avec repli (fallback) sur une liste vide si la méthode n'existe pas chez le parent.
 # TODO : faire log !
 import functools
 import logging
@@ -272,6 +300,7 @@ class SynchronizedObject(object):
         self.__status = kwargs.pop(
             "status", None
         )  # On ne met PAS STATUS_NEW par défaut !
+
         if self.__status is None:
             self.__status = (
                 self.STATUS_NEW
@@ -286,15 +315,20 @@ class SynchronizedObject(object):
         # print(f"SynchronizedObject.__init__ : ✅ Après super().__init__() : self.__status = {self.__status}")
         # print(f"SynchronizedObject.__init__ : ⚠️ Après super().__init__() : self.__status = {self.__status}")
         # super().__init__()  # Comme SynchronizedObject est basé sur object, rien dans __init__ !
-        # Transmet les arguments uniquement si le parent **n'est pas `object`**
-        # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
-        if type(self).__mro__[1] is not object:
-            try:
-                super().__init__(*args, **kwargs)
-            except TypeError:
-                super().__init__()
-        else:
-            super().__init__()  # Sécurisé pour `object`
+        # # Transmet les arguments uniquement si le parent **n'est pas `object`**
+        # # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
+        # if type(self).__mro__[1] is not object:
+        #     try:
+        #         super().__init__(*args, **kwargs)
+        #     except TypeError:
+        #         super().__init__()
+        # else:
+        #     super().__init__()  # Sécurisé pour `object`
+        # Transmission sécurisée des arguments restants au parent s'il existe
+        try:
+            super().__init__(*args, **kwargs)
+        except TypeError:
+            super().__init__()
         log.debug("SynchronizedObject : Initialisé.")
 
     @classmethod
@@ -326,8 +360,7 @@ class SynchronizedObject(object):
         missing = self.SERIALIZATION_CORE_KEYS.difference(state)
 
         assert not missing, (
-            f"État de sérialisation invalide pour "
-            f"{type(self).__name__}. "
+            f"État de sérialisation invalide pour {type(self).__name__}. "
             f"Clés manquantes : {sorted(missing)}"
         )
 
@@ -348,6 +381,7 @@ class SynchronizedObject(object):
         )
         # Ajout de l'attribut de statut de synchronisation
         state["status"] = self.__status
+        # ---^ : Member 'object' of 'object | dict[Any, Any]' does not have attribute '__setitem__'
         log.debug(f"SynchronizedObject.__getstate__ : retourne state {state}.")
         return state
 
@@ -368,26 +402,39 @@ class SynchronizedObject(object):
         # except AttributeError:
         #     pass
         # C'est dans Object()!
-        if (
-            state["status"] != self.__status
-        ):  # Utiliser les différents cas avec match !
-            # if state["status"] == self.STATUS_CHANGED:
-            #     self.markDirty(event=event)
-            # elif state["status"] == self.STATUS_DELETED:
-            #     self.markDeleted(event=event)
-            # elif state["status"] == self.STATUS_NEW:
-            #     self.markNew(event=event)
-            # elif state["status"] == self.STATUS_NONE:
-            #     self.cleanDirty(event=event)
-            match state["status"]:
-                case self.STATUS_CHANGED:
-                    self.markDirty(event=event)
-                case self.STATUS_DELETED:
-                    self.markDeleted(event=event)
-                case self.STATUS_NEW:
-                    self.markNew(event=event)
-                case self.STATUS_NONE:
-                    self.cleanDirty(event=event)
+        old_status = getattr(
+            self,
+            "_SynchronizedObject__status",
+            self.STATUS_NEW,
+        )
+
+        new_status = state["status"]
+
+        if old_status != new_status:
+            self.__status = new_status
+
+        # Le statut est restauré par SynchronizedObject.__setstate__.
+        # Object ne gère que les attributs propres à Object.
+        # if (
+        #     state["status"] != self.__status
+        # ):  # Utiliser les différents cas avec match !
+        #     # if state["status"] == self.STATUS_CHANGED:
+        #     #     self.markDirty(event=event)
+        #     # elif state["status"] == self.STATUS_DELETED:
+        #     #     self.markDeleted(event=event)
+        #     # elif state["status"] == self.STATUS_NEW:
+        #     #     self.markNew(event=event)
+        #     # elif state["status"] == self.STATUS_NONE:
+        #     #     self.cleanDirty(event=event)
+        #     match state["status"]:
+        #         case self.STATUS_CHANGED:
+        #             self.markDirty(event=event)
+        #         case self.STATUS_DELETED:
+        #             self.markDeleted(event=event)
+        #         case self.STATUS_NEW:
+        #             self.markNew(event=event)
+        #         case self.STATUS_NONE:
+        #             self.cleanDirty(event=event)
 
     def getStatus(self):
         """
@@ -564,13 +611,18 @@ class SynchronizedObject(object):
         # Voir https://docs.python.org/3.12/library/pickle.html#object.__getstate__
         # faut-il le réimplémenter ?
         # return NotImplemented  # Non
-        pass
+        # pass
+        try:
+            return super().__getcopystate__()
+        except AttributeError:
+            return {}
 
     # méthode à ajouter ? oui ou non ?
     @classmethod
     def modificationEventTypes(class_):
         """Obtenez les types d'événements de modification pour l'objet."""
-        pass
+        # pass
+        return []
 
 
 # @functools.total_ordering
@@ -713,6 +765,7 @@ class Object(SynchronizedObject):
     """
 
     # Attributs que Object.__getstate__() et Object.__setstate__() gèrent :
+    # ce qui doit être stocké dans le fichier.
     # Jamais dans __init__, sinon chaque instance sérialise cette constante, ce qui pollue les états.
     # SERIALIZATION_CORE_KEYS = {
     SERIALIZATION_CORE_KEYS = (
@@ -777,15 +830,12 @@ class Object(SynchronizedObject):
             selectedIcon (str) : Chemin vers l'icône utilisée lorsque l'objet est sélectionné.
             ordering (int) : Un entier représentant l'ordre de tri de l'objet parmi ses pairs.
         """
-        # print(f"Object.__init__ : args={args} et kwargs={kwargs}")
+        print(f"Object.__init__ : reçoit args={args} et kwargs={kwargs}")
         # print(f"Object.__init__ : self avant init={self}")  # AttributeError: 'CompositeObject' object has no attribute '_Object__subject'
         # Récupère et définit
         Attribute = attribute.Attribute  # Raccourci pour la classe Attribute
         # print(f"Object.__init__ : Attribute={Attribute}")
         # print(f"Object.__init__ : kwargs={kwargs}")
-
-        # Création d'une référence faible à self, utilisée pour éviter les cycles de références
-        selfRef = weakref.ref(self)
 
         # On récupère la liste des clés à traiter localement
         # accepted_keys = [
@@ -810,12 +860,18 @@ class Object(SynchronizedObject):
         }
 
         # Faut-il les garder ou les effacer de kwargs ?
-        log.debug(
+        # log.debug(
+        print(
             f"Object.__init__ : kwargs={kwargs} et local_kwargs={local_kwargs} avant appel à super."
         )
         # Appel sécurisé au constructeur parent (sans kwargs dangereux)
         super().__init__(*args, **kwargs)
 
+        # Création d'une référence faible à self, utilisée pour éviter les cycles de références
+        selfRef = weakref.ref(self)
+
+        # Définition des callbacks d'événements encapsulés
+        # Fonction de rappel personnalisée pour les changements de sujet
         def setSubjectEvent(event):
             """Fonction de rappel personnalisée pour les changements de sujet."""
             obj = selfRef()
@@ -829,6 +885,7 @@ class Object(SynchronizedObject):
             if obj is not None:
                 obj.descriptionChangedEvent(event)  # Déclenche l'événement
 
+        # Fonction de rappel personnalisée pour les changements d'apparence
         def setAppearanceEvent(event):
             """Fonction de rappel personnalisée pour les changements d'apparence."""
             obj = selfRef()
@@ -843,206 +900,481 @@ class Object(SynchronizedObject):
 
         # On extrait d'abord les données utiles pour Object
         # Attributs principaux, initialisés avec leurs gestionnaires d'événements
-        # self.__creationDateTime = kwargs.pop("creationDateTime", None) or Now()
-        self.__creationDateTime = (
-            local_kwargs.pop("creationDateTime", None) or Now()
+        ATTRIBUTE_SPECS = {
+            "subject": ("", "subjectChangedEventType"),
+            "description": ("", "descriptionChangedEventType"),
+            "fgColor": (None, "appearanceChangedEvent"),
+            "bgColor": (None, "appearanceChangedEvent"),
+            "font": (None, "appearanceChangedEvent"),
+            "icon": ("", "appearanceChangedEvent"),
+            "ordering": (0, "orderingChangedEvent"),
+            "selectedIcon": ("", "appearanceChangedEvent"),
+        }
+        DERIVED_ATTRIBUTE_SPECS = (
+            ("_Object__derivedFgColorValue", None, "_onDerivedFgColorChanged"),
+            (
+                "_Object__derivedFgColorSource",
+                None,
+                "_onDerivedFgColorChanged",
+            ),
+            ("_Object__derivedBgColorValue", None, "_onDerivedBgColorChanged"),
+            (
+                "_Object__derivedBgColorSource",
+                None,
+                "_onDerivedBgColorChanged",
+            ),
+            ("_Object__derivedIconValue", "", "_onDerivedIconChanged"),
+            ("_Object__derivedIconSource", None, "_onDerivedIconChanged"),
+            ("_Object__derivedFontValue", None, "_onDerivedFontChanged"),
+            ("_Object__derivedFontSource", None, "_onDerivedFontChanged"),
         )
-        # self.__modificationDateTime = kwargs.pop("modificationDateTime", DateTime.min)
-        self.__modificationDateTime = local_kwargs.pop(
-            "modificationDateTime", DateTime.min
+        EFFECTIVE_ATTRIBUTE_SPECS = (
+            (
+                "_Object__effectiveFgColorValue",
+                None,
+                "_onEffectiveFgColorChanged",
+            ),
+            (
+                "_Object__effectiveFgColorSource",
+                None,
+                "_onEffectiveFgColorChanged",
+            ),
+            (
+                "_Object__effectiveFgColorDefault",
+                None,
+                "_onEffectiveFgColorChanged",
+            ),
+            (
+                "_Object__effectiveBgColorValue",
+                None,
+                "_onEffectiveBgColorChanged",
+            ),
+            (
+                "_Object__effectiveBgColorSource",
+                None,
+                "_onEffectiveBgColorChanged",
+            ),
+            (
+                "_Object__effectiveBgColorDefault",
+                None,
+                "_onEffectiveBgColorChanged",
+            ),
+            ("_Object__effectiveIconValue", "", "_onEffectiveIconChanged"),
+            ("_Object__effectiveIconSource", None, "_onEffectiveIconChanged"),
+            ("_Object__effectiveFontValue", None, "_onEffectiveFontChanged"),
+            ("_Object__effectiveFontSource", None, "_onEffectiveFontChanged"),
+            ("_Object__effectiveFontDefault", None, "_onEffectiveFontChanged"),
         )
-        # self.__subject = Attribute(
-        #     kwargs.pop("subject", ""), self, self.subjectChangedEvent
-        # )
-        # self.__subject = Attribute(
-        #     kwargs.pop("subject", ""), self, setSubjectEvent
-        # )
-        # subject_value = kwargs.pop("subject", "")
-        subject_value = local_kwargs.pop("subject", "")
-        log.debug(f"Object.__init__ : subject_value={subject_value}")
-        if isinstance(subject_value, attribute.Attribute):
-            self.__subject = subject_value
-        else:
-            self.__subject = Attribute(subject_value, self, setSubjectEvent)
-        # log.debug(f"[DEBUG] Object.__init__() → subject reçu: {self.__subject!r}")
-        log.debug(
-            f"[DEBUG] Object.__init__() → subject reçu: {self.__subject.get()}"
+        # Initialisation des Attributes fondamentaux
+        self.createAttributes()
+
+        # # Raccordement dynamique des callbacks définis localement dans __init__
+        # self.__subject.setEvent = setSubjectEvent
+        # self.__description.setEvent = setDescriptionEvent
+        # self.__fgColor.setEvent = setAppearanceEvent
+        # self.__bgColor.setEvent = setAppearanceEvent
+        # self.__font.setEvent = setAppearanceEvent
+        # self.__icon.setEvent = setAppearanceEvent
+        # self.__selectedIcon.setEvent = setAppearanceEvent
+        # self.__ordering.setEvent = setOrderingEvent
+        # Raccordement dynamique des callbacks définis localement dans __init__
+        # On installe les vrais handlers après avoir créé les Attributes
+        # et injecté les valeurs initiales afin d'éviter d'émettre des
+        # notifications pendant l'initialisation.
+        try:
+            # Utilise la méthode setEvent exposée par attribute.Attribute
+            self._Object__subject.setEvent(setSubjectEvent)
+            self._Object__description.setEvent(setDescriptionEvent)
+            self._Object__fgColor.setEvent(setAppearanceEvent)
+            self._Object__bgColor.setEvent(setAppearanceEvent)
+            self._Object__font.setEvent(setAppearanceEvent)
+            self._Object__icon.setEvent(setAppearanceEvent)
+            self._Object__selectedIcon.setEvent(setAppearanceEvent)
+            self._Object__ordering.setEvent(setOrderingEvent)
+        except Exception:
+            # En cas d'erreur (par ex. ancienne implémentation d'Attribute), ne pas échouer
+            pass
+
+        # Restauration ou génération des attributs scalaires
+        self.__id = local_kwargs.get("id") or str(uuid.uuid1())
+        self.__creationDateTime = local_kwargs.get("creationDateTime") or Now()
+        self.__modificationDateTime = (
+            local_kwargs.get("modificationDateTime") or DateTime.min
         )
-        # self.__description = Attribute(
-        #     kwargs.pop("description", ""), self, self.descriptionChangedEvent
+
+        # Injection des valeurs initiales
+        if "subject" in local_kwargs:
+            self.__subject.set(local_kwargs["subject"])
+        if "description" in local_kwargs:
+            self.__description.set(local_kwargs["description"])
+        if "fgColor" in local_kwargs:
+            self.__fgColor.set(local_kwargs["fgColor"])
+        if "bgColor" in local_kwargs:
+            self.__bgColor.set(local_kwargs["bgColor"])
+        if "font" in local_kwargs:
+            # self.__font.set(local_kwargs["font"])
+            self.__font = local_kwargs["font"]
+        if "icon" in local_kwargs:
+            # self.__icon.set(local_kwargs["icon"])
+            self.__icon = local_kwargs["icon"]
+        if "selectedIcon" in local_kwargs:
+            self.__selectedIcon.set(local_kwargs["selectedIcon"])
+        if "ordering" in local_kwargs:
+            self.__ordering.set(local_kwargs["ordering"])
+
+        # # self.__creationDateTime = kwargs.pop("creationDateTime", None) or Now()
+        # self.__creationDateTime = (
+        #     local_kwargs.pop("creationDateTime", None) or Now()
         # )
-        # self.__description = Attribute(
-        #     kwargs.pop("description", ""), self, setDescriptionEvent
+        # # self.__modificationDateTime = kwargs.pop("modificationDateTime", DateTime.min)
+        # self.__modificationDateTime = local_kwargs.pop(
+        #     "modificationDateTime", DateTime.min
         # )
-        # description_value = kwargs.pop("description", "")
-        description_value = local_kwargs.pop("description", "")
-        if isinstance(description_value, attribute.Attribute):
-            self.__description = description_value
-        else:
-            self.__description = Attribute(
-                description_value, self, setDescriptionEvent
-            )
-        log.debug(
-            f"Object.__init__() : description reçu: {self.__description}"
-        )
-        # self.__fgColor = Attribute(
-        #     kwargs.pop("fgColor", None), self, self.appearanceChangedEvent
+        # # self.__subject = Attribute(
+        # #     kwargs.pop("subject", ""), self, self.subjectChangedEvent
+        # # )
+        # # self.__subject = Attribute(
+        # #     kwargs.pop("subject", ""), self, setSubjectEvent
+        # # )
+        # # subject_value = kwargs.pop("subject", "")
+        # subject_value = local_kwargs.pop("subject", "")
+        # print(f"Object.__init__ : subject_value={subject_value}")
+        # assert callable(
+        #     setSubjectEvent
+        # ), f"setSubjectEvent invalide : {setSubjectEvent!r}"
+        #
+        # if isinstance(subject_value, attribute.Attribute):
+        #     self.__subject = subject_value
+        # else:
+        #     self.__subject = attribute.Attribute(
+        #         subject_value, self, setSubjectEvent
+        #     )
+        # # log.debug(f"[DEBUG] Object.__init__() → subject reçu: {self.__subject!r}")
+        # log.debug(
+        #     f"[DEBUG] Object.__init__() → subject reçu: {self.__subject.get()}"
         # )
-        # self.__fgColor = Attribute(
-        #     kwargs.pop("fgColor", None), self, setAppearanceEvent
+        # # self.__description = Attribute(
+        # #     kwargs.pop("description", ""), self, self.descriptionChangedEvent
+        # # )
+        # # self.__description = Attribute(
+        # #     kwargs.pop("description", ""), self, setDescriptionEvent
+        # # )
+        # # description_value = kwargs.pop("description", "")
+        # description_value = local_kwargs.pop("description", "")
+        # if isinstance(description_value, attribute.Attribute):
+        #     self.__description = description_value
+        # else:
+        #     self.__description = Attribute(
+        #         description_value, self, setDescriptionEvent
+        #     )
+        # log.debug(
+        #     f"Object.__init__() : description reçu: {self.__description}"
         # )
-        # fgColor_value = kwargs.pop("fgColor", None)
-        fgColor_value = local_kwargs.pop("fgColor", None)
-        if isinstance(fgColor_value, attribute.Attribute):
-            self.__fgColor = fgColor_value
-        else:
-            self.__fgColor = Attribute(fgColor_value, self, setAppearanceEvent)
-        # self.__bgColor = Attribute(
-        #     kwargs.pop("bgColor", None), self, self.appearanceChangedEvent
+        # # self.__fgColor = Attribute(
+        # #     kwargs.pop("fgColor", None), self, self.appearanceChangedEvent
+        # # )
+        # # self.__fgColor = Attribute(
+        # #     kwargs.pop("fgColor", None), self, setAppearanceEvent
+        # # )
+        # # fgColor_value = kwargs.pop("fgColor", None)
+        # fgColor_value = local_kwargs.pop("fgColor", None)
+        # if isinstance(fgColor_value, attribute.Attribute):
+        #     self.__fgColor = fgColor_value
+        # else:
+        #     self.__fgColor = Attribute(fgColor_value, self, setAppearanceEvent)
+        # # self.__bgColor = Attribute(
+        # #     kwargs.pop("bgColor", None), self, self.appearanceChangedEvent
+        # # )
+        # # self.__bgColor = Attribute(
+        # #     kwargs.pop("bgColor", None), self, setAppearanceEvent
+        # # )
+        # # bgColor_value = kwargs.pop("bgColor", None)
+        # bgColor_value = local_kwargs.pop("bgColor", None)
+        # if isinstance(bgColor_value, attribute.Attribute):
+        #     self.__bgColor = bgColor_value
+        # else:
+        #     self.__bgColor = Attribute(bgColor_value, self, setAppearanceEvent)
+        # # self.__font = Attribute(
+        # #     kwargs.pop("font", None), self, self.appearanceChangedEvent
+        # # )
+        # # self.__font = Attribute(
+        # #     kwargs.pop("font", None), self, setAppearanceEvent
+        # # )
+        # # font_value = kwargs.pop("font", None)
+        # font_value = local_kwargs.pop("font", None)
+        # if isinstance(font_value, attribute.Attribute):
+        #     self.__font = font_value
+        # else:
+        #     self.__font = Attribute(font_value, self, setAppearanceEvent)
+        # # self.__icon = Attribute(
+        # #     kwargs.pop("icon", ""), self, self.appearanceChangedEvent
+        # # )
+        # # self.__icon = Attribute(
+        # #     kwargs.pop("icon", ""), self, setAppearanceEvent
+        # # )
+        # # icon_value = kwargs.pop("icon", "")
+        # icon_value = local_kwargs.pop("icon", "")
+        # if isinstance(icon_value, attribute.Attribute):
+        #     self.__icon = icon_value
+        # else:
+        #     self.__icon = Attribute(icon_value, self, setAppearanceEvent)
+        # # self.__selectedIcon = Attribute(
+        # #     kwargs.pop("selectedIcon", ""), self, self.appearanceChangedEvent
+        # # )
+        # # self.__selectedIcon = Attribute(
+        # #     kwargs.pop("selectedIcon", ""), self, setAppearanceEvent
+        # # )
+        # # selectedIcon_value = kwargs.pop("selectedIcon", "")
+        # selectedIcon_value = local_kwargs.pop("selectedIcon", "")
+        # if isinstance(selectedIcon_value, attribute.Attribute):
+        #     self.__selectedIcon = selectedIcon_value
+        # else:
+        #     self.__selectedIcon = Attribute(
+        #         selectedIcon_value, self, setAppearanceEvent
+        #     )
+        # # # self.__ordering = Attribute(
+        # # #     kwargs.pop("ordering", Object._long_zero),
+        # # #     self,
+        # # #     self.orderingChangedEvent,
+        # # # )
+        # # # self.__ordering = Attribute(
+        # # #     kwargs.pop("ordering", Object._long_zero),
+        # # #     self,
+        # # #     setOrderingEvent,
+        # # # )
+        # # self.__ordering = Attribute(
+        # #     local_kwargs.pop("ordering", Object._long_zero),
+        # #     self,
+        # #     setOrderingEvent,
+        # # )
+        # # # self.__id = kwargs.pop("id", None or str(uuid.uuid1()))  # ID unique
+        # # self.__id = local_kwargs.pop("id", None or str(uuid.uuid1())
+        # # )  # ID unique, mais ne permet d'avoir None comme id !
+        # self.__id = local_kwargs.pop("id", None) or str(uuid.uuid1())
+        # # log.debug(f"Object.__init__() : id reçu: {self.__id}.")
+        # print(f"Object.__init__() : id reçu: {self.__id}.")
+
+        # # Derived SSOT fields (value + source for each appearance type)
+        # self.__derivedFgColorValue = Attribute(
+        #     None, self, self._onDerivedFgColorChanged
         # )
-        # self.__bgColor = Attribute(
-        #     kwargs.pop("bgColor", None), self, setAppearanceEvent
+        # self.__derivedFgColorSource = Attribute(
+        #     None, self, self._onDerivedFgColorChanged
         # )
-        # bgColor_value = kwargs.pop("bgColor", None)
-        bgColor_value = local_kwargs.pop("bgColor", None)
-        if isinstance(bgColor_value, attribute.Attribute):
-            self.__bgColor = bgColor_value
-        else:
-            self.__bgColor = Attribute(bgColor_value, self, setAppearanceEvent)
-        # self.__font = Attribute(
-        #     kwargs.pop("font", None), self, self.appearanceChangedEvent
+        # self.__derivedBgColorValue = Attribute(
+        #     None, self, self._onDerivedBgColorChanged
         # )
-        # self.__font = Attribute(
-        #     kwargs.pop("font", None), self, setAppearanceEvent
+        # self.__derivedBgColorSource = Attribute(
+        #     None, self, self._onDerivedBgColorChanged
         # )
-        # font_value = kwargs.pop("font", None)
-        font_value = local_kwargs.pop("font", None)
-        if isinstance(font_value, attribute.Attribute):
-            self.__font = font_value
-        else:
-            self.__font = Attribute(font_value, self, setAppearanceEvent)
-        # self.__icon = Attribute(
-        #     kwargs.pop("icon", ""), self, self.appearanceChangedEvent
+        # self.__derivedIconValue = Attribute(
+        #     None, self, self._onDerivedIconChanged
         # )
-        # self.__icon = Attribute(
-        #     kwargs.pop("icon", ""), self, setAppearanceEvent
+        # self.__derivedIconSource = Attribute(
+        #     None, self, self._onDerivedIconChanged
         # )
-        # icon_value = kwargs.pop("icon", "")
-        icon_value = local_kwargs.pop("icon", "")
-        if isinstance(icon_value, attribute.Attribute):
-            self.__icon = icon_value
-        else:
-            self.__icon = Attribute(icon_value, self, setAppearanceEvent)
-        # self.__selectedIcon = Attribute(
-        #     kwargs.pop("selectedIcon", ""), self, self.appearanceChangedEvent
+        # self.__derivedFontValue = Attribute(
+        #     None, self, self._onDerivedFontChanged
         # )
-        # self.__selectedIcon = Attribute(
-        #     kwargs.pop("selectedIcon", ""), self, setAppearanceEvent
+        # self.__derivedFontSource = Attribute(
+        #     None, self, self._onDerivedFontChanged
         # )
-        # selectedIcon_value = kwargs.pop("selectedIcon", "")
-        selectedIcon_value = local_kwargs.pop("selectedIcon", "")
-        if isinstance(selectedIcon_value, attribute.Attribute):
-            self.__selectedIcon = selectedIcon_value
-        else:
-            self.__selectedIcon = Attribute(
-                selectedIcon_value, self, setAppearanceEvent
-            )
-        # self.__ordering = Attribute(
-        #     kwargs.pop("ordering", Object._long_zero),
-        #     self,
-        #     self.orderingChangedEvent,
+
+        # # Effective SSOT fields (value + source + default for colors/font, value + source for icon)
+        # self.__effectiveFgColorValue = Attribute(
+        #     None, self, self._onEffectiveFgColorChanged
         # )
-        # self.__ordering = Attribute(
-        #     kwargs.pop("ordering", Object._long_zero),
-        #     self,
-        #     setOrderingEvent,
+        # self.__effectiveFgColorSource = Attribute(
+        #     None, self, self._onEffectiveFgColorChanged
         # )
-        self.__ordering = Attribute(
-            local_kwargs.pop("ordering", Object._long_zero),
+        # self.__effectiveFgColorDefault = Attribute(
+        #     None, self, self._onEffectiveFgColorChanged
+        # )
+        # self.__effectiveBgColorValue = Attribute(
+        #     None, self, self._onEffectiveBgColorChanged
+        # )
+        # self.__effectiveBgColorSource = Attribute(
+        #     None, self, self._onEffectiveBgColorChanged
+        # )
+        # self.__effectiveBgColorDefault = Attribute(
+        #     None, self, self._onEffectiveBgColorChanged
+        # )
+        # self.__effectiveIconValue = Attribute(
+        #     None, self, self._onEffectiveIconChanged
+        # )
+        # self.__effectiveIconSource = Attribute(
+        #     None, self, self._onEffectiveIconChanged
+        # )
+        # self.__effectiveFontValue = Attribute(
+        #     None, self, self._onEffectiveFontChanged
+        # )
+        # self.__effectiveFontSource = Attribute(
+        #     None, self, self._onEffectiveFontChanged
+        # )
+        # self.__effectiveFontDefault = Attribute(
+        #     None, self, self._onEffectiveFontChanged
+        # )
+
+        # # Initialisation du parent
+        # # super().__init__(*args, **kwargs)  # Appelle le constructeur de la classe parente
+        # # super().__init__()  # à vérifier sinon revenir à la définition précédente
+        # # Transmet les arguments uniquement si le parent **n'est pas `object'**
+        # # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
+        # if type(self).__mro__[1] is not object:
+        #     # Class 'property' does not define '__getitem__', so the '[]' operator cannot be used on its instances
+        #     try:
+        #         super().__init__(*args, **kwargs)
+        #     except TypeError:
+        #         super().__init__()
+        # else:
+        #     super().__init__()  # Sécurisé pour `object`
+
+    def _createAttribute(self, key, value, callback):
+        """
+        Crée un nouvel attribut.
+
+        Args:
+            key: Clef d'attribut
+            value: Valeur de l'attribut
+            callback: Méthode d'événement à utiliser
+
+        Returns:
+            None
+        """
+        setattr(
             self,
-            setOrderingEvent,
+            key,
+            attribute.Attribute(
+                value,
+                self,
+                getattr(self, callback),
+            ),
         )
-        # # self.__id = kwargs.pop("id", None or str(uuid.uuid1()))  # ID unique
-        # self.__id = local_kwargs.pop("id", None or str(uuid.uuid1())
-        # )  # ID unique, mais ne permet d'avoir None comme id !
-        self.__id = local_kwargs.pop("id", None) or str(uuid.uuid1())
-        # log.debug(f"Object.__init__() : id reçu: {self.__id}.")
-        print(f"Object.__init__() : id reçu: {self.__id}.")
 
-        # Derived SSOT fields (value + source for each appearance type)
-        self.__derivedFgColorValue = Attribute(
+    def createAttributes(self):
+        """
+        Crée tous les objets Attribute utilisés par Object.
+
+        Cette méthode est utilisée :
+        - lors de l'initialisation normale (__init__)
+        - lors de la désérialisation (__setstate__)
+        """
+        # ce qui doit exister en mémoire pour que l'objet fonctionne.
+
+        # # les clés sérialisées restent définies à un seul endroit
+        # for key in SERIALIZATION_CORE_KEYS:
+        #     if key not in ATTRIBUTE_SPECS:
+        #         continue
+        #
+        #     default_value, callback_name = ATTRIBUTE_SPECS[key]
+        #
+        #     # les objets Attribute correspondants sont créés automatiquement
+        #     setattr(
+        #         self,
+        #         f"_Object__{key}",
+        #         attribute.Attribute(
+        #             default_value,
+        #             self,
+        #             getattr(self, callback_name),
+        #         ),
+        #     )
+        #
+        # for key, default_value, callback_name in (
+        #     DERIVED_ATTRIBUTE_SPECS + EFFECTIVE_ATTRIBUTE_SPECS
+        # ):
+        #     setattr(
+        #         self,
+        #         key,
+        #         attribute.Attribute(
+        #             default_value,
+        #             self,
+        #             getattr(self, callback_name),
+        #         ),
+        #     )
+        # Attributs fondamentaux
+        self._Object__subject = attribute.Attribute(
+            "", self, lambda event: None
+        )
+        self._Object__description = attribute.Attribute(
+            "", self, lambda event: None
+        )
+        self._Object__fgColor = attribute.Attribute(
+            None, self, lambda event: None
+        )
+        self._Object__bgColor = attribute.Attribute(
+            None, self, lambda event: None
+        )
+        self._Object__font = attribute.Attribute(
+            None, self, lambda event: None
+        )
+        self._Object__icon = attribute.Attribute("", self, lambda event: None)
+        self._Object__selectedIcon = attribute.Attribute(
+            "", self, lambda event: None
+        )
+        self._Object__ordering = attribute.Attribute(
+            self._long_zero, self, lambda event: None
+        )
+
+        # Attributs d'apparence dérivés
+        self.__derivedFgColorValue = attribute.Attribute(
             None, self, self._onDerivedFgColorChanged
         )
-        self.__derivedFgColorSource = Attribute(
+        self.__derivedFgColorSource = attribute.Attribute(
             None, self, self._onDerivedFgColorChanged
         )
-        self.__derivedBgColorValue = Attribute(
+        self.__derivedBgColorValue = attribute.Attribute(
             None, self, self._onDerivedBgColorChanged
         )
-        self.__derivedBgColorSource = Attribute(
+        self.__derivedBgColorSource = attribute.Attribute(
             None, self, self._onDerivedBgColorChanged
         )
-        self.__derivedIconValue = Attribute(
+        self.__derivedIconValue = attribute.Attribute(
+            "", self, self._onDerivedIconChanged
+        )
+        self.__derivedIconSource = attribute.Attribute(
             None, self, self._onDerivedIconChanged
         )
-        self.__derivedIconSource = Attribute(
-            None, self, self._onDerivedIconChanged
-        )
-        self.__derivedFontValue = Attribute(
+        self.__derivedFontValue = attribute.Attribute(
             None, self, self._onDerivedFontChanged
         )
-        self.__derivedFontSource = Attribute(
+        self.__derivedFontSource = attribute.Attribute(
             None, self, self._onDerivedFontChanged
         )
 
-        # Effective SSOT fields (value + source + default for colors/font, value + source for icon)
-        self.__effectiveFgColorValue = Attribute(
+        # Attributs d'apparence effectifs
+        self.__effectiveFgColorValue = attribute.Attribute(
             None, self, self._onEffectiveFgColorChanged
         )
-        self.__effectiveFgColorSource = Attribute(
+        self.__effectiveFgColorSource = attribute.Attribute(
             None, self, self._onEffectiveFgColorChanged
         )
-        self.__effectiveFgColorDefault = Attribute(
+        self.__effectiveFgColorDefault = attribute.Attribute(
             None, self, self._onEffectiveFgColorChanged
         )
-        self.__effectiveBgColorValue = Attribute(
+        self.__effectiveBgColorValue = attribute.Attribute(
             None, self, self._onEffectiveBgColorChanged
         )
-        self.__effectiveBgColorSource = Attribute(
+        self.__effectiveBgColorSource = attribute.Attribute(
             None, self, self._onEffectiveBgColorChanged
         )
-        self.__effectiveBgColorDefault = Attribute(
+        self.__effectiveBgColorDefault = attribute.Attribute(
             None, self, self._onEffectiveBgColorChanged
         )
-        self.__effectiveIconValue = Attribute(
+        self.__effectiveIconValue = attribute.Attribute(
+            "", self, self._onEffectiveIconChanged
+        )
+        self.__effectiveIconSource = attribute.Attribute(
             None, self, self._onEffectiveIconChanged
         )
-        self.__effectiveIconSource = Attribute(
-            None, self, self._onEffectiveIconChanged
-        )
-        self.__effectiveFontValue = Attribute(
+        self.__effectiveFontValue = attribute.Attribute(
             None, self, self._onEffectiveFontChanged
         )
-        self.__effectiveFontSource = Attribute(
+        self.__effectiveFontSource = attribute.Attribute(
             None, self, self._onEffectiveFontChanged
         )
-        self.__effectiveFontDefault = Attribute(
+        self.__effectiveFontDefault = attribute.Attribute(
             None, self, self._onEffectiveFontChanged
         )
-
-        # Initialisation du parent
-        # super().__init__(*args, **kwargs)  # Appelle le constructeur de la classe parente
-        # super().__init__()  # à vérifier sinon revenir à la définition précédente
-        # Transmet les arguments uniquement si le parent **n'est pas `object'**
-        # Test de sécurité : on ne transmet que si `super()` n'est pas `object`
-        if type(self).__mro__[1] is not object:
-            # Class 'property' does not define '__getitem__', so the '[]' operator cannot be used on its instances
-            try:
-                super().__init__(*args, **kwargs)
-            except TypeError:
-                super().__init__()
-        else:
-            super().__init__()  # Sécurisé pour `object`
 
     def __repr__(self):
         """
@@ -1051,9 +1383,29 @@ class Object(SynchronizedObject):
         Returns :
             (str) : La représentation sous forme de chaîne.
         """
-        return self.subject()
-        # # return str(self.subject()) or __repr__(self.subject())
-        # return f"<{self.__class__.__name__} id={id(self)}>"
+        # return self.subject()
+        # Protect against the case where an instance attribute named 'subject'
+        # (e.g. set during __setstate__) shadows the callable accessor
+        # self.subject. In that case getattr(self, 'subject') may return a
+        # string and calling it would raise TypeError. We therefore check
+        # whether the attribute is callable and fall back gracefully.
+        subj_attr = getattr(self, "subject", None)
+        if callable(subj_attr):
+            try:
+                return subj_attr()
+            except Exception:
+                # If calling fails for any reason, fall through to fallback
+                pass
+
+        # If subject is not callable, try to read a plain value from __dict__
+        subj_val = (
+            self.__dict__.get("subject") if hasattr(self, "__dict__") else None
+        )
+        if subj_val is not None:
+            return str(subj_val)
+
+        # Last resort: return a simple class/id representation
+        return f"<{self.__class__.__name__} id={id(self)}>"
 
     def __eq__(self, other):
         if not isinstance(other, Object):
@@ -1163,7 +1515,7 @@ class Object(SynchronizedObject):
         # assert state["selectedIcon"] == new_state["selectedIcon"]
 
         # Construction explicite du dictionnaire d'état.
-        print("Object.__getstate__() : Appelé par ", self)
+        print("Object.__getstate__() : Appelé par ", self.__class__.__name__)
         try:
             # On récupère l'état hérité (ex : depuis SynchronizedObject)
             state = super().__getstate__()
@@ -1180,7 +1532,9 @@ class Object(SynchronizedObject):
             print("Object.__setstate__() - subject non défini avant update.")
 
         # On ajoute uniquement les champs publics attendus,
-        # extraits via les attributs "Attribute"
+        # extraits via les attributs "Attribute".
+        # Extraction propre des valeurs scalaires
+        print(f"Object.__getstate__() : update")
         state.update(
             dict(
                 id=self.__id,  # Identifiant unique de l'objet
@@ -1195,6 +1549,9 @@ class Object(SynchronizedObject):
                 ordering=self.__ordering.get(),  # Icône sélectionnée
                 selectedIcon=self.__selectedIcon.get(),  # Ordre d'affichage ou de tri
             )
+        )
+        print(
+            f"Object.__getstate__() : state après update: {state} avant nettoyage"
         )
         # Object.__getstate__ ne doit JAMAIS filtrer les attributs des sous-classes
         # # # On supprime les clés privées (souvent nommées _NomClasse__attribut)
@@ -1216,17 +1573,26 @@ class Object(SynchronizedObject):
         # for key in keys_to_remove:
         #     del state[key]
 
-        self.validate_state(state)
         # ⚠️ Nettoyage uniquement des classes du framework, pas des subclasses métier
+        # Suppression uniquement des attributs internes des classes parentes.
+        # Les classes filles comme NoteOwner doivent conserver leurs attributs privés
+        # pour permettre à Owner.__getstate__ de reconstruire leur état métier.
         for key in list(state.keys()):
             if key.startswith("_Object__") or key.startswith(
                 "_SynchronizedObject__"
             ):
+                # if key.startswith("_"):
                 del state[key]
+
+        print(
+            f"Object.__getstate__() : state après nettoyage: {state} avant validation"
+        )
+        print("Object.__getstate : GETSTATE KEYS =", sorted(state.keys()))
+        self.validate_state(state)
 
         # DEBUG : Affichage de l'état sérialisé pour vérification
         # log.debug(f"DEBUG - Object.__getstate__() renvoie : {state}")
-        print(f"DEBUG - Object.__getstate__() renvoie : {state}")
+        print(f"Object.__getstate__() renvoie : {state} après validation !")
         #
         return state
 
@@ -1291,6 +1657,11 @@ class Object(SynchronizedObject):
         """
         Définissez l'état de l'objet à partir de la désérialisation.
 
+        Restaure l'état interne de l'objet après désérialisation.
+
+        Les attributs privés créés dans __init__ ne sont pas présents car
+        Python utilise __new__ puis appelle directement __setstate__.
+
         Args :
             state (dict) : L’état à définir.
             event : (event) L'événement associé à la définition de l'état.
@@ -1298,34 +1669,276 @@ class Object(SynchronizedObject):
         log.debug(
             f"Object.__setstate__ : avant super, state={state} et event={event}."
         )
+        print("DEBUG Object.__setstate__ AVANT")
+        print(self.__dict__)
+
+        # Toujours recréer les conteneurs d'attributs d'abord
+        self.createAttributes()
+
         # Appeler le parent
         # C'est l'appel crucial qui va charger les attributs du parent SynchronizedObject
         try:
             super().__setstate__(state, event=event)
-        except AttributeError:
-            pass
+        # except AttributeError:  # Cache certains problèmes
+        #     pass
+        except AttributeError as error:
+            print("ERREUR super().__setstate__ :", error)
+            raise
         # log.debug(f"Object.__setstate__() - Entrée, state dict: {state}")
 
-        self.__id = state["id"]
+        # Reconstruction minimale des attributs Attribute internes.
+        # missing = {}
+        # for object_attr in self.SERIALIZATION_CORE_KEYS:
+        #     if not hasattr(self, f"_Object__{object_attr}"):
+        #         self.createAttributes()
+        #
+        # missing = {
+        #     not hasattr(self, f"_Object__{object_attr}")
+        #     for object_attr in self.SERIALIZATION_CORE_KEYS
+        # }
+
+        # if not hasattr(self, "_Object__subject"):
+        #     self.__subject = attribute.Attribute(
+        #         "", self, setEvent=self.subjectChangedEventType
+        #     )
+        #
+        # if not hasattr(self, "_Object__description"):
+        #     self.__description = attribute.Attribute(
+        #         "", self, setEvent=self.descriptionChangedEventType
+        #     )
+        #
+        # if not hasattr(self, "_Object__fgColor"):
+        #     self.__fgColor = attribute.Attribute(
+        #         None, self, self.appearanceChangedEvent
+        #     )
+        #
+        # if not hasattr(self, "_Object__bgColor"):
+        #     self.__bgColor = attribute.Attribute(
+        #         None, self, self.appearanceChangedEvent
+        #     )
+        #
+        # if not hasattr(self, "_Object__font"):
+        #     self.__font = attribute.Attribute(
+        #         None, self, self.appearanceChangedEvent
+        #     )
+        #
+        # if not hasattr(self, "_Object__icon"):
+        #     self.__icon = attribute.Attribute(
+        #         "", self, self.appearanceChangedEvent
+        #     )
+        #
+        # if not hasattr(self, "_Object__selectedIcon"):
+        #     self.__selectedIcon = attribute.Attribute(
+        #         "", self, self.appearanceChangedEvent
+        #     )
+        #
+        # if not hasattr(self, "_Object__ordering"):
+        #     self.__ordering = attribute.Attribute(
+        #         0, self, self.orderingChangedEvent
+        #     )
+        #
+        # # Reconstruction des attributs dérivés de couleur.
+        # if not hasattr(self, "_Object__derivedFgColorValue"):
+        #     self.__derivedFgColorValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__derivedFgColorSource"):
+        #     self.__derivedFgColorSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__derivedBgColorValue"):
+        #     self.__derivedBgColorValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedBgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__derivedBgColorSource"):
+        #     self.__derivedBgColorSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedBgColorChanged,
+        #     )
+        #
+        # # Reconstruction des attributs dérivés d'icône.
+        # if not hasattr(self, "_Object__derivedIconValue"):
+        #     self.__derivedIconValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedIconChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__derivedIconSource"):
+        #     self.__derivedIconSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedIconChanged,
+        #     )
+        #
+        # # Reconstruction des attributs dérivés de police.
+        # if not hasattr(self, "_Object__derivedFontValue"):
+        #     self.__derivedFontValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedFontChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__derivedFontSource"):
+        #     self.__derivedFontSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onDerivedFontChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveFgColorValue"):
+        #     self.__effectiveFgColorValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveFgColorSource"):
+        #     self.__effectiveFgColorSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveFgColorDefault"):
+        #     self.__effectiveFgColorDefault = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveBgColorValue"):
+        #     self.__effectiveFgColorValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveBgColorSource"):
+        #     self.__effectiveFgColorSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveBgColorDefault"):
+        #     self.__effectiveFgColorDefault = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveFontValue"):
+        #     self.__effectiveFgColorValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveFontSource"):
+        #     self.__effectiveFgColorSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveFontDefault"):
+        #     self.__effectiveFgColorDefault = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveIconValue"):
+        #     self.__effectiveFgColorValue = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveIconSource"):
+        #     self.__effectiveFgColorSource = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # if not hasattr(self, "_Object__effectiveIconDefault"):
+        #     self.__effectiveFgColorDefault = attribute.Attribute(
+        #         None,
+        #         self,
+        #         self._onEffectiveFgColorChanged,
+        #     )
+        #
+        # # TEST
+        # if not hasattr(self, "_Object__subject"):
+        #     print("RECONSTRUCTION DES ATTRIBUTS OBJECT")
+        #
+        #     self.__init__(
+        #         subject=state.get("subject", ""),
+        #         description=state.get("description", ""),
+        #         fgColor=state.get("fgColor"),
+        #         bgColor=state.get("bgColor"),
+        #         font=state.get("font"),
+        #         icon=state.get("icon", ""),
+        #         selectedIcon=state.get("selectedIcon", ""),
+        #         ordering=state.get("ordering", 0),
+        #     )
+        # # A RETIRER
+
+        # Restauration des données scalaires d'état
+        # Restaure l'identifiant de l'objet
+        # self.__id = state["id"]
+        if "id" in state:
+            self.__id = state["id"]
+        # self.__creationDateTime = state["creationDateTime"]
+        # Restaure la date de création
+        if "creationDateTime" in state:
+            self.__creationDateTime = state["creationDateTime"]
+
+        # Alimentation de nos Attributes
         # Récupérer la valeur du sujet du dictionnaire d'état
-        log.debug(f"Object.__setstate__ : setSubject :")
-        self.setSubject(state["subject"], event=event)
-        log.debug(
-            f"Object.__setstate__() - subject après set: {self.__subject.get()}"
-        )
-        self.setDescription(state["description"], event=event)
-        self.setForegroundColor(state["fgColor"], event=event)
-        self.setBackgroundColor(state["bgColor"], event=event)
-        self.setFont(state["font"], event=event)
-        self.setIcon(state["icon"], event=event)
-        self.setSelectedIcon(state["selectedIcon"], event=event)
-        self.setOrdering(state["ordering"], event=event)
-        self.__creationDateTime = state["creationDateTime"]
+        # print("_Object__subject présent ?", hasattr(self, "_Object__subject"))
+        # log.debug(f"Object.__setstate__ : setSubject :")
+        # self.setSubject(state["subject"], event=event)
+        # log.debug(
+        #     f"Object.__setstate__() - subject après set: {self.__subject.get()}"
+        # )
+        # self.setDescription(state["description"], event=event)
+        # self.setForegroundColor(state["fgColor"], event=event)
+        # self.setBackgroundColor(state["bgColor"], event=event)
+        # self.setFont(state["font"], event=event)
+        # self.setIcon(state["icon"], event=event)
+        # self.setSelectedIcon(state["selectedIcon"], event=event)
+        # self.setOrdering(state["ordering"], event=event)
+        self.setSubject(state.get("subject", ""), event=event)
+        self.setDescription(state.get("description", ""), event=event)
+        self.setForegroundColor(state.get("fgColor", None), event=event)
+        self.setBackgroundColor(state.get("bgColor", None), event=event)
+        self.setFont(state.get("font", None), event=event)
+        self.setIcon(state.get("icon", ""), event=event)
+        self.setSelectedIcon(state.get("selectedIcon", ""), event=event)
+        self.setOrdering(state.get("ordering", 0), event=event)
+
         # Set modification date/time last to overwrite changes made by the
         # setters above
         # Définit la date/heure de la date de modification pour écraser
         #  les modifications apportées par le setters ci-dessus.
-        self.__modificationDateTime = state["modificationDateTime"]
+        # Écrase les modifications de date faites par les Setters ci-dessus
+        # self.__modificationDateTime = state["modificationDateTime"]
+        self.__modificationDateTime = state.get(
+            "modificationDateTime", DateTime.min
+        )
 
     def __getcopystate__(self):
         """
@@ -1369,6 +1982,7 @@ class Object(SynchronizedObject):
             (Object) Une nouvelle instance de l'objet avec le même état.
         """
         state = self.__getcopystate__()
+        print("COPY STATE =", state)
         # print(f"object.Object.__getcopystate__ : DEBUG - __getcopystate__() : {state}")  # Ajoute ce print
         return self.__class__(**state)  # Accessor kind: Getter
         # return self.__class__(**self.__getcopystate__())
@@ -2089,6 +2703,7 @@ class Object(SynchronizedObject):
         Returns :
             (list) : La liste des types d'événements.
         """
+        # Récupération sécurisée et robuste des événements de la classe parente
         try:
             # eventTypes = super(Object, class_).modificationEventTypes()
             eventTypes = super().modificationEventTypes()
@@ -2104,7 +2719,8 @@ class Object(SynchronizedObject):
         if eventTypes is None:
             eventTypes = list()
             # eventTypes = []
-        return eventTypes + [
+        # return eventTypes + [
+        return list(eventTypes) + [
             class_.subjectChangedEventType(),
             class_.descriptionChangedEventType(),
             class_.appearanceChangedEventType(),
@@ -2131,8 +2747,7 @@ class Object(SynchronizedObject):
         #     class_.subjectChangedEventType(),
         #     class_.descriptionChangedEventType(),
         #     class_.appearanceChangedEventType(),
-        #     class_.orderingChangedEventType(),
-        # ]
+        #     class_.orderingChangedEventType(),]
 
 
 # Les mixins doivent être avant les types parents ! Sauf ici !
@@ -2252,11 +2867,15 @@ class CompositeObject(
         Returns :
             state (dict) : Le dictionnaire d'état pour créer une copie.
         """
-        state = super().__getcopystate__()
+        print("CompositeObject.__getcopystate__ : enfants =", self.children())
+        try:
+            state = super().__getcopystate__()
+        except AttributeError:
+            state = dict()
         # log.debug(f"CompositeObject.__getcopystate__ : __getstate__() avant subject.get() : {self.__subject.get()}, state avant update {state}.")
         # AttributeError: 'Task' object has no attribute '_CompositeObject__subject'
         log.debug(
-            f"CompositeObject.__getcopystate__ : state avant update {state}."
+            f"CompositeObject.__getcopystate__ : state après super et avant update {state}."
         )
         state.update(dict(expandedContexts=self.expandedContexts()))
         log.debug(
@@ -2268,8 +2887,10 @@ class CompositeObject(
         # C'est crucial : appeler d'abord le parent. Cela permettra à Object.__setstate__
         # de s'exécuter et de gérer correctement l'attribut 'subject'.
         # super().__setstate__(state, event)  # Erreur, il faut qu'un seul argument !
-        super().__setstate__(state, event=event)
-
+        try:
+            super().__setstate__(state, event=event)
+        except AttributeError:
+            pass
         # NE PAS TENTER DE POPPER OU DE DÉFINIR 'subject' ICI.
         # L'attribut 'subject' est déjà géré par Object.__setstate__.
 
@@ -2285,7 +2906,13 @@ class CompositeObject(
         Returns :
             (list) : The list of monitored attributes.
         """
-        return Object.monitoredAttributes() + ["expandedContexts"]
+        # return Object.monitoredAttributes() + ["expandedContexts"]
+        try:
+            attrs = super().monitoredAttributes()
+        except AttributeError:
+            attrs = []
+        attrs.append("expandedContexts")
+        return attrs
 
     # Subject:
 

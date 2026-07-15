@@ -153,6 +153,7 @@ class List(list):
             return self is other
         else:
             return list(self) == other
+            # return list(self) == list(other)
 
     # def removeItems(self, items: list):
     def removeItems(self, items):
@@ -350,15 +351,55 @@ class Event(object):
         """
         Comparez deux événements pour l'égalité.
 
-        Les événements sont comparables lorsque toutes leurs données sont égales.
-
-        Args :
-            other (event) : L'événement avec lequel comparer.
-
-        Returns :
-            (bool) : Vrai si les événements sont égaux, faux sinon.
+        Cette implémentation normalize les clés "source" et les valeurs en
+        utilisant l'identité (id) des objets quand cela est nécessaire afin
+        d'éviter des différences dues au stockage interne (par ex. stockage
+        par id pour des sources non hachables). Deux événements sont
+        considérés égaux si, pour chaque type d'événement, les ensembles de
+        sources (identifiées par id) et leurs valeurs associées (également
+        comparées par id pour les objets) sont égales.
         """
-        return self.sourcesAndValuesByType() == other.sourcesAndValuesByType()
+
+        def _normalize_value(v):
+            # Recursively normalize values: for objects (non-primitive)
+            # represent them by their id so equality compares identity.
+            if isinstance(v, (str, bytes, int, float, bool, type(None))):
+                return v
+            if isinstance(v, tuple):
+                return tuple(_normalize_value(x) for x in v)
+            if isinstance(v, (list, set, frozenset)):
+                return tuple(_normalize_value(x) for x in v)
+            if isinstance(v, dict):
+                return tuple(sorted((k, _normalize_value(val)) for k, val in v.items()))
+            # Fallback for arbitrary objects: use their id
+            try:
+                return ("id", id(v))
+            except Exception:
+                return str(v)
+
+        def _normalized_mapping(event):
+            result = {}
+            # Access internal storage directly to avoid re-resolving keys
+            for type_, sources in getattr(event, "_Event__sourcesAndValuesByType", {}).items():
+                norm_sources = {}
+                for key, vals in sources.items():
+                    if key is None:
+                        source_id = None
+                    elif isinstance(key, int):
+                        # key stored as id -> try to get original object
+                        orig = event._Event__idToSource.get(key)
+                        if orig is not None:
+                            source_id = ("id", id(orig))
+                        else:
+                            source_id = ("id", key)
+                    else:
+                        # key is an object -> identify by its id
+                        source_id = ("id", id(key))
+                    norm_sources[source_id] = _normalize_value(vals)
+                result[type_] = norm_sources
+            return result
+
+        return _normalized_mapping(self) == _normalized_mapping(other)
 
     def addSource(self, source, *values, **kwargs):
         # def addSource(self, source: Any, *values: Any, **kwargs: Any) -> None:
@@ -448,9 +489,9 @@ class Event(object):
 
         currentValues = set(sources.setdefault(source_key, tuple()))
         currentValues |= set(values)
-        log.debug(
-            f"Event.addSource : Ajoute les valeurs : {values} à la source : {source} (clé : {source_key}) dans le dictionnaire de sources : {sources}."
-        )
+        # log.debug(
+        #     f"Event.addSource : Ajoute les valeurs : {values} à la source : {source} (clé : {source_key}) dans le dictionnaire de sources : {sources}."
+        # )
         sources[source_key] = tuple(currentValues)
 
     # def type(self) -> str:
@@ -553,7 +594,29 @@ class Event(object):
                 elif isinstance(key, int):
                     orig = self.__idToSource.get(key)
                     if orig is not None:
-                        result[type][orig] = vals
+                        # result[type][orig] = vals
+                        # Si l'objet original avait un hash non-callable
+                        # ou n'était pas hashable,
+                        # l'insertion faisait échouer avec TypeError (message du type rencontré).
+                        # If the original object is hashable use it as the key
+                        # so callers get back the real object. If it is not
+                        # hashable, fall back to using the stored int id as
+                        # the key to avoid a TypeError when inserting into
+                        # the dict.
+                        # Solution :
+                        # avant d'utiliser l'objet original comme clé,
+                        # on teste s'il est hashable (hash(orig)).
+                        # Si l'objet n'est pas hashable (TypeError levée),
+                        # on retombe sur la clé entière (l'id) comme clef du dictionnaire.
+                        # Ainsi on évite l'exception et on préserve la correspondance
+                        # (on retourne soit l'objet original quand possible,
+                        # soit l'id stocké).
+                        try:
+                            hash(orig)
+                        except TypeError:
+                            result[type][key] = vals
+                        else:
+                            result[type][orig] = vals
                 else:
                     result[type][key] = vals
         return result

@@ -59,7 +59,8 @@ class Composite(object):
             children (list | None) : (facultatif) Liste des composites enfants.
             parent (Composite | None) : (facultatif) Référence faible au Composite parent.
         """
-        log.debug("Composite : Initialisation.")
+        # log.debug(
+        print("Composite : Initialisation.")
         super().__init__()
         # self.__parent = parent if parent is None else weakref.ref(parent)
         # # Ne réinitialiser __parent que si pas déjà défini par un setParent précédent
@@ -71,22 +72,25 @@ class Composite(object):
             # self.__parent = parent if parent is None else weakref.ref(parent)
             self.__parent = parent
         self.__children = children or []
-        log.debug(
+        # log.debug(
+        print(
             f"Composite : self.__parent = {self.__parent} et self.__children = {self.__children}."
         )
 
         for child in self.__children:
-            log.debug(
+            # log.debug(
+            print(
                 # f"Composite : Ajout de l'enfant {child.id()} à {self.id()}"
                 f"Composite : Ajout de l'enfant {child} à {self}"
             )
             child.setParent(self)
-        log.debug(
-            "Après Composite.__init__ : %s enfants=%s",
-            self,
-            len(self.children()),
-        )
-        log.debug("Après Composite.__init__ : parent=%s", self.parent())
+        # log.debug(
+        print(
+            "Après Composite.__init__ : de id=%s enfants=%s"
+            % (id(self), len(self.children())),
+        )  # Ne jamais appeler self dans un print() pendant l’initialisation.
+        # log.debug(
+        print("Après Composite.__init__ : parent=%s" % self.parent())
         log.debug("Composite : Initialisé.")
 
     def __getstate__(self):
@@ -98,7 +102,7 @@ class Composite(object):
         """
         # return dict(children=self.__children[:], parent=self.parent())
         state = dict(children=self.__children[:], parent=self.parent())
-        log.debug(f"Composite.__getstate__ : retourne state : {state}.")
+        print(f"Composite.__getstate__ : retourne state : {state}.")
         return state
 
     def __setstate__(self, state):
@@ -118,11 +122,10 @@ class Composite(object):
         self.__parent = state[
             "parent"
         ]  # Référence forte (suppression des weakrefs)
-        log.debug(f"Composite.__setstate__ : self.__parent = {self.__parent}")
+        print(f"Composite.__setstate__ : self.__parent = {self.__parent}")
         self.__children = state["children"]
-        log.debug(
-            f"Composite.__setstate__ : self.__children = {self.__children}"
-        )
+        # log.debug(
+        print(f"Composite.__setstate__ : self.__children = {self.__children}")
 
     def __getcopystate__(self):
         """
@@ -131,18 +134,23 @@ class Composite(object):
         Renvoie :
             dict : L'état du composite pour la copie.
         """
+        print("Composite.__getcopystate__ : enfants =", self.children())
         try:
             state = super().__getcopystate__()
         except AttributeError:
             state = dict()
-        log.debug(f"Composite.__getcopystate__ : state avant update {state}.")
+        # log.debug(
+        print(
+            f"Composite.__getcopystate__ : state après super et avant update {state}."
+        )
         state.update(
             dict(
                 children=[child.copy() for child in self.__children],
                 parent=self.parent(),
             )
         )
-        log.debug(f"Composite.__getcopystate__ : retourne state {state}.")
+        # log.debug(f"Composite.__getcopystate__ : retourne state {state}.")
+        print(f"Composite.__getcopystate__ : retourne state {state}.")
         return state
 
     def parent(self):
@@ -257,7 +265,9 @@ class Composite(object):
             (Composite) : Le composite copié.
         """
         kwargs["parent"] = self.parent()
-        kwargs["children"] = [child.copy() for child in self.children()]
+        kwargs["children"] = [
+            child.copy() for child in self.children(recursive=True)
+        ]
         return self.__class__(*args, **kwargs)
 
     def newChild(self, *args, **kwargs):
@@ -323,7 +333,8 @@ class ObservableComposite(Composite):
             state (dict) : L'état du composite.
             event (Event | None) : (facultatif) L'événement à notifier.
         """
-        log.debug(
+        # log.debug(
+        print(
             f"ObservableComposite.__setstate__ : pour state {state} et event {event}"
         )
         # Anciens enfants :
@@ -343,6 +354,10 @@ class ObservableComposite(Composite):
         # Création d'événement d'ajout d'enfants(s) :
         if childrenAdded:
             self.addChildEvent(event, *childrenAdded)
+        print(
+            f"ObservableComposite.__setstate__ : résultat : pour id={id(self)}, self={self}, state={state} et event={event}, childrenRemoved={childrenRemoved}, childrenAdded={childrenAdded}."
+        )
+        print("ObservableComposite.__setstate__ : terminé !")
 
     @observer.eventSource
     def addChild(self, child, event=None):  # pylint: disable=W0221

@@ -216,7 +216,11 @@ def _getFromCategories(object_ref, effective_getter):
         getter = getattr(cat, effective_getter, None)
         if getter:
             cat_value = getter()
-            if cat_value and not _isSystemThemeValue(cat_value):
+            # if cat_value and not _isSystemThemeValue(cat_value):
+            # vous distinguez :
+            # valeur absente → None
+            # valeur vide mais valide → conservée
+            if cat_value is not None and not _isSystemThemeValue(cat_value):
                 return cat_value, f"[Category] {cat.subject()}"
     return None, None
 
@@ -232,7 +236,11 @@ def _getFromParent(object_ref, obj_type, effective_getter):
     getter = getattr(parent, effective_getter, None)
     if getter:
         parent_value = getter()
-        if parent_value and not _isSystemThemeValue(parent_value):
+        # if parent_value and not _isSystemThemeValue(parent_value):
+        # vous distinguez :
+        # valeur absente → None
+        # valeur vide mais valide → conservée
+        if parent_value is not None and not _isSystemThemeValue(parent_value):
             return parent_value, f"[{obj_type}] {parent.subject()}"
     return None, None
 
@@ -257,12 +265,12 @@ def computeDerived(object_ref, field_type):
     if obj_type == "Task":
         # Task sources: categories → parent → status
         value, src = _getFromCategories(object_ref, effective_getter)
-        if src:
+        if src and value is not None:
             source = src
 
         if value is None:
             value, src = _getFromParent(object_ref, obj_type, effective_getter)
-            if src:
+            if src and value is not None:
                 source = src
 
         # Fall back to status
@@ -270,16 +278,20 @@ def computeDerived(object_ref, field_type):
             status_getter = STATUS_GETTERS.get(field_type)
             if status_getter and hasattr(object_ref, status_getter):
                 getter = getattr(object_ref, status_getter)
-                value = getter()
-                if hasattr(object_ref, "status"):
-                    source = f"[Status] {object_ref.status()}"
-                else:
-                    source = "[Status]"
+                # value = getter()
+                status_value = getter()
+
+                if status_value is not None:
+                    value = status_value
+                    if hasattr(object_ref, "status"):
+                        source = f"[Status] {object_ref.status()}"
+                    else:
+                        source = "[Status]"
 
     elif obj_type == "Note":
         # Note sources: categories → parent
         value, src = _getFromCategories(object_ref, effective_getter)
-        if src:
+        if src and value is not None:
             source = src
 
         if value is None:
@@ -290,7 +302,7 @@ def computeDerived(object_ref, field_type):
     elif obj_type == "Category":
         # Category sources: parent only
         value, src = _getFromParent(object_ref, obj_type, effective_getter)
-        if src:
+        if src and value is not None:
             source = src
 
     # Attachment: no sources, value stays None
@@ -300,7 +312,9 @@ def computeDerived(object_ref, field_type):
         default_icon = TYPE_DEFAULT_ICONS.get(obj_type)
         if default_icon:
             value = default_icon
-            source = SYSTEM_THEME_SOURCE
+            # source = SYSTEM_THEME_SOURCE
+            source = "[Default]"
+            # source = "[Object Type]"
 
     # Write via object setter
     setter_name = DERIVED_SETTERS[field_type]
@@ -348,15 +362,41 @@ def computeEffective(object_ref, field_type):
         derived_source_getter() if derived_source_getter else None
     ) or FIELD_NO_VALUE_SOURCE[field_type]
 
-    override_method = getattr(object_ref, OVERRIDE_METHOD[field_type])
-    override_value = (
-        override_method()
-        if field_type == "icon"
-        else override_method(recursive=False)
-    )
+    override_name = OVERRIDE_METHOD[field_type]
+
+    # Try to get the override accessor from the instance. In some cases
+    # during __setstate__ the instance dict may contain a key that shadows
+    # the class descriptor (e.g. 'font': None), so getattr(instance, name)
+    # can return None. In that case fall back to the class attribute and
+    # bind it to the instance if it's a descriptor.
+    override_method = getattr(object_ref, override_name, None)
+    if not callable(override_method):
+        class_attr = getattr(type(object_ref), override_name, None)
+        if class_attr is not None:
+            # If it's a descriptor (has __get__), bind it to the instance
+            get = getattr(class_attr, "__get__", None)
+            if callable(get):
+                try:
+                    override_method = class_attr.__get__(object_ref, type(object_ref))
+                except Exception:
+                    # If binding fails, keep override_method as None and
+                    # let subsequent code handle the None case.
+                    override_method = None
+            else:
+                override_method = class_attr
+
+    override_value = None
+    if callable(override_method):
+        override_value = (
+            override_method()
+            if field_type == "icon"
+            else override_method(recursive=False)
+        )
+    # override_value = override_method(recursive=False)  # TODO : serait préférable !?
 
     # Compute effective
-    if override_value:
+    # if override_value:  # Dangereux ! Parce que certaines valeurs valides sont évaluées à False.
+    if override_value is not None:
         effective_value = override_value
         effective_source = "Override"
     else:
@@ -365,7 +405,9 @@ def computeEffective(object_ref, field_type):
 
     effective_default = FIELD_DEFAULTS[field_type]
 
-    # Call per-field setter (now calls object's Attribute-based setter)
+    # # Call per-field setter (now calls object's Attribute-based setter)
+    # Call field-specific wrapper function
+    # Dispatch to the appropriate effective setter
     setter = EFFECTIVE_SETTERS[field_type]
     setter(object_ref, effective_value, effective_default, effective_source)
 
@@ -414,12 +456,19 @@ class ComputeStyles:
         for note in self._taskFile.notes():
             self._computeForObject(note)
 
-    def _computeForObject(self, obj):
+    def _computeForObject(self, obj, visited=None):
         """Per-object processing: status (tasks only) → derived → effective.
 
         Also processes owned notes and attachments, which in turn process
         their own owned objects (attachments own notes, notes own attachments).
         """
+        if visited is None:
+            visited = set()
+
+        if id(obj) in visited:
+            return
+        visited.add(id(obj))
+
         if hasattr(obj, "computeStoredStatus"):
             obj.computeStoredStatus()
         for field_type in FIELD_TYPES:
@@ -427,10 +476,12 @@ class ComputeStyles:
             computeEffective(obj, field_type)
         if hasattr(obj, "notes"):
             for n in obj.notes(recursive=True):
-                self._computeForObject(n)
+                # self._computeForObject(n)
+                self._computeForObject(n, visited)
         if hasattr(obj, "attachments"):
             for a in obj.attachments():
-                self._computeForObject(a)
+                # self._computeForObject(a)
+                self._computeForObject(a, visited)
 
     def shutdown(self):
         """Cleanup subscriptions."""

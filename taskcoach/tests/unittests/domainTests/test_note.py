@@ -50,7 +50,9 @@ class NoteTest(tctest.TestCase):
         )
         self.note.setSubject("Note")
         self.assertEqual(
-            patterns.Event(self.note.subjectChangedEventType(), self.note, "Note"),
+            patterns.Event(
+                self.note.subjectChangedEventType(), self.note, "Note"
+            ),
             self.events[0],
         )
 
@@ -72,7 +74,9 @@ class NoteTest(tctest.TestCase):
         self.note.setDescription("Description")
         self.assertEqual(
             patterns.Event(
-                self.note.descriptionChangedEventType(), self.note, "Description"
+                self.note.descriptionChangedEventType(),
+                self.note,
+                "Description",
             ),
             self.events[0],
         )
@@ -92,7 +96,9 @@ class NoteTest(tctest.TestCase):
         )
         self.note.addChild(self.child)
         self.assertEqual(
-            patterns.Event(note.Note.addChildEventType(), self.note, self.child),
+            patterns.Event(
+                note.Note.addChildEventType(), self.note, self.child
+            ),
             self.events[0],
         )
 
@@ -103,7 +109,9 @@ class NoteTest(tctest.TestCase):
         self.note.addChild(self.child)
         self.note.removeChild(self.child)
         self.assertEqual(
-            patterns.Event(note.Note.removeChildEventType(), self.note, self.child),
+            patterns.Event(
+                note.Note.removeChildEventType(), self.note, self.child
+            ),
             self.events[0],
         )
 
@@ -193,7 +201,9 @@ class NoteOwnerTest(tctest.TestCase):
         self.noteOwner.addNote(self.note)
         self.assertEqual(
             patterns.Event(
-                NoteOwnerUnderTest.notesChangedEventType(), self.noteOwner, self.note
+                NoteOwnerUnderTest.notesChangedEventType(),
+                self.noteOwner,
+                self.note,
             ),
             self.events[0],
         )
@@ -228,9 +238,20 @@ class NoteOwnerTest(tctest.TestCase):
         self.assertEqual([self.note], self.noteOwner.__getstate__()["notes"])
 
     def testSetState(self):
+        print("TEST ajoute la note :")
         self.noteOwner.addNote(self.note)
+        print("TEST noteOwner.notes()=", self.noteOwner.notes())
         state = self.noteOwner.__getstate__()
+        print("TEST state=", state)
+        print("TEST retire la note :")
         self.noteOwner.removeNote(self.note)
+        print("TEST ID =", id(self.noteOwner))
+        print("TEST STATE =", state)
+        # print("TEST noteOwner.notes()=", self.noteOwner.notes())
+        print(
+            "TEST redéfinit la note avec state(qui ne doit pas avoir changé)=",
+            state,
+        )
         self.noteOwner.__setstate__(state)
         self.assertEqual([self.note], self.noteOwner.notes())
 
@@ -242,7 +263,9 @@ class NoteOwnerTest(tctest.TestCase):
         self.noteOwner.__setstate__(state)
         self.assertEqual(
             patterns.Event(
-                NoteOwnerUnderTest.notesChangedEventType(), self.noteOwner, self.note
+                NoteOwnerUnderTest.notesChangedEventType(),
+                self.noteOwner,
+                self.note,
             ),
             self.events[0],
         )

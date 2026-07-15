@@ -441,8 +441,8 @@ class Attachment(base.Object, NoteOwner):
 
     # # j'ai ajouté cette fonction
     # # à commenter ?
-    # def __hash__(self):
-    #     return hash(self.__location)
+    def __hash__(self):
+        return hash(self.__location)
 
     # Note: We intentionally do NOT override __hash__ or __eq__ here.
     # The parent class (base.Object) provides stable ID-based hashing
@@ -450,8 +450,27 @@ class Attachment(base.Object, NoteOwner):
     # Using location-based hashing caused KeyError crashes when the
     # location changed after observer registration (issue #84).
 
+    def __eq__(self, other):
+        """Comparer deux attachements par leur emplacement."""
+        print(
+            "DEBUG Attachment.__eq__",
+            self.location(),
+            getattr(other, "location", lambda: "?")(),
+        )
+        if not isinstance(other, Attachment):
+            return NotImplemented
+
+        return self.location() == other.location()
+
     def __lt__(self, other):
-        """Compare l'attachement avec un autre objet pour le tri en fonction de leur emplacement."""
+        """Permet le tri des attachements.
+
+        Compare l'attachement avec un autre objet pour le tri en fonction de leur emplacement.
+        """
+        if not isinstance(other, Attachment):
+            return NotImplemented
+
+        # return self.location() < other.location()
         try:
             return self.location() < other.location()
         except AttributeError:

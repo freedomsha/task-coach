@@ -117,11 +117,33 @@ class SynchronizedObjectTest(tctest.TestCase):
         )
 
     def testSetStateToDeletedCausesNotification(self):
+        """
+
+        Il ne vérifie pas seulement que :
+        self.getStatus() == STATUS_DELETED
+        Il vérifie aussi qu'un événement :
+        object.markdeleted
+        a été émis.
+
+        """
+        # Ce test est intéressant car il impose une contrainte souvent oubliée lors de la migration Python 2 → Python 3 : __setstate__() ne doit pas seulement restaurer l'état interne, il doit aussi rejouer les notifications nécessaires.
+        # Changer le status:
+        # self.object.getStatus() == self.object.STATUS_DELETED
+        # et émettre un événement self.object.markDeletedEventType()
+        # avec comme valeur self.object.STATUS_DELETED
         self.object.markDeleted()
+        # Enregistrer l'état actuel de l'objet
         state = self.object.__getstate__()
+        print(f"testSetStateToDeletedCausesNotification : state={state}")
+        # Le dictionnaire doit contenir l'information que l'objet est supprimé.
+        # Vider les événements déjà générés ou l'état "dirty"
         self.object.cleanDirty()
+        # On écoute uniquement les événements de suppression.
         self.registerObserver(self.object.markDeletedEventType())
-        self.object.__setstate__(state)
+        #
+        self.object.__setstate__(
+            state
+        )  # C'est ici que la migration python 2->3 casse souvent.
         self.assertOneEventReceived(
             self.object,
             self.object.markDeletedEventType(),

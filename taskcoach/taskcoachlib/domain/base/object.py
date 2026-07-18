@@ -371,18 +371,31 @@ class SynchronizedObject(object):
         Returns :
             dict : L'état de l'objet, incluant l'état de synchronisation.
         """
+        print(
+            "Synchronized.__getstate__ : avant super status =",
+            self.getStatus(),
+        )
         # Récupération de l'état de base de l'objet (depuis la classe supérieure Object)
         try:
             state = super().__getstate__()
         except AttributeError:
             state = dict()
-        log.debug(
-            f"SynchronizedObject.__getstate__ : state avant update {state}."
+        print(
+            f"Synchronized.__getstate__ : après super status = {self.getStatus()}"
         )
+        print(
+            f"SynchronizedObject.__getstate__ : après super et avant update state={state}."
+        )
+        # TODO :
+        # # Supprime l'attribut privé interne Python
+        # state.pop("_SynchronizedObject__status", None)
+        # # Cela évite les doublons.
+
         # Ajout de l'attribut de statut de synchronisation
         state["status"] = self.__status
+
         # ---^ : Member 'object' of 'object | dict[Any, Any]' does not have attribute '__setitem__'
-        log.debug(f"SynchronizedObject.__getstate__ : retourne state {state}.")
+        print(f"SynchronizedObject.__getstate__ : retourne state {state}.")
         return state
 
     @patterns.eventSource
@@ -390,51 +403,124 @@ class SynchronizedObject(object):
         """
         Définir l'état de l'objet à partir de la désérialisation.
 
+        Restaure l'état sérialisé de l'objet.
+
+        La restauration doit également générer les événements nécessaires
+        afin que les observateurs restent synchronisés.
+
         Args :
-            state (dict) : L’état à définir.
-            event : (event) L'événement associé à la définition de l'état.
+            state (dict) : L’état à définir. Etat sauvegardé de l'objet.
+            event : (event) L'événement optionnel associé à la définition de l'état à transmettre.
         """
         log.debug(
             f"SynchronizedObject.__setstate__ : pour state {state} et event {event}."
         )
-        # try:
-        #     super().__setstate__(state, event=event)
-        # except AttributeError:
-        #     pass
-        # C'est dans Object()!
-        old_status = getattr(
-            self,
-            "_SynchronizedObject__status",
-            self.STATUS_NEW,
+
+        # # Récupère le status est l'enregistre comme ancien status
+        # old_status = getattr(
+        #     self,
+        #     "_SynchronizedObject__status",
+        #     self.STATUS_NEW,
+        # )
+        # print(
+        #     f"SynchronizedObject.__setstate__ : getattr(self, '_SynchronizedObject__status') = {old_status1}"
+        # )
+        print(
+            f"SynchronizedObject.__setstate__ : self.__status = {self.__status}"
+        )
+        print(
+            f"SynchronizedObject.__setstate__ : self.getStatus() = {self.getStatus()}"
+        )
+        old_status = self.getStatus()
+        # old_status = self.__status
+        print(
+            "SynchronizedObject.__setstate__ : old_status = self.getStatus() !"
         )
 
-        new_status = state["status"]
+        # # Restaure les attributs simples
+        # for key, value in state.items():
+        #
+        #     # Ignore les attributs internes de synchronisation
+        #     if key in (
+        #         "_SynchronizedObject__status",
+        #         "_SynchronizedObject__dirty",
+        #     ):
+        #         continue
+        #
+        #     # Affecte la valeur restaurée
+        #     setattr(self, key, value)
 
-        if old_status != new_status:
+        # Restaure les classes parentes
+        try:
+            super().__setstate__(state, event=event)
+        except AttributeError:
+            pass
+        # C'est dans Object()!
+
+        # # # Récupère le nouveau statut restauré
+        # # status = self.getStatus()
+        # # # new_status = state["status"]
+        # new_status = self.getStatus()
+        print(
+            f"SynchronizedObject.__setstate__ : state['status'] = {state['status']}"
+        )
+        print(
+            f"SynchronizedObject.__setstate__ : self.__status = {self.__status}"
+        )
+        print(
+            f"SynchronizedObject.__setstate__ : self.getStatus() = {self.getStatus()}"
+        )
+        print(
+            "SynchronizedObject.__setstate__ : new_status = state['status'] !"
+        )
+        new_status = state.get(
+            "status",
+            self.STATUS_NONE,
+        )
+
+        if old_status == new_status:
+            # Le statut interne doit être restauré avant de générer l'événement
             self.__status = new_status
+            return
+        else:
+            # if old_status != new_status:
+            # # Le statut interne doit être restauré avant de générer l'événement
+            # self.__status = new_status  # Ne pas changer __status à deux endroits !
+            # return
 
-        # Le statut est restauré par SynchronizedObject.__setstate__.
-        # Object ne gère que les attributs propres à Object.
-        # if (
-        #     state["status"] != self.__status
-        # ):  # Utiliser les différents cas avec match !
-        #     # if state["status"] == self.STATUS_CHANGED:
-        #     #     self.markDirty(event=event)
-        #     # elif state["status"] == self.STATUS_DELETED:
-        #     #     self.markDeleted(event=event)
-        #     # elif state["status"] == self.STATUS_NEW:
-        #     #     self.markNew(event=event)
-        #     # elif state["status"] == self.STATUS_NONE:
-        #     #     self.cleanDirty(event=event)
-        #     match state["status"]:
-        #         case self.STATUS_CHANGED:
-        #             self.markDirty(event=event)
-        #         case self.STATUS_DELETED:
-        #             self.markDeleted(event=event)
-        #         case self.STATUS_NEW:
-        #             self.markNew(event=event)
-        #         case self.STATUS_NONE:
-        #             self.cleanDirty(event=event)
+            # # # Le statut est restauré par SynchronizedObject.__setstate__.
+            # # # Object ne gère que les attributs propres à Object.
+            # # if (
+            # #     state["status"] != self.__status
+            # # ):  # Utiliser les différents cas avec match !
+            # #     # if state["status"] == self.STATUS_CHANGED:
+            # #     #     self.markDirty(event=event)
+            # #     # elif state["status"] == self.STATUS_DELETED:
+            # #     #     self.markDeleted(event=event)
+            # #     # elif state["status"] == self.STATUS_NEW:
+            # #     #     self.markNew(event=event)
+            # #     # elif state["status"] == self.STATUS_NONE:
+            # #     #     self.cleanDirty(event=event)
+            # #     match state["status"]:
+            match new_status:
+                # Il ne faut pas restaurer le statut directement et espérer que l'événement arrive.
+                # Il faut utiliser les méthodes métier.
+                # match status:
+                case self.STATUS_CHANGED:
+                    # self.markDirty(event=event)
+                    self.markDirty(force=True, event=event)
+                    # Pourquoi force=True ?
+                    # Parce que markDirty() ne produit un événement que si self.__status == self.STATUS_NONE (l'état change)
+                    # or pendant une désérialisation l'ancien statut peut être n'importe quoi.
+                    # Donc, pour forcer la génération d'un événement même si l'état est déjà STATUS_CHANGED, on utilise force=True.
+                # Si l'objet était supprimé dans l'état sauvegardé
+                case self.STATUS_DELETED:
+                    # Provoque l'événement attendu par les observateurs
+                    self.markDeleted(event=event)
+                case self.STATUS_NEW:
+                    self.markNew(event=event)
+                case self.STATUS_NONE:
+                    self.cleanDirty(event=event)
 
     def getStatus(self):
         """

@@ -1012,11 +1012,11 @@ class Object(SynchronizedObject):
         if "bgColor" in local_kwargs:
             self.__bgColor.set(local_kwargs["bgColor"])
         if "font" in local_kwargs:
-            # self.__font.set(local_kwargs["font"])
-            self.__font = local_kwargs["font"]
+            # self.__font = local_kwargs["font"]
+            self.__font.set(local_kwargs["font"])
         if "icon" in local_kwargs:
-            # self.__icon.set(local_kwargs["icon"])
-            self.__icon = local_kwargs["icon"]
+            # self.__icon = local_kwargs["icon"]
+            self.__icon.set(local_kwargs["icon"])
         if "selectedIcon" in local_kwargs:
             self.__selectedIcon.set(local_kwargs["selectedIcon"])
         if "ordering" in local_kwargs:
@@ -1261,6 +1261,17 @@ class Object(SynchronizedObject):
         """
         # ce qui doit exister en mémoire pour que l'objet fonctionne.
 
+        print("SUBJECT =", self.subjectChangedEvent)
+        print("DESCRIPTION =", self.descriptionChangedEvent)
+        print("FG =", self._onDerivedFgColorChanged)
+        print("EFFECTIVE FG =", self._onEffectiveFgColorChanged)
+        print("BG =", self._onDerivedBgColorChanged)
+        print("EFFECTIVE BG =", self._onEffectiveBgColorChanged)
+        print("ICON =", self._onDerivedIconChanged)
+        print("EFFECTIVE ICON =", self._onEffectiveIconChanged)
+        print("FONT =", self._onDerivedFontChanged)
+        print("EFFECTIVE FONT =", self._onEffectiveFontChanged)
+
         # # les clés sérialisées restent définies à un seul endroit
         # for key in SERIALIZATION_CORE_KEYS:
         #     if key not in ATTRIBUTE_SPECS:
@@ -1292,27 +1303,50 @@ class Object(SynchronizedObject):
         #         ),
         #     )
         # Attributs fondamentaux
+        # Les attributs principaux doivent être créés avec leurs vrais handlers
         self._Object__subject = attribute.Attribute(
-            "", self, lambda event: None
+            # "", self, lambda event: None
+            "",
+            self,
+            self.subjectChangedEvent,
         )
         self._Object__description = attribute.Attribute(
-            "", self, lambda event: None
+            "", self, self.descriptionChangedEvent
         )
         self._Object__fgColor = attribute.Attribute(
-            None, self, lambda event: None
+            # None, self, self.fgColorChangedEvent
+            None,
+            self,
+            self.appearanceChangedEvent,
         )
         self._Object__bgColor = attribute.Attribute(
-            None, self, lambda event: None
+            # None, self, self.bgColorChangedEvent
+            None,
+            self,
+            self.appearanceChangedEvent,
         )
         self._Object__font = attribute.Attribute(
-            None, self, lambda event: None
+            # None, self, self.fontChangedEvent
+            None,
+            self,
+            self.appearanceChangedEvent,
         )
-        self._Object__icon = attribute.Attribute("", self, lambda event: None)
+
+        self._Object__icon = attribute.Attribute(
+            # "", self, self.iconChangedEvent
+            "",
+            self,
+            self.appearanceChangedEvent,
+        )
+
         self._Object__selectedIcon = attribute.Attribute(
-            "", self, lambda event: None
+            # "", self, self.selectedIconChangedEvent
+            "",
+            self,
+            self.appearanceChangedEvent,
         )
         self._Object__ordering = attribute.Attribute(
-            self._long_zero, self, lambda event: None
+            self._long_zero, self, self.orderingChangedEvent
         )
 
         # Attributs d'apparence dérivés
@@ -1375,6 +1409,20 @@ class Object(SynchronizedObject):
         self.__effectiveFontDefault = attribute.Attribute(
             None, self, self._onEffectiveFontChanged
         )
+        # TODO : Je vérifierais que createAttributes() est strictement identique à ce que faisait l'ancien Object.__init__.
+        # Autrement dit :
+        # mêmes objets Attribute
+        # mêmes callbacks
+        # mêmes valeurs par défaut
+        #
+        # Car sinon tu risques encore d'avoir des tests qui échouent uniquement pendant la désérialisation alors que les objets créés normalement fonctionnent.
+        #
+        # Le plus robuste est souvent de factoriser tout le code de création des Attribute dans createAttributes()
+        # puis de l'appeler à la fois depuis :
+        # Object.__init__()
+        # et Object.__setstate__()
+        # afin de garantir qu'il n'existe qu'une seule définition de ces attributs.
+        # Cela évite exactement le genre de divergence que tu viens de découvrir.
 
     def __repr__(self):
         """
@@ -1453,6 +1501,7 @@ class Object(SynchronizedObject):
         # # missing = [key for key in accepted_keys if key not in state]
         # missing = Object.SERIALIZATION_CORE_KEYS.difference(state)
         missing = self.SERIALIZATION_CORE_KEYS.difference(state)
+        # missing = accepted_keys.difference(state)
 
         # # assert not missing, f"Clés manquantes dans le state : {missing}"
         # assert not missing, "Clés de sérialisation perdues : %s" % sorted(
@@ -1573,6 +1622,8 @@ class Object(SynchronizedObject):
         # for key in keys_to_remove:
         #     del state[key]
 
+        self.validate_state(state)
+
         # ⚠️ Nettoyage uniquement des classes du framework, pas des subclasses métier
         # Suppression uniquement des attributs internes des classes parentes.
         # Les classes filles comme NoteOwner doivent conserver leurs attributs privés
@@ -1588,7 +1639,6 @@ class Object(SynchronizedObject):
             f"Object.__getstate__() : state après nettoyage: {state} avant validation"
         )
         print("Object.__getstate : GETSTATE KEYS =", sorted(state.keys()))
-        self.validate_state(state)
 
         # DEBUG : Affichage de l'état sérialisé pour vérification
         # log.debug(f"DEBUG - Object.__getstate__() renvoie : {state}")
@@ -1666,21 +1716,39 @@ class Object(SynchronizedObject):
             state (dict) : L’état à définir.
             event : (event) L'événement associé à la définition de l'état.
         """
-        log.debug(
-            f"Object.__setstate__ : avant super, state={state} et event={event}."
+        print(
+            f"Object.__setstate__ : avant super, state={state} et event={event} avec l'id(event)={id(event)}."
         )
-        print("DEBUG Object.__setstate__ AVANT")
+        print("DEBUG Object.__setstate__ AVANT super : self.__dict__=")
         print(self.__dict__)
+        print("Liste des attributs:")
+        for key in state:
+            print(key)
 
         # Toujours recréer les conteneurs d'attributs d'abord
         self.createAttributes()
 
         # Appeler le parent
         # C'est l'appel crucial qui va charger les attributs du parent SynchronizedObject
-        try:
-            super().__setstate__(state, event=event)
+        # Il faut empêcher le parent de restaurer les attributs internes.
+        # try:
+        #     super().__setstate__(state, event=event)
         # except AttributeError:  # Cache certains problèmes
         #     pass
+        # mais il faut conserver id, creationDateTime et modificationDateTime.
+        filtered_state = {}
+
+        for key, value in state.items():
+
+            # Ignore les objets Attribute internes
+            if key.startswith("_Object__"):
+                continue
+
+            # Garde les données publiques sérialisées
+            filtered_state[key] = value
+
+        try:
+            super().__setstate__(filtered_state, event=event)
         except AttributeError as error:
             print("ERREUR super().__setstate__ :", error)
             raise
@@ -2409,6 +2477,7 @@ class Object(SynchronizedObject):
         # supposent des objets composites là où il n'y en a pas. Il s'agit de
         # la solution de contournement la plus simple.
         return self.__font.get()
+        # return self.__font
 
     def setFont(self, font, event=None):
         """
@@ -2434,6 +2503,7 @@ class Object(SynchronizedObject):
             L'icône.
         """
         return self.__icon.get()
+        # return self.__icon
 
     def setIcon(self, icon, event=None):
         """
@@ -2665,12 +2735,27 @@ class Object(SynchronizedObject):
     # --- Effective Event Handlers ---
 
     def _onEffectiveFgColorChanged(self, event):
+        print(
+            "_onEffectiveFgColorChanged event =",
+            event,
+            id(event) if event else None,
+        )
         event.addSource(self, type=self.effectiveFgColorChangedEventType())
 
     def _onEffectiveBgColorChanged(self, event):
+        print(
+            "_onEffectiveBgColorChanged event =",
+            event,
+            id(event) if event else None,
+        )
         event.addSource(self, type=self.effectiveBgColorChangedEventType())
 
     def _onEffectiveIconChanged(self, event):
+        print(
+            "_onEffectiveIconChanged event =",
+            event,
+            id(event) if event else None,
+        )
         event.addSource(self, type=self.effectiveIconChangedEventType())
 
     def _onEffectiveFontChanged(self, event):

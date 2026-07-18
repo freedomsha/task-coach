@@ -162,6 +162,10 @@ class ObjectTest(tctest.TestCase):
         print(
             f"ObjectTest.setUp : fin de setUp self.tcobject={self.tcobject}, id={self.tcobject.id()}, creationDateTime={self.tcobject.creationDateTime()}, modificationDateTime={self.tcobject.modificationDateTime()}, subject={self.tcobject.subject()}, description={self.tcobject.description()}, status={self.tcobject.getStatus()}, fgColor={self.tcobject.foregroundColor()}, bgColor={self.tcobject.backgroundColor()}, font={self.tcobject.font()}, icon={self.tcobject.icon()}, selectedIcon={self.tcobject.selectedIcon()}"
         )
+        print(
+            "ObjectTest.setUp : self.tcobject.modificationEventTypes()=",
+            self.tcobject.modificationEventTypes(),
+        )
 
     def onEvent(self, event):
         self.eventsReceived.append(event)
@@ -642,7 +646,9 @@ class ObjectTest(tctest.TestCase):
         try:
             self.tcobject.validate_state(complete_state)
         except AssertionError:
-            self.fail("validate_state() should not raise AssertionError with complete state")
+            self.fail(
+                "validate_state() should not raise AssertionError with complete state"
+            )
 
     def testProtectParentKeys_RaisesWhenParentKeyIsLost(self):
         """
@@ -662,14 +668,21 @@ class ObjectTest(tctest.TestCase):
         Vérifie que protect_parent_keys() ne lève pas d'exception quand toutes les clés du parent sont présentes.
         """
         parent_state = {"id": "123", "status": 1, "subject": "test"}
-        child_state = {"id": "123", "status": 1, "subject": "test", "description": "new"}
+        child_state = {
+            "id": "123",
+            "status": 1,
+            "subject": "test",
+            "description": "new",
+        }
 
         # La méthode ne doit pas lever d'exception
         try:
             result = base.Object.protect_parent_keys(parent_state, child_state)
             self.assertEqual(child_state, result)
         except AssertionError:
-            self.fail("protect_parent_keys() should not raise AssertionError when all keys are present")
+            self.fail(
+                "protect_parent_keys() should not raise AssertionError when all keys are present"
+            )
 
     def testSerializationPreservesCoreAttributes(self):
         """
@@ -685,11 +698,24 @@ class ObjectTest(tctest.TestCase):
         state = self.tcobject.__getstate__()
 
         # Vérifier que tous les attributs essentiels sont présents
-        essential_keys = {"id", "status", "subject", "description", "creationDateTime",
-                         "modificationDateTime", "fgColor", "bgColor", "font", "icon",
-                         "selectedIcon", "ordering"}
+        essential_keys = {
+            "id",
+            "status",
+            "subject",
+            "description",
+            "creationDateTime",
+            "modificationDateTime",
+            "fgColor",
+            "bgColor",
+            "font",
+            "icon",
+            "selectedIcon",
+            "ordering",
+        }
         for key in essential_keys:
-            self.assertIn(key, state, f"Key {key} missing from serialized state")
+            self.assertIn(
+                key, state, f"Key {key} missing from serialized state"
+            )
 
         # Vérifier que les valeurs sont correctes
         self.assertEqual("Test Subject", state["subject"])
@@ -736,14 +762,18 @@ class ObjectTest(tctest.TestCase):
 
         # Vérifier que le status est préservé
         self.assertIn("status", state)
-        self.assertEqual(base.SynchronizedObject.STATUS_DELETED, state["status"])
+        self.assertEqual(
+            base.SynchronizedObject.STATUS_DELETED, state["status"]
+        )
 
         # Créer un nouvel objet et restaurer l'état
         new_object = base.Object()
         new_object.__setstate__(state)
 
         # Vérifier que le status a été restauré
-        self.assertEqual(base.SynchronizedObject.STATUS_DELETED, new_object.getStatus())
+        self.assertEqual(
+            base.SynchronizedObject.STATUS_DELETED, new_object.getStatus()
+        )
 
 
 class CompositeObjectTest(tctest.TestCase):
@@ -881,6 +911,10 @@ class CompositeObjectTest(tctest.TestCase):
         self.assertEqual(wx.ITALIC_FONT, self.child.font(recursive=True))
 
     def testSubItemDoesNotUseParentFontIfItHasItsOwnFont(self):
+        """
+        Tester si un sous-item n'utilise pas la police du parent
+        s'il a sa propre police.
+        """
         self.addChild(font=wx.SWISS_FONT)
         self.compositeObject.setFont(wx.ITALIC_FONT)
         self.assertEqual(wx.SWISS_FONT, self.child.font(recursive=True))
@@ -987,8 +1021,15 @@ class CompositeObjectTest(tctest.TestCase):
         )
 
     def testChildOfCompositeUsesSingularIconIfAvailable(self):
+        """
+        Test si l'enfant d'un composite utilise l'icône singulier
+        si elle est disponible.
+        """
+        # Assigner un icône au composite
         self.compositeObject.setIcon("books_icon")
+        # Ajouter un enfant au composite
         self.addChild()
+        # Vérifier que l'icône du composite est correcte
         self.assertEqual("book_icon", self.child.icon(recursive=True))
 
     def testChildOfCompositeUsesSingularSelectedIconIfAvailable(self):

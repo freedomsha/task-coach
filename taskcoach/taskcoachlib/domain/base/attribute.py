@@ -75,9 +75,29 @@ class Attribute(object):
             - __owner : La référence faible à l'objet propriétaire.
             - __setEvent : La fonction de gestionnaire d'événements à appeler lors de la définition de l'attribut.
         """
+        # print(
+        #     "Attribute.__init__",
+        #     "owner=", owner,
+        #     "value=", value,
+        #     "setEvent=", setEvent,
+        #     "type=", type(setEvent)
+        # )
+        # Remplace ton debug par quelque chose qui n'appelle jamais __repr__ :
+        print(
+            "Attribute.__init__ owner=%s type=%s"
+            % (
+                type(owner).__name__ if owner else None,
+                type(setEvent).__name__,
+            ),
+        )
+        if setEvent is not None and not callable(setEvent):
+            raise TypeError(
+                f"Attribute.__init__ : setEvent doit être callable, reçu {setEvent!r}"
+            )
         super().__init__()
         self.__value = value
-        self.__owner = weakref.ref(owner)
+        # self.__owner = weakref.ref(owner)
+        self.__owner = owner
         # Définit la fonction sous-jacente setEvent
         # self.__setEvent = setEvent.__func__  # Différent en python 3
         # En Python, quand on passe method.__func__, on enlève la partie liée (self).
@@ -168,6 +188,23 @@ class Attribute(object):
         # (si une classe a été spécifiée comme parent) et levons une TypeError dans le cas contraire.
 
         self.__setEvent = setEvent
+        # print(
+        #     "Attribute.__init__ self.__setEvent=%r type=%s",
+        #     self.__setEvent,
+        #     type(self.__setEvent).__name__,
+        # )
+        # # Ne jamais afficher directement une méthode liée dans ce contexte.
+        print(
+            "Attribute.__init__ self.__setEvent type=%s name=%s owner_type=%s"
+            % (
+                type(self.__setEvent).__name__,
+                getattr(self.__setEvent, "__name__", None),
+                type(getattr(self.__setEvent, "__self__", None)).__name__,
+            ),
+        )
+        # print(
+        #     f"Attribute.__init__ self.__setEvent type={type(self.__setEvent).__name__} name={getattr(self.__setEvent, "__name__", None)} owner_type={type(getattr(self.__setEvent, "__self__", None)).__name__}"
+        # )
 
     def get(self):
         """
@@ -176,7 +213,25 @@ class Attribute(object):
         Returns :
             La valeur actuelle de l'attribut.
         """
+        print("Attribute.get : retourne self.__value ", self.__value)
         return self.__value
+
+    def setEvent(self, setEvent):
+        """
+        Définit ou remplace le gestionnaire d'événement utilisé lorsque
+        l'attribut change. Accepts any callable or None.
+
+        Cette méthode permet à l'appelant (par ex. Object.__init__)
+        d'installer le gestionnaire d'événement après la création de
+        l'Attribute, ce qui évite de déclencher des événements pendant
+        l'initialisation.
+        """
+        if setEvent is not None and not callable(setEvent):
+            raise TypeError(
+                f"Attribute.setEvent : setEvent doit être callable, reçu {setEvent!r}"
+            )
+        print(f"Attribute.setEvent : définit self.__setEvent={setEvent}")
+        self.__setEvent = setEvent
 
     @patterns.eventSource
     def set(self, value, event=None):
@@ -197,22 +252,51 @@ class Attribute(object):
         # En résumé, la correction technique consiste à appeler directement la méthode d'événement sans tenter de manipuler __func__, ce qui est plus sûr et plus conforme aux conventions de Python 3.
         # Définition de la méthode set corrigée pour éviter les problèmes liés à __func__ en Python 3.
         # Définition du propriétaire avec une référence faible pour éviter les fuites de mémoire. :
-        owner = self.__owner()
+        owner = self.__owner
+        print(
+            f"Attribute.set : Définition de l'attribut {self} avec comme propriétaire owner={owner}, valeur={value} et transmet l'événement event={event}."
+        )
         # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
         if owner is not None:
             # Vérifie si la nouvelle valeur est différente de l'actuelle pour éviter les appels d'événements inutiles.
             if value == self.__value:
+                print(
+                    f"Attribute.set : La valeur de {self} est déjà définie ainsi : {value}"
+                )
                 return False
             # Met à jour la valeur de l'attribut.
             self.__value = value
             # self.__setEvent(owner, event)  # ❌ trop d'arguments
+            # print(
+            #     f"Attribute.set : value={value}, Calling setEvent with owner: {owner} and event: {event}"
+            # )  # Debug print
+            # print(
+            #     "DEBUG Attribute.__setEvent =",
+            #     self.__setEvent,
+            #     "type=",
+            #     type(self.__setEvent),
+            # )
+            import inspect
+
             print(
-                f"Attribute.set : value={value}, Calling setEvent with owner: {owner} and event: {event}"
-            )  # Debug print
+                "SETEVENT =",
+                self.__setEvent,
+            )
+
+            print(
+                inspect.signature(self.__setEvent)
+            )
             self.__setEvent(
-                event
+                # event
+                event=event
             )  # ✅ juste l'event, self est déjà lié via owner
+            # !!! Ce changement est peut-être correct pour les méthodes liées
+            # !!! (bound methods), mais pas pour les lambdas.
+            print(
+                "Attribute.set : Valeur a été définie avec succès et l'événement a été déclenché !"
+            )
             return True
+        print("Attribute.set : Impossible de définir la valeur.")
         return False
 
 
@@ -269,6 +353,20 @@ class SetAttribute(object):
             - __removeEvent : La fonction de gestionnaire d'événements pour les suppressions.
             - __changeEvent : La fonction de gestionnaire d'événements pour les changements.
         """
+        print(
+            "SetAttribute.__init__ avec owner=",
+            owner,
+            "values=",
+            values,
+            "weak=",
+            weak,
+            "type=",
+            type(weak),
+            "et méthodes",
+            addEvent,
+            removeEvent,
+            changeEvent,
+        )
         self.__setClass = WeakSet if weak else set
         self.__set = self.__setClass(values) if values else self.__setClass()
         self.__owner = weakref.ref(owner)
@@ -284,6 +382,9 @@ class SetAttribute(object):
         Returns :
             Un nouvel ensemble contenant les valeurs actuelles de l'attribut.
         """
+        print(
+            "SetAttribute.get : retourne une copie de l'ensemble actuel des valeurs."
+        )
         return set(self.__set)
 
     @patterns.eventSource
@@ -302,10 +403,14 @@ class SetAttribute(object):
         # Le code vérifie d'abord si le propriétaire existe toujours, puis compare les nouvelles valeurs avec les anciennes pour déterminer les éléments ajoutés et supprimés. Ensuite, il met à jour l'ensemble de valeurs et déclenche les événements appropriés.
         # Définit owner comme propriétaire de référence faible pour éviter les fuites de mémoire.
         owner = self.__owner()
+        print(
+            f"SetAttribute.set : Définition de l'attribut {self} avec comme propriétaire owner={owner}, valeurs={values} et transmet l'événement event={event}."
+        )
         # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
         if owner is not None:
             # Vérifier si les valeurs appartiennent à l'ensemble contenu dans le propriétaire, si c'est le cas, il n'y a pas de changement à faire, donc retourne False.
             if values == set(self.__set):
+                print("SetAttribute.set : Les valeurs est déjà définie ainsi.")
                 return False
             # Calculer les éléments ajoutés et supprimés en comparant les nouvelles valeurs avec les anciennes.
             added = values - set(self.__set)
@@ -320,7 +425,11 @@ class SetAttribute(object):
             if added or removed:
                 # Déclenche l'événement de changement avec les nouvelles valeurs de l'ensemble.
                 self.__changeEvent(owner, event, *set(self.__set))
+            print(
+                "SetAttribute.set : Valeur a été définie avec succès et l'événement a été déclenché !"
+            )
             return True
+        print("SetAttribute.set : Impossible de définir les valeurs.")
         return False
 
     @patterns.eventSource

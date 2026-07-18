@@ -60,8 +60,17 @@ class Composite(object):
             parent (Composite | None) : (facultatif) Référence faible au Composite parent.
         """
         # log.debug(
-        print("Composite : Initialisation.")
+        print(
+            f"Composite : Initialisation de l'objet composite self = {id(self)} avec parent = {parent} et children = {children}."
+        )
+        print(
+            "Composite : Initialisation de l'objet composite avec la méthode super."
+        )
         super().__init__()
+        print("Composite : méthode super terminée.")
+        print(
+            f"Composite : L'objet composite self = {id(self)} a parent = {parent} et children = {children}."
+        )
         # self.__parent = parent if parent is None else weakref.ref(parent)
         # # Ne réinitialiser __parent que si pas déjà défini par un setParent précédent
         if (
@@ -81,17 +90,20 @@ class Composite(object):
             # log.debug(
             print(
                 # f"Composite : Ajout de l'enfant {child.id()} à {self.id()}"
-                f"Composite : Ajout de l'enfant {child} à {self}"
+                f"Composite : Ajout de l'enfant {child} à self.id={id(self)}"
             )
             child.setParent(self)
         # log.debug(
         print(
-            "Après Composite.__init__ : de id=%s enfants=%s"
+            "Après Composite.__init__ : de id=%s avec %s enfants."
             % (id(self), len(self.children())),
         )  # Ne jamais appeler self dans un print() pendant l’initialisation.
         # log.debug(
-        print("Après Composite.__init__ : parent=%s" % self.parent())
-        log.debug("Composite : Initialisé.")
+        print(
+            "Après Composite.__init__ : parent=%s et children=%s."
+            % (self.parent(), self.children())
+        )
+        print("Composite : Initialisé !")
 
     def __getstate__(self):
         """
@@ -102,7 +114,7 @@ class Composite(object):
         """
         # return dict(children=self.__children[:], parent=self.parent())
         state = dict(children=self.__children[:], parent=self.parent())
-        print(f"Composite.__getstate__ : retourne state : {state}.")
+        print(f"Composite.__getstate__ : retourne state : {state}!")
         return state
 
     def __setstate__(self, state):

@@ -42,6 +42,9 @@ class Category(
         *args,
         **kwargs,
     ):
+        # Indique que l'objet n'est pas encore complètement construit.
+        self.__initializing = True
+
         super().__init__(
             subject=subject,
             children=children or [],
@@ -50,6 +53,7 @@ class Category(
             *args,
             **kwargs,
         )
+
         # Liste d'attributs de base contenant la liste des catégorisables.
         self.__categorizables = base.SetAttribute(
             values=set(categorizables or []),
@@ -61,6 +65,9 @@ class Category(
         self.__filtered = filtered
         self.__exclusiveSubcategories = exclusiveSubcategories
         self.__stylePriority = stylePriority
+
+        # L'objet est maintenant complètement construit.
+        self.__initializing = False
         # Note: Effective appearance is computed by ComputeStyles polling
 
     @classmethod
@@ -166,12 +173,22 @@ class Category(
         (par exemple, en mettant à jour leur affichage
         ou en recalculant des valeurs dérivées du sujet de la catégorie).
 
+        Propage un changement de sujet aux objets catégorisables.
+
+        Ignore les événements reçus pendant la construction de l'objet.
+
         Args:
             event: L'événement de changement de sujet qui a été déclenché.
 
         Returns:
             None
         """
+        # Il faut empêcher categorySubjectChangedEvent() d'agir pendant l'initialisation.
+        # Ignore les événements déclenchés pendant super().__init__().
+        # if self.__initializing:
+        if getattr(self, "_Category__initializing", False):
+            return
+
         subject = self.subject()
         for eachCategorizable in self.categorizables(recursive=True):
             eachCategorizable.categorySubjectChangedEvent(event, subject)
@@ -187,6 +204,9 @@ class Category(
         Returns:
             Set of categorizables that belong to this category (and optionally its subcategories).
         """
+        if not hasattr(self, "_Category__categorizables"):
+            return set()
+
         # Met la Liste d'attributs de base contenant la liste des catégorisables dans result.
         result = self.__categorizables.get()
         # Si récursive, pour chaque enfant de la liste d'enfants, result devient result OU la liste d'attributs de l'enfant :

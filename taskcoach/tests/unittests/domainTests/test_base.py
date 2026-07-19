@@ -151,10 +151,16 @@ class SynchronizedObjectTest(tctest.TestCase):
         )
 
     def testSetStateToNotDeletedCausesNotification(self):
+        """"""
+        # Sauvegarde l'état (status=1) de l'objet
         state = self.object.__getstate__()
+        # Change l'état comme marqué effacé (3)
         self.object.markDeleted()
+        #
         self.registerObserver(self.object.markNotDeletedEventType())
+        # Enregistre l'état actuel de l'objet avec l'ancien état nouveau (1)
         self.object.__setstate__(state)
+        # Vérification de l'état actuel de l'objet après restauration
         self.assertOneEventReceived(
             self.object,
             self.object.markNotDeletedEventType(),

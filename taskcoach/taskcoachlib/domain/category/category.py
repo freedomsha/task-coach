@@ -156,6 +156,7 @@ class Category(
                 stylePriority=self.__stylePriority,
             )
         )
+        print(f"Category.__getcopystate : retourne state={state}!")
         return state
 
     def subjectChangedEvent(self, event):

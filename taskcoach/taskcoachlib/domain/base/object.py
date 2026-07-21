@@ -722,6 +722,25 @@ class SynchronizedObject(object):
         # pass
         return []
 
+    # Protection : Les attributs doivent exister avant que les événements puissent être déclenchés !
+    def _beginInitialization(self):
+        """
+        Marque l'objet comme étant en cours de construction.
+        """
+        self.__initializing = True
+
+    def _endInitialization(self):
+        """
+        Marque l'objet comme complètement construit.
+        """
+        self.__initializing = False
+
+    def _isInitializing(self):
+        """
+        Retourne True si l'objet est encore en construction.
+        """
+        return getattr(self, "_SynchronizedObject__initializing", False)
+
 
 # @functools.total_ordering
 class Object(SynchronizedObject):
@@ -1554,6 +1573,17 @@ class Object(SynchronizedObject):
         return f"<{self.__class__.__name__} id={id(self)}>"
 
     def __eq__(self, other):
+        """Vérifie et renvoie si deux objets sont égaux.
+
+        Vérifie si other est une instance de Object
+        et compare les deux ids de chaque objet.
+
+        Args :
+            other : L'autre object avec lequel comparer.
+
+        Returns :
+            (bool) : True si les deux ids des objets sont égaux, False sinon.
+        """
         if not isinstance(other, Object):
             return NotImplemented
         return self.id() == other.id()
@@ -2065,11 +2095,13 @@ class Object(SynchronizedObject):
         #     )
         # # A RETIRER
 
-        # Restauration des données scalaires d'état
-        # Restaure l'identifiant de l'objet
-        # self.__id = state["id"]
+        # # Restauration des données scalaires d'état
+        # # Restaure l'identifiant de l'objet
+        # # self.__id = state["id"]
         if "id" in state:
             self.__id = state["id"]
+        # NON, sinon la copie d'état crée le même objet alors qu'on veut un objet différent !
+
         # self.__creationDateTime = state["creationDateTime"]
         # Restaure la date de création
         if "creationDateTime" in state:
@@ -2114,18 +2146,28 @@ class Object(SynchronizedObject):
         Renvoie un dictionnaire qui peut être transmis à __init__ lors de la création
         d'une copie de l'objet.
 
+        Retourne l'état minimal nécessaire pour recréer une copie.
+
+        Cette méthode est destinée à être appelée par copy().
+        Les classes dérivées doivent compléter cet état avec leurs
+        propres attributs via super().__getcopystate__().
+
+
         E.g. copy = obj.__class__(**original.__getcopystate__())
 
         Returns :
             state (dict) : Le dictionnaire d'état pour créer une copie.
+                           Arguments utilisables par le constructeur de la classe.
         """
         try:
             state = super().__getcopystate__()
         except AttributeError:
-            state = dict()
+            # state = dict()
+            state = {}
         # log.debug(f"Object.__getcopystate__ : avant update state={state}.")
         if state is None:
-            state = dict()
+            # state = dict()
+            state = {}
         # Notez que nous ne mettons pas l'identifiant et la date/heure de création dans le dict state,
         # car une copie devrait obtenir un nouvel identifiant et une nouvelle date/heure de création.
         state.update(
@@ -2145,16 +2187,25 @@ class Object(SynchronizedObject):
 
     def copy(self):
         """
-        Créez une copie de l'objet.
+        Créer une copie de l'objet.
+
+        Crée une copie indépendante de l'objet.
+
+        La copie possède un nouvel identifiant,
+        mais conserve les attributs métier.
 
         Returns :
-            (Object) Une nouvelle instance de l'objet avec le même état.
+            (Object) : Une nouvelle instance reconstruite de l'objet avec le même état.
         """
         state = self.__getcopystate__()
-        print("COPY STATE =", state)
+        print("Object.copy : DEBUG - COPY STATE =", state)
         # print(f"object.Object.__getcopystate__ : DEBUG - __getcopystate__() : {state}")  # Ajoute ce print
-        return self.__class__(**state)  # Accessor kind: Getter
+        print(f"{self.__class__.__name__}.copy() state={state}")
+
+        copied_object = self.__class__(**state)
+        # return self.__class__(**state)  # Accessor kind: Getter
         # return self.__class__(**self.__getcopystate__())
+        return copied_object
 
     @classmethod
     def monitoredAttributes(class_):
@@ -2351,6 +2402,11 @@ class Object(SynchronizedObject):
         Args :
             event : L'événement.
         """
+        if (
+            getattr(self, "_SynchronizedObject__initializing", False)
+            or self._isInitializing()
+        ):
+            return
         event.addSource(
             self, self.ordering(), type=self.orderingChangedEventType()
         )
@@ -2432,6 +2488,11 @@ class Object(SynchronizedObject):
         Args :
             event : (Event) L'événement à enrichir avec la source modifiée.
         """
+        if (
+            getattr(self, "_SynchronizedObject__initializing", False)
+            or self._isInitializing()
+        ):
+            return
         # event.addSource(
         #     self, self.description, type=self.descriptionChangedEventType()
         # )
@@ -3036,7 +3097,7 @@ class CompositeObject(
         log.debug(
             f"CompositeObject.__init__() → kwargs après Object avant Composite: {kwargs}"
         )
-
+        print("CompositeObject.__init__ : children reçus =", children)
         # Initialisation manuelle de Composite
         patterns.composite.Composite.__init__(
             self, children=children, parent=parent
@@ -3140,6 +3201,11 @@ class CompositeObject(
         Args :
             event : L'événement.
         """
+        if (
+            getattr(self, "_SynchronizedObject__initializing", False)
+            or self._isInitializing()
+        ):
+            return
         super().subjectChangedEvent(event)
         for child in self.children():
             child.subjectChangedEvent(event)

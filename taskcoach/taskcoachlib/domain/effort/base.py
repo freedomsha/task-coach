@@ -32,21 +32,19 @@ from taskcoachlib.domain.base.attribute import Attribute
 
 class BaseEffort(object):
     """
-    An effort is a time interval during which work is done on a task.
+    Un effort est un intervalle de temps pendant lequel un travail est effectué sur une tâche.
 
-    It has a start and a stop time.
-    It may be a detail effort or a total effort.
-    A detail effort is an effort that represents a single time interval
-    during which work is done on a task.
-    A total effort is an effort that represents the total time spent on a task,
-    including all detail efforts and the time spent on its subtasks.
+    Il a une heure de début et une heure de fin.
+    Il peut s'agir d'un effort détaillé ou d'un effort total.
+    Un effort détaillé est un effort qui représente un intervalle de temps unique
+    pendant lequel le travail est effectué sur une tâche. sous-tâches.
 
-    An effort is associated with a task,
-    but it is not a child of the task in the task hierarchy.
-    This is because efforts are not composite objects,
-    and they do not have children.
-    Instead, efforts are associated with tasks through a weak reference,
-    which allows them to be garbage collected when the task is deleted.
+    Un effort est associé à une tâche,
+    mais il n'est pas un enfant de la tâche dans la hiérarchie des tâches.
+    En effet, les efforts ne sont pas des objets composites,
+    et ils n'ont pas d'enfants.
+    Au lieu de cela, les efforts sont associés aux tâches via une référence faible,
+    qui leur permet d'être récupérés lorsque la tâche est supprimée.
 
     Methods :
         task() : Returns the task associated with this effort.
@@ -72,6 +70,7 @@ class BaseEffort(object):
     """
 
     def __init__(self, task, start, stop, *args, **kwargs):
+        # Création du lien faible avec la tâche associée.
         self._task = None if task is None else weakref.ref(task)
         # self._start = start
         self._start = Attribute(start, self, self._onStartChanged)
@@ -80,13 +79,16 @@ class BaseEffort(object):
         super().__init__(*args, **kwargs)
 
     def task(self):
-        """Returns the task associated with this effort."""
+        """Retourne la tâche associée avec cet effort."""
+        print(
+            f"BaseEffort.task : retourne {self._task() if self._task else None} associée avec {self}."
+        )
         return (
             None if self._task is None else self._task()
         )  # TODO: avec ou sans parenthèses ? attention confusion!
 
     def parent(self):
-        """Returns the parent of this effort, which is the task associated with this effort."""
+        """Renvoie le parent de cet effort, qui est la tâche associée à cet effort."""
         # Efforts don't have real parents since they are not composite.
         # However, we pretend the parent of an effort is its task for the
         # benefit of the search filter.

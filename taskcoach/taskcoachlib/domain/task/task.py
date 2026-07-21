@@ -41,20 +41,14 @@ Dépendances :
 - wx et tkinter
 """
 
-# Objectif
-#
+# Objectif :
 # Éviter tout import wx ou toute utilisation d’objets wx quand on exécute TaskCoach en mode Tkinter.
-#
 # Garder la compatibilité avec la version wxPython pour ceux qui la lancent avec --gui wx.
 
 # Résultat final
-#
 # Tu obtiens :
-#
 # un seul fichier task.py utilisable dans les deux environnements ;
-#
 # aucun import wx en mode Tkinter ;
-#
 # couleurs, polices et icônes fonctionnelles avec Tkinter.
 
 # Multi-GUI : task.py ne plante plus s'il est importé
@@ -137,6 +131,11 @@ class Task(
 
     Elle hérite de NoteOwner, AttachmentOwner et CategorizableCompositeObject
     pour gérer les notes, les pièces jointes et les catégories associées à la tâche.
+
+    Mélange trois rsponsabilités :
+    - Initialisation héritée
+    - Création des Attribute
+    - Abonnement aux événements.
 
         Attributs :
             subject (str) : Le titre de la tâche.
@@ -249,6 +248,9 @@ class Task(
         # print(
         #     f"Task.__init__ : kwargs['status'] = {kwargs.get('status')}, status = {status}"
         # )
+
+        # Protection : Les attributs doivent exister avant que les événements puissent être déclenchés !
+        self._beginInitialization()
 
         # 1. Initialize mixin parents explicitly, passing their specific args
         #    and any remaining kwargs that they might consume.
@@ -603,6 +605,7 @@ class Task(
         # Status transitions (overdue, due soon, time to start) are handled
         # by ComputeStyles per-second polling.
         # See docs/SCHEDULERS.md for architecture documentation.
+        self._endInitialization()
         # print(
         #     f"🚀 Task créée : {self.subject()} | Status = {self.getStatus()} | PercentageComplete = {self.__percentageComplete} | CompletionDateTime = {self.__completionDateTime}")
         # print(f"📂 DEBUG - Tâche '{self.subject()}' créée avec catégories : {self.categories()}")
@@ -653,45 +656,66 @@ class Task(
         L'idée est que le dictionnaire state est passé de haut en bas (de Task à Object), et chaque __setstate__ de chaque classe parent ne devrait pop et manipuler que les attributs qui sont strictement sous sa responsabilité. Le subject est une responsabilité de Object.
 
         """
-        # log.debug(f"Object.__setstate__() - Entrée, state dict: {state}")
-        super().__setstate__(state, event=event)
-        # self.setPlannedStartDateTime(state["plannedStartDateTime"])
+        # Validate that incoming state contains required parent keys and
+        # apply parent __setstate__ first. Use Object.validate_state to
+        # ensure we don't lost critical keys during deserialization.
+        try:
+            # Validate minimal state for parent classes (will assert if missing)
+            self.validate_state(state)
+        except AssertionError:
+            # Provide more context in the log before re-raising
+            log.exception(
+                "Task.__setstate__: état de sérialisation invalide, state=%s",
+                state,
+            )
+            raise
+
+        # Call parent __setstate__ to let Object / Composite handle shared keys
+        try:
+            super().__setstate__(state, event=event)
+        except AttributeError:
+            # Parent doesn't implement __setstate__ — ignore
+            pass
+
+        # Now restore Task-specific fields using safe getters to tolerate older
+        # or partial states. Use .get() with sensible defaults to avoid KeyError.
         self.setPlannedStartDateTime(
-            state["plannedStartDateTime"], event=event
+            state.get("plannedStartDateTime", self.maxDateTime), event=event
         )
-        # self.setActualStartDateTime(state["actualStartDateTime"])
-        self.setActualStartDateTime(state["actualStartDateTime"], event=event)
-        # self.setDueDateTime(state["dueDateTime"])
-        self.setDueDateTime(state["dueDateTime"], event=event)
-        # self.setCompletionDateTime(state["completionDateTime"])
-        self.setCompletionDateTime(state["completionDateTime"], event=event)
-        # self.setPercentageComplete(state["percentageComplete"])
-        self.setPercentageComplete(state["percentageComplete"], event=event)
-        self.setRecurrence(state["recurrence"])
-        self.setReminder(state["reminder"])
-        self.setEfforts(state["efforts"])
-        self.setBudget(state["budget"])
+        self.setActualStartDateTime(
+            state.get("actualStartDateTime", self.maxDateTime), event=event
+        )
+        self.setDueDateTime(
+            state.get("dueDateTime", self.maxDateTime), event=event
+        )
+        self.setCompletionDateTime(
+            state.get("completionDateTime", self.maxDateTime), event=event
+        )
+        self.setPercentageComplete(
+            state.get("percentageComplete", 0), event=event
+        )
+        self.setRecurrence(state.get("recurrence", None))
+        self.setReminder(state.get("reminder", self.maxDateTime))
+        self.setEfforts(state.get("efforts", []))
+        self.setBudget(state.get("budget", date.TimeDelta()))
         self.setPlannedDuration(
             state.get("plannedDuration", date.TimeDelta()), event=event
         )
         self.setPlannedDurationMode(
             state.get("plannedDurationMode", "implicit"), event=event
         )
-        self.setPriority(state["priority"])
-        self.setHourlyFee(state["hourlyFee"])
-        self.setFixedFee(state["fixedFee"])
-        self.setPrerequisites(state["prerequisites"])
-        self.setDependencies(state["dependencies"])
+        self.setPriority(state.get("priority", 0))
+        self.setHourlyFee(state.get("hourlyFee", 0))
+        self.setFixedFee(state.get("fixedFee", 0))
+        self.setPrerequisites(state.get("prerequisites", set()))
+        self.setDependencies(state.get("dependencies", set()))
         self.setShouldMarkCompletedWhenAllChildrenCompleted(
-            state["shouldMarkCompletedWhenAllChildrenCompleted"]
+            state.get("shouldMarkCompletedWhenAllChildrenCompleted", None)
         )
         # log.debug(f"Object.__setstate__() - subject après set: {self.__subject.get()}")
         # tclib.gui.uicommand.base_uicommand:
         # An error occurred: 'Task' object has no attribute '_Task__subject'
 
-        # if hasattr(self, 'subject'):
-        #     log.debug(f"Task.__setstate__() - subject après set: {self.subject}")
-        # else:
         if not hasattr(self, "subject"):
             log.debug("Task.__setstate__() - subject non défini.")
 
@@ -702,19 +726,26 @@ class Task(
         Returns:
             state(dict) : Dictionnaire de l'ensemble des attributs d'état de la tâche.
         """
-        # log.debug("Task.__getstate : utilise la méthode super.")
-        state = super().__getstate__()
-        # log.debug(f"Task.__getstate__() avant update : {state}")
+        # Build state from parent in a safe way and extend with Task specific
+        # attributes. Use Object.safe_super_state to avoid relying on parent's
+        # implementation mutating shared dictionaries.
+        try:
+            parent_state = self.safe_super_state(self, Task)
+        except Exception:
+            # Fallback to calling super if safe_super_state unexpectedly fails
+            try:
+                parent_state = super().__getstate__()
+            except AttributeError:
+                parent_state = {}
+
+        state = dict(parent_state)
+
         state.update(
-            dict(  # dueDateTime=self.__dueDateTime,
+            dict(
                 dueDateTime=self.__dueDateTime.get(),
-                # plannedStartDateTime=self.__plannedStartDateTime,
                 plannedStartDateTime=self.__plannedStartDateTime.get(),
-                # actualStartDateTime=self.__actualStartDateTime,
                 actualStartDateTime=self.__actualStartDateTime.get(),
-                # completionDateTime=self.__completionDateTime,
                 completionDateTime=self.__completionDateTime.get(),
-                # percentageComplete=self.__percentageComplete,
                 percentageComplete=self.__percentageComplete.get(),
                 children=self.children(),
                 parent=self.parent(),
@@ -732,12 +763,16 @@ class Task(
                 shouldMarkCompletedWhenAllChildrenCompleted=self.__shouldMarkCompletedWhenAllChildrenCompleted,
             )
         )
-        # log.debug(f"DEBUG - Task.__getstate__() renvoie : {state}")
+
+        # Validate the composed state contains parent required keys
+        self.validate_state(state)
+
         return state
 
     def __getcopystate__(self):
         state = super().__getcopystate__()
-        # log.debug(f"DEBUG - Task.__getcopystate__() avant update : {state}")
+        log.debug(f"DEBUG - Task.__getcopystate__() avant update : {state}")
+
         state.update(
             dict(  # plannedStartDateTime=self.__plannedStartDateTime,
                 plannedStartDateTime=self.__plannedStartDateTime.get(),
@@ -759,11 +794,21 @@ class Task(
                 recurrence=self.__recurrence.copy(),
                 reminder=self.__reminder,
                 shouldMarkCompletedWhenAllChildrenCompleted=self.__shouldMarkCompletedWhenAllChildrenCompleted,
+                # IMPORTANT
+                children=[child.copy() for child in self.children()],
             )
         )
         # # state["children"] = list(self.children())  # Assure que les enfants sont inclus
         # state["children"] = [child.copy() for child in self.children()]  # Créer de nouveaux objets
-        # # log.debug(f"DEBUG - Task.__getcopystate__() renvoie : {state}")
+        print(f"Task.__getcopystate__ : DEBUG : children={self.children()}.")
+        log.debug(f"DEBUG - Task.__getcopystate__() renvoie : {state}")
+        print(
+            f"DEBUG Task.__getcopystate__ : state.keys() = {sorted(state.keys())}"
+        )
+        print(
+            f"DEBUG Task.__getcopystate__ : state['children'] = "
+            f"{state.get('children', '<absent>')}"
+        )
         return state
 
     @classmethod
@@ -989,17 +1034,15 @@ class Task(
         Args :
             dueDateTime (DateTime) : Nouvelle date d'échéance.
         """
-        if dueDateTime == self.__dueDateTime:
-            return
-        # # self.__dueDateTime = dueDateTime
-        # self.__dueDateTime.set(dueDateTime, event=event)
         if hasattr(self.__dueDateTime, "set"):
             self.__dueDateTime.set(dueDateTime, event=event)
         else:
-            # Si c'est déjà une valeur DateTime, on la remplace directement
-            self.__dueDateTime = dueDateTime
-            # Note: Si c'est une valeur brute, les événements de mise à jour
-            # de l'UI ne seront pas envoyés, mais au moins ça ne crash plus.
+            if dueDateTime != self.__dueDateTime:
+                self.__dueDateTime = dueDateTime
+                self._onDueDateTimeChanged(event)
+
+    def _onDueDateTimeChanged(self, event):
+        dueDateTime = self.dueDateTime()
         date.Scheduler().unschedule(self.onOverDue)
         date.Scheduler().unschedule(self.onDueSoon)
         if date.Now() <= dueDateTime < self.maxDateTime:
@@ -1028,25 +1071,13 @@ class Task(
                 sender=ancestor,
             )
 
-    def _onDueDateTimeChanged(self, event):
-        self.markDirty()
-        self.recomputeAppearance()
-        pub.sendMessage(
-            self.dueDateTimeChangedEventType(),
-            newValue=self.dueDateTime(),
-            sender=self,
-        )
-        for ancestor in self.ancestors():
-            pub.sendMessage(
-                ancestor.dueDateTimeChangedEventType(),
-                newValue=self.dueDateTime(),
-                sender=ancestor,
-            )
-
     @classmethod
     def dueDateTimeChangedEventType(class_):
         """
         Retourne le type d'événement publié lorsque la date d'échéance change.
+
+        Returns:
+            str: Le type d'événement.
         """
         return "pubsub.task.dueDateTime"
 
@@ -1058,6 +1089,15 @@ class Task(
 
     @staticmethod
     def dueDateTimeSortFunction(**kwargs):
+        """
+        Retourne une fonction de tri basée sur la date d'échéance.
+
+        Args:
+            **kwargs: Arguments incluant 'treeMode' pour le tri récursif.
+
+        Returns:
+            function: La fonction de tri.
+        """
         recursive = kwargs.get("treeMode", False)
         return lambda task: task.dueDateTime(recursive=recursive)
 
@@ -1097,17 +1137,15 @@ class Task(
 
     # def setPlannedStartDateTime(self, plannedStartDateTime):
     def setPlannedStartDateTime(self, plannedStartDateTime, event=None):
-        if plannedStartDateTime == self.__plannedStartDateTime:
-            return
-        # self.__plannedStartDateTime.set(plannedStartDateTime, event=event)
         if hasattr(self.__plannedStartDateTime, "set"):
             self.__plannedStartDateTime.set(plannedStartDateTime, event=event)
         else:
-            # Si c'est déjà une valeur DateTime, on la remplace directement
-            self.__plannedStartDateTime = plannedStartDateTime
-            # Note: Si c'est une valeur brute, les événements de mise à jour
-            # de l'UI ne seront pas envoyés, mais au moins ça ne crash plus.
-        self.__plannedStartDateTime = plannedStartDateTime
+            if plannedStartDateTime != self.__plannedStartDateTime:
+                self.__plannedStartDateTime = plannedStartDateTime
+                self._onPlannedStartDateTimeChanged(event)
+
+    def _onPlannedStartDateTimeChanged(self, event):
+        plannedStartDateTime = self.plannedStartDateTime()
         date.Scheduler().unschedule(self.onTimeToStart)
         self.markDirty()
         self.recomputeAppearance()
@@ -1127,23 +1165,14 @@ class Task(
                 sender=ancestor,
             )
 
-    def _onPlannedStartDateTimeChanged(self, event):
-        self.markDirty()
-        self.recomputeAppearance()
-        pub.sendMessage(
-            self.plannedStartDateTimeChangedEventType(),
-            newValue=self.plannedStartDateTime(),
-            sender=self,
-        )
-        for ancestor in self.ancestors():
-            pub.sendMessage(
-                ancestor.plannedStartDateTimeChangedEventType(),
-                newValue=self.plannedStartDateTime(),
-                sender=ancestor,
-            )
-
     @classmethod
     def plannedStartDateTimeChangedEventType(class_):
+        """
+        Retourne le type d'événement pour le changement de date de début planifiée.
+
+        Returns:
+            str: Le type d'événement.
+        """
         return "pubsub.task.plannedStartDateTime"
 
     def onTimeToStart(self):
@@ -1151,6 +1180,15 @@ class Task(
 
     @staticmethod
     def plannedStartDateTimeSortFunction(**kwargs):
+        """
+        Retourne une fonction de tri basée sur la date de début planifiée.
+
+        Args:
+            **kwargs: Arguments incluant 'treeMode'.
+
+        Returns:
+            function: La fonction de tri.
+        """
         recursive = kwargs.get("treeMode", False)
         return lambda task: task.plannedStartDateTime(recursive=recursive)
 
@@ -1165,6 +1203,15 @@ class Task(
 
     @staticmethod
     def timeLeftSortFunction(**kwargs):
+        """
+        Retourne une fonction de tri basée sur le temps restant.
+
+        Args:
+            **kwargs: Arguments incluant 'treeMode'.
+
+        Returns:
+            function: La fonction de tri.
+        """
         recursive = kwargs.get("treeMode", False)
         return lambda task: task.timeLeft(recursive=recursive)
 
@@ -1181,6 +1228,15 @@ class Task(
     # Actual start Date
 
     def actualStartDateTime(self, recursive=False):
+        """
+        Retourne la date de début réelle de la tâche.
+
+        Args:
+            recursive (bool): Si vrai, prend en compte les sous-tâches.
+
+        Returns:
+            DateTime: La date de début réelle.
+        """
         if recursive:
             childrenActualStartDateTimes = [
                 child.actualStartDateTime(recursive=True)
@@ -1215,33 +1271,24 @@ class Task(
     def setActualStartDateTime(
         self, actualStartDateTime, recursive=False, event=None
     ):
-        if actualStartDateTime == self.__actualStartDateTime:
-            return
-        self.__actualStartDateTime = actualStartDateTime
+        """
+        Définit la date de début réelle de la tâche.
+
+        Args:
+            actualStartDateTime (DateTime): La nouvelle date de début réelle.
+            recursive (bool): Si True, définit également la date pour tous les enfants.
+            event: Événement optionnel pour la notification.
+        """
         if recursive:
             for child in self.children(recursive=True):
-                child.setActualStartDateTime(actualStartDateTime)
-        # self.__actualStartDateTime.set(actualStartDateTime, event=event)
+                child.setActualStartDateTime(actualStartDateTime, event=event)
+
         if hasattr(self.__actualStartDateTime, "set"):
             self.__actualStartDateTime.set(actualStartDateTime, event=event)
         else:
-            # Si c'est déjà une valeur brute DateTime, on la remplace directement
-            self.__actualStartDateTime = actualStartDateTime
-            # Note: Si c'est une valeur brute, les événements de mise à jour
-            # de l'UI ne seront pas envoyés, mais au moins ça ne crash plus.
-        self.markDirty()
-        self.recomputeAppearance()
-        pub.sendMessage(
-            self.actualStartDateTimeChangedEventType(),
-            newValue=actualStartDateTime,
-            sender=self,
-        )
-        for ancestor in self.ancestors():
-            pub.sendMessage(
-                ancestor.actualStartDateTimeChangedEventType(),
-                newValue=actualStartDateTime,
-                sender=ancestor,
-            )
+            if actualStartDateTime != self.__actualStartDateTime:
+                self.__actualStartDateTime = actualStartDateTime
+                self._onActualStartDateTimeChanged(event)
 
     def _onActualStartDateTimeChanged(self, event):
         self.markDirty()
@@ -1260,18 +1307,33 @@ class Task(
 
     @classmethod
     def actualStartDateTimeChangedEventType(class_):
+        """
+        Retourne un message pubsub pour le changement
+        de la date/heure de démarrage actuelle de la tâche.
+
+        Returns:
+            Message pubsub.
+        """
         return "pubsub.task.actualStartDateTime"
 
     @staticmethod
     def actualStartDateTimeSortFunction(**kwargs):
+        """
+
+        Args:
+            **kwargs:
+
+        Returns:
+
+        """
         recursive = kwargs.get("treeMode", False)
         return lambda task: task.actualStartDateTime(recursive=recursive)
 
     @classmethod
     def actualStartDateTimeSortEventTypes(class_):
         """Types d'événements qui influencent l'ordre de tri de la date et de l'heure de début réel."""
-        # return (class_.actualStartDateTimeChangedEventType(),)
-        return class_.actualStartDateTimeChangedEventType()
+        return (class_.actualStartDateTimeChangedEventType(),)
+        # return class_.actualStartDateTimeChangedEventType()
         # return [class_.actualStartDateTimeChangedEventType(),]
 
     # Completion Date
@@ -1323,68 +1385,13 @@ class Task(
         Args :
             completionDateTime (DateTime) : Date d'achèvement, ou None pour réinitialiser.
         """
-        # print("Task.setCompletionDateTime : est appelé")
-        # self.__completionDateTime.set(
-        #     completionDateTime or date.Now(), event=event
-        # )
+        value = completionDateTime or date.Now()
         if hasattr(self.__completionDateTime, "set"):
-            self.__completionDateTime.set(
-                completionDateTime or date.Now(), event=event
-            )
+            self.__completionDateTime.set(value, event=event)
         else:
-            # Si c'est déjà une valeur DateTime, on la remplace directement
-            self.__completionDateTime = completionDateTime or date.Now()
-            # Note: Si c'est une valeur brute, les événements de mise à jour
-            # de l'UI ne seront pas envoyés, mais au moins ça ne crash plus.
-        completionDateTime = completionDateTime or date.Now()
-        if completionDateTime == self.__completionDateTime:
-            return
-        if completionDateTime != self.maxDateTime and self.recurrence():
-            self.recur(completionDateTime)
-        else:
-            parent = self.parent()
-            oldParentPriority = (
-                None  # A Essayer mais risque d'effacer l'ancienne valeur !
-            )
-            if parent:
-                oldParentPriority = parent.priority(recursive=True)
-            self.__status = None  # TODO : __status ou __task_status ?
-            self.__completionDateTime = completionDateTime
-            if parent and parent.priority(recursive=True) != oldParentPriority:
-                parent.sendPriorityChangedMessage()
-            if completionDateTime != self.maxDateTime:
-                self.setReminder(None)
-                self.setPercentageComplete(100)
-            elif self.percentageComplete() == 100:
-                self.setPercentageComplete(0)
-            if parent:
-                if self.completed():
-                    if parent.shouldBeMarkedCompleted():
-                        parent.setCompletionDateTime(completionDateTime)
-                else:
-                    if parent.completed():
-                        parent.setCompletionDateTime(self.maxDateTime)
-            if self.completed():
-                for child in self.children():
-                    if not child.completed():
-                        child.setRecurrence()
-                        child.setCompletionDateTime(completionDateTime)
-                if self.isBeingTracked():
-                    self.stopTracking()
-            self.recomputeAppearance()
-            for dependency in self.dependencies():
-                dependency.recomputeAppearance(recursive=True)
-            pub.sendMessage(
-                self.completionDateTimeChangedEventType(),
-                newValue=completionDateTime,
-                sender=self,
-            )
-            for ancestor in self.ancestors():
-                pub.sendMessage(
-                    ancestor.completionDateTimeChangedEventType(),
-                    newValue=completionDateTime,
-                    sender=ancestor,
-                )
+            if value != self.__completionDateTime:
+                self.__completionDateTime = value
+                self._onCompletionDateTimeChanged(event)
 
     def _onCompletionDateTimeChanged(self, event):
         """When the completion date time changes, update the status, percentage
@@ -1435,7 +1442,12 @@ class Task(
 
     @classmethod
     def completionDateTimeChangedEventType(class_):
-        """The event type that is sent when the completion date time of a task"""
+        """
+        Retourne le type d'événement pour le changement de date d'achèvement.
+
+        Returns:
+            str: Le type d'événement.
+        """
         return "pubsub.task.completionDateTime"
 
     def shouldBeMarkedCompleted(self):
@@ -1464,7 +1476,15 @@ class Task(
 
     @staticmethod
     def completionDateTimeSortFunction(**kwargs):
-        """Types d'événements qui influencent l'ordre de tri de la date et de l'heure d'achèvement."""
+        """
+        Retourne une fonction de tri basée sur la date d'achèvement.
+
+        Args:
+            **kwargs: Arguments incluant 'treeMode'.
+
+        Returns:
+            function: La fonction de tri.
+        """
         recursive = kwargs.get("treeMode", False)
         return lambda task: task.completionDateTime(recursive=recursive)
 
@@ -2230,6 +2250,19 @@ class Task(
         return rgb_tuple  # NEUTRE
 
     def appearanceChangedEvent(self, event):
+        """
+        Traite un changement d'apparence.
+
+        Les événements reçus pendant la construction de l'objet
+        sont ignorés car les attributs de Task ne sont pas encore tous créés.
+        """
+        # Protection : Les attributs doivent exister avant que les événements puissent être déclenchés !
+        if (
+            getattr(self, "_SynchronizedObject__initializing", False)
+            or self._isInitializing()
+        ):
+            return
+
         self.__computeRecursiveForegroundColor()
         self.__computeRecursiveBackgroundColor()
         self.__computeRecursiveIcon()
@@ -2402,14 +2435,33 @@ class Task(
     # Icon
 
     def icon(self, recursive=False):
+        """Retourne l'icône de la tâche.
+
+        Args:
+            recursive : Recherche l'icône du parent si vrai.
+        """
+        # Si recursive est vrai et que la tâche a au moins un effort actif
         if recursive and self.isBeingTracked():
+            # Retourne l'icône de l'horloge
+            print("Task.icon : retourne clock_icon")
             return "clock_icon"
+        # Récupère l'icône de l'objet composite
         myIcon = super().icon()
+        print(f"Task.icon : a récupéré l'icône {myIcon} de la méthode super.")
+        # Si recursive est vrai et que l'icône est vide("") ou None
         if recursive and not myIcon:
+            # Essayer de récupérer l'icône récursive
             try:
                 myIcon = self.__recursiveIcon
+                print(
+                    f"Task.icon : a récupéré l'icône self.__recursiveIcon={myIcon}"
+                )
             except AttributeError:
                 myIcon = self.__computeRecursiveIcon()
+                print(
+                    f"Task.icon : a récupéré l'icône {myIcon} de la méthode self.__computeRecursiveIcon()."
+                )
+        # Retourne l'icône au pluriel ou au singulier selon que l'objet a ou non des enfants.
         return self.pluralOrSingularIcon(myIcon, native=super().icon() == "")
 
     def __computeRecursiveIcon(self, *args, **kwargs):  # pylint: disable=W0613
@@ -3214,7 +3266,13 @@ class Task(
             second=dateTime.second,
             microsecond=dateTime.microsecond,
         )
-        if defaultDate == "Tomorrow":
+        print(
+            f"defaultDateTime={defaultDateTime}, "
+            f"defaultDate={defaultDate}, "
+            f"defaultTime={defaultTime}"
+        )
+        # if defaultDate == "Tomorrow":  # Attention à la majuscule !
+        if defaultDate == "tomorrow":
             dateTime += date.ONE_DAY
         elif defaultDate == "dayaftertomorrow":
             dateTime += date.ONE_DAY + date.ONE_DAY
@@ -3274,28 +3332,3 @@ class Task(
             class_.dependenciesChangedEventType(),
             class_.shouldMarkCompletedWhenAllChildrenCompletedChangedEventType(),
         ]
-
-    def addAttachments(self, param, **kwargs):
-        """Ajouter une ou plusieurs pièces jointes à la tâche."""
-        print(
-            f"Task.addAttachments : Ajout de pièces jointes à la tâche {self.id}."
-        )
-        # self.addAttachments(param)
-
-        # [Previous line repeated 981 more times]
-        # RecursionError: maximum recursion depth exceeded
-        # pub.sendMessage("task.attachments.added")
-        super().addAttachments(param, **kwargs)
-        # pass
-
-    @classmethod
-    def attachmentsChangedEventType(cls):
-        """Retourne le type d'événement à publier lorsque les pièces jointes changent."""
-        # pass
-        return "pubsub.task.attachments"
-
-    @classmethod
-    def notesChangedEventType(cls):
-        """Retourne le type d'événement à publier lorsque les notes changent."""
-        # pass
-        return "pubsub.task.notes"

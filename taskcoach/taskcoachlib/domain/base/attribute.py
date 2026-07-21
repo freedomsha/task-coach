@@ -34,12 +34,16 @@ Les deux classes utilisent le décorateur
 
 """
 
+import logging
+
 # from builtins import object
 from taskcoachlib import patterns
 import weakref
 
 # from taskcoachlib.thirdparty._weakrefset import WeakSet
 from weakref import WeakSet  # En test!
+
+log = logging.getLogger(__name__)
 
 
 # Le bug __func__ : C'est une correction technique subtile mais critique.
@@ -83,7 +87,7 @@ class Attribute(object):
         #     "type=", type(setEvent)
         # )
         # Remplace ton debug par quelque chose qui n'appelle jamais __repr__ :
-        print(
+        log.debug(
             "Attribute.__init__ owner=%s type=%s"
             % (
                 type(owner).__name__ if owner else None,
@@ -194,7 +198,7 @@ class Attribute(object):
         #     type(self.__setEvent).__name__,
         # )
         # # Ne jamais afficher directement une méthode liée dans ce contexte.
-        print(
+        log.debug(
             "Attribute.__init__ self.__setEvent type=%s name=%s owner_type=%s"
             % (
                 type(self.__setEvent).__name__,
@@ -213,7 +217,7 @@ class Attribute(object):
         Returns :
             La valeur actuelle de l'attribut.
         """
-        print("Attribute.get : retourne self.__value ", self.__value)
+        log.debug("Attribute.get : retourne self.__value ", self.__value)
         return self.__value
 
     def setEvent(self, setEvent):
@@ -230,7 +234,7 @@ class Attribute(object):
             raise TypeError(
                 f"Attribute.setEvent : setEvent doit être callable, reçu {setEvent!r}"
             )
-        print(f"Attribute.setEvent : définit self.__setEvent={setEvent}")
+        log.debug(f"Attribute.setEvent : définit self.__setEvent={setEvent}")
         self.__setEvent = setEvent
 
     @patterns.eventSource
@@ -253,7 +257,7 @@ class Attribute(object):
         # Définition de la méthode set corrigée pour éviter les problèmes liés à __func__ en Python 3.
         # Définition du propriétaire avec une référence faible pour éviter les fuites de mémoire. :
         owner = self.__owner
-        print(
+        log.debug(
             f"Attribute.set : Définition de l'attribut {self} avec comme propriétaire owner={owner}, valeur={value} et transmet l'événement event={event}."
         )
         # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
@@ -278,25 +282,23 @@ class Attribute(object):
             # )
             import inspect
 
-            print(
-                "SETEVENT =",
+            log.debug(
+                "Attribute.set : SETEVENT =",
                 self.__setEvent,
             )
 
-            print(
-                inspect.signature(self.__setEvent)
-            )
+            log.debug(inspect.signature(self.__setEvent))
             self.__setEvent(
                 # event
                 event=event
             )  # ✅ juste l'event, self est déjà lié via owner
             # !!! Ce changement est peut-être correct pour les méthodes liées
             # !!! (bound methods), mais pas pour les lambdas.
-            print(
+            log.debug(
                 "Attribute.set : Valeur a été définie avec succès et l'événement a été déclenché !"
             )
             return True
-        print("Attribute.set : Impossible de définir la valeur.")
+        log.debug("Attribute.set : Impossible de définir la valeur !")
         return False
 
 
@@ -353,7 +355,7 @@ class SetAttribute(object):
             - __removeEvent : La fonction de gestionnaire d'événements pour les suppressions.
             - __changeEvent : La fonction de gestionnaire d'événements pour les changements.
         """
-        print(
+        log.debug(
             "SetAttribute.__init__ avec owner=",
             owner,
             "values=",
@@ -382,7 +384,7 @@ class SetAttribute(object):
         Returns :
             Un nouvel ensemble contenant les valeurs actuelles de l'attribut.
         """
-        print(
+        log.debug(
             "SetAttribute.get : retourne une copie de l'ensemble actuel des valeurs."
         )
         return set(self.__set)
@@ -403,14 +405,16 @@ class SetAttribute(object):
         # Le code vérifie d'abord si le propriétaire existe toujours, puis compare les nouvelles valeurs avec les anciennes pour déterminer les éléments ajoutés et supprimés. Ensuite, il met à jour l'ensemble de valeurs et déclenche les événements appropriés.
         # Définit owner comme propriétaire de référence faible pour éviter les fuites de mémoire.
         owner = self.__owner()
-        print(
+        log.debug(
             f"SetAttribute.set : Définition de l'attribut {self} avec comme propriétaire owner={owner}, valeurs={values} et transmet l'événement event={event}."
         )
         # Vérifie si le propriétaire existe toujours (n'a pas été collecté par le ramasse-miettes).
         if owner is not None:
             # Vérifier si les valeurs appartiennent à l'ensemble contenu dans le propriétaire, si c'est le cas, il n'y a pas de changement à faire, donc retourne False.
             if values == set(self.__set):
-                print("SetAttribute.set : Les valeurs est déjà définie ainsi.")
+                log.debug(
+                    "SetAttribute.set : Les valeurs est déjà définie ainsi."
+                )
                 return False
             # Calculer les éléments ajoutés et supprimés en comparant les nouvelles valeurs avec les anciennes.
             added = values - set(self.__set)
@@ -425,11 +429,11 @@ class SetAttribute(object):
             if added or removed:
                 # Déclenche l'événement de changement avec les nouvelles valeurs de l'ensemble.
                 self.__changeEvent(owner, event, *set(self.__set))
-            print(
+            log.debug(
                 "SetAttribute.set : Valeur a été définie avec succès et l'événement a été déclenché !"
             )
             return True
-        print("SetAttribute.set : Impossible de définir les valeurs.")
+        log.debug("SetAttribute.set : Impossible de définir les valeurs !")
         return False
 
     @patterns.eventSource

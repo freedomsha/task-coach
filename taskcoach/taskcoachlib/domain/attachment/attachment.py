@@ -502,6 +502,7 @@ class Attachment(base.Object, NoteOwner):
         # Don't include id and creationDateTime - copies should get new ones
         state = super().__getcopystate__()
         state.update(dict(location=self.location()))
+        print(f"Attachment.__getcopystate : retourne state={state}")
         return state
 
     def __unicode__(self):

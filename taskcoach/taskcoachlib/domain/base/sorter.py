@@ -216,6 +216,9 @@ class Sorter(patterns.ListDecorator):  # classe enfant
             # Sécurité si eventTypes n'est pas une liste mais une chaîne de caractères
             if isinstance(eventTypes, str):
                 eventTypes = (eventTypes,)
+                log.debug(
+                    f"base.Sorter._getSortEventTypes : eventTypes {eventTypes} est une chaîne de caractères au lieu d'une liste."
+                )
 
             return eventTypes
 

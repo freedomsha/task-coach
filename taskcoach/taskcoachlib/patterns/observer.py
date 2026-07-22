@@ -370,7 +370,9 @@ class Event(object):
             if isinstance(v, (list, set, frozenset)):
                 return tuple(_normalize_value(x) for x in v)
             if isinstance(v, dict):
-                return tuple(sorted((k, _normalize_value(val)) for k, val in v.items()))
+                return tuple(
+                    sorted((k, _normalize_value(val)) for k, val in v.items())
+                )
             # Fallback for arbitrary objects: use their id
             try:
                 return ("id", id(v))
@@ -380,7 +382,9 @@ class Event(object):
         def _normalized_mapping(event):
             result = {}
             # Access internal storage directly to avoid re-resolving keys
-            for type_, sources in getattr(event, "_Event__sourcesAndValuesByType", {}).items():
+            for type_, sources in getattr(
+                event, "_Event__sourcesAndValuesByType", {}
+            ).items():
                 norm_sources = {}
                 for key, vals in sources.items():
                     if key is None:
@@ -783,39 +787,56 @@ def eventSource(f):
         """
         Décorez la méthode.
 
+        Wrapper exécutant la méthode décorée avec gestion d'événement.
+
         Args :
-            *args: Arguments de longueur variable.
-            **kwargs: Arguments optionnels.
+            *args: Arguments positionnels de longueur variable.
+            **kwargs: Arguments optionnels nommés.
 
         Attributes :
             event (Event) : L'événement à envoyer, s'il n'est pas déjà fourni dans les arguments de mot-clé.
             notify (bool) : Indique si l'événement doit être envoyé après l'appel de la méthode décorée.
 
         Returns:
-            object: Le résultat de l'appel de la méthode décorée.
+            object (Any) : Le résultat de l'appel de la méthode décorée.
         """
         # Récupérer l'événement des arguments de mot-clé ou en créer un nouveau s'il n'existe pas
         event = kwargs.pop("event", None)
-        print(
-            f"eventSource : Récupération de l'événement : {event} à partir des arguments de mot-clé."
+        log.debug(
+            f"eventSource.decorator : Récupération de l'événement : {event} à partir des arguments de mot-clé."
         )
         # Créer un nouvel événement si aucun n'est fourni, sinon utiliser l'événement existant
+        # Indique que cette méthode est responsable de l'envoi final.
         notify = event is None  # We only Notify if we're the event creator
+
         # Passer l'événement à la méthode décorée via les arguments de mot-clé
-        event = event if event else Event()
-        kwargs["event"] = event if event else Event()
-        print(
-            f"eventSource : Appel de la méthode décorée avec l'événement : {kwargs['event']}."
+        # Crée un nouvel événement uniquement si aucun n'existe.
+        # event = event if event else Event()
+        if event is None:
+            event = Event()
+
+        # Transmet exactement le même objet événement à la méthode appelée.
+        # kwargs["event"] = event if event else Event()
+        kwargs["event"] = event
+        log.debug(
+            f"eventSource.decorator : Appel de la méthode décorée avec l'événement : {kwargs['event']}."
         )
+
+        # Exécute la méthode originale.
         result = f(*args, **kwargs)
+
+        # Seul le créateur initial de l'événement déclenche son envoi.
         if notify:
-            print(f"eventSource : Envoi de l'événement : {kwargs['event']}.")
+            log.debug(
+                f"eventSource.decorator : Envoi de l'événement : {event}."
+            )
             event.send()
-        print(
-            f"eventSource : Résultat de l'appel de la méthode décorée : {result} !"
+        log.debug(
+            f"eventSource.decorator : Résultat de l'appel de la méthode décorée : {result} !"
         )
         return result
 
+    print("eventSource : retourne decorator !")
     return decorator
 
 

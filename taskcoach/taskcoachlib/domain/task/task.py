@@ -2054,8 +2054,10 @@ class Task(
     def budgetSortEventTypes(class_):  # cls ?
         """Types d'événements qui influencent l'ordre de tri du budget."""
         # return (class_.budgetChangedEventType(),)
-        return class_.budgetChangedEventType()
-        # return [class_.budgetChangedEventType(),]
+        # return class_.budgetChangedEventType()
+        return [
+            class_.budgetChangedEventType(),
+        ]
 
     # Budget left
 

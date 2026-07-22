@@ -61,7 +61,17 @@ class Sorter(patterns.ListDecorator):  # classe enfant
 
     @patterns.eventSource
     def extendSelf(self, items, event=None):
-        super().extendSelf(items, event)
+        """
+        Ajoute des éléments au tri et invalide le cache des éléments racines.
+
+        Args:
+            items (iterable): Éléments à ajouter.
+            event: Événement éventuellement propagé.
+
+        Returns:
+            Résultat de la méthode parent.
+        """
+        super().extendSelf(items, event=event)
         self.reset()
 
     def isAscending(self):
@@ -134,14 +144,37 @@ class Sorter(patterns.ListDecorator):  # classe enfant
         )
 
     def _getSortKeyFunction(self, sortKey):
+        """
+        Recherche la fonction utilisée pour calculer une clé de tri.
+
+        Args:
+            sortKey (str): Nom du champ de tri.
+
+        Returns:
+            Callable: Fonction de calcul de clé.
+
+        Raises:
+            AttributeError:
+                Si aucune fonction de tri n'existe.
+        """
         try:
             # return getattr(self.DomainObjectClass, "%sSortFunction" % sortKey)
             return getattr(self.DomainObjectClass, f"{sortKey}SortFunction")
         except AttributeError:
+            # raise AttributeError(
+            log.debug(
+                f"Aucune fonction {sortKey}SortFunction "
+                f"dans {self.DomainObjectClass.__name__}"
+            )
             return self._getSortKeyFunction("subject")
 
     def _registerObserverForAttribute(self, attribute):
+        # log.debug(f"Registering observer for attribute {attribute}.")
+        print(
+            f"base.Sorter._registerObserverForAttribute : Registering observer for attribute {attribute}."
+        )
         for eventType in self._getSortEventTypes(attribute):
+            print("REGISTER:", repr(eventType))
             if eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
             else:
@@ -165,13 +198,27 @@ class Sorter(patterns.ListDecorator):  # classe enfant
         self.reset()
 
     def _getSortEventTypes(self, attribute):
+        # try:
+        #     # return getattr(
+        #     #     self.DomainObjectClass, "%sSortEventTypes" % attribute
+        #     # )()
+        #     return getattr(
+        #         self.DomainObjectClass, f"{attribute}SortEventTypes"
+        #     )()
+        # except AttributeError:
+        #     return []
+        # Version plus robuste :
         try:
-            # return getattr(
-            #     self.DomainObjectClass, "%sSortEventTypes" % attribute
-            # )()
-            return getattr(
+            eventTypes = getattr(
                 self.DomainObjectClass, f"{attribute}SortEventTypes"
             )()
+
+            # Sécurité si eventTypes n'est pas une liste mais une chaîne de caractères
+            if isinstance(eventTypes, str):
+                eventTypes = (eventTypes,)
+
+            return eventTypes
+
         except AttributeError:
             return []
 
@@ -183,6 +230,12 @@ class TreeSorter(Sorter):
 
     # @staticmethod
     def treeMode(self):
+        """
+        Indique que le tri concerne une structure arborescente.
+
+        Returns:
+            bool: Toujours True pour TreeSorter.
+        """
         return True
 
     def createSortKeyFunction(self, key):

@@ -121,7 +121,9 @@ class TaskSorterSettingsTest(tctest.TestCase):
         self.task2.setActualStartDateTime(date.Now() - date.ONE_WEEK)
         self.assertEqual([self.task2, self.task1], list(self.sorter))
 
-    def testSortByActualStartDateTimeKeepsSortingWhenChangingActualStartDateTime(self):
+    def testSortByActualStartDateTimeKeepsSortingWhenChangingActualStartDateTime(
+        self,
+    ):
         self.sorter.sortBy("actualStartDateTime")
         self.task1.setActualStartDateTime(date.Yesterday())
         self.task2.setActualStartDateTime(date.Now() - date.ONE_WEEK)
@@ -205,6 +207,12 @@ class TaskSorterSettingsTest(tctest.TestCase):
         self.sorter.sortAscending(True)
         self.task1.setBudget(date.TimeDelta(100))
         self.task2.setBudget(date.TimeDelta(10))
+        print("task1 budget =", self.task1.budget())
+        print("task2 budget =", self.task2.budget())
+
+        for item in self.sorter:
+            print(item.subject(), item.budget())
+        print("sorter =", list(self.sorter))
         self.assertEqual([self.task2, self.task1], list(self.sorter))
 
     def testSortByBudgetDescending(self):
@@ -217,12 +225,16 @@ class TaskSorterSettingsTest(tctest.TestCase):
         self.sorter.sortBy("timeSpent")
         self.task2.addEffort(
             effort.Effort(
-                self.task2, date.DateTime(2005, 1, 1), date.DateTime(2006, 1, 1)
+                self.task2,
+                date.DateTime(2005, 1, 1),
+                date.DateTime(2006, 1, 1),
             )
         )
         self.task1.addEffort(
             effort.Effort(
-                self.task1, date.DateTime(2005, 1, 1), date.DateTime(2007, 1, 1)
+                self.task1,
+                date.DateTime(2005, 1, 1),
+                date.DateTime(2007, 1, 1),
             )
         )
         self.assertEqual([self.task2, self.task1], list(self.sorter))
@@ -363,7 +375,8 @@ class TaskSorterTreeModeTest(tctest.TestCase):
 
     def testDefaultSortOrder(self):
         self.assertEqual(
-            [self.parent1, self.child1, self.parent2, self.child2], list(self.sorter)
+            [self.parent1, self.child1, self.parent2, self.child2],
+            list(self.sorter),
         )
 
     def testSortByDueDateTime(self):
@@ -393,7 +406,9 @@ class TaskSorterTreeModeTest(tctest.TestCase):
             < list(self.sorter).index(self.parent1)
         )
 
-    def testSortByCategories_WhenParentCategoryEqualsChildCategoryOfAnotherParent(self):
+    def testSortByCategories_WhenParentCategoryEqualsChildCategoryOfAnotherParent(
+        self,
+    ):
         category1 = category.Category("Category 1")
         category2 = category.Category("Category 2")
         category3 = category.Category("Category 3")
@@ -409,7 +424,8 @@ class TaskSorterTreeModeTest(tctest.TestCase):
     def testSetSorterToListMode(self):
         self.sorter.setTreeMode(False)
         self.assertEqual(
-            [self.child1, self.child2, self.parent1, self.parent2], list(self.sorter)
+            [self.child1, self.child2, self.parent1, self.parent2],
+            list(self.sorter),
         )
 
     def testTreeModeDelegation_True(self):
@@ -423,7 +439,8 @@ class TaskSorterTreeModeTest(tctest.TestCase):
     def testSortByInvalidSortKey(self):
         self.sorter.sortBy("invalidKey")
         self.assertEqual(
-            [self.parent1, self.child1, self.parent2, self.child2], list(self.sorter)
+            [self.parent1, self.child1, self.parent2, self.child2],
+            list(self.sorter),
         )
 
 
@@ -462,7 +479,8 @@ class EffortSorterTest(tctest.TestCase):
         )
         self.task.addEffort(evenNewerEffort)
         self.assertEqual(
-            [evenNewerEffort, self.newestEffort, self.oldestEffort], self.sorter
+            [evenNewerEffort, self.newestEffort, self.oldestEffort],
+            self.sorter,
         )
 
     def testTaskEffortComesBeforeChildEffort(self):

@@ -104,6 +104,11 @@ class Sorter(base.TreeSorter):
 
     def _registerObserverForAttribute(self, attribute):
         # log.debug(f"Registering observer for attribute {attribute}.")
+        print(
+            f"task.sorter._registerObserverForAttribute : Registering observer for attribute {attribute}."
+        )
+        for eventType in self._getSortEventTypes(attribute):
+            print("REGISTER:", repr(eventType))
         # Sorter is always observing task dates and prerequisites because
         # sorting by status depends on those attributes. Hence we don't need
         # to subscribe to these attributes when they become the sort key.

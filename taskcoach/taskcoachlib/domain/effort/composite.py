@@ -332,10 +332,13 @@ class CompositeEffort(BaseCompositeEffort):
             start (datetime): La date de début de la période.
             stop (datetime): La date de fin de la période.
         """
-        super().__init__(task, start, stop)
-        self.__hash_value = hash((task, start))
+        # 1. Initialiser le cache avant tout appel parent/super()
         # Effort cache: {True: [efforts recursively], False: [efforts]}
         self.__effort_cache = dict()
+        self.__hash_value = hash((task, start))
+        # 2. Appeler super() après l'initialisation des attributs requis par __len__ / _getEfforts
+        super().__init__(task, start, stop)
+
         """
         FIMXE! CompositeEffort ne dérive pas de base.Object
         patterns.Publisher().registerObserver(self.onAppearanceChanged,
@@ -549,7 +552,9 @@ class CompositeEffortPerPeriod(BaseCompositeEffort):
             taskList (list) : La liste des tâches à inclure dans cet effort composite.
             initialEffort (BaseEffort, optional) : Un effort initial facultatif à inclure. None par défaut.
         """
+        # 1. Initialiser
         self.taskList = taskList
+        # 2. Appeler super() après l'initialisation des attributs requis par __len__ / _getEfforts
         super().__init__(None, start, stop)
         if initialEffort:
             assert self._inPeriod(initialEffort)

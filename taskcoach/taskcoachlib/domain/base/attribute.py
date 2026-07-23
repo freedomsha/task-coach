@@ -86,14 +86,14 @@ class Attribute(object):
         #     "setEvent=", setEvent,
         #     "type=", type(setEvent)
         # )
-        # Remplace ton debug par quelque chose qui n'appelle jamais __repr__ :
-        log.debug(
-            "Attribute.__init__ owner=%s type=%s"
-            % (
-                type(owner).__name__ if owner else None,
-                type(setEvent).__name__,
-            ),
-        )
+        # # Remplace ton debug par quelque chose qui n'appelle jamais __repr__ :
+        # log.debug(
+        #     "Attribute.__init__ owner=%s type=%s"
+        #     % (
+        #         type(owner).__name__ if owner else None,
+        #         type(setEvent).__name__,
+        #     ),
+        # )
         if setEvent is not None and not callable(setEvent):
             raise TypeError(
                 f"Attribute.__init__ : setEvent doit être callable, reçu {setEvent!r}"

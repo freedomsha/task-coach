@@ -80,9 +80,9 @@ class BaseEffort(object):
 
     def task(self):
         """Retourne la tâche associée avec cet effort."""
-        print(
-            f"BaseEffort.task : retourne {self._task() if self._task else None} associée avec {self}."
-        )
+        # print(
+        #     f"BaseEffort.task : retourne {self._task() if self._task else None} associée avec {self}."
+        # )  # Attention risque de boucle infinie !
         return (
             None if self._task is None else self._task()
         )  # TODO: avec ou sans parenthèses ? attention confusion!
@@ -139,6 +139,15 @@ class BaseEffort(object):
     def _onStartChanged(self, event):
         """Called when the start time of this effort changes."""
         pass
+
+    # BaseEffort doit rester une classe abstraite qui ne connaît pas __duration.
+    # def _onStartChanged(self, event):
+    #     """Met à jour la durée après modification du début."""
+    #
+    #     if hasattr(self, "_Effort__duration"):
+    #         self.__duration.set(self._computeDuration())
+    #
+    #     self.sendDurationChangedMessage()
 
     def _onStopChanged(self, event):
         """Called when the stop time of this effort changes."""

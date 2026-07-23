@@ -17,6 +17,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# 20260723
+# la migration Python 3 de la classe centrale Effort est maintenant cohérente avec :
+#
+# la gestion des dates (start, stop) ;
+# le cache de durée ;
+# les notifications durationChanged ;
+# les calculs de revenu (revenueChanged) ;
+# l'interaction avec Task.setHourlyFee() ;
+# la sérialisation/restauration probablement utilisée par les objets liés.
+
 from taskcoachlib import patterns
 from taskcoachlib.domain import date, base
 from taskcoachlib.domain import task as domain_task

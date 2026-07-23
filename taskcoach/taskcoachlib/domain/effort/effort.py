@@ -18,7 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from taskcoachlib import patterns
-from taskcoachlib.domain import date, base, task
+from taskcoachlib.domain import date, base
+from taskcoachlib.domain import task as domain_task
 from taskcoachlib.domain.base.attribute import Attribute
 
 #    try:
@@ -46,21 +47,25 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         *args,
         **kwargs,
     ):
+        print("DEBUG Effort.__init__ : task =", task, type(task))
         super().__init__(
             task, start or date.DateTime.now(), stop, *args, **kwargs
         )
         self.__entryMode = Attribute(entryMode, self, self._onEntryModeChanged)
+        # __duration est la référence, la source de vérité ! Pas __cachedDuration !
         self.__duration = Attribute(
             self._computeDuration(), self, self._onDurationChanged
         )
-        self.__updateDurationCache()
+        # Utilisation de __cachedDuration comme un état de synchronisation implicite (pas seulement comme un cache de performance).
+        self.__updateDurationCache()  # Obsolète puisque Attribute joue déjà ce rôle.
+        print(vars(self))
 
     def __getattribute__(self, name):
-        """Override to prevent methods from being shadowed by instance attributes.
+        """Remplacer pour empêcher les méthodes d'être masquées par les attributs d'instance.
 
-        During copy/paste operations, kwargs from __getcopystate__ can end up
-        as instance attributes that shadow the class methods. This override
-        ensures method lookups always find the class method, not instance attrs.
+        Lors des opérations de copier/coller, les kwargs de __getcopystate__ peuvent finir
+        en tant qu'attributs d'instance qui masquent les méthodes de classe. Ce remplacement
+        garantit que les recherches de méthode trouvent toujours la méthode de classe, et non les attributs d'instance.
         """
         # Methods that might get shadowed - check directly to avoid recursion
         _protected = (
@@ -91,17 +96,17 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
     # def setTask(self, task):
     def setTask(self, task, event=None):
         """
-        Setter — normalizes and delegates to Attribute.
-        Note: We don't check if the new task is the same as the current one
-              because we want to allow setting it to the same task
-              (e.g. during initialization) without skipping the logic
-              that updates the task's efforts list and sends notifications.
-              The task's efforts list needs to be updated
-              to include this effort, and observers need to be notified
-              of the task change even if it's the same task,
-              to ensure consistency and proper event handling.
-              This is especially important during initialization
-              when the task is being set for the first time.
+        Setter - normalise et délègue à l'attribut.
+        Remarque : nous ne vérifions pas si la nouvelle tâche est la même que la tâche actuelle
+            car nous voulons lui permettre de la définir sur la même tâche
+            (par exemple lors de l'initialisation) sans ignorer la logique
+            qui met à jour la liste des efforts de la tâche et envoie des notifications.
+            La liste des efforts de la tâche doit être mise à jour
+            pour inclure cet effort, et les observateurs doivent être informés
+            du changement de tâche même s'il s'agit de la même tâche,
+            pour garantir la cohérence et la bonne gestion des événements.
+            Ceci est particulièrement important lors de l'initialisation
+            lorsque la tâche est définie pour la première fois.
         """
         # Debug tracing to determine why setTask may not send messages in tests
         try:
@@ -153,12 +158,12 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         print(
             f"Effort.setTask : Envoi de l'événement de changement de tâche pour l'effort {self}, nouvelle tâche={task}"
         )
-        # pub.sendMessage(
-        #     self.taskChangedEventType(), newValue=task, sender=self
-        # )  # La migration vers pubsub 4.0 nécessite de passer les arguments en positionnels ou de les encapsuler dans un Event, car pubsub 4.0 ne supporte plus les arguments nommés arbitraires.
         pub.sendMessage(
-            self.taskChangedEventType()
-        )  # TODO : à revoir pour s'assurer que les observateurs reçoivent bien la notification, même sans args
+            self.taskChangedEventType(), newValue=task, sender=self
+        )  # La migration vers pubsub 4.0 nécessite de passer les arguments en positionnels ou de les encapsuler dans un Event, car pubsub 4.0 ne supporte plus les arguments nommés arbitraires.
+        # pub.sendMessage(
+        #     self.taskChangedEventType(),
+        # )  # S'assurer que les observateurs reçoivent bien la notification, même sans args
         # Use positional args to avoid topic arg-spec mismatches in some
         # pubsub configurations (some listeners register different argnames).
         # pub.sendMessage(self.taskChangedEventType(), task, self)
@@ -173,7 +178,7 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         )
 
         # 1. Mise à jour du cache (important pour la durée)
-        self.__updateDurationCache()
+        # self.__updateDurationCache()  # Probablement inutile.
         # 2. NOTIFICATION : C'est cette ligne qui réveille TaskFile !
         # 2. NOTIFICATION : C'est cette ligne qui réveille TaskFile!
         # On ne passe pas d'arguments complexes (newValue, sender) pour éviter
@@ -291,7 +296,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
     @patterns.eventSource
     def __setstate__(self, state, event=None):
         super().__setstate__(state, event=event)
-        self.setTask(state["task"])
+        # self.setTask(state["task"])
+        self.setTask(state["task"], event=event)
         # self.setStart(state["start"])
         # self.setStop(state["stop"])
         self.setStart(state["start"], event=event)
@@ -305,7 +311,7 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         # state.update(dict(task=self.task(), start=self._start, stop=self._stop))
         state.update(
             dict(
-                task=task,
+                task=self.task(),
                 # start=self._start.get(),
                 start=self.getStart(),
                 # stop=self._stop.get(),
@@ -314,6 +320,9 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
                 duration=self.__duration.get(),
             )
         )
+        print(
+            "DEBUG Effort.__getcopystate__ :", self.task(), type(self.task())
+        )
         return state
 
     def _computeDuration(self):
@@ -321,8 +330,15 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         stop = self.getStop()
         # return stop - self._start.get() if stop else None
         return stop - self.getStart() if stop else None
+        # return stop - self.getStart() if stop else now() - self.getStart()
 
     def _onDurationChanged(self, event):
+        """
+        Réagir au changement de durée.
+
+        Args:
+            event:
+        """
         self.sendDurationChangedMessage()
         # task = self._task() if self._task else None
         task = self.task()
@@ -337,12 +353,15 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         self.__duration.get() (the stored value) to match how start/stop
         send their stored values via getters.
         """
-        stored = self.__duration.get()
+        # # self.__duration = self.__cachedDuration  # !
+        # stored = self.__duration.get()
+        # Mais il faut gérer la cas où l'effort est encore actif !
         from pubsub import pub
 
         pub.sendMessage(
             self.durationChangedEventType(),
-            newValue=stored,
+            # newValue=stored,
+            newValue=self.duration(),
             sender=self,
         )
 
@@ -357,12 +376,31 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         return now() - self.getStart()
 
     def duration(self, now=date.DateTime.now):
-        return (
-            # now() - self._start
-            now() - self.getStart()
-            if self.__cachedDuration is None
-            else self.__cachedDuration
-        )
+        """Retourne la durée actuelle de l'effort.
+
+        Un effort arrêté retourne la durée stockée.
+        Un effort encore en cours retourne le temps écoulé
+        depuis son démarrage.
+
+        Args:
+            now: Fonction retournant l'heure actuelle.
+
+        Returns:
+            date.TimeDelta: Durée de l'effort.
+        """
+        # return (
+        #     # now() - self._start
+        #     now() - self.getStart()
+        #     # if self.__cachedDuration is None
+        #     if self.getStop() is None
+        #     # else self.__cachedDuration
+        #     else self.__duration.get()
+        # )
+        if self.getStop() is None:
+            return now() - self.getStart()
+
+        return self.__duration.get()
+        # __duration est la référence
 
     def setDuration(self, newDuration, event=None):
         """Setter — normalizes and delegates to Attribute."""
@@ -380,14 +418,14 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
             startDateTime, event=event
         )  # Correction ici : utiliser .set()
         # 1. Mise à jour du cache (important pour la durée)
-        self.__updateDurationCache()
+        # self.__updateDurationCache()  # Déjà fait dans _start.set()
         # 2. NOTIFICATION : C'est cette ligne qui réveille TaskFile !
         # On ne passe pas d'arguments complexes (newValue, sender) pour éviter
         # les conflits de signature avec le setModified de TaskFile.
-        # pub.sendMessage(self.startChangedEventType())
-        pub.sendMessage(
-            self.startChangedEventType(), newValue=startDateTime, sender=self
-        )
+        # # pub.sendMessage(self.startChangedEventType())
+        # pub.sendMessage(
+        #     self.startChangedEventType(), newValue=startDateTime, sender=self
+        # )  # _onStartChanged() s'en occupe de gérer la notification.
 
         # self.task().sendTimeSpentChangedMessage()
         # self.sendDurationChangedMessage()
@@ -399,6 +437,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         # # self._start.set(startDateTime, event=event)
 
     def _onStartChanged(self, event):
+        """Met à jour la durée après changement du début."""
+        self.__duration.set(self._computeDuration())
         self.__updateDurationCache()
         pub.sendMessage(
             self.startChangedEventType(), newValue=self.getStart(), sender=self
@@ -407,9 +447,9 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         task = self.task()
         if task:
             task.sendTimeSpentChangedMessage()
-            if task.hourlyFee():
-                self.sendRevenueChangedMessage()
-        self.sendDurationChangedMessage()
+            # if task.hourlyFee():
+            #     self.sendRevenueChangedMessage()  # _onDurationChanged() s'en charge !
+        # self.sendDurationChangedMessage()
 
     @classmethod
     def startChangedEventType(class_):
@@ -438,7 +478,7 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         self._previousStop = self.getStop()
         # self._stop = newStop
         self._stop.set(newStop, event=event)
-        self.__updateDurationCache()
+        # self.__updateDurationCache()  # Déjà fait dans _stop.set()
         # if newStop is None:
         #     pub.sendMessage(
         #         self.trackingChangedEventType(), newValue=True, sender=self
@@ -453,12 +493,12 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         # self.task().sendTimeSpentChangedMessage()
         # On décommente aussi ici
         # # pub.sendMessage(self.stopChangedEventType())
+        # # pub.sendMessage(
+        # #     self.stopChangedEventType(), newValue=self._stop, sender=self
+        # # )
         # pub.sendMessage(
-        #     self.stopChangedEventType(), newValue=self._stop, sender=self
-        # )
-        pub.sendMessage(
-            self.stopChangedEventType(), newValue=newStop, sender=self
-        )
+        #     self.stopChangedEventType(), newValue=newStop, sender=self
+        # )  # _onStopChanged() s'en occupe déjà !
         # self.sendDurationChangedMessage()
         # if self.task().hourlyFee():
         #     self.sendRevenueChangedMessage()
@@ -466,6 +506,10 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
             self.task().sendTimeSpentChangedMessage()
 
     def _onStopChanged(self, event):
+        """Met à jour la durée après changement de la fin."""
+        self.__duration.set(self._computeDuration())
+        self.__updateDurationCache()
+
         previousStop = getattr(self, "_previousStop", None)
         # newStop = self._stop.get()
         newStop = self.getStop()
@@ -485,12 +529,12 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
                 task.sendTrackingChangedMessage(tracking=False)
         if task:
             task.sendTimeSpentChangedMessage()
-            if task.hourlyFee():
-                self.sendRevenueChangedMessage()
+            # if task.hourlyFee():
+            #     self.sendRevenueChangedMessage()  # _onDurationChanged() s'en charge.
         pub.sendMessage(
             self.stopChangedEventType(), newValue=newStop, sender=self
         )
-        self.sendDurationChangedMessage()
+        # self.sendDurationChangedMessage()
 
     @classmethod
     def stopChangedEventType(class_):
@@ -539,7 +583,7 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         return (
             class_.startChangedEventType(),
             class_.taskChangedEventType(),
-            task.Task.subjectChangedEventType(),
+            domain_task.Task.subjectChangedEventType(),
         )
 
     @classmethod

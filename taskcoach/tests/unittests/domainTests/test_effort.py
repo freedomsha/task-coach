@@ -32,7 +32,9 @@ class EffortTest(tctest.TestCase, asserts.Mixin):
         task.Task.settings = config.Settings(load=False)
         self.task = task.Task()
         self.effort = effort.Effort(
-            self.task, start=date.DateTime(2004, 1, 1), stop=date.DateTime(2004, 1, 2)
+            self.task,
+            start=date.DateTime(2004, 1, 1),
+            stop=date.DateTime(2004, 1, 2),
         )
         self.task.addEffort(self.effort)
         self.events = []
@@ -53,7 +55,11 @@ class EffortTest(tctest.TestCase, asserts.Mixin):
     def testStr(self):
         self.assertEqual(
             "Effort(%s, %s, %s)"
-            % (self.effort.task(), self.effort.getStart(), self.effort.getStop()),
+            % (
+                self.effort.task(),
+                self.effort.getStart(),
+                self.effort.getStop(),
+            ),
             str(self.effort),
         )
 
@@ -216,8 +222,7 @@ class EffortTest(tctest.TestCase, asserts.Mixin):
     def testCopy(self):
         copyEffort = self.effort.copy()
         self.assertEqualEfforts(copyEffort, self.effort)
-        self.assertEqual(copyEffort.description(),
-                         self.effort.description())
+        self.assertEqual(copyEffort.description(), self.effort.description())
 
     def testCopyHasDifferentId(self):
         copyEffort = self.effort.copy()
@@ -240,7 +245,9 @@ class EffortTest(tctest.TestCase, asserts.Mixin):
         self.effort.setStop()
         now = date.Now()
         self.assertTrue(
-            now - date.ONE_SECOND < self.effort.getStop() < now + date.ONE_SECOND
+            now - date.ONE_SECOND
+            < self.effort.getStop()
+            < now + date.ONE_SECOND
         )
 
     def testSetStop_Infinite(self):
@@ -282,7 +289,9 @@ class EffortTest(tctest.TestCase, asserts.Mixin):
     def testRevenue_HourlyFee(self):
         self.task.setHourlyFee(100)
         self.task.addEffort(self.effort)
-        self.assertEqual(self.effort.duration().hours() * 100, self.effort.revenue())
+        self.assertEqual(
+            self.effort.duration().hours() * 100, self.effort.revenue()
+        )
 
     def testRevenue_FixedFee_OneEffort(self):
         self.task.setFixedFee(1000)
@@ -323,6 +332,7 @@ class EffortTest(tctest.TestCase, asserts.Mixin):
                 self.effort.taskChangedEventType(),
                 self.effort.startChangedEventType(),
                 self.effort.stopChangedEventType(),
+                self.effort.entryModeChangedEventType(),  # Nouvel attribut
             ],
             self.effort.modificationEventTypes(),
         )

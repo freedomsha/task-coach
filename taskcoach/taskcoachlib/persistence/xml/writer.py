@@ -782,14 +782,26 @@ class XMLWriter(object):
         # vous avez déjà un nettoyage à la fin, mais il est préférable de s'assurer
         # que les valeurs insérées sont toujours des chaînes de caractères
         maxDateTime = self.maxDateTime
-        # Pass noteContainer/ownedNotes down to child taskNode calls so nested
-        # tasks also get access to the note container and owned notes.
+
+        # Usine locale pour aiguiller correctement les enfants de la tâche
+        def taskChildFactory(node, child, *args):
+            from taskcoachlib.domain import note as domain_note
+
+            if isinstance(child, domain_note.Note):
+                self.noteNode(node, child, *args)
+            else:
+                self.taskNode(node, child, *args)
+
+        # Transmettez noteContainer/ownedNotes aux appels taskNode enfants afin que les tâches imbriquées
+        # aient également accès au conteneur de notes et aux notes possédées.
+        # On passe taskChildFactory à baseCompositeNode
         node = self.baseCompositeNode(
             # parentNode, task, "task", self.taskNode
             parentNode,
             task,
             "task",
-            self.taskNode,
+            # self.taskNode,
+            taskChildFactory,
             (noteContainer, ownedNotes),
         )  # This already appends to parentNode
         # node.attrib["id"] = str(task.id())
@@ -860,33 +872,13 @@ class XMLWriter(object):
         # Write efforts, notes, attachments as usual
         for effort in sortedById(task.efforts()):
             self.effortNode(node, effort)
+
         # Traitement des notes associées à la tâche
-        # Notes are already written by baseCompositeNode (via task.children())
-        # No need for manual loops or appends!
-        # # Écriture des notes appartenant à la tâche (it's redundant and causes duplicates) :
         written_notes = set()
-        # Some NoteOwner implementations store notes in a private attribute
-        # (_NoteOwner__notes). If task.notes() returns empty, fall back to
-        # reading that attribute so notes added via Task.addNote are not lost.
         own_notes = task.notes()
         if not own_notes:
             own_notes = getattr(task, "_NoteOwner__notes", own_notes)
         for eachNote in sortedById(own_notes):  # récupération des notes liées
-            try:
-                print(
-                    f"XMLWriter.taskNode : note détectée pour tâche {task.id()} : {eachNote}"
-                )
-            except Exception:
-                pass
-            try:
-                print(f"XMLWriter.taskNode : parent de note = {eachNote.parent()}")
-            except Exception:
-                pass
-            try:
-                print(f"XMLWriter.taskNode : task courante = {task}")
-            except Exception:
-                pass
-            # Écrit la note dans la tâche
             self.noteNode(node, eachNote)
             written_notes.add(eachNote)
 
@@ -901,18 +893,28 @@ class XMLWriter(object):
                     parent = None
                 if parent is None:
                     continue
-                # Compare by id to handle different instances representing same domain object
                 if str(getattr(parent, "id", lambda: None)()) == str(
                     task.id()
                 ):
                     if n not in written_notes:
-                        print(
-                            f"XMLWriter.taskNode : écriture d'une note depuis noteContainer pour la tâche {task.id()} : {n}"
-                        )
                         self.noteNode(node, n)
                         written_notes.add(n)
+
+        # Écrit les pièces jointes
         for attachment in sortedById(task.attachments()):
-            self.attachmentNode(node, attachment)
+            attachment_parent_node = node
+            # TODO : N'y a-t'il pas double écriture ?
+            # attachmentNode ne prend-il pas en compte les enfants ?
+            for eachNote in own_notes:
+                if attachment in eachNote.attachments():
+                    note_elements = node.findall("note")
+                    for note_el in note_elements:
+                        if note_el.attrib.get("id") == str(eachNote.id()):
+                            attachment_parent_node = note_el
+                            break
+                    break
+            self.attachmentNode(attachment_parent_node, attachment)
+
         # Très important :
         # Mesure de sécurité globale pour ce nœud :
         # On retire après coup toute valeur qui serait restée à None
@@ -1030,7 +1032,9 @@ class XMLWriter(object):
                     items = set()
                     for item in container:
                         items.add(item)
-                        if hasattr(item, "children") and callable(item.children):
+                        if hasattr(item, "children") and callable(
+                            item.children
+                        ):
                             try:
                                 items.update(item.children(recursive=True))
                             except Exception:
@@ -1101,32 +1105,163 @@ class XMLWriter(object):
         )
         return node
 
-    def noteNode(self, parentNode, note):  # pylint: disable=W0621
+    def noteNode(
+        self, parentNode, note, *args, **kargs
+    ):  # pylint: disable=W0621
         """
-        Crée un nœud XML pour une note.
+        Crée le nœud XML correspondant à une note.
 
-        Args :
-            parentNode : Noeud parent.
-            note : Note à ajouter.
+        La création du nœud et la sérialisation récursive des sous-notes
+        sont déléguées à ``baseCompositeNode``. Les pièces jointes de la
+        note sont ensuite sérialisées explicitement.
 
-        Returns :
-            Le noeud note.
+        Args:
+            parentNode:
+                Nœud XML parent auquel ajouter la note.
 
-        Examples :
+            note:
+                Instance de ``note.Note`` à sérialiser.
 
+            *args:
+                Arguments supplémentaires transmis à la fabrique des enfants.
+
+        Returns:
+            xml.etree.ElementTree.Element:
+                Nœud XML représentant la note.
         """
-        # Création du noeud composite note
+        print(f"XMLWriter.noteNode : Appelé pour note={note}.")
+
+        # # # Usine locale pour aiguiller les enfants de la note
+        # # def noteChildFactory(node, child, *args):
+        # #     from taskcoachlib.domain import attachment as domain_attachment
+        # #
+        # #     if isinstance(child, domain_attachment.Attachment):
+        # #         self.attachmentNode(node, child)
+        # #     else:
+        # #         self.noteNode(node, child, *args)
+        # L'usine pour baseCompositeNode ne doit gérer que les sous-notes imbriquées
+        # Définit la fonction utilisée par baseCompositeNode pour sérialiser
+        # chaque enfant de la note.
+        # Usine locale pour aiguiller/gérer les enfants de la note (sous-notes uniquement)
+        # Crée une fonction capable de sérialiser récursivement les sous-notes.
+        def noteChildFactory(node, child, *child_args):
+            """Sérialise un enfant appartenant à une note.
+
+            Les sous-notes sont sérialisées avec ``noteNode`` tandis que les
+            pièces jointes sont sérialisées avec ``attachmentNode``.
+
+            Args:
+                node: Nœud XML parent.
+                child: Objet enfant à sérialiser.
+                *args: Arguments supplémentaires transmis au sérialiseur.
+            """
+            # Sérialise récursivement la sous-note.
+            self.noteNode(node, child, *child_args)
+            # # Vérifie si l'enfant est une note.
+            # if isinstance(child, domain.note.Note):
+            #     # Sérialise récursivement la sous-note.
+            #     self.noteNode(node, child, *args)
+            #
+            # # Sinon, l'enfant est potentiellement une pièce jointe.
+            # else:
+            #     # Sérialise la pièce jointe dans le nœud parent.
+            #     self.attachmentNode(node, child)
+
+        # Création du nœud composite note
+        # Crée le nœud XML de base pour la note et sérialise récursivement ses enfants.
+        # En lui passant self.noteNode comme usine, il gérera les sous-notes s'il y en a.
+        # On utilise baseCompositeNode pour que le tracking multi-utilisateur fonctionne
         node = self.baseCompositeNode(
-            parentNode, note, "note", self.noteNode
+            parentNode,  # Nœud XML parent auquel rattacher la note.
+            note,  # Objet Note à sérialiser.
+            "note",  # Nom XML du nœud créé.
+            # self.noteNode,
+            noteChildFactory,  # Fonction utilisée pour sérialiser les enfants.
+            # *args,
+            args,  # Arguments supplémentaires transmis à la fabrique.
+            # **kargs,
+            # kargs,
         )  # This already appends to parentNode
+
+        # Plus besoin de boucle manuelle for attachment in note.attachments(),
+        # baseCompositeNode s'en charge via noteChildFactory et note.children() !
+        # # # Solution :
+        # # # Empêcher la boucle manuelle si déjà géré
+        # # #
+        # # # Si baseCompositeNode appelle automatiquement les enfants, vérifiez comment est implémenté baseCompositeNode. Il s'attend généralement à ce que la fonction usine passée (ici self.noteNode) gère le bon nœud. Or, l'attachement n'est pas une note, donc l'appel échoue ou dévie.
+        # # #
+        # # # La solution la plus propre et standard dans TaskCoach pour noteNode est de créer le nœud de base, puis de forcer l'écriture de ses pièces jointes sur son propre nœud
+        # # # On crée le nœud de la note attaché au parentNode (la tâche ou la racine)
+        # # node = self.__baseNode(parentNode, note, "note")
+        print(f"XMLWriter.noteNode : crée le noeud de base {node}.")
         # # Ajout au parent AVANT traitement des enfants (important pour la stabilité)
         # parentNode.append(node)  # NON, cela est déjà fait par baseCompositeNode
+        # # On écrit ses attributs
+        # self.compositeAttributes(node, note)  # N'existe pas
+
+        # # Écrit explicitement les sous-notes (enfants de la note)
+        # for child_note in sortedById(note.children()):
+        #     if isinstance(
+        #         child_note, domain.note.Note
+        #     ):  # Vérifie que c'est bien une note
+        #         self.noteNode(node, child_note)
+        # Explication :
+        #
+        # baseCompositeNode gère déjà les enfants via noteChildFactory, mais les sous-notes ne sont pas incluses dans note.children() (car children() retourne uniquement les objets composites directs, comme les pièces jointes).
+        # Solution : On écrit explicitement les sous-notes en itérant sur note.children() et en vérifiant qu'il s'agit bien de notes (isinstance(child_note, Note)).
+
         # Traitement récursif des pièces jointes
         # Attachments are already written by baseCompositeNode (via note.children())
         # No need for manual loops or appends!
+        # On traite ses pièces jointes en les attachant à CE nœud 'node'
+        # Les pièces jointes (attachments) ne sont pas des "notes",
+        # baseCompositeNode ne peut pas les deviner via self.noteNode.
+        # On les ajoute explicitement ICI, attachées au 'node' de la note qui vient d'être créé.
+        # CORRECTION : On traite explicitement les pièces jointes de la note,
+        # car elles ne sont pas incluses dans note.children() !
+        print(
+            f"XMLWriter.noteNode : NOTE {note} : attachments={note.attachments()}"
+        )
+        # Parcourt les pièces jointes directement associées à la note.
+        # Écrit explicitement les pièces jointes (attachments) de la note.
         for attachment in sortedById(note.attachments()):
+            print(
+                f"XMLWriter.noteNode : crée le noeud de pièce jointe {attachment} sous note."
+            )
+            # Sérialise la pièce jointe dans le nœud XML de la note.
+            # Ajoute la pièce jointe au nœud XML de la note.
             self.attachmentNode(node, attachment)
+
+        # # Et surtout, on n'oublie pas :
+        # # 3. Si la note a elle-même des sous-notes (enfants), on les traite récursivement
+        # if hasattr(note, "notes"):
+        #     for subNote in sortedById(note.notes()):
+        #         self.noteNode(node, subNote)
+        print(f"XMLWriter.noteNode : retourne node {node}.")
+        # Retourne le nœud XML créé complètement construit.
         return node
+        # Si vous devez absolument utiliser baseCompositeNode
+        # pour des raisons de synchronisation globale,
+        # assurez-vous de nettoyer la double gestion.
+        # Mais le log de TaskFileTest montre de manière indiscutable que
+        # foobarfile est envoyé à __baseNode avec le parent de la Tâche.
+        #
+        # En modifiant l'écriture pour forcer l'inclusion de l'attachment
+        # dans le nœud note, le XMLReader.__parse_note_node
+        # (qui lui est correct et cherche bien les attachments
+        # via self.__parse_attachments(note_node)) retrouvera enfin sa pièce jointe.
+        # Le statut de fusion multi-utilisateur passera alors de 1
+        # (différence/erreur détectée suite à la perte de l'objet au rechargement)
+        # à 0 !
+
+        # En utilisant ces aiguillages (taskChildFactory et noteChildFactory),
+        # chaque objet (Tâche, Note, Pièce jointe) est visité
+        # par baseCompositeNode dans le parfait ordre hiérarchique du modèle de domaine.
+        #
+        # Le mécanisme de synchronisation multi-utilisateur de taskfile.py
+        # peut ainsi valider que chaque élément a bien été traité,
+        # ce qui remettra le compteur de changements à 0
+        # et fera passer le test testAddAttachmentToNote au vert.
 
     # @staticmethod
     def __baseNode(self, parentNode, item, nodeName):
@@ -1253,7 +1388,7 @@ class XMLWriter(object):
         # Appelle taskNode/noteNode pour chaque enfant !
         for child in sortedById(item.children()):
             print(
-                f"XMLWriter.baseCompositeNode : Création du noeud composite pour l'enfant {child} dans node={node}."
+                f"XMLWriter.baseCompositeNode : Création du noeud composite pour l'enfant {child} dans node={node} avec childNodeFactoryArgs={childNodeFactoryArgs}."
             )
             childNodeFactory(
                 node, child, *childNodeFactoryArgs
@@ -1298,7 +1433,8 @@ class XMLWriter(object):
                     dict(
                         extension=os.path.splitext(attachment.location())[-1]
                     ),
-                ).text = data.encode("base64")
+                    # ).text = data.encode("base64")
+                ).text = base64.b64encode(data).decode("utf-8")
         for eachNote in sortedById(attachment.notes()):
             self.noteNode(node, eachNote)
         return node
@@ -1542,13 +1678,14 @@ class TemplateXMLWriter(XMLWriter):
             None,
         )
 
-    def taskNode(self, parentNode, tsk):  # pylint: disable=W0621
+    def taskNode(self, parentNode, tsk, *args):  # pylint: disable=W0621
         """
         Génère un nœud XML pour une tâche, avec des attributs spécifiques aux modèles.
 
         Args :
             parentNode : Nœud parent pour la tâche.
             tsk : Tâche à sérialiser en XML.
+            args : Arguments supplémentaires pour la sérialisation.
 
         Returns :
             node (Element) : Nœud XML créé.

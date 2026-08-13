@@ -67,7 +67,7 @@ class Composite(object):
             "Composite : Initialisation de l'objet composite avec la méthode super."
         )
         super().__init__()
-        print("Composite : méthode super terminée.")
+        log.debug("Composite : méthode super terminée.")
         print(
             f"Composite : L'objet composite self = {id(self)} a parent = {parent} et children = {children}."
         )
@@ -93,6 +93,9 @@ class Composite(object):
                 f"Composite : Ajout de l'enfant {child} à self.id={id(self)}"
             )
             child.setParent(self)
+            # self.addChild( # !!! Crée une boucle infinie si addChild() est redéfini dans une sous-classe
+            #     child
+            # )  # ✅ Utilise addChild pour ajouter chaque enfant
         # log.debug(
         print(
             "Après Composite.__init__ : de id=%s avec %s enfants."
@@ -103,7 +106,7 @@ class Composite(object):
             "Après Composite.__init__ : parent=%s et children=%s."
             % (self.parent(), self.children())
         )
-        print("Composite : Initialisé !")
+        log.debug("Composite : Initialisé !")
 
     def __getstate__(self):
         """
@@ -127,7 +130,7 @@ class Composite(object):
         Args :
             state (dict) : L'état du composite.
         """
-        log.debug(f"Composite.__setstate__ : state : {state}.")
+        print(f"Composite.__setstate__ : state : {state}.")
         # self.__parent = (
         #     None if state["parent"] is None else weakref.ref(state["parent"])
         # )
@@ -516,25 +519,25 @@ class CompositeCollection(object):
             composites (list) : La liste des composites à ajouter.
             event (Event | None) : (facultatif) L'événement à notifier.
         """
-        print(
+        log.debug(
             f"CompositeCollection.extend : ajoute les composites suivants à la collection {self} avec event = {event} : {composites}."
         )
         if not composites:
             return
-        print(
+        log.debug(
             "CompositeCollection.extend : obtient les composites et tous leurs enfants."
         )
         compositesAndAllChildren = self._compositesAndAllChildren(composites)
-        print(
+        log.debug(
             "CompositeCollection.extend : ajoute les composites et tous leurs enfants à la collection."
         )
         super().extend(compositesAndAllChildren, event=event)
         # self.extend(compositesAndAllChildren, event=event)
-        print(
+        log.debug(
             "CompositeCollection.extend : ajoute les composites à leur parent."
         )
         self._addCompositesToParent(composites, event)
-        print("CompositeCollection.extend : terminé !")
+        log.debug("CompositeCollection.extend : terminé !")
 
     def _compositesAndAllChildren(self, composites):
         """
@@ -551,15 +554,15 @@ class CompositeCollection(object):
         #     compositesAndAllChildren |= set(composite.children(recursive=True))
         compositesAndAllChildren = set()
         for composite in composites:
-            print(
+            log.debug(
                 f"CompositeCollection._compositesAndAllChildren : traite le composite {composite}."
             )
             compositesAndAllChildren.add(composite)
-            print(
+            log.debug(
                 f"CompositeCollection._compositesAndAllChildren : ajoute le composite {composite}."
             )
             compositesAndAllChildren.update(composite.children(recursive=True))
-        print(
+        log.debug(
             f"CompositeCollection._compositesAndAllChildren : pour les composites suivants {composites}, les composites et tous leurs enfants sont : {compositesAndAllChildren}."
         )
         return compositesAndAllChildren

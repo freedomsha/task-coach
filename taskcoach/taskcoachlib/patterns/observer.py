@@ -780,6 +780,11 @@ def eventSource(f):
     Returns :
         function : La méthode décorée.
     """
+    # Pour résoudre ce problème, je vais modifier le décorateur eventSource dans taskcoach/taskcoachlib/patterns/observer.py. La modification permettra de distinguer les cas où event=None ou event=False est explicitement passé, afin de ne pas créer d'objet Event et de passer la valeur originale (None ou False) à la fonction décorée.
+    # Voici la logique de modification :
+    # • Si event est None ou False, la fonction décorée sera appelée avec cette valeur (None ou False) pour l'argument event, et aucun événement ne sera créé ni envoyé par le décorateur.
+    # • Si event est True (ou non fourni), un nouvel objet Event() sera créé, passé à la fonction décorée, et envoyé après l'exécution de la fonction.
+    # • Si event est déjà un objet Event, il sera passé tel quel à la fonction décorée, et le décorateur ne l'enverra pas (la fonction décorée est responsable de l'envoi).
 
     @functools.wraps(f)
     def decorator(*args, **kwargs):
@@ -802,9 +807,16 @@ def eventSource(f):
         """
         # Récupérer l'événement des arguments de mot-clé ou en créer un nouveau s'il n'existe pas
         event = kwargs.pop("event", None)
+        # print(
         log.debug(
             f"eventSource.decorator : Récupération de l'événement : {event} à partir des arguments de mot-clé."
         )
+
+        # False signifie : restauration silencieuse
+        if event is False:
+            return f(*args, **kwargs)
+        # True signifie : restauration active
+
         # Créer un nouvel événement si aucun n'est fourni, sinon utiliser l'événement existant
         # Indique que cette méthode est responsable de l'envoi final.
         notify = event is None  # We only Notify if we're the event creator
@@ -818,6 +830,7 @@ def eventSource(f):
         # Transmet exactement le même objet événement à la méthode appelée.
         # kwargs["event"] = event if event else Event()
         kwargs["event"] = event
+        # print(
         log.debug(
             f"eventSource.decorator : Appel de la méthode décorée avec l'événement : {kwargs['event']}."
         )
@@ -827,10 +840,12 @@ def eventSource(f):
 
         # Seul le créateur initial de l'événement déclenche son envoi.
         if notify:
+            # print(
             log.debug(
                 f"eventSource.decorator : Envoi de l'événement : {event}."
             )
             event.send()
+        # print(
         log.debug(
             f"eventSource.decorator : Résultat de l'appel de la méthode décorée : {result} !"
         )

@@ -1100,6 +1100,16 @@ class XMLReader(object):  # nouvelle classe
         # * Analyse les nœuds de notes.
         # print(f"XMLReader.read : 6.c Analyse des noeuds de notes de root = {root} avec ")
         notes = self.__parse_note_nodes(root)
+        print(
+            "XMLReader.__parse_note_nodes : DEBUG NOTES READ :",
+            [
+                (
+                    n.subject(),
+                    [child.subject() for child in n.children()],
+                )
+                for n in notes
+            ],
+        )
         print(f"XMLReader.read : __parse_note_nodes : notes = {notes}")
         # # * (si version du fichier > 13) : Analyse les nœuds de catégories.
         # print(f"XMLReader.read : Version du fichier : {self.__tskversion} si <=13,"
@@ -1230,8 +1240,18 @@ class XMLReader(object):  # nouvelle classe
             f"XMLReader.read : {len(categories)} Catégories lues : {[the_category.id() for the_category in categories]}"
         )
         # log.debug(
+        # print(
+        #     f"XMLReader.read : {len(notes)} Notes lues : {[the_note.id() for the_note in notes]}"
+        # )
         print(
-            f"XMLReader.read : {len(notes)} Notes lues : {[the_note.id() for the_note in notes]}"
+            "XMLReader.read : NOTES AVANT RETOUR :",
+            [
+                (
+                    the_note.subject(),
+                    [child.subject() for child in the_note.children()],
+                )
+                for the_note in notes
+            ],
         )
         # print(f"Syncml_config lue : {[syncml_config]}")
         # print(f"changes lue : {[changes]}")
@@ -2540,6 +2560,7 @@ class XMLReader(object):  # nouvelle classe
             # print(f"✅ Sous-Note ajoutée : {child_note.id()} dans la liste des notes {notes}")
         #
         #   # Inutile ? Non, les notes peuvent aussi avoir des enfants !
+        # code dangereux parce que __parse_note_node() fait déjà cette récursion.
         #   # 📌 Vérifie et ajoute les notes imbriquées
         #     for child_note_node in child.findall("note"):
         #         sub_child_note = self.__parse_note_node(child_note_node)
@@ -2548,6 +2569,16 @@ class XMLReader(object):  # nouvelle classe
 
         print(
             f"XMLReader.__parse_note_nodes : Retourne la liste des notes ajoutées : {notes}"
+        )
+        print(
+            "XMLReader.__parse_note_nodes : DEBUG NOTES RETURN :",
+            [
+                (
+                    n.subject(),
+                    [child.subject() for child in n.children()],
+                )
+                for n in notes
+            ],
         )
         return notes
 
@@ -3341,26 +3372,62 @@ class XMLReader(object):  # nouvelle classe
         * Parse les pièces jointes si la version du fichier de tâches est supérieure à 20.
         * Enregistre la date de modification de la note à l'aide de `__save_modification_datetime`.
         """
+        # Explication :
+        #
+        # __parse_base_composite_attributes devrait déjà récupérer les sous-notes via __parse_note_nodes et les ajouter à kwargs["children"].
+        # Vérification : On s'assure que kwargs["children"] contient bien les sous-notes avant de créer l'objet Note.
         subject = note_node.attrib.get("subject", "")
         obj_id = note_node.attrib.get("id", "")
         self.__register_id(obj_id, "Note", subject)
         self.__current_path.append(f"Note: {subject}")
 
+        # Récupère les enfants (sous-notes) via __parse_base_composite_attributes
         kwargs = self.__parse_base_composite_attributes(
             note_node, self.__parse_note_nodes
         )
 
+        # Vérifie que les sous-notes sont bien dans kwargs["children"]
+        if "children" not in kwargs:
+            kwargs["children"] = []
+
+        # Si tskversion > 20, parse les pièces jointes
         if self.__tskversion > 20:
+            print(
+                f"XMLReader.__parse_note_node : tskversion={self.__tskversion}>20 => utilisation de __parse_attachments"
+            )
             kwargs["attachments"] = self.__parse_attachments(note_node)
             # theNote.setAttachments(self.__parse_attachments(note_node))  # ✅ Ajoute les pièces jointes si nécessaire
 
+        # print(
+        #     f"NOTE {kwargs.get('id')} children={kwargs.get('children')}"
+        # )  # Si children est remplit alors __parse_base_composite_attributes() gère déjà la récursion
         print(
-            f"NOTE {kwargs.get('id')} children={kwargs.get('children')}"
-        )  # Si children est remplit alors __parse_base_composite_attributes() gère déjà la récursion
+            f"PARSE NOTE : id={kwargs.get('id')} "
+            f"children={len(kwargs.get('children', []))} "
+            f"attachments={len(kwargs.get('attachments', []))}"
+        )
+
+        print(f"PARSE NOTE ATTACHMENTS = {kwargs.get('attachments')}")
+        # Crée la note en utilisant les arguments analysés
         theNote = note.Note(
             **kwargs
         )  # ✅ Créer l'objet Note AVANT d'ajouter les enfants
+        for att in theNote.attachments():
+            print(
+                "ATTACHMENT",
+                att,
+                "parent =",
+                att.parent() if hasattr(att, "parent") else "NO PARENT",
+            )
 
+        # Vérifie que les enfants sont bien associés
+        print(f"NOTE CREEE : {theNote} avec enfants : {theNote.children()}")
+        print(
+            f"NOTE ATTACHMENTS APRES CTOR : " f"{theNote.attachments()}"
+        )  # Si tu vois :
+        # NOTE ATTACHMENTS APRES CTOR : [Other attachment]
+        # pendant les tests de TaskFileTest
+        # alors le lecteur XML est innocent.
         # # Ajoute les sous-notes en tant qu'enfants
         # for child_node in note_node.findall("note"):
         #     child_note = self.__parse_note_node(child_node)

@@ -305,6 +305,7 @@ class SynchronizedObject(object):
             self.__status = (
                 self.STATUS_NEW
             )  # On met STATUS_NEW UNIQUEMENT si rien n'est défini
+        # log.debug(
         print(
             f"SynchronizedObject.__init__ : ✅ Après assignation : self.__status = {self.__status}"
         )
@@ -329,7 +330,7 @@ class SynchronizedObject(object):
             super().__init__(*args, **kwargs)
         except TypeError:
             super().__init__()
-        log.debug("SynchronizedObject : Initialisé.")
+        print("SynchronizedObject : Initialisé !")
 
     @classmethod
     def markDeletedEventType(class_):
@@ -371,6 +372,7 @@ class SynchronizedObject(object):
         Returns :
             dict : L'état de l'objet, incluant l'état de synchronisation.
         """
+        # log.debug(
         print(
             "Synchronized.__getstate__ : avant super status =",
             self.getStatus(),
@@ -380,9 +382,11 @@ class SynchronizedObject(object):
             state = super().__getstate__()
         except AttributeError:
             state = dict()
+        # log.debug(
         print(
             f"Synchronized.__getstate__ : après super status = {self.getStatus()}"
         )
+        # log.debug(
         print(
             f"SynchronizedObject.__getstate__ : après super et avant update state={state}."
         )
@@ -415,7 +419,8 @@ class SynchronizedObject(object):
             state (dict) : L’état à définir. Etat sauvegardé de l'objet.
             event : (event) L'événement optionnel associé à la définition de l'état à transmettre.
         """
-        log.debug(
+        # log.debug(
+        print(
             f"SynchronizedObject.__setstate__ : pour state {state} et event {event}."
         )
 
@@ -596,7 +601,7 @@ class SynchronizedObject(object):
         if self.__status == self.STATUS_NONE or force:
             self.__status = self.STATUS_CHANGED
             # print(f"SynchronizedObject.setStatusDirty : 🛑 DEBUG - Modification de self.__status pour {self} : {self.__status}")
-            log.debug(
+            print(
                 f"SynchronizedObject.setStatusDirty : 🛑 Modification de self.__status pour {self} : {self.__status}"
             )
 
@@ -977,8 +982,8 @@ class Object(SynchronizedObject):
         }
 
         # Faut-il les garder ou les effacer de kwargs ?
-        # log.debug(
-        print(
+        # print(
+        log.debug(
             f"Object.__init__ : kwargs={kwargs} et local_kwargs={local_kwargs} avant appel à super."
         )
         # Appel sécurisé au constructeur parent (sans kwargs dangereux)
@@ -1378,16 +1383,16 @@ class Object(SynchronizedObject):
         """
         # ce qui doit exister en mémoire pour que l'objet fonctionne.
 
-        print("SUBJECT =", self.subjectChangedEvent)
-        print("DESCRIPTION =", self.descriptionChangedEvent)
-        print("FG =", self._onDerivedFgColorChanged)
-        print("EFFECTIVE FG =", self._onEffectiveFgColorChanged)
-        print("BG =", self._onDerivedBgColorChanged)
-        print("EFFECTIVE BG =", self._onEffectiveBgColorChanged)
-        print("ICON =", self._onDerivedIconChanged)
-        print("EFFECTIVE ICON =", self._onEffectiveIconChanged)
-        print("FONT =", self._onDerivedFontChanged)
-        print("EFFECTIVE FONT =", self._onEffectiveFontChanged)
+        log.debug("SUBJECT =", self.subjectChangedEvent)
+        log.debug("DESCRIPTION =", self.descriptionChangedEvent)
+        log.debug("FG =", self._onDerivedFgColorChanged)
+        log.debug("EFFECTIVE FG =", self._onEffectiveFgColorChanged)
+        log.debug("BG =", self._onDerivedBgColorChanged)
+        log.debug("EFFECTIVE BG =", self._onEffectiveBgColorChanged)
+        log.debug("ICON =", self._onDerivedIconChanged)
+        log.debug("EFFECTIVE ICON =", self._onEffectiveIconChanged)
+        log.debug("FONT =", self._onDerivedFontChanged)
+        log.debug("EFFECTIVE FONT =", self._onEffectiveFontChanged)
 
         # # les clés sérialisées restent définies à un seul endroit
         # for key in SERIALIZATION_CORE_KEYS:
@@ -1833,7 +1838,7 @@ class Object(SynchronizedObject):
         # Il faut redéfinir __getstate__() dans la classe concernée
         # pour ne retourner que ce que tu veux (et non tous les attributs de l’objet).
 
-    @patterns.eventSource
+    # @patterns.eventSource  # Pour une désérialisation, __setstate__() ne doit pas être une source d'événement.
     def __setstate__(self, state, event=None):
         """
         Définissez l'état de l'objet à partir de la désérialisation.
@@ -2122,14 +2127,40 @@ class Object(SynchronizedObject):
         # self.setIcon(state["icon"], event=event)
         # self.setSelectedIcon(state["selectedIcon"], event=event)
         # self.setOrdering(state["ordering"], event=event)
-        self.setSubject(state.get("subject", ""), event=event)
-        self.setDescription(state.get("description", ""), event=event)
-        self.setForegroundColor(state.get("fgColor", None), event=event)
-        self.setBackgroundColor(state.get("bgColor", None), event=event)
-        self.setFont(state.get("font", None), event=event)
-        self.setIcon(state.get("icon", ""), event=event)
-        self.setSelectedIcon(state.get("selectedIcon", ""), event=event)
-        self.setOrdering(state.get("ordering", 0), event=event)
+        # self.setSubject(state.get("subject", ""), event=event)
+        # self.setSubject(
+        #     state.get("subject", ""), event=None
+        # )
+        # self.setSubject(state.get("subject", ""))
+        self.setSubject(state.get("subject", ""), event=False)
+        # self.setDescription(state.get("description", ""), event=event)
+        # self.setDescription(state.get("description", ""), event=None)
+        # self.setDescription(state.get("description", ""))
+        self.setDescription(state.get("description", ""), event=False)
+        # self.setForegroundColor(state.get("fgColor", None), event=event)
+        # self.setForegroundColor(state.get("fgColor", None), event=None)
+        # self.setForegroundColor(state.get("fgColor", None))
+        self.setForegroundColor(state.get("fgColor", None), event=False)
+        # self.setBackgroundColor(state.get("bgColor", None), event=event)
+        # self.setBackgroundColor(state.get("bgColor", None), event=None)
+        # self.setBackgroundColor(state.get("bgColor", None))
+        self.setBackgroundColor(state.get("bgColor", None), event=False)
+        # self.setFont(state.get("font", None), event=event)
+        # self.setFont(state.get("font", None), event=None)
+        # self.setFont(state.get("font", None))
+        self.setFont(state.get("font", None), event=False)
+        # self.setIcon(state.get("icon", ""), event=event)
+        # self.setIcon(state.get("icon", ""), event=None)
+        # self.setIcon(state.get("icon", ""))
+        self.setIcon(state.get("icon", ""), event=False)
+        # self.setSelectedIcon(state.get("selectedIcon", ""), event=event)
+        # self.setSelectedIcon(state.get("selectedIcon", ""), event=None)
+        # self.setSelectedIcon(state.get("selectedIcon", ""))
+        self.setSelectedIcon(state.get("selectedIcon", ""), event=False)
+        # self.setOrdering(state.get("ordering", 0), event=event)
+        # self.setOrdering(state.get("ordering", 0), event=None)
+        # self.setOrdering(state.get("ordering", 0))
+        self.setOrdering(state.get("ordering", 0), event=False)
 
         # Set modification date/time last to overwrite changes made by the
         # setters above
@@ -3099,9 +3130,10 @@ class CompositeObject(
         )
         print("CompositeObject.__init__ : children reçus =", children)
         # Initialisation manuelle de Composite
-        patterns.composite.Composite.__init__(
+        patterns.composite.ObservableComposite.__init__(
             self, children=children, parent=parent
         )
+        # Dans Object.__init__, il n'y a pas de gestion explicite des enfants. Cela est normal, car Object est la classe de base, et la gestion des enfants est délégée à CompositeObject.
         log.debug(
             f"CompositeObject.__init__() → kwargs après Composite: {kwargs}"
         )

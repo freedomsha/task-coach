@@ -46,9 +46,9 @@ class IntegrationTestCase(tctest.TestCase):
         task.Task.settings = config.Settings(load=False)
         # Sortie de tampon d'écriture
         # Utiliser StringIO pour le test
-        # self.fd = io.StringIO()
+        self.fd = io.StringIO()
         # Use BytesIO for binary data
-        self.fd = io.BytesIO()
+        # self.fd = io.BytesIO()
         # Nom du fichier (inutile pour StringIO)
         self.fd.name = "testfile.tsk"
         # self.fd.encoding = "utf-8"
@@ -62,10 +62,12 @@ class IntegrationTestCase(tctest.TestCase):
         self.notes = note.NoteContainer()
         self.syncMLConfig = SyncMLConfigNode("root")
         self.changes = dict()
-        self.guid = u"GUID"
+        self.guid = "GUID"
         self.fillContainers()
 
-        tasks, categories, notes, syncMLConfig, changes, guid = self.readAndWrite()
+        tasks, categories, notes, syncMLConfig, changes, guid = (
+            self.readAndWrite()
+        )
         self.tasksWrittenAndRead = task.TaskList(tasks)
         self.categoriesWrittenAndRead = category.CategoryList(categories)
         self.notesWrittenAndRead = note.NoteContainer(notes)
@@ -79,7 +81,11 @@ class IntegrationTestCase(tctest.TestCase):
     def readAndWrite(self):
         self.fd.seek(0)
         self.writer.write(
-            self.taskList, self.categories, self.notes, self.syncMLConfig, self.guid
+            self.taskList,
+            self.categories,
+            self.notes,
+            self.syncMLConfig,
+            self.guid,
         )
         self.fd.seek(0)
         return self.reader.read()
@@ -100,6 +106,7 @@ class IntegrationTest_EmptyList(IntegrationTestCase):
 
 class IntegrationTest(IntegrationTestCase):
     def fillContainers(self):
+        """Fill the containers with test data."""
         # pylint: disable=W0201
         self.description = "Description\nLine 2"
         self.task = task.Task(
@@ -114,10 +121,14 @@ class IntegrationTest(IntegrationTestCase):
             hourlyFee=100.5,
             fixedFee=1000,
             recurrence=date.Recurrence(
-                "weekly", maximum=10, count=5, amount=2, stop_datetime=date.Now()
+                "weekly",
+                maximum=10,
+                count=5,
+                amount=2,
+                stop_datetime=date.Now(),
             ),
             reminder=date.DateTime(2004, 1, 1),
-            fgColor=wx.BLUE,
+            fgColor=wx.BLUE,  # TODO : à changer pour être compatible tkinter
             bgColor=wx.RED,
             font=wx.NORMAL_FONT,
             expandedContexts=["viewer1"],
@@ -147,7 +158,9 @@ class IntegrationTest(IntegrationTestCase):
         )
         self.categories.append(self.category)
         # pylint: disable=E1101
-        self.task.addAttachments(attachment.FileAttachment("/home/frank/whatever.txt"))
+        self.task.addAttachments(
+            attachment.FileAttachment("/home/frank/whatever.txt")
+        )
         self.task.addNote(note.Note(subject="Task note"))
         self.task2 = task.Task("Task 2", priority=-1954)
         self.taskList.extend([self.task, self.task2])
@@ -162,12 +175,15 @@ class IntegrationTest(IntegrationTestCase):
 
     def getTaskWrittenAndRead(self, targetId):
         # pylint: disable=W0621
-        return [task for task in self.tasksWrittenAndRead if task.id() == targetId][0]
+        return [
+            task for task in self.tasksWrittenAndRead if task.id() == targetId
+        ][0]
 
     def assertAttributeWrittenAndRead(self, aTask, attribute):
         taskWrittenAndRead = self.getTaskWrittenAndRead(aTask.id())
         self.assertEqual(
-            getattr(aTask, attribute)(), getattr(taskWrittenAndRead, attribute)()
+            getattr(aTask, attribute)(),
+            getattr(taskWrittenAndRead, attribute)(),
         )
 
     def assertContainedDomainObjectsWrittenAndRead(self, aTask, attribute):
@@ -235,7 +251,9 @@ class IntegrationTest(IntegrationTestCase):
     def testEffortDescription(self):
         self.assertEqual(
             self.task.efforts()[0].description(),
-            self.getTaskWrittenAndRead(self.task.id()).efforts()[0].description(),
+            self.getTaskWrittenAndRead(self.task.id())
+            .efforts()[0]
+            .description(),
         )
 
     def testChildren(self):
@@ -247,20 +265,28 @@ class IntegrationTest(IntegrationTestCase):
     def testGrandChildren(self):
         self.assertEqual(
             len(self.task.children(recursive=True)),
-            len(self.getTaskWrittenAndRead(self.task.id()).children(recursive=True)),
+            len(
+                self.getTaskWrittenAndRead(self.task.id()).children(
+                    recursive=True
+                )
+            ),
         )
 
     def testCategory(self):
-        categorizables = list(self.categoriesWrittenAndRead)[0].categorizables()
+        categorizables = list(self.categoriesWrittenAndRead)[
+            0
+        ].categorizables()
         categorizableIds = set([item.id() for item in categorizables])
         # self.assertEqual(set([self.task.id(), self.note.id()]), categorizableIds)
         self.assertEqual({self.task.id(), self.note.id()}, categorizableIds)
 
     def testFilteredCategory(self):
-        self.failUnless(list(self.categoriesWrittenAndRead)[0].isFiltered())
+        # self.failUnless(list(self.categoriesWrittenAndRead)[0].isFiltered())
+        self.assertTrue(list(self.categoriesWrittenAndRead)[0].isFiltered())
 
     def testExclusiveSubcategories(self):
-        self.failUnless(
+        # self.failUnless(
+        self.assertTrue(
             list(self.categoriesWrittenAndRead)[0].hasExclusiveSubcategories()
         )
 
@@ -313,10 +339,13 @@ class IntegrationTest(IntegrationTestCase):
         )
 
     def testChildNote(self):
+        """Test that child notes are written and read correctly."""
         self.assertEqual(
             self.notes.rootItems()[0].children()[0].subject(),
             self.notesWrittenAndRead.rootItems()[0].children()[0].subject(),
         )
+        # Il vérifie précisément une propriété essentielle de la sérialisation : la hiérarchie doit survivre au cycle XML → objets → XML.
+        # Le test nous donne donc une information précieuse : la hiérarchie est perdue pendant le round-trip.
 
     def testCategoryDescription(self):
         self.assertEqual(
@@ -326,7 +355,8 @@ class IntegrationTest(IntegrationTestCase):
 
     def testNoteId(self):
         self.assertEqual(
-            self.notes.rootItems()[0].id(), self.notesWrittenAndRead.rootItems()[0].id()
+            self.notes.rootItems()[0].id(),
+            self.notesWrittenAndRead.rootItems()[0].id(),
         )
 
     def testCategoryId(self):
@@ -335,7 +365,8 @@ class IntegrationTest(IntegrationTestCase):
         )
 
     def testNoteWithCategory(self):
-        self.failUnless(
+        # self.failUnless(
+        self.assertTrue(
             self.notesWrittenAndRead.rootItems()[0]
             in list(self.categoriesWrittenAndRead)[0].categorizables()
         )
@@ -344,7 +375,9 @@ class IntegrationTest(IntegrationTestCase):
         self.assertContainedDomainObjectsWrittenAndRead(self.task, "notes")
 
     def testSyncMLConfig(self):
-        self.assertEqual(self.syncMLConfigWrittenAndRead.name, self.syncMLConfig.name)
+        self.assertEqual(
+            self.syncMLConfigWrittenAndRead.name, self.syncMLConfig.name
+        )
 
     def testGUID(self):
         self.assertEqual(self.guidWrittenAndRead, self.guid)

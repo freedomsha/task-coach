@@ -498,6 +498,12 @@ class BaseCategoryViewer(
             newValue : La nouvelle valeur de l'attribut.
             sender : L'objet qui a envoyé l'événement.
         """
+        print(
+            "baseCategoryViwer.onAttributeChanged",
+            sender,
+            sender.id(),
+            newValue,
+        )
         super().onAttributeChanged(newValue, sender)
 
     def onAttributeChanged_Deprecated(self, event):
@@ -507,6 +513,12 @@ class BaseCategoryViewer(
         Args :
             event : L'événement.
         """
+        print(
+            "baseCategoryViwer.onAttributeChanged_Deprecated",
+            event,
+            event.id(),
+            event.type(),
+        )
         if (
             category.Category.exclusiveSubcategoriesChangedEventType()
             in event.types()

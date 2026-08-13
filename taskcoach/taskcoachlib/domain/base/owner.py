@@ -295,7 +295,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             Pour __ownedType__ = "Note", suffix = "foo" et le nom de la classe créé name = "cls",
             retourne le nom de l'attribut "_cls__foonotes"
         """
-        print(
+        log.debug(
             f"owner.DomainObjectOwnerMetaclass._attribute_name : retourne le nom d'attribut _{name}__{suffix}{owned_type}s pour la classe {name}."
         )
         return f"_{name}__{suffix}{owned_type}s"
@@ -311,7 +311,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             **kwargs : Arguments de mots clés arbitraires.
         """
         # NB: we use a simple list here. Maybe we should use a container type.
-        print(
+        log.debug(
             f"Owner.constructor : Initialise l'instance avec la liste des objets possédés pour {name}."
         )
         # setattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower()),
@@ -320,10 +320,10 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         setattr(
             instance, _attribute_name(""), kwargs.pop(f"{owned_type}s", [])
         )
-        print("Owner.constructor : AVANT SUPER :", instance.__dict__)
+        log.debug("Owner.constructor : AVANT SUPER :", instance.__dict__)
         # super(klass, instance).__new__(klass)
         super(klass, instance).__init__(*args, **kwargs)
-        print("Owner.constructor : APRES SUPER :", instance.__dict__)
+        log.debug("Owner.constructor : APRES SUPER :", instance.__dict__)
 
     klass.__init__ = constructor
 
@@ -363,8 +363,8 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         Returns :
             str : Le nom de l'événement généré.
         """
-        print(
-            f"owner.generate_event_name : génère et retourne le nom de l'événement {klass}.{owned_type}{event_type} pour {name}."
+        log.debug(
+            f"owner.DomainObjectOwnerMetaclass.generate_event_name : génère et retourne le nom de l'événement {klass}.{owned_type}{event_type} pour {name}."
         )
         return f"{klass}.{owned_type}{event_type}"
 
@@ -405,7 +405,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             # eventTypes = []
         # # if eventTypes is None:
         # #     eventTypes = []
-        print(
+        log.debug(
             f"owner.modificationEventTypes : liste des types d’événements liés aux modifications eventTypes = {eventTypes}."
         )
         # parent_events = getattr(super(klass, class_), "modificationEventTypes", lambda: [])()
@@ -445,7 +445,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         owned_objects = getattr(instance, _attribute_name(""))
 
         if owned_objects is None:
-            print(
+            log.debug(
                 "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est None.",
                 instance,
                 type(instance),
@@ -453,7 +453,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
                 _attribute_name(""),
             )
         else:
-            print(
+            log.debug(
                 "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est :",
                 instance,
                 type(instance),
@@ -473,7 +473,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             for obj in result[:]:
                 result.extend(obj.children(recursive=True))
 
-        print(
+        log.debug(
             f"owner.objects : retourne la liste des objets possédés par {name}, incluant éventuellement leurs enfants : {result}"
         )
         return result
@@ -492,24 +492,40 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             newObjects (list) : La nouvelle liste des objets possédés.
             event : L'événement à déclencher.
         """
-        print("\n=== SETOBJECTS ===")
-        print("ID(instance) =", id(instance))
-        print("TYPE(instance) =", type(instance))
-        print("DICT =", instance.__dict__)
-        print("DEBUG setObjects newObjects =", newObjects)
+        log.debug(
+            "DomainObjectOwnerMetaclass.setObjects : \n=== SETOBJECTS ==="
+        )
+        log.debug(
+            "DomainObjectOwnerMetaclass.setObjects : ID(instance) =",
+            id(instance),
+        )
+        log.debug(
+            "DomainObjectOwnerMetaclass.setObjects : TYPE(instance) =",
+            type(instance),
+        )
+        log.debug(
+            "DomainObjectOwnerMetaclass.setObjects : DICT =", instance.__dict__
+        )
+        log.debug(
+            "DomainObjectOwnerMetaclass.setObjects : DEBUG setObjects newObjects =",
+            newObjects,
+        )
         # print("DEBUG setObjects objects(instance) =", objects(instance))
-        print("DEBUG attribute name =", _attribute_name(""))
-        print(
-            f"DEBUG: setObjects called for {type(instance).__name__}. New objects: {newObjects}"
+        log.debug(
+            "DomainObjectOwnerMetaclass.setObjects : DEBUG attribute name =",
+            _attribute_name(""),
+        )
+        log.debug(
+            f"DomainObjectOwnerMetaclass.setObjects : DEBUG: setObjects called for {type(instance).__name__}. New objects: {newObjects}"
         )
         current_owned_attr_name = _attribute_name("")
-        print(
-            f"DEBUG: setObjects - Value of {current_owned_attr_name} before setattr: {getattr(instance, current_owned_attr_name, 'N/A')}"
+        log.debug(
+            f"DomainObjectOwnerMetaclass.setObjects : DEBUG - Value of {current_owned_attr_name} before setattr: {getattr(instance, current_owned_attr_name, 'N/A')}"
         )
 
         if newObjects == objects(instance):
-            print(
-                f"DEBUG: setObjects - newObjects are the same as current objects. Returning."
+            log.debug(
+                f"DDomainObjectOwnerMetaclass.setObjects : DEBUG - newObjects are the same as current objects. Returning."
             )
             return
         # setattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower()),
@@ -517,8 +533,8 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # setattr(instance, owned_attr_name(), newObjects)
         # setattr(instance, _attribute_name(""), newObjects)
         setattr(instance, current_owned_attr_name, newObjects)
-        print(
-            f"DEBUG: setObjects - Value of {current_owned_attr_name} after setattr: {getattr(instance, current_owned_attr_name, 'N/A')}"
+        log.debug(
+            f"DomainObjectOwnerMetaclass.setObjects : - Value of {current_owned_attr_name} after setattr: {getattr(instance, current_owned_attr_name, 'N/A')}"
         )
         changedEvent(instance, event, *newObjects)  # pylint: disable=W0142
 
@@ -530,12 +546,16 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
     # setattr(klass, f"set{klass.__ownedType__}s", setObjects)
     # attribute = _attribute_name("")
     attribute = f"set{klass.__ownedType__}s"
-    print("DomainObjectOwnerMetaclass : DEBUG écriture attribut :", attribute)
+    log.debug(
+        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG écriture attribut :",
+        attribute,
+    )
     # setattr(instance, attribute, newObjects)
     setattr(klass, attribute, setObjects)
     # print("DEBUG après écriture :", instance.__dict__)
-    print(
-        "DomainObjectOwnerMetaclass : DEBUG après écriture :", klass.__dict__
+    log.debug(
+        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG après écriture :",
+        klass.__dict__,
     )
 
     # Méthodes d'événement : ajout, suppression, changement
@@ -548,13 +568,15 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             event : L'événement pour ajouter l'événement modifié.
             *objects : Les objets qui ont changé.
         """
-        print(
+        log.debug(
             f"owner.changedEvent : Ajoute l'événement {objects} modifié à {event}."
         )
         # event.addSource(instance, *objects,
         #                 **dict(type=changedEventType(instance.__class__)))
         event.addSource(instance, *objects, type=generate_event_name(""))
-        print(f"owner.changedEvent : Événement créé par changedEvent: {event}")
+        log.debug(
+            f"owner.changedEvent : Événement créé par changedEvent: {event}"
+        )
 
         # Forcer l'ajout explicite de la source
         if event is not None:

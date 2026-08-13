@@ -174,7 +174,10 @@ class Sorter(patterns.ListDecorator):  # classe enfant
             f"base.Sorter._registerObserverForAttribute : Registering observer for attribute {attribute}."
         )
         for eventType in self._getSortEventTypes(attribute):
-            print("REGISTER:", repr(eventType))
+            print(
+                "base.sorter._registerObserverForAttribute : REGISTER:",
+                repr(eventType),
+            )
             if eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
             else:

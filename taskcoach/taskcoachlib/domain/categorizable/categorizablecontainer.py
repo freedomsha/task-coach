@@ -16,8 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 from taskcoachlib.domain import base
 from taskcoachlib import patterns
+
+log = logging.getLogger(__name__)
 
 
 class CategorizableContainer(base.Collection):

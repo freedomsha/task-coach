@@ -120,7 +120,7 @@ class ChangeMonitor(Observer):
         self.__frozen = True
 
     def thaw(self):
-        """Dégeler le moniteur pour qu'il recommence à surveiller les changements."""
+        """Dégèle le moniteur pour qu'il recommence à surveiller les changements."""
         self.__frozen = False
 
     def guid(self):
@@ -226,7 +226,8 @@ class ChangeMonitor(Observer):
             if issubclass(klass, Effort):
                 # utiliser la nouvelle méthode pubsub.subscribe pour le changement d'effort
                 pub.subscribe(
-                    self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    # self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    self.onEffortChanged, Effort.taskChangedEventType()
                 )
 
     def unmonitorClass(self, klass):
@@ -287,7 +288,8 @@ class ChangeMonitor(Observer):
                 )
             if issubclass(klass, Effort):
                 pub.unsubscribe(
-                    self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    # self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    self.onEffortChanged, Effort.taskChangedEventType()
                 )
             self._classes.remove(klass)
 
@@ -345,9 +347,28 @@ class ChangeMonitor(Observer):
             __frozen : Indique si le moniteur est gelé (ne surveille pas les changements).
             _changes (dict) : Un dictionnaire pour suivre les changements, où les clés sont les IDs des objets et les valeurs sont des ensembles de changements associés à ces objets.
         """
+        print("ChangeMonitor.onAttributeChanged : === onAttributeChanged ===")
+        print("ChangeMonitor.onAttributeChanged : TOPIC =", topic)
+        print("ChangeMonitor.onAttributeChanged : TOPIC TYPE =", type(topic))
+        print(
+            "ChangeMonitor.onAttributeChanged : sender =",
+            type(sender).__name__,
+            sender.id(),
+        )
+
+        if hasattr(topic, "getName"):
+            print("ChangeMonitor.onAttributeChanged : NAME =", topic.getName())
+
+        if hasattr(topic, "getNameTuple"):
+            print(
+                "ChangeMonitor.onAttributeChanged : TUPLE =",
+                topic.getNameTuple(),
+            )
         # Vérifie si le moniteur est gelé
         if self.__frozen:
             return
+
+        topic_name = topic.getName()
 
         # Pour tous les attributs de
         for name in sender.monitoredAttributes():
@@ -355,14 +376,22 @@ class ChangeMonitor(Observer):
             # getModule , getID, getRawFunction, getAllArgs, getOptionalArgs, getRequiredArgs, getArgs from pub?
             # or method getNameTuple() is from pubsub.core.topicobj.Topic ?
             # if name in topic.getNameTuple():  # TODO : !
-            # Si l'id de l'objet est dans le dictionnaire de suivi des changements
-            if (
-                sender.id() in self._changes
-                # et qu'il n'est pas vide ! (TODO : pourquoi pas vide ? inutile ?!)
-                and self._changes[sender.id()] is not None
-            ):
+            # # Si l'id de l'objet est dans le dictionnaire de suivi des changements
+            # if (
+            #     sender.id() in self._changes
+            #     # et qu'il n'est pas vide ! (TODO : pourquoi pas vide ? inutile ?!)
+            #     and self._changes[sender.id()] is not None
+            # ):
+            if topic_name == getattr(sender, f"{name}ChangedEventType")():
+                # Ensure the entry for this object is a set before adding changes
+                if (
+                    sender.id() not in self._changes
+                    or self._changes[sender.id()] is None
+                ):
+                    self._changes[sender.id()] = set()
                 # Ajouter l'attribut au dictionnaire de suivi des changements
                 self._changes[sender.id()].add(name)
+                break
 
     def onAttributeChanged_Deprecated(self, event):
         """Méthode dépréciée pour gérer les événements de changement d'attribut.
@@ -390,6 +419,12 @@ class ChangeMonitor(Observer):
                     # Si la clé qui contient un changement est de type
                     # if type_ == getattr(obj, "%sChangedEventType" % name)():
                     if type_ == getattr(obj, f"{name}ChangedEventType")():
+                        # Ensure the entry for this object is a set before adding changes
+                        if (
+                            obj.id() not in self._changes
+                            or self._changes[obj.id()] is None
+                        ):
+                            self._changes[obj.id()] = set()
                         # Si l'id de la clé est dans le dictionnaire des changements et que sa valeur n'est pas None
                         if (
                             obj.id() in self._changes
@@ -570,48 +605,76 @@ class ChangeMonitor(Observer):
     # Raison : selon la version/usage de PubSub, les callbacks peuvent être appelés de manière différente (positional vs keyword). Si la méthode n'était pas appelée ou ne trouvait pas l'expéditeur, le moniteur ne marquait pas l'effort comme modifié, donc TaskFile.needSave() restait False — d'où l'échec du test.
     # Le patch est ciblé et sûr : il n'altère pas la logique métier, il la rend juste plus tolérante aux différences d'API de pubsub.
     # J'ai vérifié la syntaxe/compilation du fichier modifié — seules des warnings d'import inutilisé / suggestion littérale sont apparus (pas d'erreurs fatales).
-    # def onEffortChanged(self, newValue, sender):
-    def onEffortTaskChanged(self, *args, **kwargs):
+    def onEffortChanged(self, newValue, sender):  # Signature explicite !
+        # def onEffortTaskChanged(self, *args, **kwargs):  # Non conforme, signature indéterminée pour PyPubSub 4 !
         """Called when an Effort's parent task changes.
 
         PubSub libraries can call listeners using different conventions
         (positional args or keyword args). Accept *args/**kwargs and
         extract the sender reliably. Record the "__task__" change in the
         monitor, creating a mutable set if necessary.
+
+        Gère le changement de tâche parent d'un effort.
+
+        Cette méthode est appelée lorsque la tâche associée à un Effort
+        change. Elle enregistre cette modification dans le moniteur afin
+        que le TaskFile sache qu'une sauvegarde est nécessaire.
+
+        Args:
+            newValue:
+                Nouvelle tâche associée à l'effort.
+
+            sender:
+                Instance de Effort ayant changé.
         """
+        # L'idée était bonne dans l'absolu : accepter plusieurs conventions d'appel.
+        # Mais ici nous sommes dans un système événementiel interne où les signatures doivent être stables.
+        # La robustesse doit être placée au niveau de l'émetteur
+        # pub.sendMessage(
+        #     topic,
+        #     newValue=value,
+        #     sender=obj
+        # )
+        # et non au niveau du récepteur.
+        # Sinon PyPubSub ne peut plus construire correctement son contrat de topic.
+
+        # # Extract sender from kwargs if present
+        # sender = kwargs.get("sender", None)
+        #
+        # # If not found in kwargs, try to find an object in args that looks
+        # # like a domain object (has id()). Prefer the last arg which is
+        # # commonly the sender in many pubsub conventions.
+        # if sender is None:
+        #     for candidate in reversed(args):
+        #         try:
+        #             # Ensure candidate has id() method
+        #             _ = candidate.id()
+        #         except Exception:
+        #             continue
+        #         else:
+        #             sender = candidate
+        #             break
+        #
+        # # If we still don't have a sender, give up silently (no-op).
+        # if sender is None:
+        #     return
+
+        # Récupère les modifications déjà enregistrées pour cet effort.
         # changes = self._changes.get(sender.id(), None)
-        # Extract sender from kwargs if present
-        sender = kwargs.get("sender", None)
-
-        # If not found in kwargs, try to find an object in args that looks
-        # like a domain object (has id()). Prefer the last arg which is
-        # commonly the sender in many pubsub conventions.
-        if sender is None:
-            for candidate in reversed(args):
-                try:
-                    # Ensure candidate has id() method
-                    _ = candidate.id()
-                except Exception:
-                    continue
-                else:
-                    sender = candidate
-                    break
-
-        # If we still don't have a sender, give up silently (no-op).
-        if sender is None:
-            return
-
         try:
             changes = self._changes.get(sender.id(), None)
         except Exception:
             # If sender.id() fails for any reason, bail out.
             return
 
+        # Si aucune modification n'est encore enregistrée, crée un ensemble.
         if changes is None:
-            # Create a mutable change set so the taskfile will detect this
-            # change. Previously a None sentinel prevented recording task
-            # reparenting which made needSave() remain False.
-            self._changes[sender.id()] = set(["__task__"])
+            # # Create a mutable change set so the taskfile will detect this
+            # # change. Previously a None sentinel prevented recording task
+            # # reparenting which made needSave() remain False.
+            # self._changes[sender.id()] = set(["__task__"])
+            self._changes[sender.id()] = {"__task__"}
+        # Sinon ajoute simplement la modification à l'ensemble existant.
         else:
             changes.add("__task__")
 

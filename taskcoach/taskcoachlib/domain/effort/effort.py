@@ -173,6 +173,7 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         )  # La migration vers pubsub 4.0 nécessite de passer les arguments en positionnels ou de les encapsuler dans un Event, car pubsub 4.0 ne supporte plus les arguments nommés arbitraires.
         # pub.sendMessage(
         #     self.taskChangedEventType(),
+        #     newValue=task,
         # )  # S'assurer que les observateurs reçoivent bien la notification, même sans args
         # Use positional args to avoid topic arg-spec mismatches in some
         # pubsub configurations (some listeners register different argnames).

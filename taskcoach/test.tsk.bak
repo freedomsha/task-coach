@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?taskcoach release="2.0.0" tskversion="38"?>
+
+<tasks>
+<task id="8841f35e-8723-11f1-b540-a4f933b218b7" status="1" creationDateTime="2026-07-24 07:50:10.482487" subject="Task">
+<note id="8846c3f2-8723-11f1-b540-a4f933b218b7" status="1" creationDateTime="2026-07-24 07:50:10.514048" subject="Task note" />
+<attachment id="884ab12e-8723-11f1-b540-a4f933b218b7" status="1" creationDateTime="2026-07-24 07:50:10.539784" subject="foobarfile" type="file" location="foobarfile" />
+</task>
+<task id="885d6954-8723-11f1-b540-a4f933b218b7" status="1" creationDateTime="2026-07-24 07:50:10.662456" subject="Prereq" />
+<category id="8842957a-8723-11f1-b540-a4f933b218b7" status="1" creationDateTime="2026-07-24 07:50:10.486634" subject="Category" />
+<note id="8844807e-8723-11f1-b540-a4f933b218b7" status="1" creationDateTime="2026-07-24 07:50:10.499211" subject="Note" />
+<syncmlconfig>
+<TaskCoach-3159481c-c26f-4b26-af0f-487cf1f81641>
+<spds>
+<sources>
+<TaskCoach-3159481c-c26f-4b26-af0f-487cf1f81641.Tasks />
+<TaskCoach-3159481c-c26f-4b26-af0f-487cf1f81641.Notes />
+</sources>
+<syncml>
+<Auth />
+<Conn />
+</syncml>
+</spds>
+</TaskCoach-3159481c-c26f-4b26-af0f-487cf1f81641>
+</syncmlconfig>
+<guid>
+3159481c-c26f-4b26-af0f-487cf1f81641
+</guid>
+</tasks>

@@ -283,15 +283,20 @@ class Attribute(object):
             import inspect
 
             log.debug(
-                "Attribute.set : SETEVENT =",
-                self.__setEvent,
+                "Attribute.set : SETEVENT =", self.__setEvent, "event=", event
             )
 
             log.debug(inspect.signature(self.__setEvent))
-            self.__setEvent(
-                # event
-                event=event
-            )  # ✅ juste l'event, self est déjà lié via owner
+            # self.__setEvent(
+            #     # event
+            #     event=event
+            # )  # ✅ juste l'event, self est déjà lié via owner
+            # Déclenche l'événement uniquement si un événement est explicitement demandé.
+
+            # Une modification normale déclenche une notification.
+            # Une restauration (__setstate__) reste silencieuse.
+            if event is not None:
+                self.__setEvent(event=event)
             # !!! Ce changement est peut-être correct pour les méthodes liées
             # !!! (bound methods), mais pas pour les lambdas.
             log.debug(
@@ -318,7 +323,8 @@ class SetAttribute(object):
         - __nullEvent(*args, **kwargs) : Un gestionnaire d'événements par défaut qui ne fait rien.
     """
 
-    __slots__ = (
+    # __slots__ = (
+    __slots = (
         "__set",
         "__owner",
         "__addEvent",

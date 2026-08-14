@@ -31,20 +31,45 @@ from taskcoachlib.i18n import _
 
 
 class ChangeSynchronizer(object):
+    """
+    Synchronise les changements entre la mémoire et le disque.
+
+    Cette classe prend en charge la fusion des objets composites,
+    la gestion des objets possédés (notes et pièces jointes),
+    le reparentage des objets, la suppression des objets
+    et l'application des changements du disque à la mémoire.
+    """
+
     def __init__(self, monitor, allChanges):
         self._monitor = monitor
         self._allChanges = allChanges
 
     @staticmethod
     def allObjects(theList):
+        """
+        Retourne une liste de tous les objets dans la liste donnée, y compris les objets imbriqués.
+
+        Args:
+            theList: Liste d'objets à parcourir.
+
+        Returns:
+            list: Liste de tous les objets, y compris les objets imbriqués.
+        """
         result = list()
-        for obj in theList:
+        for a_obj in theList:
+            # Si c'est une weakref ou un callable, on extrait l'objet réel
+            obj = a_obj() if callable(a_obj) else a_obj
+            if obj is None:
+                continue
+
             result.append(obj)
             if isinstance(obj, CompositeObject):
                 result.extend(ChangeSynchronizer.allObjects(obj.children()))
-            if isinstance(obj, NoteOwner):
+            # if isinstance(obj, NoteOwner):
+            if isinstance(obj, NoteOwner) or hasattr(obj, "notes"):
                 result.extend(ChangeSynchronizer.allObjects(obj.notes()))
-            if isinstance(obj, AttachmentOwner):
+            # if isinstance(obj, AttachmentOwner):
+            if isinstance(obj, AttachmentOwner) or hasattr(obj, "attachments"):
                 result.extend(ChangeSynchronizer.allObjects(obj.attachments()))
             if isinstance(obj, Task):
                 result.extend(obj.efforts())
@@ -72,7 +97,7 @@ class ChangeSynchronizer(object):
 
         # Cleanup monitor
         self._monitor.empty()
-        for memList, diskList in lists:
+        for memList, diskList in list(lists):
             for obj in self.allObjects(memList.rootItems()):
                 self._monitor.resetChanges(obj)
 
@@ -171,6 +196,12 @@ class ChangeSynchronizer(object):
     def mergeOwnedObjectsFromDisk(self, diskList):
         # Second pass: 'owned' objects (notes and attachments
         # currently) new on disk, and efforts.
+        print(
+            "ChangeSynchronizer.mergOwnedObjectsFromDisk : SYNC OBJ diskList :",
+            diskList,
+            type(diskList),
+            isinstance(diskList, AttachmentOwner),
+        )
 
         for obj in diskList.allItemsSorted():
             if isinstance(obj, NoteOwner):
@@ -190,7 +221,12 @@ class ChangeSynchronizer(object):
             className = actualDiskObject.__class__.__name__
             if className.endswith("Attachment"):
                 className = "Attachment"
-
+            print(
+                "ChangeSynchronizer._handleNewOwnedObjectsOnDisk : SYNC OBJ",
+                actualDiskObject,
+                type(actualDiskObject),
+                isinstance(actualDiskObject, AttachmentOwner),
+            )
             # if isinstance(diskObject, CompositeObject):
             #     children = diskObject.children()[:]
             if isinstance(actualDiskObject, CompositeObject):
@@ -304,13 +340,30 @@ class ChangeSynchronizer(object):
                 if addObject:
                     self.memMap[diskObject.id()] = diskObject
 
-            if diskObject.id() in self.memMap:
-                if isinstance(diskObject, CompositeObject):
+            # if diskObject.id() in self.memMap:
+            #     if isinstance(diskObject, CompositeObject):
+            #         self._handleNewOwnedObjectsOnDisk(children)
+            #     if isinstance(diskObject, NoteOwner):
+            #         self._handleNewOwnedObjectsOnDisk(diskObject.notes())
+            #     if isinstance(diskObject, AttachmentOwner):
+            #         self._handleNewOwnedObjectsOnDisk(diskObject.attachments())
+            if actualDiskObject.id() in self.memMap:
+                if isinstance(actualDiskObject, CompositeObject):
                     self._handleNewOwnedObjectsOnDisk(children)
-                if isinstance(diskObject, NoteOwner):
-                    self._handleNewOwnedObjectsOnDisk(diskObject.notes())
-                if isinstance(diskObject, AttachmentOwner):
-                    self._handleNewOwnedObjectsOnDisk(diskObject.attachments())
+                if isinstance(actualDiskObject, NoteOwner) or hasattr(
+                    actualDiskObject, "notes"
+                ):
+                    self._handleNewOwnedObjectsOnDisk(actualDiskObject.notes())
+                if isinstance(actualDiskObject, AttachmentOwner) or hasattr(
+                    actualDiskObject, "attachments"
+                ):
+                    print(
+                        "ChnageSynchronizer._handleNewOwnedObjectsOnDisk : SYNC ATTACHMENTS",
+                        actualDiskObject.attachments(),
+                    )
+                    self._handleNewOwnedObjectsOnDisk(
+                        actualDiskObject.attachments()
+                    )
 
     def _handleNewEffortsOnDisk(self, diskEfforts):
         """

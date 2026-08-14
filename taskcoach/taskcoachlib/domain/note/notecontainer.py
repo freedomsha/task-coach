@@ -39,6 +39,6 @@ class NoteContainer(categorizable.CategorizableContainer):
 
     # pass
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         # self._note = None
         self.id = str(uuid.uuid4())

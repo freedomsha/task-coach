@@ -18,7 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # import lockfile
 import tempfile
-from taskcoachlib.thirdparty import lockfile
+
+# from taskcoachlib.thirdparty import lockfile
+import lockfile
 from ... import tctest
 
 

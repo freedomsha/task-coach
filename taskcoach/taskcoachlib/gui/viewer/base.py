@@ -667,9 +667,17 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         return collection
 
     def onAttributeChanged(self, newValue, sender):  # pylint: disable=W0613
+        # print(
         log.debug(
-            "Viewer.onAttributeChanged : Appel de onAttributeChanged pour %s avec newValue=%s et sender=%s.",
-            self.__class__.__name__,
+            "Viewer.onAttributeChanged : Appel de onAttributeChanged pour %s avec newValue=%s et sender=%s."
+            % (self.__class__.__name__, newValue, sender)
+        )
+        # print(
+        log.debug(
+            "Viewer.onAttributeChanged",
+            sender,
+            sender.id(),
+            newValue,
         )
         if self:
             # self.refreshItems(sender)

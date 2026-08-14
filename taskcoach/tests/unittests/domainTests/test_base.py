@@ -449,6 +449,10 @@ class ObjectTest(tctest.TestCase):
         self.assertEqual(newState, self.tcobject.__getstate__())
 
     def testSetState_SendsOneNotification(self):
+        """
+        Vérifie que la restauration d'un objet supprimé
+        génère exactement une notification de suppression.
+        """
         newState = dict(
             subject="New",
             description="New",
@@ -463,8 +467,22 @@ class ObjectTest(tctest.TestCase):
             modificationDateTime=date.DateTime(2013, 1, 1, 1, 0, 0),
             ordering=42,
         )
+        patterns.Publisher().registerObserver(
+            self.onEvent,
+            self.tcobject.markDeletedEventType(),
+        )
         self.tcobject.__setstate__(newState)
         self.assertEqual(1, len(self.eventsReceived))
+        self.assertEqual(
+            [
+                patterns.Event(
+                    self.tcobject.markDeletedEventType(),
+                    self.tcobject,
+                    self.tcobject.STATUS_DELETED,
+                )
+            ],
+            self.eventsReceived,
+        )
 
     # copy tests:
 

@@ -305,6 +305,8 @@ class SynchronizedObject(object):
             self.__status = (
                 self.STATUS_NEW
             )  # On met STATUS_NEW UNIQUEMENT si rien n'est défini
+        has_old_status = False
+        # sauf si on veut forcer un autre statut via kwargs
         # log.debug(
         print(
             f"SynchronizedObject.__init__ : ✅ Après assignation : self.__status = {self.__status}"
@@ -429,6 +431,7 @@ class SynchronizedObject(object):
             self,
             "_SynchronizedObject__status",
             self.STATUS_NEW,
+            # None,
         )
 
         # !!! Surtout aucun accès à self.__status !!!

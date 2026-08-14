@@ -1638,7 +1638,7 @@ class Task(
             else:
                 # print("Task.status :    ✅ Statut = inactive (0)")
                 self.__task_status = mod_status.inactive
-        print(
+        log.debug(
             f"DEBUG - Task.status() : statut calculé pour {self.subject()} = {self.__task_status}, son __hash__ = {self.__task_status.__hash__()}."
         )
         return (
@@ -2053,11 +2053,11 @@ class Task(
     @classmethod
     def budgetSortEventTypes(class_):  # cls ?
         """Types d'événements qui influencent l'ordre de tri du budget."""
-        # return (class_.budgetChangedEventType(),)
+        return (class_.budgetChangedEventType(),)
         # return class_.budgetChangedEventType()
-        return [
-            class_.budgetChangedEventType(),
-        ]
+        # return [
+        #     class_.budgetChangedEventType(),
+        # ]
 
     # Budget left
 
@@ -2090,8 +2090,8 @@ class Task(
     @classmethod
     def budgetLeftSortEventTypes(class_):  # cls ?
         """Types d'événements qui influencent l'ordre de tri du budget restant."""
-        # return (class_.budgetLeftChangedEventType(),)
-        return class_.budgetLeftChangedEventType()
+        return (class_.budgetLeftChangedEventType(),)
+        # return class_.budgetLeftChangedEventType()
         # return [class_.budgetLeftChangedEventType(),]
 
     # Planned duration

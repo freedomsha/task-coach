@@ -16,12 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
+
 # from . import noteowner
 from taskcoachlib.domain.categorizable import CategorizableCompositeObject
 
 # from taskcoachlib.domain import base
 from taskcoachlib.domain.attachment.attachmentowner import AttachmentOwner
 from taskcoachlib.domain.note.noteowner import NoteOwner
+
+log = logging.getLogger(__name__)
 
 
 # class Note(base.AttachmentOwner,
@@ -43,7 +47,7 @@ class Note(AttachmentOwner, CategorizableCompositeObject):
     def addAttachments(self, param, **kwargs):
         """Ajouter une ou plusieurs pièces jointes à la note."""
         print(
-            f"Task.addAttachments : Ajout de pièces jointes à la note {self.id}."
+            f"Note.addAttachments : Ajout de pièces jointes à la note {self.id}."
         )
         # self.addAttachments(param)
 

@@ -1,0 +1,25 @@
+<?taskcoach release="2.0.0" tskversion="38"?>
+<tasks>
+<task status="1" creationDateTime="2026-05-08 08:02:24.399811" subject="task" actualstartdate="2004-01-01 00:00:00" percentageComplete="&lt;taskcoachlib.domain.base.attribute.Attribute object at 0x7f7252051180&gt;">
+<effort id="7be6864a-4aa3-11f1-a1d3-a4f933b218b7" status="1" start="2004-01-01 00:00:00" stop="2004-01-02 00:00:00" />
+</task>
+<category id="7be66ade-4aa3-11f1-a1d3-a4f933b218b7" status="1" creationDateTime="2026-05-08 08:02:24.401829" subject="category" />
+<note id="7be676f0-4aa3-11f1-a1d3-a4f933b218b7" status="1" creationDateTime="2026-05-08 08:02:24.402147" subject="note" />
+<syncmlconfig>
+<TaskCoach-a6d0e445-858c-49e0-96b9-58213c7961f9>
+<spds>
+<sources>
+<TaskCoach-a6d0e445-858c-49e0-96b9-58213c7961f9.Tasks />
+<TaskCoach-a6d0e445-858c-49e0-96b9-58213c7961f9.Notes />
+</sources>
+<syncml>
+<Auth />
+<Conn />
+</syncml>
+</spds>
+</TaskCoach-a6d0e445-858c-49e0-96b9-58213c7961f9>
+</syncmlconfig>
+<guid>
+a6d0e445-858c-49e0-96b9-58213c7961f9
+</guid>
+</tasks>

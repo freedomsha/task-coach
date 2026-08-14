@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?taskcoach release="2.0.0" tskversion="38"?>
+
+<tasks>
+<category id="64ae9386-868b-11f1-b253-a3e0650b771c" status="1" creationDateTime="2026-07-23 13:41:07.293490" subject="category" />
+<syncmlconfig>
+<TaskCoach-a575a1c5-90fb-4f7b-90e8-2843ff433326>
+<spds>
+<sources>
+<TaskCoach-a575a1c5-90fb-4f7b-90e8-2843ff433326.Tasks />
+<TaskCoach-a575a1c5-90fb-4f7b-90e8-2843ff433326.Notes />
+</sources>
+<syncml>
+<Auth />
+<Conn />
+</syncml>
+</spds>
+</TaskCoach-a575a1c5-90fb-4f7b-90e8-2843ff433326>
+</syncmlconfig>
+<guid>
+a575a1c5-90fb-4f7b-90e8-2843ff433326
+</guid>
+</tasks>

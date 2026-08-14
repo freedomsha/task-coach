@@ -51,7 +51,9 @@ class CategorizableCompositeObject(base.CompositeObject):
         log.debug(
             f"CategorizableCompositeObject : méthode super avec args={args} et kwargs={kwargs}."
         )
-        super().__init__(*args, **kwargs)
+        children = kwargs.pop("children", [])  # ✅ Extrait les enfants des kwargs
+        # super().__init__(*args, **kwargs)
+        super().__init__(children=children, *args, **kwargs)  # ✅ Passe les enfants à CompositeObject
         log.debug("CategorizableCompositeObject : Initialisé.")
 
     def __getstate__(self):

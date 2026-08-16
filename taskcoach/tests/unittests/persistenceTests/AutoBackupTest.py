@@ -36,6 +36,12 @@ class DummyFile(object):
     def write(self, *args, **kwargs):  # pylint: disable=W0613
         pass
 
+    def __enter__(self):
+        return self  # Retourne l'instance de DummyFile
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass  # Ne fait rien à la sortie du contexte
+
 
 class DummyTaskFile(persistence.TaskFile):
     def _openForRead(self, *args, **kwargs):  # pylint: disable=W0613
@@ -45,7 +51,15 @@ class DummyTaskFile(persistence.TaskFile):
         return DummyFile()
 
     def _read(self, *args, **kwargs):  # pylint: disable=W0613
-        return [task.Task()], [], [], None, dict(), None
+        duplicate_ids = []
+        return (
+            [task.Task()],
+            [],
+            [],
+            None,
+            dict(),
+            None,
+        ), duplicate_ids  # Trop de valeurs de retour pour la méthode _read s'il n'y a pas duplicate_ids !
 
     def exists(self):
         return True
@@ -72,7 +86,9 @@ class AutoBackupTest(tctest.TestCase):
         super().setUp()
         task.Task.settings = self.settings = LocalSettings(load=False)
         self.taskFile = DummyTaskFile()
-        self.backup = persistence.AutoBackup(self.settings, copyfile=self.onCopyFile)
+        self.backup = persistence.AutoBackup(
+            self.settings, copyfile=self.onCopyFile
+        )
         self.copyCalled = False
 
     def tearDown(self):
@@ -172,7 +188,8 @@ class AutoBackupTest(tctest.TestCase):
 
     def testOneBackupFile(self):
         self.assertEqual(
-            ["1"], self.backup.backupFiles(self.taskFile, glob=lambda pattern: ["1"])
+            ["1"],
+            self.backup.backupFiles(self.taskFile, glob=lambda pattern: ["1"]),
         )
 
     def testNotTooManyBackupFiles(self):
@@ -183,7 +200,8 @@ class AutoBackupTest(tctest.TestCase):
     def testTooManyBackupFiles_(self):
         # self.assertEqual(86, self.backup.numberOfExtraneousBackupFiles(self.manyBackupFiles()))
         self.assertEqual(
-            85, self.backup.numberOfExtraneousBackupFiles(self.manyBackupFiles())
+            85,
+            self.backup.numberOfExtraneousBackupFiles(self.manyBackupFiles()),
         )
 
     def testRemoveExtraneousBackFiles(self):
@@ -219,11 +237,16 @@ class AutoBackupTest(tctest.TestCase):
         )  # pylint: disable=W0212
 
     def testCreateBackupOnSave(self):
-        self.taskFile.save()
+        # Définir un nom de fichier pour le TaskFile
+        self.taskFile.setFilename("test.tsk")  # <-- AJOUTEZ CECI  # TODO : peut-être que c'est taskcoach qui doit créer le fichier !
+        self.taskFile.save()  # Premier save (pas de backup attendu, car le fichier n'existe pas encore)
         self.copyCalled = False
-        self.taskFile.tasks().append(task.Task())
-        self.taskFile.save()
-        self.assertTrue(self.copyCalled)
+        self.taskFile.tasks().append(task.Task())  # Modification du modèle
+        self.taskFile.save()  # Deuxième save -> doit déclencher le backup
+        self.assertTrue(self.copyCalled)  # Vérifie que onCopyFile a été appelé
+        # # Vérifie que le backup existe (optionnel)
+        # backup_files = self.backup.backupFiles(self.taskFile)
+        # self.assertEqual(len(backup_files), 1)  # 1 backup créé
 
     def testDontCreateBackupOnOpen(self):
         self.taskFile.load()

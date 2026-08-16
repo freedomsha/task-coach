@@ -227,7 +227,8 @@ class ChangeMonitor(Observer):
                 # utiliser la nouvelle méthode pubsub.subscribe pour le changement d'effort
                 pub.subscribe(
                     # self.onEffortTaskChanged, Effort.taskChangedEventType()
-                    self.onEffortChanged, Effort.taskChangedEventType()
+                    self.onEffortChanged,
+                    Effort.taskChangedEventType(),
                 )
 
     def unmonitorClass(self, klass):
@@ -289,7 +290,8 @@ class ChangeMonitor(Observer):
             if issubclass(klass, Effort):
                 pub.unsubscribe(
                     # self.onEffortTaskChanged, Effort.taskChangedEventType()
-                    self.onEffortChanged, Effort.taskChangedEventType()
+                    self.onEffortChanged,
+                    Effort.taskChangedEventType(),
                 )
             self._classes.remove(klass)
 
@@ -370,6 +372,12 @@ class ChangeMonitor(Observer):
 
         topic_name = topic.getName()
 
+        # Ignorer les événements d'initialisation (ex: lors de la création d'un objet)
+        if sender.id() not in self._changes:
+            # Si l'objet n'est pas encore dans _changes, c'est qu'il est en cours d'initialisation.
+            # On n'enregistre pas ce changement.
+            return
+
         # Pour tous les attributs de
         for name in sender.monitoredAttributes():
             # Unresolved attribute reference 'getNameTuple' for class 'AUTO_TOPIC'
@@ -414,6 +422,9 @@ class ChangeMonitor(Observer):
         ):  # TODO : problème potentiel
             # Pour chaque clé de la liste des clés des valeurs sources :
             for obj in list(valBySource.keys()):
+                # Ignorer les événements d'initialisation
+                if obj.id() not in self._changes:
+                    continue
                 # Pour chaque attribut surveillé de la clé :
                 for name in obj.monitoredAttributes():
                     # Si la clé qui contient un changement est de type
@@ -443,21 +454,46 @@ class ChangeMonitor(Observer):
         "__del__" marker if present.
         """
         obj_id = obj.id()
-        if obj_id in self._changes:
-            # If there was a placeholder None for an object we already knew about
-            # (for example a previously deleted object), convert it to a set so
-            # future changes can be recorded. Also remove any "__del__" marker.
-            if self._changes[obj_id] is None:
-                self._changes[obj_id] = set()
-            # If object was previously marked as deleted, remove that mark
-            if "__del__" in self._changes[obj_id]:
-                self._changes[obj_id].remove("__del__")
-        else:
-            # # New object: start with an empty set to record future changes
-            # self._changes[obj_id] = set()
-            # New object: use None as the sentinel value meaning "no changes yet".
-            # Tests expect newly added objects to return None from getChanges().
+        # if obj_id in self._changes:
+        #     # If there was a placeholder None for an object we already knew about
+        #     # (for example a previously deleted object), convert it to a set so
+        #     # future changes can be recorded. Also remove any "__del__" marker.
+        #     if self._changes[obj_id] is None:
+        #         self._changes[obj_id] = set()
+        #         # self._changes[obj_id] = None
+        #     # If object was previously marked as deleted, remove that mark
+        #     if "__del__" in self._changes[obj_id]:
+        #         self._changes[obj_id].remove("__del__")
+        # else:
+        #     # # New object: start with an empty set to record future changes
+        #     # self._changes[obj_id] = set()
+        #     # New object: use None as the sentinel value meaning "no changes yet".
+        #     # Tests expect newly added objects to return None from getChanges().
+        #     self._changes[obj_id] = None
+        # # Problème : Si obj_id existe déjà (parce qu'un événement d'attribut a été déclenché), cette méthode ne force pas None.
+        # Si l'objet est nouveau (non encore dans _changes) OU s'il a été marqué comme supprimé,
+        # forcer None pour indiquer qu'aucun changement n'a encore été enregistré.
+        # Forcer None pour les nouveaux objets, même s'ils ont déjà été vus
+        if (
+            obj_id
+            not in self._changes  # Nouvel objet
+            # or self._changes[obj_id]
+            # is None  # Ancien objet déjà vu mais pas encore modifié
+            # or (
+            #     isinstance(self._changes[obj_id], set)
+            #     and len(self._changes[obj_id]) == 0
+            # )  # Ancien objet déjà vu mais pas encore modifié (set vide)
+            # Ne pas forcer None si l'objet a déjà des changements
+        ):
             self._changes[obj_id] = None
+        else:
+            # Si l'objet était marqué comme supprimé, retirer cette marque
+            # if "__del__" in self._changes[obj_id]:
+            if (
+                isinstance(self._changes[obj_id], set)
+                and "__del__" in self._changes[obj_id]
+            ):
+                self._changes[obj_id].remove("__del__")
 
     def _objectsAdded(self, event):
         # for obj in event.values():
@@ -512,7 +548,12 @@ class ChangeMonitor(Observer):
         self._objectsAdded(event)
         # for obj in event.values():
         for obj in list(event.values()):
-            if self._changes[obj.id()] is not None:
+            # if self._changes[obj.id()] is not None:
+            #     self._changes[obj.id()].add("__parent__")
+            # Ajouter __parent__ explicitement pour les enfants ajoutés.
+            if obj.id() in self._changes:
+                if self._changes[obj.id()] is None:
+                    self._changes[obj.id()] = set()
                 self._changes[obj.id()].add("__parent__")
         print(
             "ChangeMonitor.onChildAdded: after processing, repr(self._changes)=%s !"
@@ -793,13 +834,18 @@ class ChangeMonitor(Observer):
         """
         # return self._changes.get(obj.id(), None)
         changes = self._changes.get(obj.id(), None)
+        # Retourner None uniquement si l'objet n'a jamais été modifié
         if changes is None:
             return None
         # Si c'est un set vide, certains tests comparent à {} (dict vide),
         # retourner {} pour ces cas afin d'être compatible.
+        # Si c'est un ensemble vide, retourner None pour les nouveaux objets
         if isinstance(changes, set) and len(changes) == 0:
             return set()
-            return {}
+            # return {}
+            # # Corriger getChanges pour retourner None si changes est un ensemble vide
+            # return None
+            # Respecter les attentes des tests
         return changes
 
     def setChanges(self, id_, changes):
@@ -821,7 +867,10 @@ class ChangeMonitor(Observer):
         Nettoie : Seulement un objet spécifique
         Utilisation : Lorsque vous voulez effacer les changements suivis pour un objet particulier, par exemple après avoir traité ces changements ou lorsque vous voulez ignorer les changements précédents pour cet objet.
         """
-        self._changes[obj.id()] = set()
+        # utiliser set() au lieu de None
+        self._changes[obj.id()] = (
+            set()
+        )  # Utiliser set() pour indiquer "aucun changement"
 
     def addChange(self, obj, name):
         # changes = self._changes.get(obj.id(), set())

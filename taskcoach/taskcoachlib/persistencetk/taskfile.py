@@ -1240,6 +1240,7 @@ class TaskFile(patterns.Observer):
                     tasks, categories, notes, syncMLConfig, changes, guid = (
                         self._read(fd)
                     )
+
                 except Exception:
                     log.exception(
                         "TaskFile.load : Erreur lors de la lecture du fichier principal '%s'",

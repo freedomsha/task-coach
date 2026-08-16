@@ -336,7 +336,8 @@ class DirtyTaskFileTest(TaskFileTestCase):
         self.assertTrue(self.taskFile.needSave())
 
     def testDoesNotNeedSave_AfterSave(self):
-        """Vérifie que le TaskFile n'a pas besoin d'être sauvegardé après l'avoir sauvegardé."""
+        """Vérifie que le TaskFile n'a pas besoin d'être sauvegardé
+        après l'avoir sauvegardé."""
         self.emptyTaskFile.tasks().append(task.Task())
         self.emptyTaskFile.setFilename(self.filename)
         self.emptyTaskFile.save()
@@ -720,6 +721,7 @@ class DirtyTaskFileTest(TaskFileTestCase):
         self.taskFile.close()
         self.taskFile.close()
         self.assertEqual(self.filename, self.taskFile.lastFilename())
+        # self.assertEqual(self.filename, "")
 
     def testLastFilename_EqualsCurrentFilenameAfterSaveAs(self):
         """Vérifie que le dernier nom de fichier est égal au nom de fichier actuel après avoir enregistré sous un nouveau nom."""
@@ -761,7 +763,8 @@ class ChangingAttachmentsTestsMixin(object):
     def addAttachment(self, anAttachment):
         """Ajoute une attachements à l'élément de test et prépare le TaskFile pour les tests de détection des modifications liées aux attachements."""
         print(
-            f"TaskFileTest.ChangingAttachmentsTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec attachements: {self.attachments}, anAttachment={anAttachment}"
+            # f"TaskFileTest.ChangingAttachmentsTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec des attachements: {self.attachments}, anAttachment={anAttachment}"
+            f"TaskFileTest.ChangingAttachmentsTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec des attachements, anAttachment={anAttachment}."  #  {self.attachments} est une liste d'attachements, pas une chaîne de caractères, donc elle ne peut pas être formatée directement dans la chaîne de caractères. Pour éviter l'erreur de formatage, nous allons simplement mentionner qu'il s'agit d'une liste d'attachements sans essayer de l'afficher directement.
         )
 
         self.taskFile.setFilename(self.filename)
@@ -769,7 +772,9 @@ class ChangingAttachmentsTestsMixin(object):
         self.taskFile.save()
 
     def addFileAttachment(self):
-        """Ajoute une attachements de type fichier à l'élément de test et prépare le TaskFile pour les tests de détection des modifications liées aux attachements de type fichier."""
+        """Ajoute une attachements de type fichier à l'élément de test
+        et prépare le TaskFile pour les tests de détection des modifications
+        liées aux attachements de type fichier."""
         self.fileAttachment = attachment.FileAttachment(
             "Old location"
         )  # pylint: disable=W0201
@@ -1205,7 +1210,15 @@ class LockedTaskFileLockTest(TaskFileTestCase):
     """Classe de test pour vérifier que les fichiers de tâches verrouillés (LockedTaskFile) ne restent pas verrouillés après les opérations de chargement, de sauvegarde et de fermeture."""
 
     def createTaskFiles(self):
-        """Crée les instances de LockedTaskFile pour les tests de verrouillage en initialisant deux instances de LockedTaskFile, une pour le fichier de tâches principal et une pour un fichier de tâches vide, qui seront utilisées dans les tests pour vérifier que les fichiers ne restent pas verrouillés après les opérations de chargement, de sauvegarde et de fermeture."""
+        """
+        Crée les instances de LockedTaskFile pour les tests de verrouillage
+        en initialisant deux instances de LockedTaskFile,
+        une pour le fichier de tâches principal
+        et une pour un fichier de tâches vide,
+        qui seront utilisées dans les tests
+        pour vérifier que les fichiers ne restent pas verrouillés
+        après les opérations de chargement, de sauvegarde et de fermeture.
+        """
         # pylint: disable=W0201
         self.taskFile = persistence.LockedTaskFile()
         self.emptyTaskFile = persistence.LockedTaskFile()
@@ -1216,55 +1229,77 @@ class LockedTaskFileLockTest(TaskFileTestCase):
         self.taskFile.stop()
         self.emptyTaskFile.close()
         super().tearDown()
+        # self.remove_lock_files()
+
+    def remove_lock_files(self):
+        """Supprime les fichiers de verrouillage créés pendant les tests."""
+        lock_files = [self.filename + ".lock", self.filename2 + ".lock"]
+        for lock_file in lock_files:
+            if os.path.exists(lock_file):
+                try:
+                    os.remove(lock_file)
+                except Exception as e:
+                    print(f"Failed to remove lock file {lock_file}: {e}")
 
     def testFileIsNotLockedInitially(self):
         """Vérifie que les fichiers de tâches ne sont pas verrouillés initialement en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False avant toute opération de chargement, de sauvegarde ou de fermeture."""
-        self.failIf(self.taskFile.is_locked())
-        self.failIf(self.emptyTaskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
+        self.assertFalse(self.emptyTaskFile.is_locked())
 
     def testFileIsNotLockedAfterLoading(self):
-        """Vérifie que les fichiers de tâches ne restent pas verrouillés après le chargement en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir chargé un fichier de tâches avec la méthode load."""
+        """Vérifie que les fichiers de tâches ne restent pas verrouillés
+        après le chargement en vérifiant que les méthodes is_locked
+        des instances de LockedTaskFile retournent False
+        après avoir chargé un fichier de tâches avec la méthode load."""
         self.taskFile.load(self.filename)
-        self.failIf(self.taskFile.is_locked())
+        # self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileIsNotLockedAfterClosing(self):
         """Vérifie que les fichiers de tâches ne restent pas verrouillés après la fermeture en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir fermé le fichier de tâches avec la méthode close."""
         self.taskFile.close()
-        self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileIsnotLockedAfterLoadingAndClosing(self):
         """Vérifie que les fichiers de tâches ne restent pas verrouillés après le chargement et la fermeture en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir chargé un fichier de tâches avec la méthode load, puis l'avoir fermé avec la méthode close."""
         self.taskFile.load(self.filename)
         self.taskFile.close()
-        self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileIsNotLockedAfterSaving(self):
         """Vérifie que les fichiers de tâches ne restent pas verrouillés après la sauvegarde en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir défini un nom de fichier avec la méthode setFilename, puis sauvegardé le fichier de tâches avec la méthode save."""
         self.taskFile.setFilename(self.filename)
         self.taskFile.save()
-        self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileIsNotLockedAfterSavingAndClosing(self):
         """Vérifie que les fichiers de tâches ne restent pas verrouillés après la sauvegarde et la fermeture en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir défini un nom de fichier avec la méthode setFilename, sauvegardé le fichier de tâches avec la méthode save, puis l'avoir fermé avec la méthode close."""
         self.taskFile.setFilename(self.filename)
         self.taskFile.save()
         self.taskFile.close()
-        self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileIsNotLockedAfterSaveAs(self):
         """Vérifie que les fichiers de tâches ne restent pas verrouillés après la sauvegarde avec un nouveau nom de fichier en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir défini un nom de fichier avec la méthode setFilename, puis sauvegardé le fichier de tâches avec la méthode saveas en utilisant un nouveau nom de fichier."""
         self.taskFile.saveas(self.filename)
-        self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileIsNotLockedAfterSaveAndSaveAs(self):
         """Vérifie que les fichiers de tâches ne restent pas verrouillés après la sauvegarde et la sauvegarde avec un nouveau nom de fichier en vérifiant que les méthodes is_locked des instances de LockedTaskFile retournent False après avoir défini un nom de fichier avec la méthode setFilename, sauvegardé le fichier de tâches avec la méthode save, puis sauvegardé à nouveau le fichier de tâches avec la méthode saveas en utilisant un nouveau nom de fichier."""
         self.taskFile.setFilename(self.filename)
         self.taskFile.save()
         self.taskFile.saveas(self.filename2)
-        self.failIf(self.taskFile.is_locked())
+        self.assertFalse(self.taskFile.is_locked())
 
     def testFileCanBeLoadedAfterClose(self):
-        """Vérifie que les fichiers de tâches peuvent être chargés après la fermeture en vérifiant que les tâches, catégories et notes d'un fichier de tâches peuvent être chargées avec la méthode load après avoir fermé le fichier de tâches avec la méthode close, et que les éléments chargés correspondent à ceux qui ont été sauvegardés avant la fermeture."""
+        """
+        Vérifie que les fichiers de tâches peuvent être chargés
+        après la fermeture en vérifiant que les tâches, catégories et notes
+        d'un fichier de tâches peuvent être chargées avec la méthode load
+        après avoir fermé le fichier de tâches avec la méthode close,
+        et que les éléments chargés correspondent à ceux qui ont été
+        sauvegardés avant la fermeture.
+        """
         self.taskFile.setFilename(self.filename)
         self.taskFile.save()
         self.taskFile.close()
@@ -1282,7 +1317,14 @@ class LockedTaskFileLockTest(TaskFileTestCase):
 
 
 class TaskFileMonitorTestBase(TaskFileTestCase):
-    """Classe de test pour vérifier que le TaskFileMonitor suit correctement les modifications apportées aux tâches, catégories et notes d'un TaskFile, en vérifiant que les changements sont correctement enregistrés et réinitialisés après les opérations de sauvegarde et de fermeture, et que les GUID des moniteurs sont correctement gérés dans les fichiers de changements."""
+    """
+    Classe de test pour vérifier que le TaskFileMonitor suit correctement
+    les modifications apportées aux tâches, catégories et notes d'un TaskFile,
+    en vérifiant que les changements sont correctement enregistrés
+    et réinitialisés après les opérations de sauvegarde et de fermeture,
+    et que les GUID des moniteurs sont correctement gérés
+    dans les fichiers de changements.
+    """
 
     def setUp(self):
         """Prépare les éléments de test et un autre TaskFile pour les tests de suivi des modifications en sauvegardant d'abord le TaskFile de test principal avec les éléments de test, puis en créant une nouvelle instance de TaskFile pour le suivi des modifications, en lui attribuant le même nom de fichier que le TaskFile de test principal, et en chargeant les données du fichier pour que les deux TaskFiles soient synchronisés avant les tests de suivi des modifications."""
@@ -1304,18 +1346,20 @@ class TaskFileMonitorTestBase(TaskFileTestCase):
 
     def testTaskExistsAfterLoad(self):
         """Vérifie que les tâches existent après le chargement en vérifiant que les tâches du TaskFile de test principal sont présentes et accessibles après avoir chargé les données du fichier de tâches, et que les éléments chargés correspondent à ceux qui ont été sauvegardés avant le chargement."""
-        # self.assertEqual(self.taskFile.monitor().getChanges(self.task), set())
-        self.assertEqual(self.taskFile.monitor().getChanges(self.task), {})
+        self.assertEqual(self.taskFile.monitor().getChanges(self.task), set())
+        # self.assertEqual(self.taskFile.monitor().getChanges(self.task), {})
 
     def testCategoryExistsAfterLoad(self):
         """Vérifie que les catégories existent après le chargement en vérifiant que les catégories du TaskFile de test principal sont présentes et accessibles après avoir chargé les données du fichier de tâches, et que les éléments chargés correspondent à ceux qui ont été sauvegardés avant le chargement."""
-        # self.assertEqual(self.taskFile.monitor().getChanges(self.category), set())
-        self.assertEqual(self.taskFile.monitor().getChanges(self.category), {})
+        self.assertEqual(
+            self.taskFile.monitor().getChanges(self.category), set()
+        )
+        # self.assertEqual(self.taskFile.monitor().getChanges(self.category), {})
 
     def testNoteExistsAfterLoad(self):
         """Vérifie que les notes existent après le chargement en vérifiant que les notes du TaskFile de test principal sont présentes et accessibles après avoir chargé les données du fichier de tâches, et que les éléments chargés correspondent à ceux qui ont été sauvegardés avant le chargement."""
-        # self.assertEqual(self.taskFile.monitor().getChanges(self.note), set())
-        self.assertEqual(self.taskFile.monitor().getChanges(self.note), {})
+        self.assertEqual(self.taskFile.monitor().getChanges(self.note), set())
+        # self.assertEqual(self.taskFile.monitor().getChanges(self.note), {})
 
     def testChangeTask(self):
         """Vérifie que les modifications apportées à une tâche sont correctement suivies par le TaskFileMonitor en modifiant le sujet d'une tâche du TaskFile de test principal, puis en vérifiant que le TaskFileMonitor a enregistré la modification du sujet pour cette tâche."""
@@ -1345,8 +1389,10 @@ class TaskFileMonitorTestBase(TaskFileTestCase):
         """Vérifie que les modifications suivies par le TaskFileMonitor sont réinitialisées après la sauvegarde en modifiant le sujet d'une tâche du TaskFile de test principal, en sauvegardant le fichier de tâches, puis en vérifiant que le TaskFileMonitor a réinitialisé les modifications enregistrées pour cette tâche après la sauvegarde."""
         self.task.setSubject("New subject")
         self.taskFile.save()
-        # self.assertEqual(self.taskFile.monitor().getChanges(self.task), set([]))
-        self.assertEqual(self.taskFile.monitor().getChanges(self.task), {})
+        self.assertEqual(
+            self.taskFile.monitor().getChanges(self.task), set([])
+        )
+        # self.assertEqual(self.taskFile.monitor().getChanges(self.task), {})
 
     def testResetAfterClose(self):
         """Vérifie que les modifications suivies par le TaskFileMonitor sont réinitialisées après la fermeture en modifiant le sujet d'une tâche du TaskFile de test principal, en fermant le fichier de tâches, puis en vérifiant que le TaskFileMonitor a réinitialisé les modifications enregistrées pour cette tâche après la fermeture."""
@@ -1357,12 +1403,14 @@ class TaskFileMonitorTestBase(TaskFileTestCase):
         """Charge les modifications enregistrées dans le fichier de changements associé au fichier de tâches spécifié en utilisant le ChangesXMLReader pour lire les données du fichier de changements et retourner les modifications enregistrées pour les tâches, catégories et notes du TaskFile de test principal."""
         # return persistence.ChangesXMLReader(file(filename + '.delta', 'rU')).read()
         return persistence.ChangesXMLReader(
-            io.open(filename + ".delta", "rU")
+            # io.open(filename + ".delta", "rU")  # ValueError: invalid mode: 'rU'
+            io.open(filename + ".delta", "r")
         ).read()
 
     def testGUIDPresentAfterLoad(self):
         """Vérifie que le GUID du TaskFileMonitor est présent dans le fichier de changements après le chargement en vérifiant que le GUID du TaskFileMonitor du TaskFile de test principal est présent dans les modifications chargées à partir du fichier de changements associé au fichier de tâches après avoir chargé les données du fichier de tâches."""
-        self.failUnless(
+        # self.failUnless(
+        self.assertTrue(
             self.taskFile.monitor().guid()
             in self._loadChangesFromFile(self.filename)
         )
@@ -1370,23 +1418,29 @@ class TaskFileMonitorTestBase(TaskFileTestCase):
     def testGUIDNotPresentAfterClose(self):
         """Vérifie que le GUID du TaskFileMonitor n'est pas présent dans le fichier de changements après la fermeture en vérifiant que le GUID du TaskFileMonitor du TaskFile de test principal n'est pas présent dans les modifications chargées à partir du fichier de changements associé au fichier de tâches après avoir fermé le fichier de tâches."""
         self.taskFile.close()
-        self.failIf(
+        self.assertFalse(
             self.taskFile.monitor().guid()
             in self._loadChangesFromFile(self.filename)
         )
 
     def testChangeOtherSetsChanges(self):
         """Vérifie que les modifications apportées à une tâche dans un autre TaskFile sont correctement suivies par le TaskFileMonitor en modifiant le sujet d'une tâche du TaskFile utilisé pour le suivi des modifications, en sauvegardant ce fichier de tâches, puis en vérifiant que le TaskFileMonitor du TaskFile de test principal a enregistré la modification du sujet pour cette tâche, tandis que le TaskFileMonitor de l'autre fichier de tâches n'a pas enregistré de modifications pour cette tâche."""
-        # self.otherFile.monitor().setChanges(self.task.id(), set(['subject']))
+        # self.otherFile.monitor().setChanges(self.task.id(), set(["subject"]))
         self.otherFile.monitor().setChanges(self.task.id(), {"subject"})
         self.otherFile.save()
         allChanges = self._loadChangesFromFile(self.filename)
-        # self.assertEqual(allChanges[self.taskFile.monitor().guid()].getChanges(self.task), set(['subject']))
+        # self.assertEqual(
+        #     allChanges[self.taskFile.monitor().guid()].getChanges(self.task),
+        #     set(["subject"]),
+        # )
         self.assertEqual(
             allChanges[self.taskFile.monitor().guid()].getChanges(self.task),
             {"subject"},
         )
-        # self.assertEqual(allChanges[self.otherFile.monitor().guid()].getChanges(self.task), set())
+        # self.assertEqual(
+        #     allChanges[self.otherFile.monitor().guid()].getChanges(self.task),
+        #     set(),
+        # )
         self.assertEqual(
             allChanges[self.otherFile.monitor().guid()].getChanges(self.task),
             {},
@@ -1412,8 +1466,8 @@ class TaskFileMonitorTestBase(TaskFileTestCase):
         changes = self._loadChangesFromFile(self.filename)[
             self.taskFile.monitor().guid()
         ]
-        # self.assertEqual(changes.getChanges(self.task), set())
-        self.assertEqual(changes.getChanges(self.task), {})
+        self.assertEqual(changes.getChanges(self.task), set())
+        # self.assertEqual(changes.getChanges(self.task), {})
 
     def testNewObject(self):
         """Vérifie que les nouvelles tâches créées dans un autre TaskFile sont correctement suivies par le TaskFileMonitor en créant une nouvelle tâche dans le TaskFile utilisé pour le suivi des modifications, en sauvegardant ce fichier de tâches, puis en vérifiant que le TaskFileMonitor du TaskFile de test principal n'a pas enregistré de modifications pour cette tâche, tandis que le TaskFileMonitor de l'autre fichier de tâches n'a pas enregistré de modifications pour cette tâche."""
@@ -1422,14 +1476,18 @@ class TaskFileMonitorTestBase(TaskFileTestCase):
         self.otherFile.save()
         self.taskFile.save()
         allChanges = self._loadChangesFromFile(self.filename)
-        # self.assertEqual(allChanges[self.otherFile.monitor().guid()].getChanges(item), set())
         self.assertEqual(
-            allChanges[self.otherFile.monitor().guid()].getChanges(item), {}
+            allChanges[self.otherFile.monitor().guid()].getChanges(item), set()
         )
-        # self.assertEqual(allChanges[self.taskFile.monitor().guid()].getChanges(item), set())
+        # self.assertEqual(
+        #     allChanges[self.otherFile.monitor().guid()].getChanges(item), {}
+        # )
         self.assertEqual(
-            allChanges[self.taskFile.monitor().guid()].getChanges(item), {}
+            allChanges[self.taskFile.monitor().guid()].getChanges(item), set()
         )
+        # self.assertEqual(
+        #     allChanges[self.taskFile.monitor().guid()].getChanges(item), {}
+        # )
 
 
 class TaskFileMultiUserTestBase(object):
@@ -1983,16 +2041,57 @@ class TaskFileMultiUserTestBase(object):
         )
 
     def _testAddAttachmentToObject(self, listName):
-        """Vérifie que les modifications apportées à l'ajout d'une pièce jointe à une tâche, une catégorie ou une note dans un autre TaskFile sont correctement suivies et reflétées dans le TaskFile actuel en créant une nouvelle pièce jointe dans le TaskFile utilisé pour le suivi des modifications, en l'ajoutant à la liste des pièces jointes du TaskFile de test principal, en ajoutant cette pièce jointe à une tâche, une catégorie ou une note existante dans le TaskFile de test principal, en sauvegardant les modifications dans les deux fichiers de tâches, puis en vérifiant que la tâche, la catégorie ou la note correspondante dans le TaskFile de test principal a exactement une pièce jointe après le chargement des modifications, et que l'ID de cette pièce jointe correspond à l'ID de la pièce jointe créée."""
+        """Vérifie que les modifications apportées à l'ajout d'une pièce jointe
+        à une tâche, une catégorie ou une note dans un autre TaskFile
+        sont correctement suivies et reflétées dans le TaskFile actuel
+        en créant une nouvelle pièce jointe dans le TaskFile utilisé
+        pour le suivi des modifications, en l'ajoutant à la liste des pièces
+        jointes du TaskFile de test principal,
+        en ajoutant cette pièce jointe à une tâche, une catégorie ou une note
+        existante dans le TaskFile de test principal,
+        en sauvegardant les modifications dans les deux fichiers de tâches,
+        puis en vérifiant que la tâche, la catégorie ou la note correspondante
+        dans le TaskFile de test principal a exactement une pièce jointe
+        après le chargement des modifications,
+        et que l'ID de cette pièce jointe correspond
+        à l'ID de la pièce jointe créée.
+        """
+        # Création de la nouvelle pièce jointe nommée "Other attachment"
         newAttachment = attachment.FileAttachment("Other attachment")
+        # Ajouter la pièce jointe à la liste des notes de l'élément racine du fichier de test principal
         getattr(self.taskFile1, listName)().rootItems()[0].addAttachment(
             newAttachment
         )
+        # Est-ce que la liste de notes est bien récupérée ? Oui si le résultat doit être 1.
+        obj = getattr(self.taskFile1, listName)().rootItems()[0]
+        print("TaskFileMultiUserTestBase._testAddAttachmentToObject :")
+        print("OBJ =", obj)
+        print("ATTACHMENTS =", obj.attachments())
+        print("LEN =", len(obj.attachments()))
+        # Compte le nombre de pièces jointes
         attachmentCount = len(
             getattr(self.taskFile1, listName)().rootItems()[0].attachments()
         )
+        print(
+            f"TaskFileMultiUserTestBase._testAddAttachmentToObject : Nombre d'objet dans taskFile 1 - attachmentCount = {attachmentCount}."
+        )
+        # #  Temporaire ***
+        # note = getattr(self.taskFile1, "notes")().rootItems()[0]
+        #
+        # print("ID NOTE =", note.id())
+        # print("ATTACHMENTS AVANT =", note.attachments())
+        #
+        # note.addAttachment(newAttachment)
+        #
+        # print("ATTACHMENTS APRES =", note.attachments())
+        # print("PARENT ATTACHMENT =", newAttachment.parent())
+        # # ***
+        # Sauvegarde du fichier de test principal
         self.taskFile1.save()
+        # Sauvegarde le fichier TaskCoach sur le disque ou fusionne les modifications du disque avec le second fichier de test.
         self.doSave(self.taskFile2)
+        # Est-ce que la sauvegarde s'est bien déroulée ? Oui si le résultat est aussi 1 dans la vérification suivante.
+        # Vérifie si le nombre de pièces jointes dans le second fichier est le même que dans le premier.
         self.assertEqual(
             len(
                 getattr(self.taskFile2, listName)()
@@ -2011,6 +2110,7 @@ class TaskFileMultiUserTestBase(object):
         self._testAddAttachmentToObject("categories")
 
     def testAddAttachmentToNote(self):
+        """Vérifie que les modifications apportées à l'ajout d'une pièce jointe à une note dans un autre TaskFile sont correctement suivies et reflétées dans le TaskFile actuel en créant une nouvelle pièce jointe dans le TaskFile utilisé pour le suivi des modifications, en l'ajoutant à la liste des pièces jointes du TaskFile de test principal, en ajoutant cette pièce jointe à une note existante dans le TaskFile de test principal, en sauvegardant les modifications dans les deux fichiers de tâches, puis en vérifiant que la note correspondante dans le TaskFile de test principal a exactement une pièce jointe après le chargement des modifications, et que l'ID de cette pièce jointe correspond à l'ID de la pièce jointe créée."""
         self._testAddAttachmentToObject("notes")
 
     def _testRemoveNoteFromObject(self, listName):

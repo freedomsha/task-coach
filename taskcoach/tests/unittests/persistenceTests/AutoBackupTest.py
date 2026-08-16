@@ -238,7 +238,9 @@ class AutoBackupTest(tctest.TestCase):
 
     def testCreateBackupOnSave(self):
         # Définir un nom de fichier pour le TaskFile
-        self.taskFile.setFilename("test.tsk")  # <-- AJOUTEZ CECI  # TODO : peut-être que c'est taskcoach qui doit créer le fichier !
+        self.taskFile.setFilename(
+            "test.tsk"
+        )  # <-- AJOUTEZ CECI  # TODO : peut-être que c'est taskcoach qui doit créer le fichier !
         self.taskFile.save()  # Premier save (pas de backup attendu, car le fichier n'existe pas encore)
         self.copyCalled = False
         self.taskFile.tasks().append(task.Task())  # Modification du modèle

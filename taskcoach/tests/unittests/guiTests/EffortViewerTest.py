@@ -728,7 +728,7 @@ class CommonTestsMixin(object):
             taskList=self.taskFile.tasks(),
         )
         stopUICommand.doCommand()
-        self.failIf(self.task.isBeingTracked())
+        self.assertFalse(self.task.isBeingTracked())
 
 
 class EffortViewerWithoutAggregationTest(
@@ -796,7 +796,7 @@ class EffortViewerRenderTestMixin(object):
         )
         self.task.addEffort(theEffort)
         text = self.viewer.widget.GetItemText(0)
-        self.failUnless(text.startswith("Today"), '"Today" not in %s' % text)
+        self.assertTrue(text.startswith("Today"), '"Today" not in %s' % text)
 
     def testTomorrow(self):
         theEffort = effort.Effort(
@@ -806,7 +806,7 @@ class EffortViewerRenderTestMixin(object):
         )
         self.task.addEffort(theEffort)
         text = self.viewer.widget.GetItemText(0)
-        self.failUnless(
+        self.assertTrue(
             text.startswith("Tomorrow"), '"Tomorrow" not in %s' % text
         )
 
@@ -818,7 +818,7 @@ class EffortViewerRenderTestMixin(object):
         )
         self.task.addEffort(theEffort)
         text = self.viewer.widget.GetItemText(0)
-        self.failUnless(
+        self.assertTrue(
             text.startswith("Yesterday"), f'"Yesterday" not in {text}'
         )
 

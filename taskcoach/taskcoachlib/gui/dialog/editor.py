@@ -4463,6 +4463,7 @@ class EffortEditBook(Page):
         self._settings = settings
         self._taskFile = taskFile
         super().__init__(efforts, parent, *args, **kwargs)
+        self.addEntries()
         pub.subscribe(
             self.__onChoicesConfigChanged, "settings.feature.sdtcspans_effort"
         )
@@ -4739,7 +4740,8 @@ class EffortEditBook(Page):
             else combined_description(self.items)
         )
         self._descriptionEntry = widgets.MultiLineTextCtrl(
-            self, current_description, settings=self._settings
+            self,
+            current_description,  # settings=self._settings
         )
         native_info_string = self._settings.get("editor", "descriptionfont")
         # font = wx.FontFromNativeInfoString(native_info_string) if native_info_string else None

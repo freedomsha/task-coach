@@ -79,6 +79,7 @@ class FixOverwriteSelectionMixin(object):
           adapté à GTK.
         - `_OnKeyDown` : Gère les événements clavier pour la navigation.
     """
+
     def _SetSelection(self, start, end):
         """
         Définit la sélection de texte dans le contrôle.
@@ -174,6 +175,7 @@ class TextCtrl(FixOverwriteSelectionMixin, masked.TextCtrl):
 
     Utilisé dans TimeDeltaCtrl.
     """
+
     pass
 
 
@@ -195,6 +197,7 @@ class AmountCtrl(FixOverwriteSelectionMixin, masked.NumCtrl):
         - `groupChar` : Caractère utilisé pour séparer les milliers.
         - `groupDigits` : Indique si les séparateurs de milliers sont activés.
     """
+
     def __init__(self, parent, value=0, locale_conventions=None):
         """
         Initialise un contrôle de montant avec les paramètres régionaux.
@@ -253,8 +256,17 @@ class TimeDeltaCtrl(TextCtrl):
           des heures, incluant un signe négatif si nécessaire.
     """
 
-    def __init__(self, parent, hours, minutes, seconds, readonly=False,
-                 negative_value=False, *args, **kwargs):
+    def __init__(
+        self,
+        parent,
+        hours,
+        minutes,
+        seconds,
+        readonly=False,
+        negative_value=False,
+        *args,
+        **kwargs,
+    ):
         """
         Initialise un contrôle pour afficher ou saisir une durée.
 
@@ -281,7 +293,7 @@ class TimeDeltaCtrl(TextCtrl):
                 masked.Field(defaultValue="%02d" % seconds),
             ],
             *args,
-            **kwargs
+            **kwargs,
         )
 
     def set_value(self, hours, minutes, seconds, negative_value=False):
@@ -325,4 +337,5 @@ class TimeDeltaCtrl(TextCtrl):
         # return (
         #     "%9s" % ("-" + "%d" % hours) if negative_value else "%9d" % hours
         # )
-        return f"-{f'{hours:d}':>9}" if negative_value else f"{hours:9d}"
+        # return f"-{f'{hours:d}':>9}" if negative_value else f"{hours:9d}"  # MAUVAIS !
+        return f"{'-' + str(hours):>9}" if negative_value else f"{hours:9d}"

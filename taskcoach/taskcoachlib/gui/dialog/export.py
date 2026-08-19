@@ -48,12 +48,19 @@ class ExportDialog(sized_controls.SizedDialog):
         pane = self.GetContentsPane()
         pane.SetSizerType("vertical")
         self.components = self.createInterior(pane)
-        buttonSizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        # buttonSizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        buttonSizer = wx.StdDialogButtonSizer()
+        okButton = wx.Button(self, wx.ID_OK)
+        cancelButton = wx.Button(self, wx.ID_CANCEL)
+        buttonSizer.SetAffirmativeButton(okButton)
+        buttonSizer.SetCancelButton(cancelButton)
+        buttonSizer.Realize()
         self.SetButtonSizer(buttonSizer)
-        buttonSizer.GetAffirmativeButton().Bind(wx.EVT_BUTTON, self.onOk)
-        # wxhelper.getButtonFromStdDialogButtonSizer(buttonSizer, wx.ID_OK).Bind(
-        #     wx.EVT_BUTTON, self.onOk
-        # )
+        # buttonSizer.GetAffirmativeButton().Bind(wx.EVT_BUTTON, self.onOk)
+        # # wxhelper.getButtonFromStdDialogButtonSizer(buttonSizer, wx.ID_OK).Bind(
+        # #     wx.EVT_BUTTON, self.onOk
+        # # )
+        okButton.Bind(wx.EVT_BUTTON, self.onOk)
         self.Fit()
         # Set starting size to 600x700 for better usability
         self.SetSize(600, 700)

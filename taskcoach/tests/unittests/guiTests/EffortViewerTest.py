@@ -623,7 +623,7 @@ class CommonTestsMixin(object):
             self.assertEqual(self.task2, newEffort.task())
 
     def testColumnUICommands(self):
-        expectedLength = dict(details=6, day=8, week=9, month=8)[
+        expectedLength = dict(details=7, day=9, week=10, month=9)[
             self.aggregation
         ]
         self.assertEqual(

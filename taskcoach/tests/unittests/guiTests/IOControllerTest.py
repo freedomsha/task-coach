@@ -18,14 +18,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # from builtins import str
 # from builtins import range
-# import lockfile
+import lockfile
 import os
 import shutil
 import wx
 from ... import tctest
 from taskcoachlib import gui, config, persistence
+import taskcoachlib.gui.iocontroller as iocontroller_module
 from taskcoachlib.domain import task, note, category
-from taskcoachlib.thirdparty import lockfile
+
+# from taskcoachlib.thirdparty import lockfile
 from .. import dummy
 
 
@@ -68,7 +70,9 @@ class IOControllerTest(tctest.TestCase):
             expectedFilenames or open + saveas + saveselection + merge
         )
 
-    def doIO(self, open, saveas, saveselection, merge):  # pylint: disable=W0622
+    def doIO(
+        self, open, saveas, saveselection, merge
+    ):  # pylint: disable=W0622
         for filename in open:
             self.iocontroller.open(filename, fileExists=lambda filename: True)
         for filename in saveas:
@@ -81,7 +85,9 @@ class IOControllerTest(tctest.TestCase):
     def checkRecentFiles(self, expectedFilenames):
         expectedFilenames.reverse()
         expectedFilenames = str(expectedFilenames)
-        self.assertEqual(expectedFilenames, self.settings.get("file", "recentfiles"))
+        self.assertEqual(
+            expectedFilenames, self.settings.get("file", "recentfiles")
+        )
 
     def testOpenFileAddsItToRecentFiles(self):
         self.doIOAndCheckRecentFiles(open=[self.filename1])
@@ -98,17 +104,24 @@ class IOControllerTest(tctest.TestCase):
         self.doIOAndCheckRecentFiles(saveas=[self.filename1])
 
     def testMergeFileAddsItToRecentFiles(self):
-        self.doIOAndCheckRecentFiles(open=[self.filename1], merge=[self.filename2])
+        self.doIOAndCheckRecentFiles(
+            open=[self.filename1], merge=[self.filename2]
+        )
 
     def testSaveSelectionAddsItToRecentFiles(self):
         self.doIOAndCheckRecentFiles(saveselection=[self.filename1])
 
     def testMaximumNumberOfRecentFiles(self):
-        maximumNumberOfRecentFiles = self.settings.getint("file", "maxrecentfiles")
+        maximumNumberOfRecentFiles = self.settings.getint(
+            "file", "maxrecentfiles"
+        )
         filenames = [
-            "filename %d" % index for index in range(maximumNumberOfRecentFiles + 1)
+            "filename %d" % index
+            for index in range(maximumNumberOfRecentFiles + 1)
         ]
-        self.doIOAndCheckRecentFiles(filenames, expectedFilenames=filenames[1:])
+        self.doIOAndCheckRecentFiles(
+            filenames, expectedFilenames=filenames[1:]
+        )
 
     def testSaveTaskFileWithoutTasksButWithNotes(self):
         self.taskFile.notes().append(note.Note(subject="Note"))
@@ -202,7 +215,9 @@ class IOControllerTest(tctest.TestCase):
             self.showerrorCalled = True
 
         self.taskFile.tasks().append(task.Task())
-        self.iocontroller._saveSave(self.taskFile, showerror)  # pylint: disable=W0212
+        self.iocontroller._saveSave(
+            self.taskFile, showerror
+        )  # pylint: disable=W0212
         self.assertTrue(self.showerrorCalled)
 
     def testIOErrorOnExport(self):
@@ -275,10 +290,14 @@ class IOControllerTest(tctest.TestCase):
         mergeFile.save()
         mergeFile.close()
         targetFile = persistence.TaskFile()
-        iocontroller = gui.IOController(targetFile, lambda *args: None, self.settings)
+        iocontroller = gui.IOController(
+            targetFile, lambda *args: None, self.settings
+        )
         iocontroller.merge(self.filename2)
         try:
-            self.assertEqual("Task to merge", list(targetFile.tasks())[0].subject())
+            self.assertEqual(
+                "Task to merge", list(targetFile.tasks())[0].subject()
+            )
         finally:
             mergeFile.close()
             mergeFile.stop()
@@ -292,7 +311,9 @@ class IOControllerTest(tctest.TestCase):
             self.askOpenUnlockedCalled = True
 
         self.iocontroller._IOController__askOpenUnlocked = askOpenUnlocked
-        self.iocontroller.open(self.filename1, fileExists=lambda filename: True)
+        self.iocontroller.open(
+            self.filename1, fileExists=lambda filename: True
+        )
         self.assertTrue(self.askOpenUnlockedCalled)
 
     def testOpenWhenAlreadyLocked(self):
@@ -302,15 +323,20 @@ class IOControllerTest(tctest.TestCase):
             self.askBreakLockCalled = True
 
         self.iocontroller._IOController__askBreakLock = askBreakLock
-        self.iocontroller.open(self.filename1, fileExists=lambda filename: True)
+        self.iocontroller.open(
+            self.filename1, fileExists=lambda filename: True
+        )
         self.assertTrue(self.askBreakLockCalled)
 
 
 class IOControllerOverwriteExistingFileTest(tctest.TestCase):
     def setUp(self):
         super().setUp()
-        self.originalFileSelector = wx.FileSelector
-        wx.FileSelector = (
+        # self.originalFileSelector = wx.FileSelector
+        self.userWarned = False
+        self.originalFileSelector = iocontroller_module.file_selector
+        # wx.FileSelector = (
+        iocontroller_module.file_selector = (
             lambda *args, **kwargs: "filename without extension to trigger our own overwrite warning"
         )
         self.originalMessageBox = wx.MessageBox
@@ -329,7 +355,8 @@ class IOControllerOverwriteExistingFileTest(tctest.TestCase):
     def tearDown(self):
         self.taskFile.close()
         self.taskFile.stop()
-        wx.FileSelector = self.originalFileSelector
+        # wx.FileSelector = self.originalFileSelector
+        iocontroller_module.file_selector = self.originalFileSelector
         wx.MessageBox = self.originalMessageBox
         super().tearDown()
 
@@ -350,5 +377,7 @@ class IOControllerOverwriteExistingFileTest(tctest.TestCase):
         self.assertTrue(self.userWarned)
 
     def testCancelExportAsICalendarToExistingFile(self):
-        self.iocontroller.exportAsICalendar(None, fileExists=lambda filename: True)
+        self.iocontroller.exportAsICalendar(
+            None, fileExists=lambda filename: True
+        )
         self.assertTrue(self.userWarned)

@@ -42,7 +42,7 @@ class AttachmentViewerTest(tctest.wxTestCase):
         
     def testTypeImageIndex_WhenFileDoesNotExist(self):
         fileAttachment = attachment.FileAttachment('whatever')
-        self.assertIcon('fileopen_red', fileAttachment)
+        self.assertIcon('fileopen_red', fileAttachment, exists=lambda filename: False)
         
     def testTypeImageIndex_WhenFileDoesExist(self):
         fileAttachment = attachment.FileAttachment('whatever')

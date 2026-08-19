@@ -872,7 +872,7 @@ class CategorySubjectPage(SubjectPage):
         panel = wx.Panel(self)
         panelSizer = wx.BoxSizer(wx.HORIZONTAL)
         self._exclusiveSubcategoriesCheckBox = wx.CheckBox(
-            self, label=_("Mutually exclusive")
+            panel, label=_("Mutually exclusive")
         )
         self._exclusiveSubcategoriesCheckBox.SetValue(currentExclusivity)
         panelSizer.Add(
@@ -897,10 +897,9 @@ class CategorySubjectPage(SubjectPage):
         )
         self.addEntry(
             _("Subcategories"),
-            self._exclusiveSubcategoriesCheckBox,
+            panel,
             flags=[None, wx.ALL],
         )
-        self.addEntry(_("Mutually exclusive"), panel)
 
     def addStylePriorityEntry(self):
         # pylint: disable=W0201
@@ -1243,8 +1242,11 @@ class TaskAppearancePage(Page):
         )
 
         # Foreground
-        self._derivedFgPicker = widgets.ColourPickerCtrl(
-            self, colour=wx.BLACK, readOnly=True
+        # self._derivedFgPicker = widgets.ColourPickerCtrl(
+        self._derivedFgPicker = wx.ColourPickerCtrl(
+            self,
+            colour=wx.BLACK,
+            # readOnly=True,
         )
         self._derivedFgSource = wx.StaticText(self, label="")
         self._derivedFgSource.SetForegroundColour(
@@ -1258,8 +1260,11 @@ class TaskAppearancePage(Page):
         )
 
         # Background
-        self._derivedBgPicker = widgets.ColourPickerCtrl(
-            self, colour=wx.WHITE, readOnly=True
+        # self._derivedBgPicker = widgets.ColourPickerCtrl(
+        self._derivedBgPicker = wx.ColourPickerCtrl(
+            self,
+            colour=wx.WHITE,  # readOnly=True,
+            # colour=WHITE,
         )
         self._derivedBgSource = wx.StaticText(self, label="")
         self._derivedBgSource.SetForegroundColour(
@@ -1275,7 +1280,9 @@ class TaskAppearancePage(Page):
         # Font
         defaultFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         self._derivedFontPicker = widgets.FontPickerCtrl(
-            self, font=defaultFont, colour=(0, 0, 0, 255), readOnly=True
+            self,
+            font=defaultFont,
+            colour=(0, 0, 0, 255),  # readOnly=True
         )
         self._derivedFontSource = wx.StaticText(self, label="")
         self._derivedFontSource.SetForegroundColour(

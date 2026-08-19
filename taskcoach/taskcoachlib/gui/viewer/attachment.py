@@ -349,6 +349,22 @@ class AttachmentViewer(
             ),
         ) + super().createActionToolBarUICommands()
 
+    @staticmethod
+    def _isFolderUri(anAttachment):
+        """Check if a URI attachment points to a local folder."""
+        if anAttachment.type_ != "uri":
+            return False
+        location = anAttachment.location()
+        if location.startswith("file://"):
+            import urllib.request
+
+            try:
+                path = urllib.request.url2pathname(location[7:])
+                return os.path.isdir(path)
+            except Exception:
+                return False
+        return False
+
     def typeImageIndices(
         self, anAttachment, exists=os.path.exists
     ):  # pylint: disable=W0613

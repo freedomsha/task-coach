@@ -74,17 +74,21 @@ class EffortEditorTest(tctest.wxTestCase):
     # pylint: disable=W0201,W0212
 
     def testCreate(self):
-        self.assertEqual(self.task, self.editor._interior._taskEntry.GetValue())
         self.assertEqual(
-            self.effort.getStart().Date(),
-            self.editor._interior._startDateTimeEntry.GetValue().Date(),
+            self.task, self.editor._interior._taskEntry.GetValue()
+        )
+        self.assertEqual(
+            self.effort.getStart().date(),
+            self.editor._interior._startDateTimeEntry.GetValue().date(),
         )
         self.assertEqual(
             self.effort.task(), self.editor._interior._taskEntry.GetValue()
         )
 
     def testInvalidEffort(self):
-        self.editor._interior._stopDateTimeEntry.SetValue(date.DateTime(1900, 1, 1))
+        self.editor._interior._stopDateTimeEntry.SetValue(
+            date.DateTime(1900, 1, 1)
+        )
         self.editor._interior.onDateTimeChanged(dummy.Event())
         self.assertTrue(self.editor._interior._invalidPeriodMessage.GetLabel())
 

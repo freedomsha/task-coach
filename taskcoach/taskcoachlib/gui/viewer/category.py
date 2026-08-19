@@ -513,12 +513,12 @@ class BaseCategoryViewer(
         Args :
             event : L'événement.
         """
-        print(
-            "baseCategoryViwer.onAttributeChanged_Deprecated",
-            event,
-            event.id(),
-            event.type(),
-        )
+        # print(
+        #     "baseCategoryViwer.onAttributeChanged_Deprecated",
+        #     event,
+        #     event.id(),  # crée une exception
+        #     event.type(),
+        # )
         if (
             category.Category.exclusiveSubcategoriesChangedEventType()
             in event.types()

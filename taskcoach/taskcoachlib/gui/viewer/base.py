@@ -674,9 +674,9 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         )
         # print(
         log.debug(
-            "Viewer.onAttributeChanged",
+            "Viewer.onAttributeChanged: sender=%r, newValue=%r",
             sender,
-            sender.id(),
+            # sender.id(),  # crée une erreur
             newValue,
         )
         if self:

@@ -53,6 +53,10 @@ class ExportDialog(sized_controls.SizedDialog):
         okButton = wx.Button(self, wx.ID_OK)
         cancelButton = wx.Button(self, wx.ID_CANCEL)
         buttonSizer.SetAffirmativeButton(okButton)
+        # SetAffirmativeButton() sert à enregistrer un bouton créé explicitement ;
+        # il ne le retourne pas. Le dialogue crée donc okButton,
+        # l’enregistre avec SetAffirmativeButton(), puis lie directement
+        # okButton.Bind(...).
         buttonSizer.SetCancelButton(cancelButton)
         buttonSizer.Realize()
         self.SetButtonSizer(buttonSizer)

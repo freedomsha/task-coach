@@ -3266,6 +3266,15 @@ class CompositeObject(
 
     # Description:
     def description(self, recursive=False):  # pylint: disable=W0221,W0613
+        """
+        Obtenez la description de l'objet composite.
+
+        Args :
+            recursive (bool) : (optional) S'il faut obtenir la description de manière récursive. La valeur par défaut est False.
+
+        Returns :
+            (str) : La description de l'objet composite.
+        """
         # Allow for the recursive flag, but ignore it
         return super().description()
 

@@ -1559,7 +1559,7 @@ class TreeViewer(Viewer):  # pylint: disable=W0223
         for item in self.visibleItems():
             log.debug(f"TreeViewer.expandAll : Expanding item {item}.")
             item.expand(True, context=self.settingsSection(), notify=False)
-        # self.refresh()
+        self.refresh()
 
     def collapseAll(self):
         """Réduit tous les éléments de manière récursive."""
@@ -1567,7 +1567,7 @@ class TreeViewer(Viewer):  # pylint: disable=W0223
         # all items, we have to do the bookkeeping ourselves:
         for item in self.visibleItems():
             item.expand(False, context=self.settingsSection(), notify=False)
-        # self.refresh()
+        self.refresh()
 
     def isAnyItemExpandable(self):
         """Vérifie si un élément est expansible."""

@@ -23,7 +23,6 @@ import webbrowser
 import wx
 from taskcoachlib import i18n, operating_system
 
-
 UNICODE_CONTROL_CHARACTERS_TO_WEED = {}
 for ordinal in range(0x20):
     if chr(ordinal) not in "\t\r\n":
@@ -31,7 +30,7 @@ for ordinal in range(0x20):
 
 
 class BaseTextCtrl(wx.TextCtrl):
-    """ A sub-class of wx.TextCtrl
+    """A sub-class of wx.TextCtrl
     A text control allows text to be displayed and edited.
     It may be single line or multi-line.
      Notice that a lot of methods of the text controls are found in the base wx.TextEntry class
@@ -41,14 +40,34 @@ class BaseTextCtrl(wx.TextCtrl):
     """
 
     def __init__(self, parent, *args, **kwargs):
-        super().__init__(parent, -1, *args, **kwargs)
-        self.__data = None
-        if operating_system.isGTK() or operating_system.isMac():
-            if operating_system.isGTK():
-                self.Bind(wx.EVT_KEY_DOWN, self.__on_key_down)
-            self.Bind(wx.EVT_KILL_FOCUS, self.__on_kill_focus)
-            self.__initial_value = self.GetValue()
-            self.__undone_value = None
+        """
+        Initialise le contrôle texte personnalisé.
+
+        Args:
+            parent: Fenêtre parente du contrôle.
+            *args: Arguments supplémentaires transmis au contrôle wx.TextCtrl.
+            **kwargs: Arguments nommés transmis au contrôle wx.TextCtrl.
+        """
+        super().__init__(
+            parent, -1, *args, **kwargs
+        )  # Transmet le parent, un identifiant wx par défaut et les autres arguments au contrôle wx.TextCtrl.
+        self.__data = None  # Initialise les données associées au contrôle.
+        if (
+            operating_system.isGTK() or operating_system.isMac()
+        ):  # Active les traitements spécifiques à GTK et macOS.
+            if (
+                operating_system.isGTK()
+            ):  # Vérifie si l'application fonctionne sous GTK.
+                self.Bind(
+                    wx.EVT_KEY_DOWN, self.__on_key_down
+                )  # Intercepte les événements clavier sous GTK.
+            self.Bind(
+                wx.EVT_KILL_FOCUS, self.__on_kill_focus
+            )  # Intercepte la perte de focus.
+            self.__initial_value = (
+                self.GetValue()
+            )  # Mémorise la valeur initiale du contrôle.
+            self.__undone_value = None  # Initialise la valeur utilisée pour le mécanisme d'annulation.
 
     def GetValue(self, *args, **kwargs):
         # value = super().GetValue(*args, **kwargs)
@@ -73,7 +92,7 @@ class BaseTextCtrl(wx.TextCtrl):
         return self.__data
 
     def CanUndo(self):
-        """    A copy from method wx.TextEntry.CanUndo
+        """A copy from method wx.TextEntry.CanUndo
         Returns True if there is an undo facility available and the last operation can be undone.
 
         Return:
@@ -96,15 +115,15 @@ class BaseTextCtrl(wx.TextCtrl):
         return super().CanRedo()
 
     def Redo(self):
-        """ A copy of method wx.TextEntry.Redo """
+        """A copy of method wx.TextEntry.Redo"""
         if operating_system.isMac():
             self.__redo()
         else:
             super().Redo()
 
     def __on_key_down(self, event):
-        """ Check whether the user pressed Ctrl-Z (or Ctrl-Y) and if so,
-            undo (or redo) the editing. """
+        """Check whether the user pressed Ctrl-Z (or Ctrl-Y) and if so,
+        undo (or redo) the editing."""
         if self.__ctrl_z_pressed(event) and self.__can_undo():
             self.__undo()
         elif self.__ctrl_y_pressed(event) and self.__can_redo():
@@ -114,15 +133,15 @@ class BaseTextCtrl(wx.TextCtrl):
 
     @staticmethod
     def __ctrl_z_pressed(event):
-        """ Did the user press Ctrl-Z (for undo)? """
+        """Did the user press Ctrl-Z (for undo)?"""
         return event.GetKeyCode() == ord("Z") and event.ControlDown()
 
     def __can_undo(self):
-        """ Is there a change to be undone? """
+        """Is there a change to be undone?"""
         return self.GetValue() != self.__initial_value
 
     def __undo(self):
-        """ Undo the last change. """
+        """Undo the last change."""
         insertion_point = self.GetInsertionPoint()
         self.__undone_value = self.GetValue()
         super().SetValue(self.__initial_value)
@@ -131,15 +150,15 @@ class BaseTextCtrl(wx.TextCtrl):
 
     @staticmethod
     def __ctrl_y_pressed(event):
-        """ Did the user press Ctrl-Y (for redo)? """
+        """Did the user press Ctrl-Y (for redo)?"""
         return event.GetKeyCode() == ord("Y") and event.ControlDown()
 
     def __can_redo(self):
-        """ Is there an undone change to be redone? """
+        """Is there an undone change to be redone?"""
         return self.__undone_value not in (self.GetValue(), None)
 
     def __redo(self):
-        """ Redo the last undone change. """
+        """Redo the last undone change."""
         insertion_point = self.GetInsertionPoint()
         super().SetValue(self.__undone_value)
         self.__undone_value = None
@@ -147,18 +166,29 @@ class BaseTextCtrl(wx.TextCtrl):
         self.SetInsertionPoint(insertion_point)
 
     def __on_kill_focus(self, event):
-        """ Reset the edit history. """
+        """Reset the edit history."""
         self.__initial_value = self.GetValue()
         self.__undone_value = None
 
 
 class SingleLineTextCtrl(BaseTextCtrl):
-    """ A sub-class of BaseTextCtrl. """
-    pass
+    """A sub-class of BaseTextCtrl."""
+
+    # pass
+    # def __init__(self, parent, text="", *args, **kwargs):
+    def __init__(self, parent, *args, **kwargs):
+        self.CheckSpelling = kwargs.pop(
+            "spellCheck", None
+        )  # Retire l'option propre à TaskCoach avant de transmettre les arguments à wx.TextCtrl.
+        kwargs["style"] = kwargs.get("style", 0) | wx.TE_PROCESS_ENTER
+        super().__init__(parent, *args, **kwargs)
+        # self.__initializeText(text)
+        # self.MacCheckSpelling(self.CheckSpelling)
 
 
 class MultiLineTextCtrl(BaseTextCtrl):
-    """ A sub-class of BaseTextCtrl. """
+    """A sub-class of BaseTextCtrl."""
+
     CheckSpelling = True
 
     def __init__(self, parent, text="", *args, **kwargs):

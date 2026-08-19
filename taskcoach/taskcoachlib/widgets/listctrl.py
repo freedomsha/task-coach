@@ -221,6 +221,10 @@ tandis que VirtualListCtrl se concentre uniquement sur leur affichage efficace.
 """
 
 # from builtins import range
+# Pylint: this module intentionally uses legacy/camelCase names and interacts
+# with the dynamic `wx` extension; suppress a set of checks that produce
+# noise for this file.
+# pylint: disable=C0103,E1101,R0901,R0904,W0718,W0238
 import logging
 from taskcoachlib import operating_system
 from taskcoachlib.widgets import itemctrl
@@ -229,6 +233,39 @@ import wx.lib.mixins.listctrl
 # Il serait préférable de remplacer wx.ListCtrl par wx.DataViewCtrl
 # (qui est plus moderne et puissant pour les données structurées).
 log = logging.getLogger(__name__)
+
+
+def _to_wx_colour(value):
+    """Convert a GUI-neutral domain colour into a ``wx.Colour``."""
+    if value is None:
+        return wx.NullColour
+    if isinstance(value, wx.Colour):
+        return value
+    if value == "SYS_COLOUR_WINDOWTEXT":
+        return wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+    if value == "SYS_COLOUR_WINDOW":
+        return wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
+    if isinstance(value, (tuple, list)):
+        return wx.Colour(*value)
+    return wx.Colour(value)
+
+
+def _to_wx_font(value, default_font):
+    """Convert a GUI-neutral domain font into a ``wx.Font``."""
+    if isinstance(value, wx.Font):
+        return value
+    if value == "SYS_DEFAULT_GUI_FONT":
+        return wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+    if isinstance(value, (tuple, list)) and len(value) == 3:
+        family, size, style = value
+        font_style = (
+            wx.FONTSTYLE_ITALIC if style == "italic" else wx.FONTSTYLE_NORMAL
+        )
+        weight = wx.FONTWEIGHT_BOLD if style == "bold" else wx.FONTWEIGHT_NORMAL
+        return wx.Font(
+            int(size), wx.FONTFAMILY_DEFAULT, font_style, weight, faceName=family
+        )
+    return default_font
 
 
 class VirtualListCtrl(
@@ -310,6 +347,16 @@ class VirtualListCtrl(
             columnPopupMenu (wx.Menu, optionnel) : Menu contextuel pour les colonnes.
             resizeableColumn (int) : Colonne redimensionnable par défaut.
         """
+        # super().__init__(
+        #     parent,
+        #     style=wx.LC_REPORT | wx.LC_VIRTUAL,
+        #     columns=columns,
+        #     resizeableColumn=resizeableColumn,
+        #     itemPopupMenu=itemPopupMenu,
+        #     columnPopupMenu=columnPopupMenu,
+        #     *args,
+        #     **kwargs,
+        # )
         # Ne pas transmettre de kwargs non supportés à wx.ListCtrl.
         # Récupérer le style et l'id si fournis, puis appeler l'initialiseur de
         # la classe de base avec des arguments compatibles.
@@ -318,31 +365,35 @@ class VirtualListCtrl(
         # Ne pas passer les kwargs "columns", "resizeableColumn",
         # "itemPopupMenu", "columnPopupMenu" à wx.ListCtrl; ils sont gérés
         # par cette classe.
-        kwargs.pop("columns", None)
-        kwargs.pop("resizeableColumn", None)
-        kwargs.pop("itemPopupMenu", None)
-        kwargs.pop("columnPopupMenu", None)
+        # Ces kwargs sont utilisés par les mixins (itemctrl.*). Ils doivent
+        # être transmis à l'initialiseur de la chaîne MRO afin que les mixins
+        # puissent les consommer avant que l'appel n'atteigne wx.ListCtrl
+        # (qui n'accepte pas ces kwargs). Nous construisons donc un dict de
+        # kwargs pour super().__init__ qui inclut les paramètres attendus
+        # par les mixins et le reste des kwargs valides.
+        _itemPopupMenu = kwargs.pop("itemPopupMenu", itemPopupMenu)
+        _columnPopupMenu = kwargs.pop("columnPopupMenu", columnPopupMenu)
+        _resizeableColumn = kwargs.pop("resizeableColumn", resizeableColumn)
+        # columns est un paramètre positionnel; s'assurer qu'il est présent
+        _columns = kwargs.pop("columns", columns)
 
-        # Initialiser la ListCtrl de façon standard (compatible wxPython)
-        super().__init__(parent, id=listctrl_id, style=style)
+        # Construire les kwargs pour l'appel à super().__init__ afin que
+        # les mixins consomment `columns`, `itemPopupMenu`, etc. avant que
+        # l'initialiseur de wx.ListCtrl soit appelé.
+        init_kwargs = dict(
+            id=listctrl_id,
+            style=style,
+            columns=_columns,
+            resizeableColumn=_resizeableColumn,
+            itemPopupMenu=_itemPopupMenu,
+            columnPopupMenu=_columnPopupMenu,
+        )
+        # Fusionner les kwargs restants (ceux-ci sont sûrs à transmettre)
+        init_kwargs.update(kwargs)
 
-        # Insérer les colonnes fournis via l'argument `columns`
-        try:
-            for idx, col in enumerate(columns or []):
-                try:
-                    label = col.name() if hasattr(col, "name") else str(col)
-                except Exception:
-                    label = str(col)
-                try:
-                    self.InsertColumn(idx, label)
-                except Exception:
-                    # Si InsertColumn n'est pas supporté dans une variante
-                    # particulière, on ignore et poursuit.
-                    pass
-
-        except Exception:
-            # Ignorer toute erreur lors de la création des colonnes
-            pass
+        # Appeler la chaîne d'initialiseurs MRO. Les mixins prendront et
+        # supprimeront les kwargs spécifiques avant d'atteindre wx.ListCtrl.
+        super().__init__(parent, *args, **init_kwargs)
 
         self.__parent = parent
         # On ne refresh PAS immédiatement.
@@ -505,23 +556,17 @@ class VirtualListCtrl(
         Définit les attributs visuels pour une ligne donnée.
         """
         item = self.getItemWithIndex(rowIndex)
-        foreground_color = item.foregroundColor(recursive=True)
-        background_color = item.backgroundColor(recursive=True)
-        item_attribute_arguments = [foreground_color, background_color]
-        font = item.font(recursive=True)
-        if font is None:
-            # FIXME: Is the right way to get the font here?
-            # wxItemAttr required a font for initialization, so we give one
-            font = self.GetFont()
-        if font:
-            item_attribute_arguments.append(font)
+        foreground_color = _to_wx_colour(item.foregroundColor(recursive=True))
+        background_color = _to_wx_colour(item.backgroundColor(recursive=True))
+        font = _to_wx_font(item.font(recursive=True), self.GetFont())
         # We need to keep a reference to the item attribute to prevent it
-        # from being garbage collected too soon:
-        # self.__item_attribute = wx.ListItemAttr(
-        #     *item_attribute_arguments)  # pylint: disable=W0142,W0201
+        # from being garbage collected too soon.
+        # Using attribute assignment outside __init__ is intentional here.
+        # pylint: disable=W0201
         self.__item_attribute = wx.ItemAttr(
-            *item_attribute_arguments
-        )  # pylint: disable=W0142,W0201
+            foreground_color, background_color, font
+        )
+        # pylint: enable=W0201
         return self.__item_attribute
 
     def onSelect(self, event):
@@ -567,7 +612,7 @@ class VirtualListCtrl(
             self.__refreshing = False
             try:
                 self.selectCommand()
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 # Préserver l'ancien comportement : loguer mais continuer
                 log.exception(
                     "VirtualListCtrl.RefreshAllItems : erreur lors de selectCommand"
@@ -653,7 +698,7 @@ class VirtualListCtrl(
             try:
                 current = getattr(self, "_VirtualListCtrl__refresh_count", 0)
                 self.__refresh_count = max(current, count)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 # Si l'attribut ne peut être mis à jour, on ignore silencieusement
                 pass
             return
@@ -707,14 +752,14 @@ class VirtualListCtrl(
                 try:
                     self.__refresh_scheduled = False
                     self.__refresh_count = 0
-                except Exception:
+                except Exception:  # pylint: disable=broad-except
                     # Ignorer les erreurs de nettoyage
                     pass
 
         # Planifier l'exécution différée (wx.CallAfter afin d'exécuter dans la boucle d'événements)
         try:
             wx.CallAfter(doRefresh)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # En cas d'impossibilité d'utiliser CallAfter, exécuter directement
             log.debug(
                 "TreeListCtrl.scheduleRefresh : wx.CallAfter indisponible, exécution synchrone."

@@ -453,8 +453,8 @@ class SearchFilter(Filter):
         """
         text = item.subject()
         if self.__searchDescription:
-            # text += item.description()
-            text += item.getDescription()
+            text += item.description()
+            # text += item.getDescription()
         return text
 
 

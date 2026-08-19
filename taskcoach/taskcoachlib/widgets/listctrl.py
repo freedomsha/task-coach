@@ -261,9 +261,15 @@ def _to_wx_font(value, default_font):
         font_style = (
             wx.FONTSTYLE_ITALIC if style == "italic" else wx.FONTSTYLE_NORMAL
         )
-        weight = wx.FONTWEIGHT_BOLD if style == "bold" else wx.FONTWEIGHT_NORMAL
+        weight = (
+            wx.FONTWEIGHT_BOLD if style == "bold" else wx.FONTWEIGHT_NORMAL
+        )
         return wx.Font(
-            int(size), wx.FONTFAMILY_DEFAULT, font_style, weight, faceName=family
+            int(size),
+            wx.FONTFAMILY_DEFAULT,
+            font_style,
+            weight,
+            faceName=family,
         )
     return default_font
 

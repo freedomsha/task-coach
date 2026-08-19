@@ -856,7 +856,11 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
             # # Unresolved attribute reference 'RefreshAllItems' for class 'Window'
             # Utiliser scheduleRefresh seulement si le widget le supporte (ex: TreeListCtrl)
             # Sinon utiliser RefreshAllItems (ex: VirtualListCtrl pour EffortViewer)
-            if hasattr(self.widget, "scheduleRefresh"):
+            # TreeListCtrl is rebuilt asynchronously to coalesce changes.
+            # A virtual list must update its item count synchronously: callers
+            # can query it immediately after changing the presentation.
+            # if hasattr(self.widget, "scheduleRefresh"):
+            if self.isTreeViewer() and hasattr(self.widget, "scheduleRefresh"):
                 log.debug(
                     f"Viewer.refresh : Appel de scheduleRefresh pour {self.__class__.__name__} avec count={count}."
                 )

@@ -68,10 +68,15 @@ class TaskAssertsMixin(object):
         self.assertTrue(child.parent() == parent)
 
     def assertTaskCopy(self, orig, copy):
-        print(f"asserts : DEBUG - Comparaison des objets : orig is copy -> {orig is copy}")
-        print(f"asserts : DEBUG - Comparaison des objets : orig == copy -> {orig == copy}")
+        print(
+            f"asserts : DEBUG - Comparaison des objets : orig is copy -> {orig is copy}"
+        )
+        print(
+            f"asserts : DEBUG - Comparaison des objets : orig == copy -> {orig == copy}"
+        )
 
         self.assertFalse(orig == copy)
+        # mais avec Object.__eq__, cela signifie que le test considère explicitement qu'une copie doit avoir un id différent de l'original.
         self.assertEqual(orig.subject(), copy.subject())
         self.assertEqual(orig.description(), copy.description())
         self.assertEqual(
@@ -91,7 +96,15 @@ class TaskAssertsMixin(object):
         self.assertEqual(orig.priority(), copy.priority())
         self.assertEqual(orig.fixedFee(), copy.fixedFee())
         self.assertEqual(orig.hourlyFee(), copy.hourlyFee())
-        self.assertEqual(orig.attachments(), copy.attachments())
+        # # try:
+        self.assertEqual(
+            orig.attachments(), copy.attachments()
+        )  # Ne fonctionne plus !
+        # except AssertionError:
+        #     print(f"Comparaison de listes ne fonctionne plus !")
+        #     self.assertEqual(len(orig.attachments()), len(copy.attachments()))
+        #     self.assertEqual(set(orig.attachments()), set(copy.attachments()))
+        #     self.assertEqual(list(orig.attachments()), list(copy.attachments()))
         self.assertEqual(orig.reminder(), copy.reminder())
         self.assertEqual(
             orig.shouldMarkCompletedWhenAllChildrenCompleted(),

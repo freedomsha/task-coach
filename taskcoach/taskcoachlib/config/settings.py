@@ -359,12 +359,18 @@ class Settings(CachingConfigParser):
         """
         Initialisez les paramètres avec les valeurs par défaut.
         """
+        print(
+            "Settings.initializeWithDefaults : Initialisation des paramètres avec les valeurs par défaut."
+        )
         for section in self.sections():
             self.remove_section(section)
         for section, settings in list(defaults.defaults.items()):
             self.add_section(section)
             for key, value in list(settings.items()):
                 # Don't Notify observers while we are initializing
+                print(
+                    f"Settings.initializeWithDefaults : Initialisation de la section '{section}', paramètre '{key}' avec la valeur par défaut '{value}'."
+                )
                 super().set(section, key, value)
 
     def setLoadStatus(self, message):
@@ -524,6 +530,7 @@ class Settings(CachingConfigParser):
             return defaultSection.get(option)
         except KeyError as e:
             if e.args[0] == defaultSectionKey:
+                # Si la section n'existe pas, lever une exception NoSectionError
                 raise configparser.NoSectionError(defaultSectionKey)
             else:
                 raise configparser.NoOptionError(option, defaultSectionKey)
@@ -579,6 +586,7 @@ class Settings(CachingConfigParser):
             La valeur result corrigée.
         """
         original = result
+        print(f"Settings._fixValuesFromOldIniFiles : Corrige result={result}")
         # À partir de la version 1.1.0, les propriétés de date des tâches (startDate,
         # dueDate et CompletionDate) sont des datetimes :
         taskDateColumns = ("startDate", "dueDate", "completionDate")
@@ -618,8 +626,30 @@ class Settings(CachingConfigParser):
             try:
                 # columnWidthMap = eval(result)
                 columnWidthMap = ast.literal_eval(result)
-            except SyntaxError:
-                columnWidthMap = dict()
+                # Elle tente d'évaluer la chaîne de caractères comme une expression Python, ce qui échoue avec une erreur.
+                # ValueError: malformed node or string on line 1: Call(func=Name(id='dict', ctx=Load()), args=[], keywords=[keyword(arg='subject', value=Constant(value=10, kind=None))])
+            # except SyntaxError:
+            except (SyntaxError, ValueError) as e:
+                print(
+                    f"Settings._fixValuesFromOldIniFiles : Error occurred while evaluating columnwidths : {e}"
+                )
+                # columnWidthMap = dict()
+                # Si la chaîne ressemble à "dict(subject=10)", on l'analyse manuellement
+                if result.startswith("dict(") and result.endswith(")"):
+                    # Extraire les arguments entre parenthèses
+                    args_str = result[5:-1]
+                    # Analyser les arguments pour créer un dictionnaire
+                    columnWidthMap = {}
+                    for arg in args_str.split(","):
+                        if "=" in arg:
+                            key, value = arg.split("=", 1)
+                            columnWidthMap[key.strip()] = int(value.strip())
+                    print(
+                        f"Settings._fixValuesFromOldIniFiles : columnWidthMap={columnWidthMap}"
+                    )
+                #     return columnWidthMap
+                # else:
+                #     return {}
             for column, width in list(columnWidthMap.items()):
                 if column in taskDateColumns:
                     column += "Time"
@@ -1037,12 +1067,21 @@ class Settings(CachingConfigParser):
             str: The path to the configuration directory.
         """
         if self.__iniFileSpecifiedOnCommandLine:
+            print(
+                f"Settings.path : Retourne le chemin du fichier .ini spécifié sur la ligne de commande. self.pathToIniFileSpecifiedOnCommandLine()={self.pathToIniFileSpecifiedOnCommandLine()}"
+            )
             return self.pathToIniFileSpecifiedOnCommandLine()
         elif forceProgramDir or self.getboolean(
             "file", "saveinifileinprogramdir"
         ):
+            print(
+                f"Settings.path : Retourne le chemin du répertoire du programme. self.pathToProgramDir()={self.pathToProgramDir()}"
+            )
             return self.pathToProgramDir()
         else:
+            print(
+                f"Settings.path : Retourne le chemin du répertoire de configuration. self.pathToConfigDir(environ)={self.pathToConfigDir(environ)}"
+            )
             return self.pathToConfigDir(environ)
 
     @staticmethod
@@ -1172,10 +1211,21 @@ class Settings(CachingConfigParser):
         Returns :
             str : Le chemin d'accès au répertoire du programme.
         """
+        print(
+            "Settings.pathToProgramDir : Détermine le chemin du répertoire du programme."
+        )
         # path = sys.argv[0]
         path = os.path.abspath(sys.argv[0])
+        print(
+            f"Settings.pathToProgramDir : Chemin absolu du programme : path={path}"
+        )
         if not os.path.isdir(path):
             path = os.path.dirname(path)
+            print(
+                f"Settings.pathToProgramDir : path n'est pas un répertoire, prend le répertoire parent : path={path}"
+            )
+        # Normaliser le chemin pour éviter les problèmes de chemin absolu local
+        path = os.path.normpath(path)
         return path
 
     def pathToConfigDir(self, environ):

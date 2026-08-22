@@ -57,12 +57,16 @@ class SettingsTest(SettingsTestCase):
     def testSetList_SimpleStrings(self):
         recentfiles = ["abc", r"C:\Documents And Settings\Whatever"]
         self.settings.setlist("file", "recentfiles", recentfiles)
-        self.assertEqual(recentfiles, self.settings.getlist("file", "recentfiles"))
+        self.assertEqual(
+            recentfiles, self.settings.getlist("file", "recentfiles")
+        )
 
     def testSetList_UnicodeStrings(self):
         recentfiles = ["√É¬ºmlaut", "√é¬£√é¬ø√é¬º√é¬∑ √è‚Ä°√èÔøΩ√é¬µ√é¬µ√é¬∫"]
         self.settings.setlist("file", "recentfiles", recentfiles)
-        self.assertEqual(recentfiles, self.settings.getlist("file", "recentfiles"))
+        self.assertEqual(
+            recentfiles, self.settings.getlist("file", "recentfiles")
+        )
 
     def testGetNonExistingSettingFromSection1ReturnsDefault(self):
         self.settings.add_section("effortviewer1")
@@ -110,19 +114,26 @@ class SettingsTest(SettingsTestCase):
         )
 
     def testGetNonExistingSectionRaisesException(self):
-        self.assertRaises(configparser.NoSectionError, self.settings.get, "bla", "bla")
+        self.assertRaises(
+            configparser.NoSectionError, self.settings.get, "bla", "bla"
+        )
 
     def testAddSectionAndSkipOne(self):
         self.settings.set("effortviewer", "columnwidths", "dict(subject=10)")
-        self.settings.add_section("effortviewer2", copyFromSection="effortviewer")
+        self.settings.add_section(
+            "effortviewer2", copyFromSection="effortviewer"
+        )
         self.assertEqual(
-            dict(subject=10), self.settings.getdict("effortviewer2", "columnwidths")
+            dict(subject=10),
+            self.settings.getdict("effortviewer2", "columnwidths"),
         )
 
     def testSinglePercentage(self):
         # Prevent ValueError: invalid interpolation syntax in '%' at position 0:
         self.settings.set("effortviewer", "searchfilterstring", "%")
-        self.assertEqual("%", self.settings.get("effortviewer", "searchfilterstring"))
+        self.assertEqual(
+            "%", self.settings.get("effortviewer", "searchfilterstring")
+        )
 
     def testEmbeddedPercentage(self):
         # Prevent ValueError: invalid interpolation syntax in '%' at position 0
@@ -134,12 +145,18 @@ class SettingsTest(SettingsTestCase):
     def testDoublePercentage(self):
         # Prevent ValueError: invalid interpolation syntax in '%' at position 0
         self.settings.set("effortviewer", "searchfilterstring", "%%")
-        self.assertEqual("%%", self.settings.get("effortviewer", "searchfilterstring"))
+        self.assertEqual(
+            "%%", self.settings.get("effortviewer", "searchfilterstring")
+        )
 
     def testFixInvalidValuesFromOldIniFile(self):
         self.settings.set("feature", "notifier", "Native")
-        self.assertEqual("Task Coach", self.settings.get("feature", "notifier"))
-        self.assertEqual("Task Coach", self.settings.getRawValue("feature", "notifier"))
+        self.assertEqual(
+            "Task Coach", self.settings.get("feature", "notifier")
+        )
+        self.assertEqual(
+            "Task Coach", self.settings.getRawValue("feature", "notifier")
+        )
 
 
 class SettingsIOTest(SettingsTestCase):
@@ -178,20 +195,26 @@ class SettingsIOTest(SettingsTestCase):
                 raise configparser.ParsingError("Testing")
 
         self.assertFalse(
-            SettingsThatThrowsParsingError().getboolean("file", "inifileloaded")
+            SettingsThatThrowsParsingError().getboolean(
+                "file", "inifileloaded"
+            )
         )
 
     def testFixOldColumnValues(self):
         section = "prerequisiteviewerintaskeditor1"
         self.fakeFile.write(
-            "[%s]\ncolumns = ['dueDate']\ncolumnwidths = {'dueDate': 40}\n" % section
+            "[%s]\ncolumns = ['dueDate']\ncolumnwidths = {'dueDate': 40}\n"
+            % section
         )
         # self.fakeFile.write(f"[{section}]\ncolumns = ['dueDate']\ncolumnwidths = {'dueDate': 40}\n")
         self.fakeFile.seek(0)
         self.settings.read_file(self.fakeFile)
-        self.assertTrue(["dueDateTime"], self.settings.getlist(section, "columns"))
+        self.assertTrue(
+            ["dueDateTime"], self.settings.getlist(section, "columns")
+        )
         self.assertEqual(
-            dict(dueDateTime=40), self.settings.getdict(section, "columnwidths")
+            dict(dueDateTime=40),
+            self.settings.getdict(section, "columnwidths"),
         )
 
 
@@ -223,7 +246,9 @@ class SpecificSettingsTest(SettingsTestCase):
     def testSetCurrentVersionAtSave(self):
         self.settings.set("version", "current", "0.0")
         self.settings.save()
-        self.assertEqual(meta.data.version, self.settings.get("version", "current"))
+        self.assertEqual(
+            meta.data.version, self.settings.get("version", "current")
+        )
 
 
 class SettingsFileLocationTest(SettingsTestCase):

@@ -217,7 +217,7 @@ class Attribute(object):
         Returns :
             La valeur actuelle de l'attribut.
         """
-        log.debug("Attribute.get : retourne self.__value ", self.__value)
+        log.debug("Attribute.get : retourne self.__value %s", self.__value)
         return self.__value
 
     def setEvent(self, setEvent):
@@ -283,7 +283,9 @@ class Attribute(object):
             import inspect
 
             log.debug(
-                "Attribute.set : SETEVENT =", self.__setEvent, "event=", event
+                "Attribute.set : SETEVENT = %s, event=%s",
+                self.__setEvent,
+                event,
             )
 
             log.debug(inspect.signature(self.__setEvent))
@@ -361,16 +363,26 @@ class SetAttribute(object):
             - __removeEvent : La fonction de gestionnaire d'événements pour les suppressions.
             - __changeEvent : La fonction de gestionnaire d'événements pour les changements.
         """
+        # print(
+        #     "SetAttribute.__init__ avec owner=",
+        #     owner,
+        #     "values=",
+        #     values,
+        #     "weak=",
+        #     weak,
+        #     "type=",
+        #     type(weak),
+        #     "et méthodes",
+        #     addEvent,
+        #     removeEvent,
+        #     changeEvent,
+        # )
         log.debug(
-            "SetAttribute.__init__ avec owner=",
+            "SetAttribute.__init__ avec owner=%s, value=%s, weak=%s, type=%s et méthodes=%s %s %s",
             owner,
-            "values=",
             values,
-            "weak=",
             weak,
-            "type=",
             type(weak),
-            "et méthodes",
             addEvent,
             removeEvent,
             changeEvent,

@@ -609,6 +609,9 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
         imageList = wx.ImageList(*size)  # pylint: disable=W0142
         self.imageIndex = {}  # pylint: disable=W0201
         for index, image in enumerate(self.viewerImages):
+            log.debug(
+                f"Viewer.createImageList : Ajout de l'image '{image}' à l'index {index}."
+            )
             try:
                 # # imageList.Add(wx.ArtProvider_GetBitmap(image, wx.ART_MENU, size))
                 # # print(image)
@@ -625,11 +628,14 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
                     )
                     bitmap = wx.Bitmap(*size)
                 imageList.Add(bitmap)
-                # print(imageList)
+                # print(f"Viewer.createImageList : ImageList: {imageList}")
             except Exception:
-                print(image)
+                log.debug(f"Viewer.createImageList : Erreur lors du chargement de l'image '{image}'")
                 raise
             self.imageIndex[image] = index
+        # print(
+        #     f"Viewer.createImageList : retourne ImageList: {imageList}!"  # Ne fonctionne pas, car ImageList n'a pas de __str__ ou __repr__ utile.
+        # )
         return imageList
 
     def getWidget(self):
@@ -836,7 +842,7 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
             f"Viewer.refresh DEBUG id presentation.observable(): {id(self.presentation().observable())}"
         )
         if self and not self.__freezeCount:
-            # On vérifie si laméthode existe pour éviter le plantage sur ListViewer
+            # On vérifie si la méthode existe pour éviter le plantage sur ListViewer
             if self.isTreeViewer() and self.getRootItems():
                 count = len(self.getRootItems())
             else:

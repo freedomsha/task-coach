@@ -3,6 +3,7 @@
 Vue des tâches pour Tkinter.
 Basé sur le fichier task.py original de Task Coach.
 """
+
 # Le fichier task.py est l'un des composants les plus importants de l'application, car il gère l'affichage principal des tâches. La conversion de wxPython vers Tkinter nécessite de remplacer plusieurs widgets clés et de recréer la logique de l'interface utilisateur.
 #
 # J'ai réécrit ce fichier pour qu'il utilise le widget ttk.Treeview de Tkinter, qui est une alternative moderne et performante au wx.ListCtrl et au wx.TreeCtrl. J'ai également inclus des classes de simulation pour les autres modules de l'application (domain, uicommand, refresher, etc.) afin que le code converti soit fonctionnel et exécutable en tant que démonstration.
@@ -116,15 +117,18 @@ from taskcoachlib import operating_system
 from taskcoachlib import command, domain, render
 from taskcoachlib.domain import task  # as task_module
 from taskcoachlib.domain import date
+
 # from taskcoachlib.guitk.mainwindowtk import MainWindow
 from taskcoachlib.guitk import mainwindowtk
 from taskcoachlib.i18n import _
 
 # Imports Tkinter convertis
 from taskcoachlib.guitk import dialog
+
 # from taskcoachlib.guitk.dialog import editor
 from taskcoachlib.guitk.uicommand import uicommandtk as uicommand
 from taskcoachlib.guitk.uicommand.base_uicommandtk import UICommand
+
 # import taskcoachlib.guitk.menutk
 from taskcoachlib.guitk import menutk
 from taskcoachlib.guitk.viewer import basetk
@@ -135,21 +139,31 @@ from taskcoachlib import widgetstk
 from taskcoachlib.widgetstk import itemctrltk, treectrltk, calendarwidgettk
 from taskcoachlib.widgetstk.treectrltk import TreeListCtrl, CheckTreeCtrl
 
-
 # from taskcoachlib.gui.viewer import TaskViewer, ViewerContainer
 from taskcoachlib.guitk.viewer.basetk import Viewer, SortableViewerWithColumns
-from taskcoachlib.guitk.viewer.mixintk import SortableViewerForTasksMixin, AttachmentDropTargetMixin, NoteColumnMixin, AttachmentColumnMixin
+from taskcoachlib.guitk.viewer.mixintk import (
+    SortableViewerForTasksMixin,
+    AttachmentDropTargetMixin,
+    NoteColumnMixin,
+    AttachmentColumnMixin,
+)
 
 # try:
 from taskcoachlib.config import settings
+
 # Imports pour les widgets non encore convertis (à adapter progressivement)
-from taskcoachlib.thirdparty.tkScheduler.tkSchedulerConstants import SCHEDULER_TODAY
+from taskcoachlib.thirdparty.tkScheduler.tkSchedulerConstants import (
+    SCHEDULER_TODAY,
+)
 from taskcoachlib.thirdparty.tkScheduler.tkDrawer import tkBaseDrawer
 from taskcoachlib.thirdparty import tkdatetimectrl as sdtc
 from taskcoachlib.widgetstk.calendarconfigtk import CalendarConfigDialog
-from taskcoachlib.widgetstk.hcalendarconfigtk import HierarchicalCalendarConfigDialog
+from taskcoachlib.widgetstk.hcalendarconfigtk import (
+    HierarchicalCalendarConfigDialog,
+)
 from taskcoachlib.widgetstk.squaremaptk import SquareMap  # TODO à convertir
 from taskcoachlib.widgetstk.timelinetk import TimelineTk
+
 # except ImportError:
 #     # Fallback si les modules ne sont pas disponibles
 #     wxSCHEDULER_TODAY = None
@@ -160,7 +174,6 @@ from taskcoachlib.widgetstk.timelinetk import TimelineTk
 
 from twisted.internet.threads import deferToThread
 from twisted.internet.defer import inlineCallbacks
-
 
 log = logging.getLogger(__name__)
 # log.warning(TaskViewer.__mro__)
@@ -287,6 +300,7 @@ log = logging.getLogger(__name__)
 # Classes de support
 # ============================================================================
 
+
 class DueDateTimeCtrl(inplace_editortk.DateTimeCtrl):
     """
     Contrôle de sélection de date et heure pour les dates d'échéance.
@@ -294,6 +308,7 @@ class DueDateTimeCtrl(inplace_editortk.DateTimeCtrl):
     Ce contrôle est utilisé pour définir ou modifier la date d'échéance d'une tâche
     en utilisant une sélection relative (par exemple, en fonction d'une autre date).
     """
+
     def __init__(self, parent, item, column, owner, value, **kwargs):
         kwargs["relative"] = True
         # kwargs["startDateTime"] = item.plannedStartDateTime()  # .GetData() supprimé car non trouvé
@@ -320,7 +335,7 @@ class DueDateTimeCtrl(inplace_editortk.DateTimeCtrl):
     def OnChoicesChange(self, event):
         """Gère les événements de changement de sélection dans le contrôle de choix."""
         try:
-            if hasattr(self.item, 'settings'):
+            if hasattr(self.item, "settings"):
                 self.item.settings.settext(
                     "feature", "sdtcspans", event.widget.get()
                 )
@@ -335,6 +350,7 @@ class TaskViewerStatusMessages(object):
     Ces messages incluent le nombre de tâches sélectionnées, visibles, totales
     ainsi que le nombre de tâches en retard, inactives, ou terminées.
     """
+
     template1 = _("Tasks: %d selected, %d visible, %d total")
     template2 = _("Status: %d overdue, %d late, %d inactive, %d completed")
 
@@ -346,14 +362,18 @@ class TaskViewerStatusMessages(object):
     def __call__(self):
         """Retourne les messages de statut formatés."""
         try:
-            count = self.__presentation.observable(recursive=True).nrOfTasksPerStatus()
+            count = self.__presentation.observable(
+                recursive=True
+            ).nrOfTasksPerStatus()
             return (
-                self.template1 % (
+                self.template1
+                % (
                     len(self.__viewer.curselection()),
                     self.__viewer.nrOfVisibleTasks(),
                     self.__presentation.originalLength(),
                 ),
-                self.template2 % (
+                self.template2
+                % (
                     count[task.status.overdue],
                     count[task.status.late],
                     count[task.status.inactive],
@@ -361,13 +381,16 @@ class TaskViewerStatusMessages(object):
                 ),
             )
         except Exception as e:
-            log.error(f"TaskViewerStatusMessages.__call__ : Erreur lors de la génération des messages de statut: {e}")
+            log.error(
+                f"TaskViewerStatusMessages.__call__ : Erreur lors de la génération des messages de statut: {e}"
+            )
             return "", ""
 
 
 # ============================================================================
 # Visualiseurs de base
 # ============================================================================
+
 
 class BaseTaskViewer(
     mixintk.SearchableViewerMixin,
@@ -383,9 +406,12 @@ class BaseTaskViewer(
     et permet d'ajouter des filtres, des pièces jointes, et de rechercher
     des tâches spécifiques.
     """
+
     def __init__(self, *args, **kwargs):
         """Initialise le visualiseur et enregistre les observateurs nécessaires."""
-        log.debug(f"BaseTaskViewer : Initialisation du Visualiseur de base pour les tâches. (création)")
+        log.debug(
+            f"BaseTaskViewer : Initialisation du Visualiseur de base pour les tâches. (création)"
+        )
         super().__init__(*args, **kwargs)
         # Initialisation des messages de statut
         self.statusMessages = TaskViewerStatusMessages(self)
@@ -403,7 +429,7 @@ class BaseTaskViewer(
         try:
             if (  # À adapter
                 # self.toolbar.getToolIdByCommand("ViewerHideTasks_completed") != wx.ID_ANY
-                hasattr(self, 'toolbar')
+                hasattr(self, "toolbar")
                 # and self.toolbar.IsShownOnScreen()
                 and self.toolbar.winfo_ismapped()
                 # and hasattr(wx.GetTopLevelParent(self), "AddBalloonTip")
@@ -428,6 +454,12 @@ class BaseTaskViewer(
         except Exception as e:
             log.debug(f"Impossible d'afficher l'info-bulle: {e}")
         # pass
+
+    def to_tk_color(rgb):
+        """
+        Convertit (r, g, b) en "#RRGGBB".
+        """
+        return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
     def __registerForAppearanceChanges(self):
         """
@@ -483,7 +515,9 @@ class BaseTaskViewer(
             # wx.CallAfter(self.refresh) # À remplacer par self.after
             self.after(0, self.refresh)
             # Show/hide status in toolbar may change too
-        self.toolbar.loadPerspective(self.toolbar.perspective(), cache=False) # À adapter
+        self.toolbar.loadPerspective(
+            self.toolbar.perspective(), cache=False
+        )  # À adapter
 
     def domainObjectsToView(self):
         """
@@ -516,12 +550,15 @@ class BaseTaskTreeViewer(BaseTaskViewer):
     Ce visualiseur est conçu pour afficher les tâches sous forme d'arbre
     avec des rafraîchissements en temps réel toutes les secondes ou minutes.
     """
+
     defaultTitle = _("Tasks")
     defaultBitmap = "led_blue_icon"
 
     def __init__(self, *args, **kwargs):
         """Initialise le visualiseur avec des options supplémentaires pour rafraîchir les tâches."""
-        log.debug(f"BaseTaskTreeViewer.__init__ : Initialisation du Visualiseur de tâches sous forme d'arborescence avec rafraîchissement automatique. (création)")
+        log.debug(
+            f"BaseTaskTreeViewer.__init__ : Initialisation du Visualiseur de tâches sous forme d'arborescence avec rafraîchissement automatique. (création)"
+        )
         super().__init__(*args, **kwargs)
 
         # Initialisation des rafraîchisseurs

@@ -1448,8 +1448,13 @@ class Observer(object):
         # Initialise l'ensemble des observateurs.
         self.__observers = set()
         # self.__observers: Set[Callable] = set()
-        super().__init__(*args, **kwargs)
-        # Removed super().__init__(*args, **kwargs) as object.__init__ does not accept arguments
+        try:
+            super().__init__(*args, **kwargs)
+            # Removed super().__init__(*args, **kwargs) as object.__init__ does not accept arguments
+            # TypeError: object.__init__() takes exactly one argument (the instance to initialize)
+        except TypeError as e:
+            log.error(f"Observer.__init__ : erreur super : {e}")
+            super().__init__(*args)
         # super().__init__()  # Poursuit l'initialisation avec la classe suivante dans la MRO. En l'occurrence, wx.EvtHandler.
         # log.debug(f"Observer.__init__ : Liste des observateurs : {self.__observers}")
 

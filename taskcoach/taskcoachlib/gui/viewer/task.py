@@ -287,9 +287,13 @@ class BaseTaskViewer(
         if style == "bold":
             weight = wx.FONTWEIGHT_BOLD
 
-        return wx.Font(size, wx.FONTFAMILY_DEFAULT,
-                       wx.FONTSTYLE_NORMAL, weight,
-                       faceName=family)
+        return wx.Font(
+            size,
+            wx.FONTFAMILY_DEFAULT,
+            wx.FONTSTYLE_NORMAL,
+            weight,
+            faceName=family,
+        )
 
     def __registerForAppearanceChanges(self):
         """

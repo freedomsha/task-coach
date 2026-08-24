@@ -53,6 +53,8 @@ Comprendre comment une modification arrive sur le disque est crucial :
     Persistance : Lors du save(), TaskFile parcourt ces changements pour mettre à jour le XML.
 """
 
+from config import GUI_NAME
+
 # 3. Points clés à surveiller lors de la lecture
 #
 # Pendant que tu parcours le fichier, prête une attention particulière à ces zones :
@@ -84,7 +86,8 @@ import shutil
 import tempfile
 from io import TextIOWrapper
 import uuid
-import wx
+
+# import wx
 from pubsub import pub
 
 # from lockfile import SoftReadWriteLock
@@ -781,16 +784,18 @@ class TaskFile(patterns.Observer):
             pass
 
         log.info(
-            f"TaskFile : TaskFile initialisé avec filename='{self.__filename}', guid='{self.__guid}' et syncMLConfig='{self.__syncMLConfig}'."
+            f"TaskFile.__init__ : TaskFile initialisé avec filename='{self.__filename}', guid='{self.__guid}' et syncMLConfig='{self.__syncMLConfig}'."
         )
-        log.info("TaskFile : Tâche de base initialisée : %s", self)
+        log.info("TaskFile.__init__ : Tâche de base initialisée : %s", self)
         # log.info("TaskFile : Tâches initiales : %s", self.tasks())
-        log.info("TaskFile : Tâches initiales : %s", self.__tasks)
-        log.info("TaskFile : Catégories initiales : %s", self.__categories)
+        log.info("TaskFile.__init__ : Tâches initiales : %s", self.__tasks)
+        log.info(
+            "TaskFile.__init__ : Catégories initiales : %s", self.__categories
+        )
         # log.info("TaskFile : Notes initiales : %s", self.notes())
-        log.info("TaskFile : Notes initiales : %s", self.__notes)
-        log.info("TaskFile : Efforts initiaux : %s", self.__efforts)
-        log.info("TaskFile initialisé.")
+        log.info("TaskFile.__init__ : Notes initiales : %s", self.__notes)
+        log.info("TaskFile.__init__ : Efforts initiaux : %s", self.__efforts)
+        log.info("TaskFile initialisé !")
 
     def __str__(self):
         """Retourne une représentation sous forme de chaîne du fichier de tâches (le nom du fichier)."""
@@ -1529,7 +1534,14 @@ class TaskFile(patterns.Observer):
             # Indiquer que le fichier a été modifié sur le disque.
             self.__changedOnDisk = True
             log.debug("TaskFile.onFileChanged : Appelle CallAfter.")
-            wx.CallAfter(pub.sendMessage, "taskfile.changed", taskFile=self)
+            if GUI_NAME == "wx":
+                import wx
+
+                wx.CallAfter(
+                    pub.sendMessage, "taskfile.changed", taskFile=self
+                )
+            elif GUI_NAME == "tk":
+                pub.sendMessage("taskfile.changed", taskFile=self)
             log.debug("TaskFile.onFileChanged : CallAfter passé avec succès.")
 
     def changedOnDisk(self):

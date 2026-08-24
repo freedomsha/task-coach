@@ -246,6 +246,16 @@ defaults = {
         "highlightcolor": "",
         "shownow": "True",
     },
+    # --- AJOUTER À PARTIR D'ICI ---
+    "calendar_light": {
+        "other_month_bg_system": "True",
+        "other_month_bg": "(240, 240, 240)",
+    },
+    "calendar_dark": {
+        "other_month_bg_system": "True",
+        "other_month_bg": "(50, 50, 50)",
+    },
+    # ------------------------------
     "categoryviewer": {
         "title": "",
         "toolbarperspective": "CategoryNew,NewSubItem,Separator,Edit,Delete,Spacer,ResetFilter,Search",

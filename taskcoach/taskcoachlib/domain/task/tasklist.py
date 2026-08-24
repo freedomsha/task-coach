@@ -20,16 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 # from builtins import object
+import logging
 import uuid
 from taskcoachlib.i18n import _
 from taskcoachlib.domain import categorizable
 from taskcoachlib import help, operating_system  # pylint: disable=W0622
 from . import task
 
+log = logging.getLogger(__name__)
+
 
 class TaskListQueryMixin(object):
     """
-    Classe mixin qui fournit un id et la méthode nrOfTasksPerStatus qui retourne le nombre de tâches pour chaque status.
+    Classe mixin qui fournit un id et la méthode nrOfTasksPerStatus
+    qui retourne le nombre de tâches pour chaque status.
     """
 
     def __init__(self, *args, **kwargs):
@@ -124,17 +128,17 @@ class TaskList(TaskListQueryMixin, categorizable.CategorizableContainer):
     def efforts(self):
         """Collecte et retourne tous les efforts de toutes les tâches de la liste."""
         result = []
-        print(
+        log.debug(
             "TaskList.efforts() : called, iterating over tasks to collect efforts..."
         )  # Debug print
         for task in self:  # pylint: disable=W0621
-            print(
+            log.debug(
                 "TaskList.efforts() : processing task with id={0}, subject='{1}'".format(
                     task.id(), task.subject()
                 )
             )  # Debug print
             result.extend(task.efforts())
-        print(
+        log.debug(
             "TaskList.efforts() : collected efforts, total count={0}".format(
                 len(result)
             )

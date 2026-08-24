@@ -1386,16 +1386,16 @@ class Object(SynchronizedObject):
         """
         # ce qui doit exister en mémoire pour que l'objet fonctionne.
 
-        log.debug("SUBJECT =", self.subjectChangedEvent)
-        log.debug("DESCRIPTION =", self.descriptionChangedEvent)
-        log.debug("FG =", self._onDerivedFgColorChanged)
-        log.debug("EFFECTIVE FG =", self._onEffectiveFgColorChanged)
-        log.debug("BG =", self._onDerivedBgColorChanged)
-        log.debug("EFFECTIVE BG =", self._onEffectiveBgColorChanged)
-        log.debug("ICON =", self._onDerivedIconChanged)
-        log.debug("EFFECTIVE ICON =", self._onEffectiveIconChanged)
-        log.debug("FONT =", self._onDerivedFontChanged)
-        log.debug("EFFECTIVE FONT =", self._onEffectiveFontChanged)
+        log.debug("SUBJECT = %s", self.subjectChangedEvent)
+        log.debug("DESCRIPTION = %s", self.descriptionChangedEvent)
+        log.debug("FG = %s", self._onDerivedFgColorChanged)
+        log.debug("EFFECTIVE FG = %s", self._onEffectiveFgColorChanged)
+        log.debug("BG = %s", self._onDerivedBgColorChanged)
+        log.debug("EFFECTIVE BG = %s", self._onEffectiveBgColorChanged)
+        log.debug("ICON = %s", self._onDerivedIconChanged)
+        log.debug("EFFECTIVE ICON = %s", self._onEffectiveIconChanged)
+        log.debug("FONT = %s", self._onDerivedFontChanged)
+        log.debug("EFFECTIVE FONT = %s", self._onEffectiveFontChanged)
 
         # # les clés sérialisées restent définies à un seul endroit
         # for key in SERIALIZATION_CORE_KEYS:
@@ -3131,7 +3131,7 @@ class CompositeObject(
         log.debug(
             f"CompositeObject.__init__() → kwargs après Object avant Composite: {kwargs}"
         )
-        print("CompositeObject.__init__ : children reçus =", children)
+        log.debug("CompositeObject.__init__ : children reçus = %s", children)
         # Initialisation manuelle de Composite
         patterns.composite.ObservableComposite.__init__(
             self, children=children, parent=parent

@@ -248,14 +248,14 @@ class Settings(CachingConfigParser):
         self.migrateConfigurationFiles()
         self.gui_used = gui_used
         if self.gui_used == "wx":
-            log.info("Settings.__init__ avec wx.")
+            log.info("Settings.__init__ avec wx plutôt que tkinter.")
             import wx  # TODO : Trouver le moyen d'implémenter wx sans wx.App ou créer un autre fichier wxsettings.
 
             # self.wx = None  # wx quand ce sera corrigé !
             self.wx = wx  # wx quand ce sera corrigé !
             self.MessageboxUsed = self.wx.MessageBox
         elif self.gui_used == "tk":
-            log.info("Serttings.__init__ avec tkinter.")
+            log.info("Settings.__init__ avec tkinter plutôt que wx.")
             self.MessageboxUsed = messagebox.showerror
         # Ensure errorMessage is initialized
         errorMessage = None
@@ -919,7 +919,8 @@ class Settings(CachingConfigParser):
     # def save(
     #     self, showerror=wx.MessageBox, file=open
     # ):  # pylint: disable=W0622
-    def save(self, file=open):  # pylint: disable=W0622
+    # def save(self, file=open):  # pylint: disable=W0622
+    def save(self, showerror=None, file=open):  # pylint: disable=W0622
         """
         Enregistrez les paramètres dans un fichier.
 

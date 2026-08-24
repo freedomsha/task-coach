@@ -243,7 +243,7 @@ class UICommand(object):
             # log.debug(
             #     f"UICommand.addToMenu : Ajoute l'élément menuItem={type(menuItem).__name__} {type(self).__name__} dans le menu={type(menu).__name__}."
             # )
-            menu.AppendItem(
+            menu.AppendItem(  # Call to deprecated item. Use Append instead.
                 menuItem
             )  # wxPyDeprecationWarning: Call to deprecated item. Use Append instead.
             # AppendItem est dans customTreeCtrl

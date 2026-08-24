@@ -1240,31 +1240,82 @@ Break the lock?""") % filename,
         if not language:
             # Get language as set by the user or externally (e.g. PortableApps)
             language = settings.get("view", "language")
+        # if not language:
+        #     # Fallback to locale.getlocale() which may work after setlocale
+        #     try:
+        #         language = locale.getlocale(locale.LC_MESSAGES)[0]
+        #         if language == "C" or language == "POSIX":
+        #             language = None
+        #     except Exception:
+        #         language = None
+        # if not language:
+        #     # # Use the user's locale
+        #     # language = locale.getdefaultlocale()[0]
+        #     # # language = locale.getlocale()[0]
+        #     # Note: locale.getdefaultlocale() is deprecated since Python 3.11
+        #     # and doesn't reliably read LANG on Linux. We check env vars directly.
+        #     language = os.environ.get("LANG", os.environ.get("LC_ALL", ""))
+        #     # Cette expression donne priorité à LANG même si LC_ALL est défini.
+        #     # if language == "C":
+        #     #     # TODO: essayer:
+        #     #     # locale.setlocale(locale.LC_ALL, "C")
+        #     #     # language = locale.setlocale(locale.LC_ALL, "C")
+        #     #     language = None
+        #     if language:
+        #         # Strip encoding suffix (e.g., "de_DE.UTF-8" -> "de_DE")
+        #         language = language.split(".")[0]
+        #         if not language or language == "C" or language == "POSIX":
+        #             language = None
+        # if not language:
+        #     # Fallback to locale.getlocale() which may work after setlocale
+        #     try:
+        #         language = locale.getlocale(locale.LC_MESSAGES)[0]
+        #         if language == "C" or language == "POSIX":
+        #             language = None
+        #     except Exception:
+        #         language = None
+
         if not language:
-            # # Use the user's locale
-            # language = locale.getdefaultlocale()[0]
-            # # language = locale.getlocale()[0]
-            # Note: locale.getdefaultlocale() is deprecated since Python 3.11
-            # and doesn't reliably read LANG on Linux. We check env vars directly.
-            language = os.environ.get("LANG", os.environ.get("LC_ALL", ""))
-            # if language == "C":
-            #     # TODO: essayer:
-            #     # locale.setlocale(locale.LC_ALL, "C")
-            #     # language = locale.setlocale(locale.LC_ALL, "C")
-            #     language = None
-            if language:
-                # Strip encoding suffix (e.g., "de_DE.UTF-8" -> "de_DE")
-                language = language.split(".")[0]
-                if not language or language == "C" or language == "POSIX":
-                    language = None
-        if not language:
-            # Fallback to locale.getlocale() which may work after setlocale
+            """Utilise la locale du système comme source de langue."""
             try:
-                language = locale.getlocale(locale.LC_MESSAGES)[0]
-                if language == "C" or language == "POSIX":
-                    language = None
-            except Exception:
-                language = None
+                language = locale.getlocale(locale.LC_MESSAGES)[
+                    0
+                ]  # Récupère la locale des messages. Récupère la langue depuis l'objet locale fourni par l'appelant.
+            # Gèrer une implémentation de locale incompatible.
+            except (
+                AttributeError,
+                TypeError,
+                ValueError,
+            ):  # Ignore une locale qui ne fournit pas cette information.
+                language = (
+                    None  # Indique qu'aucune langue n'a pu être déterminée.
+                )
+
+            if language:  # Vérifie qu'une locale a effectivement été trouvée.
+                language = language.split(".")[
+                    0
+                ]  # Supprime l'éventuel suffixe d'encodage dans la locale.
+                if language in (
+                    "C",
+                    "POSIX",
+                ):  # Ignore les locales système génériques sans langue.
+                    language = None  # Force le passage au mécanisme de repli.
+
+        if not language:
+            """Utilise les variables d'environnement comme solution de repli."""
+            language = os.environ.get(
+                "LANG", os.environ.get("LC_ALL", "")
+            )  # Consulte la configuration système comme solution de secours.
+            if language:  # Vérifie qu'une valeur a été trouvée.
+                language = language.split(".")[
+                    0
+                ]  # Supprime l'encodage éventuel.
+                if language in (
+                    "C",
+                    "POSIX",
+                ):  # Ignore les locales génériques.
+                    language = None  # Force le dernier mécanisme de repli.
+
         if not language:
             # Fall back on what the majority of our users use
             language = "en_US"
@@ -1918,10 +1969,37 @@ Break the lock?""") % filename,
         # Des threads Python ou des timers wx peuvent garder le process vivant. Vérifie si tu utilises des threads, timers, ou des callbacks récurrents dans Task Coach.
         return True  # This code is unreachable
 
+    # @classmethod
+    # def delete_instance(cls):
+    #     """Réinitialise proprement le singleton pour les tests unitaires."""
+    #     if cls in cls._instances:
+    #         # if cls in cls.instance:
+    #         del cls._instances[cls]
+    #         # del cls.instance[cls]
+    #     if wx.GetApp():
+    #         wx.GetApp().ExitMainLoop()
+    # # Il faut réutiliser le mécanisme de Singleton,
+    # # plutôt que créer un deuxième système de gestion du singleton dans Application.
     @classmethod
     def delete_instance(cls):
-        """Réinitialise proprement le singleton pour les tests unitaires."""
-        if cls in cls._instances:
-            del cls._instances[cls]
-        if wx.GetApp():
-            wx.GetApp().ExitMainLoop()
+        """Supprime l'instance singleton de l'application.
+
+        Cette méthode fournit une interface Python moderne compatible avec les
+        tests existants, tout en utilisant le mécanisme Singleton historique de
+        Task Coach.
+
+        Cette méthode est principalement destinée aux tests unitaires afin de
+        permettre à chaque test de repartir d'une instance Application vierge.
+
+        La métaclasse Singleton stocke l'instance dans l'attribut ``instance``.
+        La suppression est donc déléguée à la méthode ``deleteInstance`` de la
+        métaclasse.
+
+        Returns:
+            None: Cette méthode ne retourne aucune valeur.
+        """
+        # Récupère la métaclasse Singleton utilisée par Application.
+        singleton = type(cls)
+
+        # Supprime l'instance singleton si elle existe.
+        singleton.deleteInstance(cls)

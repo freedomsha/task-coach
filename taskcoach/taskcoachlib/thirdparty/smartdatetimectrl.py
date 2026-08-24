@@ -2760,10 +2760,11 @@ class SmartDateTimeCtrl(wx.Panel):
                     wx.ART_LIST_VIEW, wx.ART_BUTTON, (16, 16)
                 ),
             )
-            wx.EVT_BUTTON(
-                self.__relButton, wx.ID_ANY, self.__OnPopupRelativeChoices
-            )
+            # wx.EVT_BUTTON(
+            #     self.__relButton, wx.ID_ANY, self.__OnPopupRelativeChoices
+            # )
             # self.__relButton.Bind(wx.EVT_BUTTON, self.__OnPopupRelativeChoices, wx.ID_ANY)
+            self.__relButton.Bind(wx.EVT_BUTTON, self.__OnPopupRelativeChoices)
             sizer.Add(self.__relButton, 0, wx.ALL | wx.ALIGN_CENTRE, 1)
             self.__relButton.Enable(False)
         else:

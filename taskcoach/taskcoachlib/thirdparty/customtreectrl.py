@@ -990,7 +990,7 @@ class CommandTreeEvent(wx.PyCommandEvent):
         evtKey=None,
         point=None,
         label=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Default class constructor.
@@ -1189,7 +1189,7 @@ class TreeEvent(CommandTreeEvent):
         evtKey=None,
         point=None,
         label=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Default class constructor.
@@ -3586,7 +3586,12 @@ class CustomTreeCtrl(wx.PyScrolledWindow):
         :return: An integer index that can be used to retrieve the item image inside
          a `wx.ImageList`.
         """
-
+        # print(
+        #     f"CustomTreeCtrl.GetItemImage : appelé avec item={item} et which={which}"
+        # )
+        # print(
+        #     f"CustomTreeCtrl.GetItemImage : retourne item.GetImage(which) = {item.GetImage(which)}"
+        # )
         return item.GetImage(which)
 
     def GetItemLeftImage(self, item):

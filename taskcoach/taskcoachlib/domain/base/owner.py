@@ -446,7 +446,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
 
         if owned_objects is None:
             log.debug(
-                "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est None.",
+                "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est None : %s %s %s %s",
                 instance,
                 type(instance),
                 instance.__dict__,
@@ -454,7 +454,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             )
         else:
             log.debug(
-                "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est :",
+                "DEBUG DomainObjectOwnerMetaclass.objects : owned_objects est : %s %s %s %s",
                 instance,
                 type(instance),
                 instance.__dict__,
@@ -496,23 +496,24 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             "DomainObjectOwnerMetaclass.setObjects : \n=== SETOBJECTS ==="
         )
         log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : ID(instance) =",
+            "DomainObjectOwnerMetaclass.setObjects : ID(instance) = %s",
             id(instance),
         )
         log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : TYPE(instance) =",
+            "DomainObjectOwnerMetaclass.setObjects : TYPE(instance) = %s",
             type(instance),
         )
         log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : DICT =", instance.__dict__
+            "DomainObjectOwnerMetaclass.setObjects : DICT = %s",
+            instance.__dict__,
         )
         log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : DEBUG setObjects newObjects =",
+            "DomainObjectOwnerMetaclass.setObjects : DEBUG setObjects newObjects = %s",
             newObjects,
         )
         # print("DEBUG setObjects objects(instance) =", objects(instance))
         log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : DEBUG attribute name =",
+            "DomainObjectOwnerMetaclass.setObjects : DEBUG attribute name = %s",
             _attribute_name(""),
         )
         log.debug(
@@ -547,14 +548,14 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
     # attribute = _attribute_name("")
     attribute = f"set{klass.__ownedType__}s"
     log.debug(
-        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG écriture attribut :",
+        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG écriture attribut : %s",
         attribute,
     )
     # setattr(instance, attribute, newObjects)
     setattr(klass, attribute, setObjects)
     # print("DEBUG après écriture :", instance.__dict__)
     log.debug(
-        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG après écriture :",
+        "DomainObjectOwnerMetaclass.setObjects : DEBUG après écriture : %s",
         klass.__dict__,
     )
 
@@ -597,7 +598,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # event.addSource(instance, *objects,
         #                 **dict(type=addedEventType(instance.__class__)))
         event.addSource(instance, *objects, type=generate_event_name(".added"))
-        print(f"Événement envoyé par addedEvent: {event}")
+        log.debug(f"Événement envoyé par addedEvent: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -619,7 +620,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         event.addSource(
             instance, *objects, type=generate_event_name(".removed")
         )
-        print(f"Événement envoyé par removedEvent: {event}")
+        log.debug(f"Événement envoyé par removedEvent: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -663,7 +664,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         getattr(instance, _attribute_name("")).append(ownedObject)
         changedEvent(instance, event, ownedObject)
         addedEvent(instance, event, ownedObject)
-        print(f"Événement envoyé par addObject: {event}")
+        log.debug(f"Événement envoyé par addObject: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -697,7 +698,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         event = kwargs.pop("event", None)
         changedEvent(instance, event, *ownedObjects)
         addedEvent(instance, event, *ownedObjects)
-        print(f"Événement envoyé par addObjects: {event}")
+        log.debug(f"Événement envoyé par addObjects: {event}")
 
         # Forcer l'ajout explicite de la source
         if event is not None:
@@ -731,7 +732,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         if event is not None:
             # Forcer l'ajout explicite de la source
             event.addSource(instance)
-        print(f"Événement envoyé par removeObject: {event}")
+        log.debug(f"Événement envoyé par removeObject: {event}")
 
     # setattr(klass, "remove%s" % klass.__ownedType__, removeObject)
     setattr(klass, f"remove{klass.__ownedType__}", removeObject)
@@ -772,7 +773,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # Forcer l'ajout explicite de la source
         if event is not None:
             event.addSource(instance)
-        print(f"Événement envoyé par removeObjects: {event}")
+        log.debug(f"Événement envoyé par removeObjects: {event}")
 
     # setattr(klass, "remove%ss" % klass.__ownedType__, removeObjects)
     setattr(klass, f"remove{klass.__ownedType__}s", removeObjects)
@@ -831,7 +832,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # parent_getstate = Object.validate_state(
         #     super(klass, instance).__getstate__()
         # )
-        print("OWNER parent_getstate =", parent_getstate)
+        log.debug("OWNER parent_getstate = %s", parent_getstate)
 
         # # Les assertions servent à vérifier que le parent a bien fourni son état.
         # missing = SERIALIZATION_CORE_KEYS - set(parent_getstate.keys())
@@ -866,7 +867,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         Object.protect_parent_keys(parent_getstate, state)
 
         # 🔹 Debug minimal utile
-        print(
+        log.debug(
             f"[Owner.getstate] {klass.__name__} -> {len(owned_objects)} objets"
         )
 
@@ -896,10 +897,10 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             state (dict) : Un dictionnaire représentant l'état de l'instance.
             event : Objet d'événement facultatif à passer aux gestionnaires d'événements.
         """
-        print("DomainObjectOwnerMetaclass.setstate : AVANT validate_state,")
-        print("ID INSTANCE =", id(instance))
-        print("TYPE =", type(instance))
-        print(
+        log.debug("DomainObjectOwnerMetaclass.setstate : AVANT validate_state,")
+        log.debug("ID INSTANCE = %s", id(instance))
+        log.debug("TYPE = %s", type(instance))
+        log.debug(
             f"DEBUG: {name}.__setstate__ - Before parent_setstate. Instance dict: {instance.__dict__}"
         )
 
@@ -913,34 +914,34 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             f"Etat corrompu pour " f"{klass.__name__}: {missing}"
         )
 
-        print("DEBUG setstate state keys:", state.keys())
-        print("DEBUG recherche:", f"{owned_type}s")
-        print("DEBUG valeur trouvée:", state.get(f"{owned_type}s"))
-        print("AVANT parent_setstate")
-        print(instance.__dict__.keys())
-        print(
+        log.debug("DEBUG setstate state keys: %s", state.keys())
+        log.debug("DEBUG recherche: %s", f"{owned_type}s")
+        log.debug("DEBUG valeur trouvée: %s", state.get(f"{owned_type}s"))
+        log.debug("AVANT parent_setstate")
+        log.debug("instance.__dict__.keys(): %s", instance.__dict__.keys())
+        log.debug(
             "_Object__subject présent ?",
             "_Object__subject" in instance.__dict__,
         )
-        print("instance.__dict__ =", instance.__dict__)
+        log.debug("instance.__dict__ = %s", instance.__dict__)
         # 🔹 Applique l'état parent (IMPORTANT pour status, id, etc.)
         if parent_setstate:
             parent_setstate(state, event=event)
-        print(
+        log.debug(
             f"DEBUG: {name}.__setstate__ - After parent_setstate. Instance dict: {instance.__dict__}"
         )
 
         # 🔹 Récupère les objets sérialisés (ex: foos)
         owned_objects = state.get(f"{owned_type}s", [])
-        print(
+        log.debug(
             f"DEBUG: {name}.__setstate__ - Owned objects from state: {owned_objects}"
         )
 
         current_owned_attr_name = _attribute_name("")
-        print(
+        log.debug(
             f"DEBUG: {name}.__setstate__ - Current internal owned attribute name: {current_owned_attr_name}"
         )
-        print(
+        log.debug(
             f"DEBUG: {name}.__setstate__ - Value of {current_owned_attr_name} before setObjects: {getattr(instance, current_owned_attr_name, 'N/A')}"
         )
 
@@ -949,10 +950,10 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         #     f"DomainObjectOwnerMetaclass.setstate : AVANT setObjects sur {name}, avec owned_objects={owned_objects} et event={event}, instance = {instance}."
         # )
         setObjects(instance, owned_objects, event=event)
-        print(
+        log.debug(
             f"DEBUG: {name}.__setstate__ - Value of {current_owned_attr_name} after setObjects: {getattr(instance, current_owned_attr_name, 'N/A')}"
         )
-        print("DomaineObjectOwnerMetaclass.setstate : terminé !")
+        log.debug("DomaineObjectOwnerMetaclass.setstate : terminé !")
 
     klass.__setstate__ = setstate
 
@@ -986,7 +987,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # state[klass.__ownedType__.lower() + "s"] = [obj.copy() for obj in objects(instance)]
         state[f"{owned_type}s"] = [obj.copy() for obj in objects(instance)]
         # state["children"] = [child.copy() for child in self.children()]  # Créer de nouveaux objets
-        print(f"owner.getcopystate : retourne state : {state}.")
+        log.debug(f"owner.getcopystate : retourne state : {state}.")
         return state
 
     klass.__getcopystate__ = getcopystate

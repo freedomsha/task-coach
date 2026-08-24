@@ -385,6 +385,7 @@ class MainWindow(
 ):  # Hérite de tk.Frame
     #     PowerStateMixin, BalloonTipManager, widgets.AuiManagedFrameWithDynamicCenterPane
     # ):
+    # TODO : convertir AuiManagedFrameWithDynamicCenterPane pour tkinter !
     """
     Classe représentant le cadre/frame principale de Task Coach pour Tkinter.
     """

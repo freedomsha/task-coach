@@ -117,7 +117,7 @@ class ApplicationArgumentParser:
             "--gui",
             action="store",
             nargs=1,
-            default="wx",
+            default="tk",
             choices=["tk", "wx"],
             dest="gui_name",
             help="Use the specified GUI_NAME for choose the GUI to use(wx or tk).",
@@ -144,5 +144,5 @@ def set_gui(gui_name: str):
 def get_gui() -> str:
     """Renvoie le nom de l'interface graphique courante ('tk' ou 'wx')."""
     return (
-        CURRENT_GUI or "wx"
+        CURRENT_GUI or "tk"
     )  # Valeur par défaut pour compatibilité, la même que dans le add_argument par défaut.

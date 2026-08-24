@@ -57,7 +57,7 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         *args,
         **kwargs,
     ):
-        print("DEBUG Effort.__init__ : task =", task, type(task))
+        log.debug(f"Effort.__init__ : task = {task}, {type(task)}")
         super().__init__(
             task, start or date.DateTime.now(), stop, *args, **kwargs
         )
@@ -68,7 +68,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         )
         # Utilisation de __cachedDuration comme un état de synchronisation implicite (pas seulement comme un cache de performance).
         self.__updateDurationCache()  # Obsolète puisque Attribute joue déjà ce rôle.
-        print(vars(self))
+        # print(vars(self))
+        log.debug(f"Effort.__init__ : self={vars(self)} !")
 
     def __getattribute__(self, name):
         """Remplacer pour empêcher les méthodes d'être masquées par les attributs d'instance.
@@ -120,7 +121,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         """
         # Debug tracing to determine why setTask may not send messages in tests
         try:
-            print(
+            # print(
+            log.debug(
                 f"Effort.setTask called: self._task={getattr(self, '_task', None)}, current task()={self.task()}, arg task={task}"
             )
         except Exception:
@@ -132,7 +134,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
             # nouvelle tâche elle-même.
             self._task = None if task is None else weakref.ref(task)
             try:
-                print(
+                # print(
+                log.debug(
                     "Effort.setTask: early return because self._task was None; set weakref and returned"
                 )
             except Exception:
@@ -148,7 +151,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         if task is None or task is self.task():
             # command.PasteCommand may try to set the parent to None
             try:
-                print(
+                # print(
+                log.debug(
                     "Effort.setTask: early return because task is same as current or None"
                 )
             except Exception:
@@ -165,7 +169,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         self.task().addEffort(self)
         event.send()
         # Debug prints pour s'assurer que le message est bien envoyé pendant les tests
-        print(
+        # print(
+        log.debug(
             f"Effort.setTask : Envoi de l'événement de changement de tâche pour l'effort {self}, nouvelle tâche={task}"
         )
         pub.sendMessage(
@@ -184,7 +189,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
         # )  # N'existent pas dans Event, mais on peut les ajouter dynamiquement
         # pub.sendMessage(self.taskChangedEventType(), event=change_event)
 
-        print(
+        # print(
+        log.debug(
             f"Effort.setTask : Événement envoyé pour {self.taskChangedEventType()}"
         )
 
@@ -331,9 +337,8 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
                 duration=self.__duration.get(),
             )
         )
-        print(
-            "DEBUG Effort.__getcopystate__ :", self.task(), type(self.task())
-        )
+        # print(
+        log.debug("Effort.__getcopystate__ : %s %s", self.task(), type(self.task()))
         return state
 
     def _computeDuration(self):

@@ -45,11 +45,12 @@ import calendar
 from taskcoachlib import (
     operating_system,
     patterns,
-    persistencetk,
+    # persistencetk,
     operating_system,
     meta,
     i18n,
 )
+from taskcoachlib.persistence import taskfile
 from taskcoachlib.i18n import _
 from taskcoachlib.config.settings import Settings
 from taskcoachlib.domain import date
@@ -352,9 +353,9 @@ class TkinterApplication(
         splash = guitk.SplashScreen(self.root) if show_splash_screen else None
 
         # self.taskFile = persistencetk.LockedTaskFile(poll=not self.settings.getboolean('file', 'nopoll'))
-        self.taskFile = persistencetk.LockedTaskFile(
+        self.taskFile = taskfile.LockedTaskFile(
             parent=self.root,
-            poll=not self.settings.getboolean("file", "nopoll"),
+            poll=not self.settings.getboolean("file", "-nopoll"),
         )
         # self.__auto_saver = persistence.AutoSaver(self.settings)
         # self.__auto_exporter = persistence.AutoImporterExporter(self.settings)
@@ -449,12 +450,12 @@ class TkinterApplication(
         self.root.after_idle(lambda: self.__close_splash(splash))
         self.root.after_idle(self.__show_tips)
 
-    def __init_config(self, load_settings) -> None:
+    def __init_config(self, load_settings: bool) -> None:
         """
         Initialisation des réglages.
 
         Args:
-            load_settings:
+            load_settings (bool) : Valeur pour choisir de charger les paramètres à partir d'un fichier
 
         Attributes:
             self.settings (Settings) : Objet paramètres
@@ -463,6 +464,9 @@ class TkinterApplication(
             None
         """
         ini_file = self._options.inifile if self._options else None
+        log.info(
+            f"TkinterApplication.__init_config : Chargement des paramètres depuis {ini_file if ini_file else 'le fichier par défaut'} : {load_settings}"
+        )
         self.settings = Settings(load_settings, ini_file, "tk")
         # self.settings.load()  # AttributeError: 'Settings' object has no attribute 'load'
         log.info("init_config : passé avec succès !")

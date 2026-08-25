@@ -758,7 +758,7 @@ class TreeListCtrl(
     #     # # Force immediate repaint to reduce visible flicker after rebuild
     #     # self.GetMainWindow().Refresh(eraseBackground=False)
 
-    def RefreshAllItems(self):
+    def RefreshAllItems(self, count=0):
         """
         Reconstruit complètement l'arbre affiché dans le TreeListCtrl à partir de l'adaptateur.
 

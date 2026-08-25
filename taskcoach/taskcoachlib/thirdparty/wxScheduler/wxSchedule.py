@@ -40,6 +40,7 @@ class wxSchedule(object):
 
     Pour plus de détails, voir l’implémentation de chaque méthode.
     """
+
     SCHEDULE_DEFAULT_COLOR = wx.Colour(247, 212, 57)
     SCHEDULE_DEFAULT_FOREGROUND = wx.BLACK
 
@@ -65,7 +66,9 @@ class wxSchedule(object):
         # La chaîne d’héritage passe des arguments positionnels (parent, id, ...) tout du long.
         # Si une classe dans la chaîne ne les accepte pas, tu as "takes 1 positional argument but 3 were given".
 
-        log.debug(f"wxSchedule.__init__ : self={self.__class__.__name__} avant super args={args}, kwargs={kwargs}")
+        log.debug(
+            f"wxSchedule.__init__ : self={self.__class__.__name__} avant super args={args}, kwargs={kwargs}"
+        )
         # super(wxSchedule, self).__init__()
         # super().__init__()
         super().__init__(*args, **kwargs)
@@ -95,7 +98,7 @@ class wxSchedule(object):
 
     def __getattr__(self, name):
         # Gestion des attributs Phoenix si présent
-        self.passed += 1  # gestion de boucle infinie sur hasttr
+        self.passed += 1  # gestion de boucle infinie sur hasattr
         # if hasattr(self, "_getAttrDict"):
         if 0 < self.passed < 2 and hasattr(self, "_getAttrDict"):
             d = self._getAttrDict()

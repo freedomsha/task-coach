@@ -569,7 +569,9 @@ class BaseTaskTreeViewer(BaseTaskViewer):
                 )
                 self.minuteRefresher = refreshertk.MinuteRefresher(self)
             except Exception as e:
-                log.warning(f"BaseTaskTreeViewer.__init__ : Impossible d'initialiser les rafraîchisseurs: {e}!")
+                log.warning(
+                    f"BaseTaskTreeViewer.__init__ : Impossible d'initialiser les rafraîchisseurs: {e}!"
+                )
                 self.secondRefresher = self.minuteRefresher = None
         else:
             self.secondRefresher = self.minuteRefresher = None
@@ -583,17 +585,21 @@ class BaseTaskTreeViewer(BaseTaskViewer):
         if hasattr(self, "secondRefresher") and self.secondRefresher:
             try:
                 self.secondRefresher.stopClock()
-                if hasattr(self.secondRefresher, 'removeInstance'):
+                if hasattr(self.secondRefresher, "removeInstance"):
                     self.secondRefresher.removeInstance()
                 del self.secondRefresher
             except Exception as e:
-                log.warning(f"BaseTaskTreeViewer.detach : Erreur lors de l'arrêt du secondRefresher: {e}")
+                log.warning(
+                    f"BaseTaskTreeViewer.detach : Erreur lors de l'arrêt du secondRefresher: {e}"
+                )
         if hasattr(self, "minuteRefresher") and self.minuteRefresher:
             try:
                 self.minuteRefresher.stopClock()
                 del self.minuteRefresher
             except Exception as e:
-                log.warning(f"BaseTaskTreeViewer.detach : Erreur lors de l'arrêt du minuteRefresher: {e}")
+                log.warning(
+                    f"BaseTaskTreeViewer.detach : Erreur lors de l'arrêt du minuteRefresher: {e}"
+                )
 
     def newItemDialog(self, *args, **kwargs):
         """
@@ -603,12 +609,13 @@ class BaseTaskTreeViewer(BaseTaskViewer):
         return super().newItemDialog(*args, **kwargs)
 
     def editItemDialog(
-            self, items, bitmap, columnName="", items_are_new=False
+        self, items, bitmap, columnName="", items_are_new=False
     ):
         """
         Ouvre une boîte de dialogue pour éditer les tâches sélectionnées.
         """
         from taskcoachlib.guitk.dialog.editor import EffortEditor
+
         if isinstance(items[0], task.Task):
             return super().editItemDialog(
                 items,
@@ -639,10 +646,12 @@ class BaseTaskTreeViewer(BaseTaskViewer):
                     items_are_new=items_are_new,
                 )
             except (AttributeError, ImportError) as e:
-                log.warning(f"BaseTaskTreeViewer.editItemDialog : EffortEditor non disponible: {e}")
+                log.warning(
+                    f"BaseTaskTreeViewer.editItemDialog : EffortEditor non disponible: {e}"
+                )
                 messagebox.showwarning(
                     _("Non disponible"),
-                    _("L'éditeur d'effort n'est pas encore disponible.")
+                    _("L'éditeur d'effort n'est pas encore disponible."),
                 )
                 return None
             # pass
@@ -650,11 +659,14 @@ class BaseTaskTreeViewer(BaseTaskViewer):
     def itemEditorClass(self):
         """Retourne la classe d'éditeur pour les tâches."""
         from taskcoachlib.guitk.dialog.editor import TaskEditor
+
         try:
             # return dialog.editor.TaskEditor
             return TaskEditor
         except AttributeError:
-            log.warning("BaseTaskTreeViewer.itemEditorClass : TaskEditor non disponible")
+            log.warning(
+                "BaseTaskTreeViewer.itemEditorClass : TaskEditor non disponible"
+            )
             return None
 
     def newItemCommandClass(self):
@@ -669,13 +681,19 @@ class BaseTaskTreeViewer(BaseTaskViewer):
         """Crée une commande pour créer une sous-tâche avec les paramètres appropriés."""
         kwargs = dict()
         if self.__shouldPresetPlannedStartDateTime():
-            kwargs["plannedStartDateTime"] = task.Task.suggestedPlannedStartDateTime()
+            kwargs["plannedStartDateTime"] = (
+                task.Task.suggestedPlannedStartDateTime()
+            )
         if self.__shouldPresetDueDateTime():
             kwargs["dueDateTime"] = task.Task.suggestedDueDateTime()
         if self.__shouldPresetActualStartDateTime():
-            kwargs["actualStartDateTime"] = task.Task.suggestedActualStartDateTime()
+            kwargs["actualStartDateTime"] = (
+                task.Task.suggestedActualStartDateTime()
+            )
         if self.__shouldPresetCompletionDateTime():
-            kwargs["completionDateTime"] = task.Task.suggestedCompletionDateTime()
+            kwargs["completionDateTime"] = (
+                task.Task.suggestedCompletionDateTime()
+            )
         if self.__shouldPresetReminderDateTime():
             kwargs["reminder"] = task.Task.suggestedReminderDateTime()
 
@@ -691,19 +709,21 @@ class BaseTaskTreeViewer(BaseTaskViewer):
 
     def __shouldPresetDueDateTime(self):
         """Vérifie si la date d'échéance doit être pré-remplie."""
-        return self.settings.get("view", "defaultduedatetime").startswith("preset")
+        return self.settings.get("view", "defaultduedatetime").startswith(
+            "preset"
+        )
 
     def __shouldPresetActualStartDateTime(self):
         """Vérifie si la date de début réelle doit être pré-remplie."""
-        return self.settings.get("view", "defaultactualstartdatetime").startswith(
-            "preset"
-        )
+        return self.settings.get(
+            "view", "defaultactualstartdatetime"
+        ).startswith("preset")
 
     def __shouldPresetCompletionDateTime(self):
         """Vérifie si la date d'achèvement doit être pré-remplie."""
-        return self.settings.get("view", "defaultcompletiondatetime").startswith(
-            "preset"
-        )
+        return self.settings.get(
+            "view", "defaultcompletiondatetime"
+        ).startswith("preset")
 
     def __shouldPresetReminderDateTime(self):
         """Vérifie si la date de rappel doit être pré-remplie."""
@@ -723,7 +743,9 @@ class BaseTaskTreeViewer(BaseTaskViewer):
         """
         Crée et retourne le TaskPopupMenu/menu contextuel pour les tâches.
         """
-        log.debug(f"BaseTaskTreeViewer.createTaskPopupMenu : Création du menu contextuel avec self={self}, self.parent={self.parent}.")
+        log.debug(
+            f"BaseTaskTreeViewer.createTaskPopupMenu : Création du menu contextuel avec self={self}, self.parent={self.parent}."
+        )
         # from taskcoachlib.gui.menu import TaskPopupMenu
         # 'self' est le visualiseur (un widget tk.Frame ou similaire)
         # winfo_toplevel() retourne la véritable instance tk.Tk ou tk.Toplevel
@@ -736,18 +758,28 @@ class BaseTaskTreeViewer(BaseTaskViewer):
         # et de la passer explicitement.
         try:
             # Tentative d'utilisation de self.parent comme fenêtre principale
-            parent_window = self.parent  # À vérifier si self.parent est bien la fenêtre principale
-            if not isinstance(parent_window, (tk.Tk, tk.Toplevel, tkinterdnd2.TkinterDnD.Tk)):
+            parent_window = (
+                self.parent
+            )  # À vérifier si self.parent est bien la fenêtre principale
+            if not isinstance(
+                parent_window, (tk.Tk, tk.Toplevel, tkinterdnd2.TkinterDnD.Tk)
+            ):
                 # Si self.parent n'est pas la fenêtre principale, utilisez winfo_toplevel comme fallback
                 if isinstance(parent_window, mainwindowtk.MainWindow):
                     parent_window = parent_window.parent
                 else:
-                    log.warning(f"self.parent={self.parent} n'est pas une fenêtre Tk valide, utilisation de winfo_toplevel() comme fallback.")
+                    log.warning(
+                        f"self.parent={self.parent} n'est pas une fenêtre Tk valide, utilisation de winfo_toplevel() comme fallback."
+                    )
                     parent_window = self.winfo_toplevel()
                 if not parent_window:
-                    log.error("winfo_toplevel() a également échoué à récupérer la fenêtre principale.")
+                    log.error(
+                        "winfo_toplevel() a également échoué à récupérer la fenêtre principale."
+                    )
                     return None  # Impossible de créer le menu contextuel sans fenêtre parente
-            log.debug(f"BaseTaskTreeViewer.createTaskPopupMenu : Création du menu contextuel avec self={self} de type {type(self)}, self.parent={self.parent} de type {type(self.parent)} , parent_window={parent_window} de type {type(parent_window)}.")
+            log.debug(
+                f"BaseTaskTreeViewer.createTaskPopupMenu : Création du menu contextuel avec self={self} de type {type(self)}, self.parent={self.parent} de type {type(self.parent)} , parent_window={parent_window} de type {type(parent_window)}."
+            )
             # try:
             task_popup_menu = menutk.TaskPopupMenu(
                 parent=self,  # self.parent ? # Le parent direct pour le menu (souvent le visualiseur lui-même)
@@ -760,12 +792,16 @@ class BaseTaskTreeViewer(BaseTaskViewer):
                 efforts=self.taskFile.efforts(),
                 categories=self.taskFile.categories(),
                 taskViewer=self,  # self.taskFile.tags(),
-                parent_window=parent_window  # <-- Vérifiez bien que ce nom correspond à l'init de TaskPopupMenu
+                parent_window=parent_window,  # <-- Vérifiez bien que ce nom correspond à l'init de TaskPopupMenu
             )
-            log.debug(f"BaseTaskTreeViewer.createTaskPopupMenu : création de l'instance TaskPopupMenu réussie !")
+            log.debug(
+                f"BaseTaskTreeViewer.createTaskPopupMenu : création de l'instance TaskPopupMenu réussie !"
+            )
             return task_popup_menu
         except Exception as e:
-            log.error(f"BaseTaskTreeViewer.createTaskPopupMenu : Erreur lors de la création du menu contextuel: {e}")
+            log.error(
+                f"BaseTaskTreeViewer.createTaskPopupMenu : Erreur lors de la création du menu contextuel: {e}"
+            )
             return None
 
     def createCreationToolBarUICommands(self):
@@ -773,10 +809,14 @@ class BaseTaskTreeViewer(BaseTaskViewer):
         Crée des commandes UI pour la barre d'outil.
         """
         return (
-            uicommand.TaskNew(taskList=self.presentation(), settings=self.settings),
+            uicommand.TaskNew(
+                taskList=self.presentation(), settings=self.settings
+            ),
             uicommand.NewSubItem(viewer=self),
             uicommand.TaskNewFromTemplateButton(
-                taskList=self.presentation(), settings=self.settings, bitmap="newtmpl"
+                taskList=self.presentation(),
+                settings=self.settings,
+                bitmap="newtmpl",
             ),
         ) + super().createCreationToolBarUICommands()
 
@@ -825,9 +865,14 @@ class BaseTaskTreeViewer(BaseTaskViewer):
 
     def getItemTooltipData(self, task_item):
         """Récupère les données pour l'info-bulle d'un élément."""
-        log.debug(f"BaseTaskTreeViewer.getItemTooltipData : task={self.getItemText(task_item)}")
+        log.debug(
+            f"BaseTaskTreeViewer.getItemTooltipData : task={self.getItemText(task_item)}"
+        )
         result = [
-            (self.iconName(task_item, task_item in self.curselection()), [self.getItemText(task_item)])
+            (
+                self.iconName(task_item, task_item in self.curselection()),
+                [self.getItemText(task_item)],
+            )
         ]
         if task_item.notes():
             result.append(
@@ -841,7 +886,10 @@ class BaseTaskTreeViewer(BaseTaskViewer):
                 (
                     "paperclip_icon",
                     sorted(
-                        [str(attachment) for attachment in task_item.attachments()]
+                        [
+                            str(attachment)
+                            for attachment in task_item.attachments()
+                        ]
                     ),
                 )
             )
@@ -856,6 +904,7 @@ class RootNode(object):
     """
     Classe de base pour représenter la racine d'une arborescence de tâches.
     """
+
     def __init__(self, tasks):
         log.debug(f"RootNode : Initialise la racine avec les tâches {tasks}.")
         self.tasks = tasks
@@ -907,10 +956,12 @@ class SquareMapRootNode(RootNode):
     """
     Classe représentant la racine d'une carte carrée des tâches.
     """
+
     def __getattr__(self, attr):
         """
         Retourne un attribut calculé récursivement.
         """
+
         def getTaskAttribute(recursive=True):
             if recursive:
                 s = 0
@@ -930,7 +981,9 @@ class SquareMapRootNode(RootNode):
                 return self.__zero
 
         self.__zero = (
-            date.TimeDelta() if attr in ("budget", "budgetLeft", "timeSpent") else 0
+            date.TimeDelta()
+            if attr in ("budget", "budgetLeft", "timeSpent")
+            else 0
         )
         return getTaskAttribute
 
@@ -939,6 +992,7 @@ class TimelineRootNode(RootNode):
     """
     Classe représentant la racine de l'arborescence dans une vue chronologique des tâches.
     """
+
     # def children(self, recursive=False):
     def get_tree_children(self, recursive=False):
         # children = super().children(recursive)
@@ -969,7 +1023,8 @@ class TimelineRootNode(RootNode):
 
     def dueDateTime(self, recursive=False):
         dueDateTimes = [
-            item.dueDateTime(recursive=True) for item in self.parallel_children()
+            item.dueDateTime(recursive=True)
+            for item in self.parallel_children()
         ]
         dueDateTimes = [dt for dt in dueDateTimes if dt != date.DateTime()]
         if not dueDateTimes:
@@ -995,10 +1050,10 @@ class TimelineViewer(BaseTaskTreeViewer):
         super().__init__(parent, task_file, settings, **kwargs)
         self._widget_parent = parent
         for eventType in (
-                task.Task.subjectChangedEventType(),
-                task.Task.plannedStartDateTimeChangedEventType(),
-                task.Task.dueDateTimeChangedEventType(),
-                task.Task.completionDateTimeChangedEventType(),
+            task.Task.subjectChangedEventType(),
+            task.Task.plannedStartDateTimeChangedEventType(),
+            task.Task.dueDateTimeChangedEventType(),
+            task.Task.completionDateTimeChangedEventType(),
         ):
             if eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
@@ -1052,7 +1107,9 @@ class TimelineViewer(BaseTaskTreeViewer):
 
     def bounds(self, item):
         times = [self.start(item), self.stop(item)]
-        for child in self.parallel_children(item) + self.sequential_children(item):
+        for child in self.parallel_children(item) + self.sequential_children(
+            item
+        ):
             times.extend(self.bounds(child))
         times = [time for time in times if time is not None]
         return (min(times), max(times)) if times else []
@@ -1185,6 +1242,7 @@ class SquareTaskViewer(BaseTaskTreeViewer):
     """
     Visualiseur des tâches sous forme de carte carrée.
     """
+
     defaultTitle = _("Task square map")
     defaultBitmap = "squaremapviewer"
 
@@ -1207,14 +1265,14 @@ class SquareTaskViewer(BaseTaskTreeViewer):
         pub.subscribe(
             self.on_order_by_changed,
             "settings.%s.sortby" % self.settingsSection(),
-            )
+        )
         self.orderUICommand.setChoice(self.__orderBy)
 
         for eventType in (
-                task.Task.subjectChangedEventType(),
-                task.Task.dueDateTimeChangedEventType(),
-                task.Task.plannedStartDateTimeChangedEventType(),
-                task.Task.completionDateTimeChangedEventType(),
+            task.Task.subjectChangedEventType(),
+            task.Task.dueDateTimeChangedEventType(),
+            task.Task.plannedStartDateTimeChangedEventType(),
+            task.Task.completionDateTimeChangedEventType(),
         ):
             if eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
@@ -1271,7 +1329,9 @@ class SquareTaskViewer(BaseTaskTreeViewer):
         oldChoice = self.__orderBy
         self.__orderBy = choice
         try:
-            oldEventType = getattr(task.Task, "%sChangedEventType" % oldChoice)()
+            oldEventType = getattr(
+                task.Task, "%sChangedEventType" % oldChoice
+            )()
         except AttributeError:
             oldEventType = "task.%s" % oldChoice
         if oldEventType.startswith("pubsub"):
@@ -1280,7 +1340,9 @@ class SquareTaskViewer(BaseTaskTreeViewer):
             except pub.TopicNameError:
                 pass  # Can happen on first call to orderBy
         else:
-            self.removeObserver(self.onAttributeChanged_Deprecated, oldEventType)
+            self.removeObserver(
+                self.onAttributeChanged_Deprecated, oldEventType
+            )
         try:
             newEventType = getattr(task.Task, "%sChangedEventType" % choice)()
         except AttributeError:
@@ -1288,9 +1350,13 @@ class SquareTaskViewer(BaseTaskTreeViewer):
         if newEventType.startswith("pubsub"):
             pub.subscribe(self.onAttributeChanged, newEventType)
         else:
-            self.registerObserver(self.onAttributeChanged_Deprecated, newEventType)
+            self.registerObserver(
+                self.onAttributeChanged_Deprecated, newEventType
+            )
         if choice in ("budget", "timeSpent"):
-            self.__transformTaskAttribute = lambda timeSpent: timeSpent.milliseconds() // 1000
+            self.__transformTaskAttribute = (
+                lambda timeSpent: timeSpent.milliseconds() // 1000
+            )
             self.__zero = date.TimeDelta()
         else:
             self.__transformTaskAttribute = lambda x: x
@@ -1307,7 +1373,8 @@ class SquareTaskViewer(BaseTaskTreeViewer):
             [
                 eachTask
                 for eachTask in self.presentation()
-                if getattr(eachTask, self.__orderBy)(recursive=True) > self.__zero
+                if getattr(eachTask, self.__orderBy)(recursive=True)
+                > self.__zero
             ]
         )
 
@@ -1335,7 +1402,9 @@ class SquareTaskViewer(BaseTaskTreeViewer):
         overall = self.overall(task_)
         if overall:
             # children_sum = self.children_sum(self.children(task_), task_)
-            children_sum = self.children_sum(self.get_tree_children(task_), task_)
+            children_sum = self.children_sum(
+                self.get_tree_children(task_), task_
+            )
             return max(
                 self.__transformTaskAttribute(self.__zero),
                 (overall - children_sum),
@@ -1428,6 +1497,7 @@ class HierarchicalCalendarViewer(
         atMidnight (self) :
             Rafraîchit le calendrier à minuit pour mettre à jour les dates.
     """
+
     defaultTitle = _("Hierarchical calendar")
     defaultBitmap = "calendar_icon"
 
@@ -1440,22 +1510,24 @@ class HierarchicalCalendarViewer(
 
         # Enregistrement des observateurs pour les changements d'attributs
         for eventType in (
-                task.Task.subjectChangedEventType(),
-                task.Task.attachmentsChangedEventType(),
-                task.Task.notesChangedEventType(),
-                task.Task.trackingChangedEventType(),
-                task.Task.percentageCompleteChangedEventType(),
+            task.Task.subjectChangedEventType(),
+            task.Task.attachmentsChangedEventType(),
+            task.Task.notesChangedEventType(),
+            task.Task.trackingChangedEventType(),
+            task.Task.percentageCompleteChangedEventType(),
         ):
             if eventType is not None and eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
             else:
-                self.registerObserver(self.onAttributeChanged_Deprecated, eventType)
+                self.registerObserver(
+                    self.onAttributeChanged_Deprecated, eventType
+                )
 
         # Les dates sont traitées séparément car la mise en page peut changer
         for eventType in (
-                task.Task.plannedStartDateTimeChangedEventType(),
-                task.Task.dueDateTimeChangedEventType(),
-                task.Task.completionDateTimeChangedEventType(),
+            task.Task.plannedStartDateTimeChangedEventType(),
+            task.Task.dueDateTimeChangedEventType(),
+            task.Task.completionDateTimeChangedEventType(),
         ):
             if eventType.startswith("pubsub"):
                 pub.subscribe(self.onLayoutAttributeChanged, eventType)
@@ -1471,42 +1543,46 @@ class HierarchicalCalendarViewer(
         try:
             date.Scheduler().schedule_interval(self.atMidnight, days=1)
         except Exception as e:
-            log.warning(f"Impossible de planifier le rafraîchissement à minuit: {e}")
+            log.warning(
+                f"Impossible de planifier le rafraîchissement à minuit: {e}"
+            )
 
         log.debug("HierarchicalCalendarViewer : Initialisé")
 
     def reconfig(self):
         """Reconfigure le calendrier avec les paramètres actuels."""
         try:
-            if hasattr(self, 'widget') and self.widget:
+            if hasattr(self, "widget") and self.widget:
                 # Configuration du format du calendrier
                 calendar_format = self.settings.getint(
                     self.settingsSection(), "calendarformat"
                 )
-                if hasattr(self.widget, 'SetCalendarFormat'):
+                if hasattr(self.widget, "SetCalendarFormat"):
                     self.widget.SetCalendarFormat(calendar_format)
 
                 # Configuration du format de l'en-tête
                 header_format = self.settings.getint(
                     self.settingsSection(), "headerformat"
                 )
-                if hasattr(self.widget, 'SetHeaderFormat'):
+                if hasattr(self.widget, "SetHeaderFormat"):
                     self.widget.SetHeaderFormat(header_format)
 
                 # Configuration de l'affichage de "maintenant"
                 draw_now = self.settings.getboolean(
                     self.settingsSection(), "drawnow"
                 )
-                if hasattr(self.widget, 'SetDrawNow'):
+                if hasattr(self.widget, "SetDrawNow"):
                     self.widget.SetDrawNow(draw_now)
 
                 # Configuration de la couleur du jour actuel
                 today_color_str = self.settings.get(
                     self.settingsSection(), "todaycolor"
                 )
-                if today_color_str and hasattr(self.widget, 'SetTodayColor'):
+                if today_color_str and hasattr(self.widget, "SetTodayColor"):
                     try:
-                        today_color = list(map(int, today_color_str.split(",")))
+                        today_color = list(
+                            map(int, today_color_str.split(","))
+                        )
                         self.widget.SetTodayColor(today_color)
                     except (ValueError, AttributeError) as e:
                         log.warning(f"Couleur du jour invalide: {e}")
@@ -1519,7 +1595,9 @@ class HierarchicalCalendarViewer(
             if HierarchicalCalendarConfigDialog is None:
                 messagebox.showwarning(
                     _("Non disponible"),
-                    _("Le dialogue de configuration n'est pas encore disponible.")
+                    _(
+                        "Le dialogue de configuration n'est pas encore disponible."
+                    ),
                 )
                 return
 
@@ -1531,24 +1609,26 @@ class HierarchicalCalendarViewer(
             )
 
             # Centrer sur le parent (Tkinter)
-            if hasattr(dialog_window, 'transient'):
+            if hasattr(dialog_window, "transient"):
                 dialog_window.transient(self.winfo_toplevel())
 
             # Afficher le dialogue de manière modale
-            if hasattr(dialog_window, 'wait_window'):
+            if hasattr(dialog_window, "wait_window"):
                 dialog_window.wait_window()
                 # Vérifier si OK a été cliqué (à implémenter dans le dialogue)
-                if hasattr(dialog_window, 'result') and dialog_window.result:
+                if hasattr(dialog_window, "result") and dialog_window.result:
                     self.reconfig()
             else:
                 # Fallback si pas de dialogue modal
                 self.reconfig()
 
         except Exception as e:
-            log.error(f"Erreur lors de l'ouverture du dialogue de configuration: {e}")
+            log.error(
+                f"Erreur lors de l'ouverture du dialogue de configuration: {e}"
+            )
             messagebox.showerror(
                 _("Erreur"),
-                f"Impossible d'ouvrir le dialogue de configuration:\n{e}"
+                f"Impossible d'ouvrir le dialogue de configuration:\n{e}",
             )
 
     def createModeToolBarUICommands(self):
@@ -1567,15 +1647,17 @@ class HierarchicalCalendarViewer(
         try:
             date.Scheduler().unschedule(self.atMidnight)
         except Exception as e:
-            log.warning(f"Erreur lors de l'annulation du rafraîchissement: {e}")
+            log.warning(
+                f"Erreur lors de l'annulation du rafraîchissement: {e}"
+            )
 
     def atMidnight(self):
         """Rafraîchit le calendrier à minuit pour mettre à jour les dates."""
         try:
-            if hasattr(self, 'widget') and self.widget:
-                if hasattr(self.widget, 'CalendarFormat'):
+            if hasattr(self, "widget") and self.widget:
+                if hasattr(self.widget, "CalendarFormat"):
                     current_format = self.widget.CalendarFormat()
-                    if hasattr(self.widget, 'SetCalendarFormat'):
+                    if hasattr(self.widget, "SetCalendarFormat"):
                         self.widget.SetCalendarFormat(current_format)
         except Exception as e:
             log.warning(f"Erreur lors du rafraîchissement à minuit: {e}")
@@ -1601,7 +1683,9 @@ class HierarchicalCalendarViewer(
         """Crée le widget du calendrier hiérarchique.
 
         widget à packer !"""
-        log.debug("HierarchicalCalendarViewer.createWidget : Création du widget.")
+        log.debug(
+            "HierarchicalCalendarViewer.createWidget : Création du widget."
+        )
 
         # Création du menu contextuel
         itemPopupMenu = self.createTaskPopupMenu()
@@ -1620,10 +1704,12 @@ class HierarchicalCalendarViewer(
                 self.onEdit,
                 self.onCreate,
                 itemPopupMenu,
-                **self.widgetCreationKeywordArguments()
+                **self.widgetCreationKeywordArguments(),
             )
 
-            log.debug("HierarchicalCalendarViewer.createWidget : Widget créé avec succès")
+            log.debug(
+                "HierarchicalCalendarViewer.createWidget : Widget créé avec succès"
+            )
             return widget
 
         except (ImportError, AttributeError) as e:
@@ -1637,9 +1723,7 @@ class HierarchicalCalendarViewer(
                 from tkcalendar import Calendar
 
                 calendar = Calendar(
-                    widget,
-                    selectmode='day',
-                    date_pattern='yyyy-mm-dd'
+                    widget, selectmode="day", date_pattern="yyyy-mm-dd"
                 )
                 calendar.pack(fill="both", expand=True)
 
@@ -1647,7 +1731,7 @@ class HierarchicalCalendarViewer(
                 info_label = ttk.Label(
                     widget,
                     text=_("Calendrier hiérarchique (version simplifiée)"),
-                    foreground="gray"
+                    foreground="gray",
                 )
                 info_label.pack(pady=5)
 
@@ -1661,9 +1745,11 @@ class HierarchicalCalendarViewer(
                 # Si tkcalendar n'est pas disponible, afficher un message
                 label = ttk.Label(
                     widget,
-                    text=_("Le widget de calendrier hiérarchique n'est pas disponible.\n"
-                           "Installez le module 'tkcalendar' pour une fonctionnalité basique."),
-                    justify=tk.CENTER
+                    text=_(
+                        "Le widget de calendrier hiérarchique n'est pas disponible.\n"
+                        "Installez le module 'tkcalendar' pour une fonctionnalité basique."
+                    ),
+                    justify=tk.CENTER,
                 )
                 label.pack(expand=True, pady=20)
 
@@ -1672,7 +1758,7 @@ class HierarchicalCalendarViewer(
     def _on_date_selected(self, event):
         """Gère la sélection d'une date dans le calendrier de substitution."""
         try:
-            if hasattr(self.widget, '_calendar'):
+            if hasattr(self.widget, "_calendar"):
                 selected_date = self.widget._calendar.get_date()
                 log.debug(f"Date sélectionnée: {selected_date}")
                 # Ici, on pourrait afficher les tâches pour cette date
@@ -1687,8 +1773,7 @@ class HierarchicalCalendarViewer(
         except Exception as e:
             log.error(f"Erreur lors de l'édition de la tâche: {e}")
             messagebox.showerror(
-                _("Erreur"),
-                f"Impossible d'éditer la tâche:\n{e}"
+                _("Erreur"), f"Impossible d'éditer la tâche:\n{e}"
             )
 
     def onCreate(self, dateTime, show=True):
@@ -1718,7 +1803,7 @@ class HierarchicalCalendarViewer(
                 settings=self.settings,
                 taskKeywords=dict(
                     plannedStartDateTime=plannedStartDateTime,
-                    dueDateTime=dueDateTime
+                    dueDateTime=dueDateTime,
                 ),
             )
 
@@ -1728,8 +1813,7 @@ class HierarchicalCalendarViewer(
         except Exception as e:
             log.error(f"Erreur lors de la création de la tâche: {e}")
             messagebox.showerror(
-                _("Erreur"),
-                f"Impossible de créer la tâche:\n{e}"
+                _("Erreur"), f"Impossible de créer la tâche:\n{e}"
             )
             return None
 
@@ -1752,10 +1836,12 @@ class HierarchicalCalendarViewer(
             Objet imprimable ou None si non disponible
         """
         try:
-            if hasattr(self.widget, 'GetPrintout'):
+            if hasattr(self.widget, "GetPrintout"):
                 return self.widget.GetPrintout(settings)
             else:
-                log.warning("La fonction d'impression n'est pas disponible pour ce widget")
+                log.warning(
+                    "La fonction d'impression n'est pas disponible pour ce widget"
+                )
                 return None
         except Exception as e:
             log.error(f"Erreur lors de la génération de l'impression: {e}")
@@ -1770,6 +1856,7 @@ class HierarchicalCalendarViewer(
 # CalendarConfigDialog : Cette classe n'a pas été convertie, il faut donc l'adapter en Tkinter.
 # Méthodes SetViewType, SetPeriodCount, SetStyle, SetShowNoStartDate, etc. :  Ces méthodes agissent sur le widget calendrier. Il faut trouver les équivalents dans Tkinter, ou les implémenter si on crée un calendrier personnalisé.
 # Freeze et Thaw : Ces méthodes sont utilisées pour optimiser les mises à jour de l'interface. Avec Tkinter, on peut utiliser widget.update_idletasks() pour forcer la mise à jour de l'écran.
+
 
 class CalendarViewer(
     mixintk.AttachmentDropTargetMixin,
@@ -1788,6 +1875,7 @@ class CalendarViewer(
     du nombre de périodes, du style, de l'orientation, etc. L'utilisateur peut aussi
     configurer les couleurs, l'affichage du "maintenant", et d'autres filtres.
     """
+
     defaultTitle = _("Calendar")
     defaultBitmap = "calendar_icon"
 
@@ -1819,20 +1907,21 @@ class CalendarViewer(
 
         for eventType in ("start", "end"):
             pub.subscribe(
-                self.onWorkingHourChanged, "settings.view.efforthour%s" % eventType
+                self.onWorkingHourChanged,
+                "settings.view.efforthour%s" % eventType,
             )
         pub.subscribe(self.onWeekStartChanged, "settings.view.weekstartmonday")
 
         # pylint: disable=E1101
         for eventType in (
-                task.Task.subjectChangedEventType(),
-                task.Task.plannedStartDateTimeChangedEventType(),
-                task.Task.dueDateTimeChangedEventType(),
-                task.Task.completionDateTimeChangedEventType(),
-                task.Task.attachmentsChangedEventType(),
-                task.Task.notesChangedEventType(),
-                task.Task.trackingChangedEventType(),
-                task.Task.percentageCompleteChangedEventType(),
+            task.Task.subjectChangedEventType(),
+            task.Task.plannedStartDateTimeChangedEventType(),
+            task.Task.dueDateTimeChangedEventType(),
+            task.Task.completionDateTimeChangedEventType(),
+            task.Task.attachmentsChangedEventType(),
+            task.Task.notesChangedEventType(),
+            task.Task.trackingChangedEventType(),
+            task.Task.percentageCompleteChangedEventType(),
         ):
             # Si tu veux savoir D’OÙ vient ce eventType None pour corriger à la source,
             # donne le code où eventType est défini ou passé à ce constructeur,
@@ -1840,7 +1929,9 @@ class CalendarViewer(
             if isinstance(eventType, str) and eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
             else:
-                self.registerObserver(self.onAttributeChanged_Deprecated, eventType)
+                self.registerObserver(
+                    self.onAttributeChanged_Deprecated, eventType
+                )
                 # date.Scheduler().schedule_interval(self.atMidnight, days=1) #  A adapter avec tkinter et non date
 
     def detach(self):
@@ -1906,24 +1997,28 @@ class CalendarViewer(
 
         TODO utiliser pack !?  c'est fait dans factorytk !
         """
-        log.info("CalendarViewer.createWidget : Crée le widget principal avec son menu contextuel.")
+        log.info(
+            "CalendarViewer.createWidget : Crée le widget principal avec son menu contextuel."
+        )
         itemPopupMenu = self.createTaskPopupMenu()
         self._popupMenus.append(itemPopupMenu)
 
         # TODO: Implémenter un calendrier avec Tkinter (ttkcalendar ?)
         # Pour l'instant, on utilise un simple Label pour placeholder
         # self.calendar_widget = tk.Label(self, text="Calendrier Tkinter à implémenter")
-        widget = widgetstk.calendarwidgettk.Calendar(  # Est-il bien configuré ?
-            self,
-            parent,  # ou self.parent ?
-            self.presentation(),
-            self.iconName,
-            self.onSelect,
-            self.onEdit,
-            self.onCreate,
-            self.onChangeConfig,
-            itemPopupMenu,
-            **self.widgetCreationKeywordArguments()
+        widget = (
+            widgetstk.calendarwidgettk.Calendar(  # Est-il bien configuré ?
+                self,
+                parent,  # ou self.parent ?
+                self.presentation(),
+                self.iconName,
+                self.onSelect,
+                self.onEdit,
+                self.onCreate,
+                self.onChangeConfig,
+                itemPopupMenu,
+                **self.widgetCreationKeywordArguments(),
+            )
         )
 
         # widget.SetDrawHeaders(True)  # <- Active l'affichage des numéros de jour # A voir comment faire
@@ -2010,6 +2105,7 @@ class CalendarViewer(
         pass
 
         # We need to override these because BaseTaskTreeViewer is a tree viewer, but
+
     # CalendarViewer is not. There is probably a better solution...
 
     def isAnyItemExpandable(self):
@@ -2069,9 +2165,9 @@ class CalendarViewer(
 
     def configure(self):
         """
-         Affiche la boîte de dialogue de configuration de la vue calendrier.
-         Applique les changements si l'utilisateur clique sur OK.
-         """
+        Affiche la boîte de dialogue de configuration de la vue calendrier.
+        Applique les changements si l'utilisateur clique sur OK.
+        """
         dialog_ = CalendarConfigDialog(  # A adapter : CalendarConfigDialog n'a pas été converti
             self.settings,
             self.settingsSection(),
@@ -2097,6 +2193,7 @@ class CalendarViewer(
 # ============================================================================
 # Visualiseur principal des tâches
 # ============================================================================
+
 
 # class Taskviewer(ttk.Frame):
 # class Taskviewer(Viewer):  # Inherit from Viewer
@@ -2124,6 +2221,7 @@ class Taskviewer(
     pièces jointes, des notes, et d'effectuer du glisser-déposer pour réorganiser
     les tâches.
     """
+
     defaultTitle = _("Tasks")
     defaultBitmap = "led_blue_icon"
 
@@ -2140,7 +2238,9 @@ class Taskviewer(
             **kwargs: Arguments supplémentaires
         """
         # log.debug(f"Taskviewer.__init__ : La vue principale des tâches.")
-        log.debug("Taskviewer.__init__ : Initialisation du visualiseur de tâches.")
+        log.debug(
+            "Taskviewer.__init__ : Initialisation du visualiseur de tâches."
+        )
 
         # Initialisation des attributs métier
         self.__task_file = task_file
@@ -2148,12 +2248,16 @@ class Taskviewer(
         self.parent = parent
         self.__tasks = []
         self.__visible_columns = []  # ✅ FIX: Attribut manquant
-        self.__tree_items = {}  # Mappe les IDs de tâches aux IDs d'éléments Treeview
+        self.__tree_items = (
+            {}
+        )  # Mappe les IDs de tâches aux IDs d'éléments Treeview
         self.widget = None
 
         # Section de configuration
         kwargs.setdefault("settingsSection", "taskviewer")
-        log.debug(f"Taskviewer.__init__ : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} sans parent_mainwindow.")
+        log.debug(
+            f"Taskviewer.__init__ : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} sans parent_mainwindow."
+        )
 
         # Initialiser la classe parente
         # 🔹 Création réelle du widget via la hiérarchie basetk
@@ -2168,9 +2272,9 @@ class Taskviewer(
         # AttachmentColumnMixin.__init__(self)
         # SortableViewerWithColumns.__init__(self)
         # 🔒 À partir d’ici, self.widget EXISTE
-        assert self.widget is not None, (
-            "Taskviewer.__init__ : self.widget doit être créé après super().__init__"
-        )
+        assert (
+            self.widget is not None
+        ), "Taskviewer.__init__ : self.widget doit être créé après super().__init__"
 
         # # La méthode __init__ appelle désormais explicitement les méthodes __init__
         # # de toutes les classes parentes, y compris les mixins,
@@ -2182,9 +2286,13 @@ class Taskviewer(
         # self.taskFile = task_file
         try:
             tasks = task_file.tasks()
-            log.debug(f"Taskviewer.__init__ DEBUG: Nombre de tâches dans le fichier : {len(tasks)} trouvées au démarrage")
+            log.debug(
+                f"Taskviewer.__init__ DEBUG: Nombre de tâches dans le fichier : {len(tasks)} trouvées au démarrage"
+            )
         except Exception as e:
-            log.error(f"Taskviewer.__init__ ERROR: Impossible de récupérer les tâches du fichier : {e}")
+            log.error(
+                f"Taskviewer.__init__ ERROR: Impossible de récupérer les tâches du fichier : {e}"
+            )
 
         # # self.__viewMode = "tree"   # Défaut
         # # Le mode d'affichage est déterminé par les paramètres
@@ -2207,13 +2315,13 @@ class Taskviewer(
         # self.refresher = refresher.MinuteRefresher(self)
         # Démarrage du rafraîchissement si la colonne temps restant est visible
         if self.isVisibleColumnByName("timeLeft"):
-            if hasattr(self, 'minuteRefresher') and self.minuteRefresher:
+            if hasattr(self, "minuteRefresher") and self.minuteRefresher:
                 self.minuteRefresher.startClock()
 
         # Abonnement aux changements de mode arbre/liste
         pub.subscribe(
             self.onTreeListModeChanged,
-            f"settings.{self.settingsSection()}.treemode"
+            f"settings.{self.settingsSection()}.treemode",
         )
 
         # self.tree.bind("<Delete>", self.onDelete)
@@ -2233,7 +2341,9 @@ class Taskviewer(
         # # self.refresher = refresher.MinuteRefresher(self)
         # self.refresh()
         self._refresh_tasks()
-        log.debug(f"Taskviewer.__init__ : La vue principale des tâches est initialisé !")
+        log.debug(
+            f"Taskviewer.__init__ : La vue principale des tâches est initialisé !"
+        )
 
     # Méthodes à ajouter pour corriger l'erreur de classe abstraite
     # Sauf que bitmap() est dans basetk.Viewer !
@@ -2325,7 +2435,9 @@ class Taskviewer(
         # return self.isTreeMode()
         try:
             # On tente de récupérer le mode depuis la présentation active
-            log.debug(f"Taskviewer.isTreeViewer : essaie de renvoyer {self.presentation().treeMode()}.")
+            log.debug(
+                f"Taskviewer.isTreeViewer : essaie de renvoyer {self.presentation().treeMode()}."
+            )
             return self.presentation().treeMode()
             # return self.presentation.treeMode()  # ?
         except AttributeError as e:
@@ -2333,11 +2445,19 @@ class Taskviewer(
             # lors de l'initialisation dans Viewer.__init__), on se replie sur les paramètres.
             # Note : On évite absolument de logger self.presentation() ici pour ne pas recréer l'erreur.
 
-            log.debug(f"Taskviewer.isTreeViewer : N'a pas trouvé de treeMode dans {self}.presentation.")
-            log.debug("Taskviewer.isTreeViewer : Présentation non prête, lecture depuis les settings.")
+            log.debug(
+                f"Taskviewer.isTreeViewer : N'a pas trouvé de treeMode dans {self}.presentation."
+            )
+            log.debug(
+                "Taskviewer.isTreeViewer : Présentation non prête, lecture depuis les settings."
+            )
             # return self.settings.getboolean(self.settingsSection(), "treemode")
-            self_settings = self.settings.getboolean(self.settingsSection(), "treemode")
-            log.debug(f"Taskviewer.isTreeViewer : retourne self_settings = {self_settings} pour self={self.__class__.__name__}, self.settings={self.settings} et self.settingsSection={self.settingsSection()} contient bien treemode !")
+            self_settings = self.settings.getboolean(
+                self.settingsSection(), "treemode"
+            )
+            log.debug(
+                f"Taskviewer.isTreeViewer : retourne self_settings = {self_settings} pour self={self.__class__.__name__}, self.settings={self.settings} et self.settingsSection={self.settingsSection()} contient bien treemode !"
+            )
             return self_settings
             # treeMode_found = self.settings.getboolean(self.settingsSection(), "treemode")
             # log.debug(f"Taskviewer.isTreeViewer : renvoie treeMode_found {treeMode_found}.")
@@ -2361,10 +2481,10 @@ class Taskviewer(
         """Affiche ou masque une colonne et gère le rafraîchissement."""
         if column.name() == "timeLeft":
             if show:
-                if hasattr(self, 'minuteRefresher') and self.minuteRefresher:
+                if hasattr(self, "minuteRefresher") and self.minuteRefresher:
                     self.minuteRefresher.startClock()
             else:
-                if hasattr(self, 'minuteRefresher') and self.minuteRefresher:
+                if hasattr(self, "minuteRefresher") and self.minuteRefresher:
                     self.minuteRefresher.stopClock()
 
         super().showColumn(column, show, *args, **kwargs)
@@ -2382,7 +2502,9 @@ class Taskviewer(
         pour afficher les tâches.
         Remplace la méthode wxpython `createWidget`.
         """
-        log.debug("Taskviewer.createWidget : crée et affiche le widget Treeview de l'arborescence des tâches.")
+        log.debug(
+            "Taskviewer.createWidget : crée et affiche le widget Treeview de l'arborescence des tâches."
+        )
         # Votre code existant pour créer le Treeview est déjà l'équivalent
         # self.tree = ttk.Treeview(self)
         # self.tree.pack(side="top", fill="both", expand=True)
@@ -2408,7 +2530,9 @@ class Taskviewer(
         # self.tree.column("#0", width=300)
         # Création des menus contextuels
         # log.debug(f"Taskviewer.createWidget : self={self} avec parent={parent} de type {type(parent)} et parent_mainwindow={self.parent_window} de type {type(self.parent_window)}.")
-        log.debug(f"Taskviewer.createWidget : self={self} avec parent={parent} de type {type(parent)} et sans parent_mainwindow.")
+        log.debug(
+            f"Taskviewer.createWidget : self={self} avec parent={parent} de type {type(parent)} et sans parent_mainwindow."
+        )
 
         # ... (votre code existant pour préparer les kwargs) ...
         kwargs = self.widgetCreationKeywordArguments()
@@ -2519,7 +2643,9 @@ class Taskviewer(
             columns=self._columns,
             selectCommand=self.onSelect,
             editCommand=uicommand.Edit(viewer=self),
-            dragAndDropCommand=uicommand.TaskDragAndDrop(taskList=self.presentation(), viewer=self),
+            dragAndDropCommand=uicommand.TaskDragAndDrop(
+                taskList=self.presentation(), viewer=self
+            ),
             # itemPopupMenu=itemPopupMenu,
             # columnPopupMenu=columnPopupMenu,
             # Ces deux lignes ci-dessous sont maintenant gérées correctement par le pop() ajouté dans treectrltk
@@ -2527,7 +2653,7 @@ class Taskviewer(
             validateDrag=self.validateDrag,
             # show="tree headings",  # Afficher l'arborescence et les en-têtes de colonnes
             height=20,  # Hauteur en nombre de lignes visibles
-            **kwargs
+            **kwargs,
         )
 
         # # --- CORRECTION 2 : Assigner le widget à self.tree ---
@@ -2545,7 +2671,9 @@ class Taskviewer(
         # self.__tree["columns"] = [f"#{i+1}" for i in range(len(self._columns))]
         # log.debug(f"Taskviewer.createWidget : Configuration des colonnes : {self.widget["columns"]}.")
         # # AttributeError: 'TreeListCtrl' object has no attribute 'tk'
-        log.debug(f"Taskviewer.createWidget : Configuration des colonnes : {self.widget.cget('columns')}.")
+        log.debug(
+            f"Taskviewer.createWidget : Configuration des colonnes : {self.widget.cget('columns')}."
+        )
 
         # # Configurer les en-têtes et largeurs des colonnes
         # self.__tree.heading("#0", text="Tâche")
@@ -2576,7 +2704,9 @@ class Taskviewer(
         #     self.__tree.column(col_id, width=100)
 
         # Barre de défilement
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.widget.yview)
+        scrollbar = ttk.Scrollbar(
+            self, orient="vertical", command=self.widget.yview
+        )
         self.widget.configure(yscroll=scrollbar.set)
 
         # Placer le Treeview et la barre de défilement
@@ -2585,12 +2715,18 @@ class Taskviewer(
         # scrollbar.pack(side="right", fill="y")
         scrollbar.grid(row=0, column=1, sticky="ns")
 
-        log.debug(f"Taskviewer.createWidget : Configuration des colonnes : {self.widget['columns']}.")
+        log.debug(
+            f"Taskviewer.createWidget : Configuration des colonnes : {self.widget['columns']}."
+        )
         # Configurer la liste d'images
         if self.hasOrderingColumn():
-            log.debug("Taskviewer.createWidget : Configuration de la colonne d'ordre manuel.")
+            log.debug(
+                "Taskviewer.createWidget : Configuration de la colonne d'ordre manuel."
+            )
             # TODO : Configurer la colonne d'ordre manuel si nécessaire
-            self.widget.SetMainColumn(1)  # Hypothétique, à adapter selon l'implémentation
+            self.widget.SetMainColumn(
+                1
+            )  # Hypothétique, à adapter selon l'implémentation
 
         # Lier les événements
         self.widget.bind("<Button-1>", self._on_tree_click)
@@ -2598,7 +2734,9 @@ class Taskviewer(
         # ✅ FIX:  Charger les tâches APRÈS la création du widget
         self._refresh_tasks()
 
-        log.debug("Taskviewer.createWidget : Le widget de l'arborescence des tâches est sensé être affiché !")
+        log.debug(
+            "Taskviewer.createWidget : Le widget de l'arborescence des tâches est sensé être affiché !"
+        )
         log.debug("Taskviewer.createWidget : Widget Taskviewer créé.")
         return self.widget  # Retourner le TreeListCtrl
         # return frame
@@ -2619,11 +2757,7 @@ class Taskviewer(
         self.column_popup_menu = columnPopupMenu
 
         # Enregistrement centralisé
-        self._popupMenus.extend([
-            itemPopupMenu,
-            columnPopupMenu
-        ])
-
+        self._popupMenus.extend([itemPopupMenu, columnPopupMenu])
 
     def _get_task_columns(self) -> List[str]:
         """Retourne la liste des colonnes à afficher pour les tâches.
@@ -2636,8 +2770,12 @@ class Taskviewer(
         # Les noms des colonnes peuvent être obtenus via col.name().
         # return [col.name() for col in self.columns()]
         # list_of_columns = [col.name() for col in self.columns() if self.visibleColumns()]
-        list_of_columns = [col.name() for col in self.columns() if self.isVisibleColumn(col)]
-        log.debug(f"Taskviewer._get_task_columns : Colonnes à afficher : {list_of_columns}.")
+        list_of_columns = [
+            col.name() for col in self.columns() if self.isVisibleColumn(col)
+        ]
+        log.debug(
+            f"Taskviewer._get_task_columns : Colonnes à afficher : {list_of_columns}."
+        )
         return list_of_columns
 
     def _refresh_tasks(self):
@@ -2657,13 +2795,17 @@ class Taskviewer(
         # Obtenir les tâches du fichier de tâches
         try:
             tasks = self.__task_file.tasks()
-            log.debug(f"Taskviewer._refresh_tasks : {len(tasks)} tâches trouvées.")
+            log.debug(
+                f"Taskviewer._refresh_tasks : {len(tasks)} tâches trouvées."
+            )
 
             # Afficher les tâches
             for task in tasks:
                 self._add_task_to_tree(task)
         except Exception as e:
-            log.error(f"Taskviewer._refresh_tasks : Erreur lors de la récupération des tâches: {e}")
+            log.error(
+                f"Taskviewer._refresh_tasks : Erreur lors de la récupération des tâches: {e}"
+            )
 
     def _add_task_to_tree(self, task, parent=""):
         """
@@ -2675,70 +2817,81 @@ class Taskviewer(
         """
         try:
             # Obtenir le texte et les valeurs de la tâche
-            task_text = task.subject() if hasattr(task, 'subject') else str(task)
+            task_text = (
+                task.subject() if hasattr(task, "subject") else str(task)
+            )
 
             # Préparer les valeurs des colonnes
             values = [
                 self._get_task_status(task),
                 self._get_task_priority(task),
                 self._get_task_due_date(task),
-                self._get_task_effort(task)
+                self._get_task_effort(task),
             ]
 
             # Ajouter l'élément au Treeview
             item_id = self.widget.insert(
-                parent,
-                "end",
-                text=task_text,
-                values=values
+                parent, "end", text=task_text, values=values
             )
 
             # Stocker le mappage task -> item_id
-            if hasattr(task, 'id'):
+            if hasattr(task, "id"):
                 self.__tree_items[task.id()] = item_id
 
             # Ajouter les sous-tâches récursivement
-            if hasattr(task, 'children'):
+            if hasattr(task, "children"):
                 # # if hasattr(task, 'the_children'):
                 # # for subtask in task.children():
                 # for subtask in task.get_tree_children():
                 #     self._add_task_to_tree(subtask, parent=item_id)
                 # Modification ici avec appel a get_tree_children
-                for subtask in self.__task_file.tasks().get_tree_children(task):
-                    log.debug(f"Taskviewer._add_task_to_tree : Ajout de la sous-tâche '{subtask.subject()}' à la tâche '{task_text}'.")
+                for subtask in self.__task_file.tasks().get_tree_children(
+                    task
+                ):
+                    log.debug(
+                        f"Taskviewer._add_task_to_tree : Ajout de la sous-tâche '{subtask.subject()}' à la tâche '{task_text}'."
+                    )
                     self._add_task_to_tree(subtask, parent=item_id)
 
-            log.debug(f"Taskviewer._add_task_to_tree : Tâche '{task_text}' ajoutée.")
+            log.debug(
+                f"Taskviewer._add_task_to_tree : Tâche '{task_text}' ajoutée."
+            )
         except Exception as e:
-            log.error(f"Taskviewer._add_task_to_tree : Erreur lors de l'ajout de la tâche: {e}")
+            log.error(
+                f"Taskviewer._add_task_to_tree : Erreur lors de l'ajout de la tâche: {e}"
+            )
 
     def _get_task_status(self, task) -> str:
         """Retourne le statut de la tâche."""
-        if hasattr(task, 'isCompleted') and task.isCompleted():
+        if hasattr(task, "isCompleted") and task.isCompleted():
             return "✓ Complétée"
-        elif hasattr(task, 'isActive') and not task.isActive():
+        elif hasattr(task, "isActive") and not task.isActive():
             return "✗ Inactive"
         else:
             return "● Active"
 
     def _get_task_priority(self, task) -> str:
         """Retourne la priorité de la tâche."""
-        if hasattr(task, 'priority'):
+        if hasattr(task, "priority"):
             priority = task.priority()
             return str(priority) if priority is not None else "Normal"
         return "Normal"
 
     def _get_task_due_date(self, task) -> str:
         """Retourne la date d'échéance de la tâche."""
-        if hasattr(task, 'dueDate'):
+        if hasattr(task, "dueDate"):
             due_date = task.dueDate()
             if due_date:
-                return due_date.strftime('%Y-%m-%d') if hasattr(due_date, 'strftime') else str(due_date)
+                return (
+                    due_date.strftime("%Y-%m-%d")
+                    if hasattr(due_date, "strftime")
+                    else str(due_date)
+                )
         return ""
 
     def _get_task_effort(self, task) -> str:
         """Retourne l'effort estimé de la tâche."""
-        if hasattr(task, 'estimatedEffort'):
+        if hasattr(task, "estimatedEffort"):
             effort = task.estimatedEffort()
             return str(effort) if effort is not None else ""
         return ""
@@ -2747,7 +2900,9 @@ class Taskviewer(
         """Gère les clics sur le Treeview."""
         item = self.widget.identify("item", event.x, event.y)
         if item:
-            log.debug(f"Taskviewer._on_tree_click : Élément '{item}' sélectionné.")
+            log.debug(
+                f"Taskviewer._on_tree_click : Élément '{item}' sélectionné."
+            )
 
     def onBeginEdit(self, event):
         """Gère le début de l'édition d'un élément."""
@@ -2755,7 +2910,7 @@ class Taskviewer(
             try:
                 treeItem = event.widget.focus()
                 if treeItem:
-                    editedTask = event.widget.item(treeItem, 'values')[0]
+                    editedTask = event.widget.item(treeItem, "values")[0]
                     event.widget.item(treeItem, text=editedTask.subject())
             except Exception as e:
                 log.warning(f"Erreur lors du début d'édition: {e}")
@@ -2766,8 +2921,10 @@ class Taskviewer(
             try:
                 treeItem = event.widget.focus()
                 if treeItem:
-                    editedTask = event.widget.item(treeItem, 'values')[0]
-                    event.widget.item(treeItem, text=editedTask.subject(recursive=True))
+                    editedTask = event.widget.item(treeItem, "values")[0]
+                    event.widget.item(
+                        treeItem, text=editedTask.subject(recursive=True)
+                    )
             except Exception as e:
                 log.warning(f"Erreur lors de la fin d'édition: {e}")
 
@@ -2775,8 +2932,13 @@ class Taskviewer(
         """Affiche un menu contextuel au clic droit."""
         # Un exemple simple. Dans une vraie app, le menu serait plus complexe.
         menu = tk.Menu(self.tree, tearoff=0)
-        menu.add_command(label=_("Ajouter une tâche"), command=lambda: self.onAdd(None))
-        menu.add_command(label=_("Supprimer la sélection"), command=lambda: self.onDelete(None))
+        menu.add_command(
+            label=_("Ajouter une tâche"), command=lambda: self.onAdd(None)
+        )
+        menu.add_command(
+            label=_("Supprimer la sélection"),
+            command=lambda: self.onDelete(None),
+        )
         try:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
@@ -2797,15 +2959,22 @@ class Taskviewer(
     def on_drop(self, event):
         """Gère l'action de lâcher la tâche."""
         target_item = self.tree.identify_row(event.y)
-        if hasattr(self, 'drag_item') and self.drag_item and target_item:
+        if hasattr(self, "drag_item") and self.drag_item and target_item:
             # Récupère l'ID de la tâche glissée
             drag_item_id = self.drag_item
             # Récupère le parent de la cible
             target_parent_id = self.tree.parent(target_item)
 
-            if drag_item_id != target_item and self.tree.is_ancestor(drag_item_id, target_item) is False:
+            if (
+                drag_item_id != target_item
+                and self.tree.is_ancestor(drag_item_id, target_item) is False
+            ):
                 # Déplace l'élément de la liste
-                self.tree.move(drag_item_id, target_parent_id, self.tree.index(target_item))
+                self.tree.move(
+                    drag_item_id,
+                    target_parent_id,
+                    self.tree.index(target_item),
+                )
                 messagebox.showinfo("Action", "Tâche déplacée.")
                 self.drag_item = None
 
@@ -2850,13 +3019,14 @@ class Taskviewer(
                     "",
                     task.Task.orderingChangedEventType(),
                     sortCallback=uicommand.ViewerSortByCommand(
-                        viewer=self, value="ordering",
+                        viewer=self,
+                        value="ordering",
                     ),
                     renderCallback=lambda task_: "",
                     imageIndicesCallback=self.orderingImageIndices,
                     width=self.getColumnWidth("ordering"),
                     is_shown=False,
-                    **kwargs
+                    **kwargs,
                 )
             )
 
@@ -2881,7 +3051,7 @@ class Taskviewer(
                     editCallback=self.onEditSubject,
                     editControl=inplace_editortk.SubjectCtrl,
                     is_shown=True,
-                    **kwargs
+                    **kwargs,
                 )
             )
 
@@ -2900,7 +3070,7 @@ class Taskviewer(
                     editCallback=self.onEditDescription,
                     editControl=inplace_editortk.DescriptionCtrl,
                     is_shown=False,
-                    **kwargs
+                    **kwargs,
                 )
             )
 
@@ -2908,17 +3078,23 @@ class Taskviewer(
             columns.extend(self._createAdditionalColumns(kwargs))
 
         except Exception as e:
-            log.error(f"Erreur lors de la création des colonnes: {e}", exc_info=True)
+            log.error(
+                f"Erreur lors de la création des colonnes: {e}", exc_info=True
+            )
 
-        log.debug(f"TaskViewer._createColumns : {len(columns)} colonnes créées : {columns}.")
+        log.debug(
+            f"TaskViewer._createColumns : {len(columns)} colonnes créées : {columns}."
+        )
         return columns
 
     # def createColumns(self) -> List[uicommand.UICommand]:
     def createColumns(self) -> List[UICommand]:
         """Crée les colonnes pour la vue des tâches."""
         columns_str = self.settings.get("taskviewer", "columns")
-        columns_list = columns_str.split(',')
-        log.debug(f"Taskviewer.createColumns : Colonnes demandées : {columns_list}.")
+        columns_list = columns_str.split(",")
+        log.debug(
+            f"Taskviewer.createColumns : Colonnes demandées : {columns_list}."
+        )
 
         # # Simulation de la création de colonnes
         # subject_column = uicommand.UICommand("subject", _("Sujet"), _("Sujet de la tâche"))
@@ -2931,9 +3107,17 @@ class Taskviewer(
         #     "priority": priority_column
         # }
         all_columns = {
-            "subject": UICommand("subject", _("Sujet"), _("Sujet de la tâche")),
-            "duedate": UICommand("duedate", _("Date d'échéance"), _("Date d'échéance de la tâche")),
-            "priority": UICommand("priority", _("Priorité"), _("Priorité de la tâche"))
+            "subject": UICommand(
+                "subject", _("Sujet"), _("Sujet de la tâche")
+            ),
+            "duedate": UICommand(
+                "duedate",
+                _("Date d'échéance"),
+                _("Date d'échéance de la tâche"),
+            ),
+            "priority": UICommand(
+                "priority", _("Priorité"), _("Priorité de la tâche")
+            ),
         }
 
         return [all_columns[c] for c in columns_list if c in all_columns]
@@ -2954,7 +3138,7 @@ class Taskviewer(
                 imageIndicesCallback=self.attachmentImageIndices,
                 headerImageIndex=self.imageIndex.get("paperclip_icon", -1),
                 renderCallback=lambda task_: "",
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -2970,7 +3154,7 @@ class Taskviewer(
                 imageIndicesCallback=self.noteImageIndices,
                 headerImageIndex=self.imageIndex.get("note_icon", -1),
                 renderCallback=lambda task_: "",
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -2989,7 +3173,7 @@ class Taskviewer(
                 ),
                 width=self.getColumnWidth("categories"),
                 renderCallback=self.renderCategories,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -3006,7 +3190,7 @@ class Taskviewer(
                 ),
                 renderCallback=self.renderPrerequisites,
                 width=self.getColumnWidth("prerequisites"),
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -3023,43 +3207,43 @@ class Taskviewer(
                 ),
                 renderCallback=self.renderDependencies,
                 width=self.getColumnWidth("dependencies"),
-                **kwargs
+                **kwargs,
             )
         )
 
         # Colonnes de dates
         for name, columnHeader, editCtrl, editCallback, eventTypes in [
             (
-                    # "#9",  # Identifiant Tkinter
-                    "plannedStartDateTime",
-                    _("Planned start date"),
-                    inplace_editortk.DateTimeCtrl,
-                    self.onEditPlannedStartDateTime,
-                    [],
+                # "#9",  # Identifiant Tkinter
+                "plannedStartDateTime",
+                _("Planned start date"),
+                inplace_editortk.DateTimeCtrl,
+                self.onEditPlannedStartDateTime,
+                [],
             ),
             (
-                    # "#10",  # Identifiant Tkinter
-                    "dueDateTime",
-                    _("Due date"),
-                    DueDateTimeCtrl,
-                    self.onEditDueDateTime,
-                    [task.Task.expansionChangedEventType()],
+                # "#10",  # Identifiant Tkinter
+                "dueDateTime",
+                _("Due date"),
+                DueDateTimeCtrl,
+                self.onEditDueDateTime,
+                [task.Task.expansionChangedEventType()],
             ),
             (
-                    # "#11",  # Identifiant Tkinter
-                    "actualStartDateTime",
-                    _("Actual start date"),
-                    inplace_editortk.DateTimeCtrl,
-                    self.onEditActualStartDateTime,
-                    [task.Task.expansionChangedEventType()],
+                # "#11",  # Identifiant Tkinter
+                "actualStartDateTime",
+                _("Actual start date"),
+                inplace_editortk.DateTimeCtrl,
+                self.onEditActualStartDateTime,
+                [task.Task.expansionChangedEventType()],
             ),
             (
-                    # "#12",  # Identifiant Tkinter
-                    "completionDateTime",
-                    _("Completion date"),
-                    inplace_editortk.DateTimeCtrl,
-                    self.onEditCompletionDateTime,
-                    [task.Task.expansionChangedEventType()],
+                # "#12",  # Identifiant Tkinter
+                "completionDateTime",
+                _("Completion date"),
+                inplace_editortk.DateTimeCtrl,
+                self.onEditCompletionDateTime,
+                [task.Task.expansionChangedEventType()],
             ),
         ]:
             renderCallback = getattr(
@@ -3070,7 +3254,9 @@ class Taskviewer(
                     # id,  # Identifiant Tkinter
                     name,
                     columnHeader,
-                    sortCallback=uicommand.ViewerSortByCommand(viewer=self, value=name),
+                    sortCallback=uicommand.ViewerSortByCommand(
+                        viewer=self, value=name
+                    ),
                     renderCallback=renderCallback,
                     width=self.getColumnWidth(name),
                     alignment=tk.RIGHT,
@@ -3078,115 +3264,115 @@ class Taskviewer(
                     editCallback=editCallback,
                     settings=self.settings,
                     *eventTypes,
-                    **kwargs
+                    **kwargs,
                 )
             )
 
         # Colonnes diverses (budget, temps, etc.)
         for name, columnHeader, editCtrl, editCallback, eventTypes in [
             (
-                    # "#13",  # Identifiant Tkinter
-                    "percentageComplete",
-                    _("% complete"),
-                    inplace_editortk.PercentageCtrl,
-                    self.onEditPercentageComplete,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.percentageCompleteChangedEventType(),
-                    ],
+                # "#13",  # Identifiant Tkinter
+                "percentageComplete",
+                _("% complete"),
+                inplace_editortk.PercentageCtrl,
+                self.onEditPercentageComplete,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.percentageCompleteChangedEventType(),
+                ],
             ),
             (
-                    # "#14",  # Identifiant Tkinter
-                    "timeLeft",
-                    _("Time left"),
-                    None,
-                    None,
-                    [task.Task.expansionChangedEventType(), "task.timeLeft"],
+                # "#14",  # Identifiant Tkinter
+                "timeLeft",
+                _("Time left"),
+                None,
+                None,
+                [task.Task.expansionChangedEventType(), "task.timeLeft"],
             ),
             (
-                    # "#15",  # Identifiant Tkinter
-                    "recurrence",
-                    _("Recurrence"),
-                    None,
-                    None,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.recurrenceChangedEventType(),
-                    ],
+                # "#15",  # Identifiant Tkinter
+                "recurrence",
+                _("Recurrence"),
+                None,
+                None,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.recurrenceChangedEventType(),
+                ],
             ),
             (
-                    # "#16",  # Identifiant Tkinter
-                    "budget",
-                    _("Budget"),
-                    inplace_editortk.BudgetCtrl,
-                    self.onEditBudget,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.budgetChangedEventType(),
-                    ],
+                # "#16",  # Identifiant Tkinter
+                "budget",
+                _("Budget"),
+                inplace_editortk.BudgetCtrl,
+                self.onEditBudget,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.budgetChangedEventType(),
+                ],
             ),
             (
-                    # "#17",  # Identifiant Tkinter
-                    "timeSpent",
-                    _("Time spent"),
-                    None,
-                    None,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.timeSpentChangedEventType(),
-                    ],
+                # "#17",  # Identifiant Tkinter
+                "timeSpent",
+                _("Time spent"),
+                None,
+                None,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.timeSpentChangedEventType(),
+                ],
             ),
             (
-                    # "#18",  # Identifiant Tkinter
-                    "budgetLeft",
-                    _("Budget left"),
-                    None,
-                    None,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.budgetLeftChangedEventType(),
-                    ],
+                # "#18",  # Identifiant Tkinter
+                "budgetLeft",
+                _("Budget left"),
+                None,
+                None,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.budgetLeftChangedEventType(),
+                ],
             ),
             (
-                    # "#19",  # Identifiant Tkinter
-                    "priority",
-                    _("Priority"),
-                    inplace_editortk.PriorityCtrl,
-                    self.onEditPriority,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.priorityChangedEventType(),
-                    ],
+                # "#19",  # Identifiant Tkinter
+                "priority",
+                _("Priority"),
+                inplace_editortk.PriorityCtrl,
+                self.onEditPriority,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.priorityChangedEventType(),
+                ],
             ),
             (
-                    # "#20",  # Identifiant Tkinter
-                    "hourlyFee",
-                    _("Hourly fee"),
-                    inplace_editortk.AmountCtrl,
-                    self.onEditHourlyFee,
-                    [task.Task.hourlyFeeChangedEventType()],
+                # "#20",  # Identifiant Tkinter
+                "hourlyFee",
+                _("Hourly fee"),
+                inplace_editortk.AmountCtrl,
+                self.onEditHourlyFee,
+                [task.Task.hourlyFeeChangedEventType()],
             ),
             (
-                    # "#21",  # Identifiant Tkinter
-                    "fixedFee",
-                    _("Fixed fee"),
-                    inplace_editortk.AmountCtrl,
-                    self.onEditFixedFee,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.fixedFeeChangedEventType(),
-                    ],
+                # "#21",  # Identifiant Tkinter
+                "fixedFee",
+                _("Fixed fee"),
+                inplace_editortk.AmountCtrl,
+                self.onEditFixedFee,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.fixedFeeChangedEventType(),
+                ],
             ),
             (
-                    # "#22",  # Identifiant Tkinter
-                    "revenue",
-                    _("Revenue"),
-                    None,
-                    None,
-                    [
-                        task.Task.expansionChangedEventType(),
-                        task.Task.revenueChangedEventType(),
-                    ],
+                # "#22",  # Identifiant Tkinter
+                "revenue",
+                _("Revenue"),
+                None,
+                None,
+                [
+                    task.Task.expansionChangedEventType(),
+                    task.Task.revenueChangedEventType(),
+                ],
             ),
         ]:
             renderCallback = getattr(
@@ -3206,7 +3392,7 @@ class Taskviewer(
                     editControl=editCtrl,
                     editCallback=editCallback,
                     *eventTypes,
-                    **kwargs
+                    **kwargs,
                 )
             )
 
@@ -3229,7 +3415,7 @@ class Taskviewer(
                     task.Task.expansionChangedEventType(),
                     task.Task.reminderChangedEventType(),
                 ],
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -3244,7 +3430,7 @@ class Taskviewer(
                 sortCallback=uicommand.ViewerSortByCommand(
                     viewer=self, value="creationDateTime"
                 ),
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -3259,7 +3445,7 @@ class Taskviewer(
                     viewer=self, value="modificationDateTime"
                 ),
                 *task.Task.modificationEventTypes(),
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -3268,7 +3454,9 @@ class Taskviewer(
     def createColumnUICommands(self):
         """Crée les commandes UI pour gérer les colonnes."""
         commands = [
-            uicommand.ToggleAutoColumnResizing(viewer=self, settings=self.settings),
+            uicommand.ToggleAutoColumnResizing(
+                viewer=self, settings=self.settings
+            ),
             None,
             (
                 _("&Dates"),
@@ -3475,7 +3663,7 @@ class Taskviewer(
         treeOrListUICommand = uicommand.TaskViewerTreeOrListChoice(
             viewer=self,
             settings=self.settings,
-            setting="treemode"  # AJOUT IMPORTANT : Cela permettra à SettingsUICommand de savoir qu'il doit lire la valeur treemode dans le fichier de configuration, évitant ainsi le NoneType.
+            setting="treemode",  # AJOUT IMPORTANT : Cela permettra à SettingsUICommand de savoir qu'il doit lire la valeur treemode dans le fichier de configuration, évitant ainsi le NoneType.
         )
         return super().createModeToolBarUICommands() + (treeOrListUICommand,)
 
@@ -3487,7 +3675,10 @@ class Taskviewer(
         """Retourne les commandes UI pour les modes."""
         return [_("Show tasks as"), None] + [
             uicommand.TaskViewerTreeOrListOption(
-                menuText=menuText, value=value, viewer=self, settings=self.settings
+                menuText=menuText,
+                value=value,
+                viewer=self,
+                settings=self.settings,
             )
             for (menuText, value) in zip(
                 uicommand.TaskViewerTreeOrListChoice.choiceLabels,
@@ -3556,8 +3747,8 @@ class Taskviewer(
         #     #     parent_mainwindow=parent_window  # Fenêtre principale pour UICommand
         #     # )
         self.__columnPopupMenu = menutk.ColumnPopupMenu(
-            parent=self.widget,              # Widget cible réel recevant le clic (Treeview)
-            parent_mainwindow=parent_window  # Fenêtre principale pour UICommand
+            parent=self.widget,  # Widget cible réel recevant le clic (Treeview)
+            parent_mainwindow=parent_window,  # Fenêtre principale pour UICommand
         )
 
         # # Retourne le menu créé avec succès
@@ -3598,7 +3789,9 @@ class Taskviewer(
     def renderSubject(self, task_item):
         """Rend le sujet d'une tâche."""
         subject = task_item.subject(recursive=not self.isTreeViewer())
-        log.debug(f"TaskViewer.renderSubject : {subject} pour task={task_item}")
+        log.debug(
+            f"TaskViewer.renderSubject : {subject} pour task={task_item}"
+        )
         return subject
 
     def renderPlannedStartDateTime(self, task_item, humanReadable=True):
@@ -3635,25 +3828,36 @@ class Taskviewer(
 
     def renderRecurrence(self, task_item):
         """Rend la récurrence."""
-        return self.renderedValue(task_item, task_item.recurrence, render.recurrence)
+        return self.renderedValue(
+            task_item, task_item.recurrence, render.recurrence
+        )
 
     def renderPrerequisites(self, task_item):
         """Rend les prérequis."""
-        return self.renderSubjectsOfRelatedItems(task_item, task_item.prerequisites)
+        return self.renderSubjectsOfRelatedItems(
+            task_item, task_item.prerequisites
+        )
 
     def renderDependencies(self, task_item):
         """Rend les dépendances."""
-        return self.renderSubjectsOfRelatedItems(task_item, task_item.dependencies)
+        return self.renderSubjectsOfRelatedItems(
+            task_item, task_item.dependencies
+        )
 
     def renderTimeLeft(self, task_item):
         """Rend le temps restant."""
         return self.renderedValue(
-            task_item, task_item.timeLeft, render.timeLeft, task_item.completed()
+            task_item,
+            task_item.timeLeft,
+            render.timeLeft,
+            task_item.completed(),
         )
 
     def renderTimeSpent(self, task_item):
         """Rend le temps passé."""
-        return self.renderedValue(task_item, task_item.timeSpent, self._renderTimeSpent)
+        return self.renderedValue(
+            task_item, task_item.timeSpent, self._renderTimeSpent
+        )
 
     def renderBudget(self, task_item):
         """Rend le budget."""
@@ -3661,11 +3865,15 @@ class Taskviewer(
 
     def renderBudgetLeft(self, task_item):
         """Rend le budget restant."""
-        return self.renderedValue(task_item, task_item.budgetLeft, render.budget)
+        return self.renderedValue(
+            task_item, task_item.budgetLeft, render.budget
+        )
 
     def renderRevenue(self, task_item):
         """Rend le revenu."""
-        return self.renderedValue(task_item, task_item.revenue, render.monetaryAmount)
+        return self.renderedValue(
+            task_item, task_item.revenue, render.monetaryAmount
+        )
 
     def renderHourlyFee(self, task_item):
         """Rend le tarif horaire."""
@@ -3673,15 +3881,22 @@ class Taskviewer(
 
     def renderFixedFee(self, task_item):
         """Rend les frais fixes."""
-        return self.renderedValue(task_item, task_item.fixedFee, render.monetaryAmount)
+        return self.renderedValue(
+            task_item, task_item.fixedFee, render.monetaryAmount
+        )
 
     def renderPercentageComplete(self, task_item):
         """Rend le pourcentage d'achèvement."""
-        return self.renderedValue(task_item, task_item.percentageComplete, render.percentage)
+        return self.renderedValue(
+            task_item, task_item.percentageComplete, render.percentage
+        )
 
     def renderPriority(self, task_item):
         """Rend la priorité."""
-        return self.renderedValue(task_item, task_item.priority, render.priority) + " "
+        return (
+            self.renderedValue(task_item, task_item.priority, render.priority)
+            + " "
+        )
 
     def renderReminder(self, task_item, humanReadable=True):
         """Rend le rappel."""
@@ -3720,15 +3935,21 @@ class Taskviewer(
 
     def onEditActualStartDateTime(self, item, newValue):
         """Gère l'édition de la date de début réelle."""
-        command.EditActualStartDateTimeCommand(items=[item], newValue=newValue).do()
+        command.EditActualStartDateTimeCommand(
+            items=[item], newValue=newValue
+        ).do()
 
     def onEditCompletionDateTime(self, item, newValue):
         """Gère l'édition de la date d'achèvement."""
-        command.EditCompletionDateTimeCommand(items=[item], newValue=newValue).do()
+        command.EditCompletionDateTimeCommand(
+            items=[item], newValue=newValue
+        ).do()
 
     def onEditPercentageComplete(self, item, newValue):
         """Gère l'édition du pourcentage d'achèvement."""
-        command.EditPercentageCompleteCommand(items=[item], newValue=newValue).do()
+        command.EditPercentageCompleteCommand(
+            items=[item], newValue=newValue
+        ).do()
 
     def onEditBudget(self, item, newValue):
         """Gère l'édition du budget."""
@@ -3740,7 +3961,9 @@ class Taskviewer(
 
     def onEditReminderDateTime(self, item, newValue):
         """Gère l'édition du rappel."""
-        command.EditReminderDateTimeCommand(items=[item], newValue=newValue).do()
+        command.EditReminderDateTimeCommand(
+            items=[item], newValue=newValue
+        ).do()
 
     def onEditHourlyFee(self, item, newValue):
         """Gère l'édition du tarif horaire."""
@@ -3753,26 +3976,36 @@ class Taskviewer(
     def onEverySecond(self, event):
         """Mise à jour chaque seconde (uniquement si colonnes concernées visibles)."""
         if any(
-                [
-                    self.isVisibleColumnByName(column)
-                    for column in ("timeSpent", "budgetLeft", "revenue")
-                ]
+            [
+                self.isVisibleColumnByName(column)
+                for column in ("timeSpent", "budgetLeft", "revenue")
+            ]
         ):
             super().onEverySecond(event)
 
     def getRootItems(self):
         """Retourne les éléments racine selon le mode arbre/liste."""
-        return super().getRootItems() if self.isTreeViewer() else self.presentation()
+        return (
+            super().getRootItems()
+            if self.isTreeViewer()
+            else self.presentation()
+        )
 
     def getItemParent(self, item):
         """Retourne le parent d'un élément selon le mode arbre/liste."""
         return super().getItemParent(item) if self.isTreeViewer() else None
 
     # def children(self, item=None):
-    def get_tree_children(self, item=None):  # Méthode existante dans basetk.Viewer
+    def get_tree_children(
+        self, item=None
+    ):  # Méthode existante dans basetk.Viewer
         """Retourne les enfants d'un élément selon le mode arbre/liste."""
         # return super().children(item) if (self.isTreeViewer() or item is None) else []
-        return super().get_tree_children(item) if (self.isTreeViewer() or item is None) else []
+        return (
+            super().get_tree_children(item)
+            if (self.isTreeViewer() or item is None)
+            else []
+        )
 
     # Anciennes méthodes pour tkinter
 
@@ -3793,12 +4026,18 @@ class Taskviewer(
     def _insert_tasks(self, tasks: List[domain.task], parent_item: str):
         """Insère les tâches de manière récursive."""
         for task in tasks:
-            item_id = self.widget.insert(parent_item, "end", text=task.subject,
-                                         values=(str(task.dueDateTime), task.priority))
+            item_id = self.widget.insert(
+                parent_item,
+                "end",
+                text=task.subject,
+                values=(str(task.dueDateTime), task.priority),
+            )
             # if task.children():
             if task.get_tree_children():
                 # self._insert_tasks(task.children(), parent_item=item_id)
-                self._insert_tasks(task.get_tree_children(), parent_item=item_id)
+                self._insert_tasks(
+                    task.get_tree_children(), parent_item=item_id
+                )
 
     # def settingsSection(self):
     @classmethod
@@ -3816,7 +4055,9 @@ class Taskviewer(
     def refresh(self, *args, **kwargs):
         """Rafraîchit la vue, à implémenter correctement.
         Override de refresh pour Tkinter - appelle _refresh_tasks."""
-        log.debug("Taskviewer.refresh :  Rafraîchissement de la vue des tâches.")
+        log.debug(
+            "Taskviewer.refresh :  Rafraîchissement de la vue des tâches."
+        )
         # self._populate_tree()
         # self._refresh_tasks()
         try:
@@ -3848,7 +4089,10 @@ class Taskviewer(
         """Supprime les tâches sélectionnées."""
         selected_items = self.tree.selection()
         if not selected_items:
-            messagebox.showwarning("Avertissement", _("Veuillez sélectionner au moins une tâche à supprimer."))
+            messagebox.showwarning(
+                "Avertissement",
+                _("Veuillez sélectionner au moins une tâche à supprimer."),
+            )
             return
 
         for item in selected_items:
@@ -4005,6 +4249,7 @@ class CheckableTaskViewer(Taskviewer):
         getIsItemChecked (self, task) : Vérifie si une tâche est cochée.
         getItemParentHasExclusiveChildren (self, task) : Vérifie si une tâche parent a des enfants exclusifs.
     """
+
     def createWidget(self):
         # imageList = self.createImageList()  # Has side-effects  # Pas d'équivalent simple en Tkinter. A voir.
         self._columns = self._createColumns()
@@ -4022,10 +4267,12 @@ class CheckableTaskViewer(Taskviewer):
             self.onSelect,
             self.onCheck,
             uicommand.Edit(viewer=self),
-            uicommand.TaskDragAndDrop(taskList=self.presentation(), viewer=self),
+            uicommand.TaskDragAndDrop(
+                taskList=self.presentation(), viewer=self
+            ),
             itemPopupMenu,
             columnPopupMenu,
-            **self.widgetCreationKeywordArguments()
+            **self.widgetCreationKeywordArguments(),
         )
         # widget.AssignImageList(imageList)  # pylint: disable=E1101  Parameter 'which' unfilled
         # widget.AssignImageList(imageList, wx.IMAGE_LIST_NORMAL)  # pylint: disable=E1101
@@ -4038,7 +4285,10 @@ class CheckableTaskViewer(Taskviewer):
         return False
 
         # @staticmethod
-    def getItemParentHasExclusiveChildren(self, task):  # pylint: disable=W0613,W0621
+
+    def getItemParentHasExclusiveChildren(
+        self, task
+    ):  # pylint: disable=W0613,W0621
         return False
 
 
@@ -4070,7 +4320,7 @@ class TaskStatsViewer(BaseTaskViewer):  # pylint: disable=W0223
         pub.subscribe(
             self.onPieChartAngleChanged,
             "settings.%s.piechartangle" % self.settingsSection(),
-            )
+        )
         log.debug("TaskStatsViewer.__init__ : Initialisé.")
 
     def createWidget(self, parent):
@@ -4084,7 +4334,9 @@ class TaskStatsViewer(BaseTaskViewer):  # pylint: disable=W0223
 
         # Pour l'instant, on utilise un simple Label pour placeholder
         # widget = tk.Label(self, text="Diagramme circulaire Tkinter à implémenter")  # TODO : à remplacer par la suite !
-        widget = tk.Label(frame, text="Diagramme circulaire Tkinter à implémenter")  # TODO : à remplacer par la suite !
+        widget = tk.Label(
+            frame, text="Diagramme circulaire Tkinter à implémenter"
+        )  # TODO : à remplacer par la suite !
         # widget = wx.lib.agw.piectrl.PieCtrl(self)  # A remplacer
         # widget.SetShowEdges(False) # A remplacer
         # widget.SetHeight(20) # A remplacer
@@ -4104,9 +4356,13 @@ class TaskStatsViewer(BaseTaskViewer):  # pylint: disable=W0223
 
     def createCreationToolBarUICommands(self):
         return (
-            uicommand.TaskNew(taskList=self.presentation(), settings=self.settings),
+            uicommand.TaskNew(
+                taskList=self.presentation(), settings=self.settings
+            ),
             uicommand.TaskNewFromTemplateButton(
-                taskList=self.presentation(), settings=self.settings, bitmap="newtmpl"
+                taskList=self.presentation(),
+                settings=self.settings,
+                bitmap="newtmpl",
             ),
         )
 
@@ -4123,6 +4379,7 @@ class TaskStatsViewer(BaseTaskViewer):  # pylint: disable=W0223
         )
 
         # @staticmethod
+
     def initLegend(self, widget):
         # legend = widget.GetLegend() # A remplacer
         # legend.SetTransparent(False) # A remplacer
@@ -4215,6 +4472,7 @@ try:
 except ImportError:
     pass
 else:
+
     class TaskInterdepsViewer(BaseTaskViewer):
         # defaultTitle = _("Tasks Interdependencies")
         defaultTitle = "Tasks Interdependencies"
@@ -4230,21 +4488,29 @@ else:
             super().__init__(*args, **kwargs)
 
             pub.subscribe(
-                self.onAttributeChanged, task.Task.dependenciesChangedEventType()
+                self.onAttributeChanged,
+                task.Task.dependenciesChangedEventType(),
             )
             pub.subscribe(
-                self.onAttributeChanged, task.Task.prerequisitesChangedEventType()
+                self.onAttributeChanged,
+                task.Task.prerequisitesChangedEventType(),
             )
 
         def createWidget(self):
             # self.scrolled_panel = wx.lib.scrolledpanel.ScrolledPanel(self, -1) # A remplacer
             # self.scrolled_panel = ScrolledPanel(self, -1) # A remplacer
-            self.scrolled_panel = tk.Frame(self)  # Frame Tkinter pour remplacer ScrolledPanel
+            self.scrolled_panel = tk.Frame(
+                self
+            )  # Frame Tkinter pour remplacer ScrolledPanel
 
             # self.vbox = wx.BoxSizer(wx.VERTICAL) # A remplacer
             # self.hbox = wx.BoxSizer(wx.HORIZONTAL) # A remplacer
-            self.vbox = tk.Frame(self.scrolled_panel)  # Frame Tkinter pour remplacer BoxSizer
-            self.hbox = tk.Frame(self.vbox)  # Frame Tkinter pour remplacer BoxSizer
+            self.vbox = tk.Frame(
+                self.scrolled_panel
+            )  # Frame Tkinter pour remplacer BoxSizer
+            self.hbox = tk.Frame(
+                self.vbox
+            )  # Frame Tkinter pour remplacer BoxSizer
             # self.vbox.Add(self.hbox, 0, wx.ALIGN_CENTRE) # A remplacer
             # self.scrolled_panel.SetSizer(self.vbox) # A remplacer
             self.vbox.pack()  # Pack layout pour Tkinter
@@ -4259,20 +4525,25 @@ else:
                 # ).ConvertToBitmap()
                 try:
                     from PIL import Image, ImageTk
+
                     pil_image = Image.open(self.graphFile.name)
                     bitmap = ImageTk.PhotoImage(pil_image)
                 except ImportError:
-                    bitmap = None # Gestion d'erreur si PIL n'est pas installé
+                    bitmap = None  # Gestion d'erreur si PIL n'est pas installé
             else:
                 bitmap = None
                 # graph_png_bm = wx.StaticBitmap(self.scrolled_panel, wx.ID_ANY, bitmap) # A remplacer
             if bitmap:
-                graph_png_bm = tk.Label(self.scrolled_panel, image=bitmap) # Label Tkinter pour afficher l'image
-                graph_png_bm.image = bitmap # Garder une référence pour éviter que l'image soit garbage collected
+                graph_png_bm = tk.Label(
+                    self.scrolled_panel, image=bitmap
+                )  # Label Tkinter pour afficher l'image
+                graph_png_bm.image = bitmap  # Garder une référence pour éviter que l'image soit garbage collected
             else:
-                graph_png_bm = tk.Label(self.scrolled_panel, text="igraph ou PIL non installé")
+                graph_png_bm = tk.Label(
+                    self.scrolled_panel, text="igraph ou PIL non installé"
+                )
                 # self.hbox.Add(graph_png_bm, 1, wx.ALL, 3) # A remplacer
-            graph_png_bm.pack() # Pack layout pour Tkinter
+            graph_png_bm.pack()  # Pack layout pour Tkinter
             # self.scrolled_panel.SetupScrolling() # A remplacer
 
             return self.scrolled_panel
@@ -4297,6 +4568,7 @@ else:
             )
 
             # @staticmethod
+
         def initLegend(self, widget):
             # legend = widget.GetLegend() # A remplacer
             # legend.Show() # A remplacer
@@ -4321,8 +4593,12 @@ else:
             def addVertex(tsk):
                 if tsk not in vertices:
                     vertices[tsk] = (
-                        self.determine_vertex_weight(tsk.budget(), tsk.priority()),
-                        self.convert_rgba_to_rgb(task.foregroundColor(recursive=True)),
+                        self.determine_vertex_weight(
+                            tsk.budget(), tsk.priority()
+                        ),
+                        self.convert_rgba_to_rgb(
+                            task.foregroundColor(recursive=True)
+                        ),
                     )
 
             for task in self.presentation():
@@ -4405,7 +4681,10 @@ else:
                     self._updating = True
                     try:
                         yield deferToThread(
-                            igraph.plot, graph, self.graphFile.name, **visual_style
+                            igraph.plot,
+                            graph,
+                            self.graphFile.name,
+                            **visual_style,
                         )
                     finally:
                         self._updating = False
@@ -4414,34 +4693,49 @@ else:
                     # ).ConvertToBitmap()
                     try:
                         from PIL import Image, ImageTk
+
                         pil_image = Image.open(self.graphFile.name)
                         bitmap = ImageTk.PhotoImage(pil_image)
                     except ImportError:
-                        bitmap = None  # Gestion d'erreur si PIL n'est pas installé
+                        bitmap = (
+                            None  # Gestion d'erreur si PIL n'est pas installé
+                        )
                 else:
                     bitmap = None
 
                     # Only update graphics once all refreshes have been "collapsed"
             # graph_png_bm = wx.StaticBitmap(self.scrolled_panel, wx.ID_ANY, bitmap) # A remplacer
             if bitmap:
-                graph_png_bm = tk.Label(self.scrolled_panel, image=bitmap) # Label Tkinter pour afficher l'image
-                graph_png_bm.image = bitmap # Garder une référence pour éviter que l'image soit garbage collected
+                graph_png_bm = tk.Label(
+                    self.scrolled_panel, image=bitmap
+                )  # Label Tkinter pour afficher l'image
+                graph_png_bm.image = bitmap  # Garder une référence pour éviter que l'image soit garbage collected
             else:
-                graph_png_bm = tk.Label(self.scrolled_panel, text="igraph ou PIL non installé")
+                graph_png_bm = tk.Label(
+                    self.scrolled_panel, text="igraph ou PIL non installé"
+                )
 
                 # self.hbox.Clear(True) # A remplacer
             # self.hbox.Add(graph_png_bm, 1, wx.ALL, 3) # A remplacer
-            for widget in self.hbox.winfo_children():  # Suppression des anciens widgets
+            for (
+                widget
+            ) in self.hbox.winfo_children():  # Suppression des anciens widgets
                 widget.destroy()
-            graph_png_bm.pack() # Pack layout pour Tkinter
+            graph_png_bm.pack()  # Pack layout pour Tkinter
             # wx.CallAfter(self.scrolled_panel.SendSizeEvent) # A remplacer
-            self.after(0, self.scrolled_panel.event_generate, '<Configure>', when='tail')  # Force un événement de configuration pour redimensionner
+            self.after(
+                0,
+                self.scrolled_panel.event_generate,
+                "<Configure>",
+                when="tail",
+            )  # Force un événement de configuration pour redimensionner
+
 
 # ============================================================================
 # Code de démonstration
 # ============================================================================
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     root = tk.Tk()
     root.title(_("Task Viewer Demo"))
     root.geometry("1024x768")
@@ -4450,15 +4744,33 @@ if __name__ == '__main__':
     class MockTaskFile:
         def __init__(self):
             self._tasks = [
-                domain.task.Task("Acheter du lait", dueDateTime=domain.date.Date(2023, 8,30), priority=1),
-                domain.task.Task("Préparer la présentation",
-                            dueDateTime=domain.date.Date(2023, 9, 5),
+                domain.task.Task(
+                    "Acheter du lait",
+                    dueDateTime=domain.date.Date(2023, 8, 30),
+                    priority=1,
+                ),
+                domain.task.Task(
+                    "Préparer la présentation",
+                    dueDateTime=domain.date.Date(2023, 9, 5),
+                    priority=2,
+                    children=[
+                        domain.task.Task(
+                            "Rechercher des données",
+                            dueDateTime=domain.date.Date(2023, 9, 2),
                             priority=2,
-                            children=[
-                                domain.task.Task("Rechercher des données", dueDateTime=domain.date.Date(2023, 9, 2), priority=2),
-                                domain.task.Task("Créer les diapositives", dueDateTime=domain.date.Date(2023, 9, 4), priority=3)
-                            ]),
-                domain.task.Task("Envoyer le rapport", dueDateTime=domain.date.Date(2023, 9, 1), priority=1)
+                        ),
+                        domain.task.Task(
+                            "Créer les diapositives",
+                            dueDateTime=domain.date.Date(2023, 9, 4),
+                            priority=3,
+                        ),
+                    ],
+                ),
+                domain.task.Task(
+                    "Envoyer le rapport",
+                    dueDateTime=domain.date.Date(2023, 9, 1),
+                    priority=1,
+                ),
             ]
             self._categories = MockCategories()
             self._efforts = []
@@ -4505,7 +4817,7 @@ if __name__ == '__main__':
             task_file,
             app_settings,
             settingsSection="taskviewer",
-            instanceNumber=0
+            instanceNumber=0,
         )
         viewer.pack(fill="both", expand=True)
 
@@ -4519,15 +4831,19 @@ if __name__ == '__main__':
         # delete_button = ttk.Button(button_frame, text=_("Supprimer la sélection"), command=lambda: viewer.onDelete(None))
         # delete_button.pack(side="left", padx=5)
 
-        ttk.Label(button_frame, text=_("Démonstration du TaskViewer")).pack(side="left", padx=5)
+        ttk.Label(button_frame, text=_("Démonstration du TaskViewer")).pack(
+            side="left", padx=5
+        )
 
         log.info("TaskViewer initialisé avec succès")
 
     except Exception as e:
-        log.error(f"Erreur lors de l'initialisation du TaskViewer: {e}", exc_info=True)
+        log.error(
+            f"Erreur lors de l'initialisation du TaskViewer: {e}",
+            exc_info=True,
+        )
         messagebox.showerror(
-            _("Erreur"),
-            f"Impossible d'initialiser le visualiseur:\n{e}"
+            _("Erreur"), f"Impossible d'initialiser le visualiseur:\n{e}"
         )
 
     root.mainloop()

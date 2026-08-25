@@ -47,7 +47,7 @@ class wxDrawer(object):
             font.SetPointSize(pointSize)
             _, th = self.context.GetTextExtent(
                 " "
-                + wxTimeFormat.FormatTime(wx.DateTimeFromHMS(23, 59, 59))
+                + wxTimeFormat.FormatTime(wx.DateTime.FromHMS(23, 59, 59))
                 # " " + wxTimeFormat.FormatTime(self, wx.DateTimeFromHMS(23, 59, 59))
             )
             if th <= height:
@@ -64,7 +64,7 @@ class wxDrawer(object):
             self.context.SetFont(font)
             tw, _ = self.context.GetTextExtent(
                 " "
-                + wxTimeFormat.FormatTime(wx.DateTimeFromHMS(23, 59, 59))
+                + wxTimeFormat.FormatTime(wx.DateTime.FromHMS(23, 59, 59))
                 # " " + wxTimeFormat.FormatTime(self, wx.DateTimeFromHMS(23, 59, 59))
             )
             if tw <= width:
@@ -1174,7 +1174,7 @@ class wxBaseDrawer(
                 hourW, _ = self.context.GetTextExtent(
                     # " " + wxTimeFormat.FormatTime(self, wx.DateTimeFromHMS(23, 59, 59))
                     " "
-                    + wxTimeFormat.FormatTime(wx.DateTimeFromHMS(23, 59, 59))
+                    + wxTimeFormat.FormatTime(wx.DateTime.FromHMS(23, 59, 59))
                 )
             else:
                 hourW = 1.0 * w / len(self.displayedHours)
@@ -1182,7 +1182,7 @@ class wxBaseDrawer(
                 _, hourH = self.context.GetTextExtent(
                     # " " + wxTimeFormat.FormatTime(self, wx.DateTimeFromHMS(23, 59, 59))
                     " "
-                    + wxTimeFormat.FormatTime(wx.DateTimeFromHMS(23, 59, 59))
+                    + wxTimeFormat.FormatTime(wx.DateTime.FromHMS(23, 59, 59))
                 )
 
             if not includeText:

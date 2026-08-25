@@ -178,10 +178,22 @@ class SettingsIOTest(SettingsTestCase):
         self.assertTrue(self.settings.has_section("testing"))
 
     def testIOErrorWhileSaving(self):
+        """
+        Vérifie les messages d'erreur en cas de sauvegarde.
+        """
+
         def file_that_raises_ioerror(*args):  # pylint: disable=W0613,W0622
             raise IOError
 
         def showerror(*args, **kwargs):  # pylint: disable=W0613
+            """
+            Méthode d'enregistrement des arguments à montrer lors d'une erreur.
+
+            Args:
+                *args: Arguments à enregistrer.
+                **kwargs: Arguments secondaires.
+
+            """
             self.showerror_args = args  # pylint: disable=W0201
 
         settings = config.Settings()

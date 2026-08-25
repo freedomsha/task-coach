@@ -42,11 +42,12 @@ import math
 
 class TimeDelta(datetime.timedelta):
     """
-        Hérite de la classe datetime.timedelta de Python.
-        Elle fournit des fonctionnalités supplémentaires pour
-        manipuler des intervalles de temps en tenant compte des heures, minutes, secondes et millisecondes.
+    Hérite de la classe datetime.timedelta de Python.
 
-        Voici une analyse plus détaillée des éléments clés du code :
+    Elle fournit des fonctionnalités supplémentaires pour
+    manipuler des intervalles de temps en tenant compte des heures, minutes, secondes et millisecondes.
+
+    Voici une analyse plus détaillée des éléments clés du code :
 
     Constantes :
 

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contrôle de l'arborescence pour Tkinter.
 Basé sur le treectrl.py original de TaskCoach.
 """
+
 # Voici une version du code qui utilise itemctrl.py et draganddrop.py pour
 # créer un Treeview avec des fonctionnalités de glisser-déposer. Le code est auto-suffisant et bien commenté pour que vous puissiez comprendre chaque section. Il gère les actions de glisser-déposer et met à jour l'affichage de l'arborescence en conséquence.
 #
@@ -311,11 +312,17 @@ from typing import List, Any, Callable, Sequence, Optional  # types utilitaires
 # Assurez-vous d'avoir les versions converties de ces modules.
 # Les importations relatives peuvent être nécessaires selon la structure de votre projet.
 from taskcoachlib.guitk import artprovidertk
+
 # from .itemctrl import *
 # from taskcoachlib.widgetstk import draganddroptk, itemctrltk
 from taskcoachlib.widgetstk import itemctrltk
 from taskcoachlib.widgetstk.draganddroptk import TreeCtrlDragAndDropMixin
-from taskcoachlib.widgetstk.itemctrltk import Column, CtrlWithItemsMixin, CtrlWithColumnsMixin
+from taskcoachlib.widgetstk.itemctrltk import (
+    Column,
+    CtrlWithItemsMixin,
+    CtrlWithColumnsMixin,
+)
+
 # from .draganddrop import *
 from taskcoachlib.widgetstk import tooltiptk
 
@@ -342,11 +349,12 @@ class SimpleTreeItem:  # Voir itemctrltk.py pour une version plus complète
     Classe pour représenter un élément dans l'arborescence.
     Remplace la structure de données complexe du treectrl.py original.
     """
+
     def __init__(self, name: str, parent: Any = None):
         """Initialise un élément de l'arborescence."""
         self.name = name
         self.parent = parent
-        self.children: List['SimpleTreeItem'] = []
+        self.children: List["SimpleTreeItem"] = []
         # self.get_tree_children: List['SimpleTreeItem'] = []
 
     def __repr__(self) -> str:
@@ -354,10 +362,13 @@ class SimpleTreeItem:  # Voir itemctrltk.py pour une version plus complète
         return f"SimpleTreeItem(name='{self.name}')"
 
 
-class TreeCtrl(ttk.Treeview):  # Remplace HyperTreeList et CustomTreeCtrl de wxPython
+class TreeCtrl(
+    ttk.Treeview
+):  # Remplace HyperTreeList et CustomTreeCtrl de wxPython
     """
     Une version de TreeCtrl pour Tkinter avec glisser-déposer.
     """
+
     # TreeCtrl.__init__(self, parent, columns=column_names, show='tree headings',
     #                   displaycolumns=displaycolumns, *args, **kwargs) de TreeListCtrl.
     def __init__(self, parent: tk.Widget, **kwargs):
@@ -388,7 +399,9 @@ class TreeCtrl(ttk.Treeview):  # Remplace HyperTreeList et CustomTreeCtrl de wxP
             drop_item_id = self.identify_row(event.y)
             if drop_item_id and drop_item_id != self.dragged_item_id:
                 # Ajoute une indication visuelle pour le glisser-déposer
-                self.tk.call(self._w, "move", self.dragged_item_id, drop_item_id, "end")
+                self.tk.call(
+                    self._w, "move", self.dragged_item_id, drop_item_id, "end"
+                )
             else:
                 # Gère le cas où l'on glisse vers un espace vide
                 self.tk.call(self._w, "move", self.dragged_item_id, "", "end")
@@ -416,11 +429,13 @@ class TreeCtrl(ttk.Treeview):  # Remplace HyperTreeList et CustomTreeCtrl de wxP
         après une opération de glisser-déposer.
         """
         # Dans un vrai projet, vous mettriez à jour vos listes de données.
-        print("La structure de l'arborescence a été mise à jour.")
+        log.debug("La structure de l'arborescence a été mise à jour.")
         items = self.get_children()
         for item_id in items:
             parent_id = self.parent(item_id)
-            print(f"Élément : {self.item(item_id)['text']}, Parent : {self.item(parent_id)['text'] if parent_id else 'Racine'}")
+            log.debug(
+                f"Élément : {self.item(item_id)['text']}, Parent : {self.item(parent_id)['text'] if parent_id else 'Racine'}"
+            )
 
 
 # class TreeListCtrl(itemctrltk.CtrlWithItemsMixin, itemctrltk.CtrlWithColumnsMixin, itemctrltk.CtrlWithToolTipMixin, ttk.Treeview):
@@ -437,7 +452,7 @@ class TreeListCtrl(
     CtrlWithColumnsMixin,
     TreeCtrlDragAndDropMixin,
     # TreeCtrl,  # ttk.Treeview
-    ttk.Treeview
+    ttk.Treeview,
 ):
     """
     Implémentation d'un TreeListCtrl pour Tkinter, équivalent à la version wxPython.
@@ -447,15 +462,25 @@ class TreeListCtrl(
     Équivalent Tkinter de wx.lib.agw.hypertreelist.HyperTreeList
     Combine ttk.Treeview avec des mixins pour fonctionnalités avancées.
     """
+
     ct_type = 0
 
     # def __init__(self, parent: tk.Widget, columns: List, selectCommand: Callable, editCommand: Callable,
     #              dragAndDropCommand: Callable, itemPopupMenu: Any = None, columnPopupMenu: Any = None,
     #              *args, **kwargs):
-    def __init__(self, parent: tk.Widget, adapter: Any, columns: List[Column],
-                 selectCommand: Callable = None, editCommand: Callable = None,
-                 dragAndDropCommand: Callable = None, itemPopupMenu: tk.Menu = None,
-                 columnPopupMenu: tk.Menu = None, *args, **kwargs):
+    def __init__(
+        self,
+        parent: tk.Widget,
+        adapter: Any,
+        columns: List[Column],
+        selectCommand: Callable = None,
+        editCommand: Callable = None,
+        dragAndDropCommand: Callable = None,
+        itemPopupMenu: tk.Menu = None,
+        columnPopupMenu: tk.Menu = None,
+        *args,
+        **kwargs,
+    ):
         # def __init__(self, parent: tk.Widget, adapter: Any, columns: List,
         #              dragAndDropCommand: Callable, itemPopupMenu: Any = None,
         #              columnPopupMenu: Any = None, *args, **kwargs):

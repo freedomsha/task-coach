@@ -211,8 +211,10 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
         """Appends a single UI command to the toolbar."""
         if ui_command is None:
             # Separator
-            ttk.Separator(self, orient=tk.VERTICAL).pack(side=tk.LEFT, padx=2)
-            # ttk.Separator(self, orient=tk.HORIZONTAL).pack(side=tk.LEFT, padx=2)
+            # ttk.Separator(self, orient=tk.VERTICAL).pack(side=tk.LEFT, padx=2)
+            ttk.Separator(self, orient=tk.HORIZONTAL).pack(
+                side=tk.LEFT, padx=2
+            )
             return
         # elif isinstance(ui_command, int):
         if isinstance(ui_command, int):
@@ -306,9 +308,12 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
         # self.add_separator()
         # ttk.Separator(self, orient=tk.VERTICAL).pack(side=tk.LEFT, padx=2)
         # ttk.Separator(self, orient=tk.HORIZONTAL).pack(side=tk.BOTTOM, padx=2)  # Ne fonctionne pas directement ici !
-        ttk.Separator(self, orient=tk.HORIZONTAL).pack(
-            side=tk.TOP, fill=tk.X, pady=2
-        )
+        # ttk.Separator(self, orient=tk.HORIZONTAL).pack(
+        #     side=tk.TOP, fill=tk.X, pady=2
+        # )
+        ttk.Separator(self, orient=tk.VERTICAL).pack(
+            side=tk.LEFT, fill=tk.Y, pady=2
+        )  # SUPER !
         # raise NotImplementedError("La méthode 'AppendSeparator' doit être implémentée par la classe qui utilise ce mixin.")
         # raise NotImplementedError("La méthode 'Add_h_Separator' doit être implémentée par la classe qui utilise ce mixin.")
 

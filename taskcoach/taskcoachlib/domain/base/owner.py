@@ -897,7 +897,9 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             state (dict) : Un dictionnaire représentant l'état de l'instance.
             event : Objet d'événement facultatif à passer aux gestionnaires d'événements.
         """
-        log.debug("DomainObjectOwnerMetaclass.setstate : AVANT validate_state,")
+        log.debug(
+            "DomainObjectOwnerMetaclass.setstate : AVANT validate_state,"
+        )
         log.debug("ID INSTANCE = %s", id(instance))
         log.debug("TYPE = %s", type(instance))
         log.debug(

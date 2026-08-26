@@ -1072,9 +1072,14 @@ class TreeListCtrl(
             log.debug(
                 f"TreeListCtrl._addObjectRecursively : Processing child_object: {child_object}"
             )
-            col_count = (
-                self.GetColumnCount() if hasattr(self, "GetColumnCount") else 0
-            )
+            # col_count = (
+            #     self.GetColumnCount() if hasattr(self, "GetColumnCount") else 0
+            # )
+            # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            col_count = self.GetHeaderWindow().GetColumnCount()
+            # col_count = (
+            #     self.GetHeaderWindow().GetColumnCount() if hasattr(self.GetHeaderWindow(), "GetColumnCount") else 0
+            # )  # TODO : A essayer !
             log.debug(
                 "TreeListCtrl._addObjectRecursively: GetColumnCount=%s",
                 col_count,
@@ -1088,7 +1093,9 @@ class TreeListCtrl(
             # valeurs de colonnes en interrogeant explicitement chaque colonne.
             column_values = [
                 self.__adapter.getItemText(child_object, col_index)
-                for col_index in range(self.GetColumnCount())
+                # for col_index in range(self.GetColumnCount())
+                # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+                for col_index in range(self.GetHeaderWindow().GetColumnCount())
             ]
             # 2. Ajouter ItemType à la liste des aspects rafraîchis
             # dans _refreshObjectMinimally pour s'assurer que les cases à cocher s'affichent.
@@ -1269,7 +1276,10 @@ class TreeListCtrl(
         log.debug(f"TreeListCtrl._refreshItemType : terminé !")
 
     def _refreshColumns(self, item, domain_object, check=False):
-        for column_index in range(self.GetColumnCount()):
+        # for column_index in range(self.GetColumnCount()):
+        # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # Ici, il s'agit de HyperTreeList.
+        for column_index in range(self.GetHeaderWindow().GetColumnCount()):
             self._refreshColumn(item, domain_object, column_index, check=check)
 
     def _refreshColumn(self, item, domain_object, column_index, check=False):
@@ -1555,7 +1565,9 @@ class TreeListCtrl(
     def _setColumns(self, *args, **kwargs):
         super()._setColumns(*args, **kwargs)
         self.SetMainColumn(0)
-        for column_index in range(self.GetColumnCount()):
+        # for column_index in range(self.GetColumnCount()):
+        # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        for column_index in range(self.GetHeaderWindow().GetColumnCount()):
             self.SetColumnEditable(
                 column_index, self._getColumn(column_index).isEditable()
             )
@@ -1599,7 +1611,11 @@ class TreeListCtrl(
         alignment = self.alignmentMap[
             kwargs.pop("format", wx.LIST_FORMAT_LEFT)
         ]
-        if column_index == self.GetColumnCount():
+        # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # if column_index == self.GetColumnCount():
+        if (
+            column_index == self.GetHeaderWindow().GetColumnCount()
+        ):  # ici HyperTreeListCtrl
             self.AddColumn(column_header, *args, **kwargs)
         else:
             super().InsertColumn(column_index, column_header, *args, **kwargs)

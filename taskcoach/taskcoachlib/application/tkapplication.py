@@ -199,7 +199,7 @@ class TkinterApplication(
 
         self.initTwisted()
         # self.registerApp()
-        self.init(**kwargs)
+        self.init(**kwargs)  # 1er appel à init ! Le suivant est dans taskcoach.py.
 
         # Remplacement de l'initialisation du sessionMonitor
         if operating_system.isGTK():
@@ -323,6 +323,12 @@ class TkinterApplication(
 
     def init(self, loadSettings=True, loadTaskFile=True):
         """Initialise l'application."""
+        if hasattr(
+            self, "_init_called"
+        ):  # ← Vérifie si init() a déjà été appelé
+            return
+        self._init_called = True  # ← Marque init() comme appelé
+
         # Initialisation des réglages
         self.__init_config(loadSettings)
         self.__init_language()
@@ -403,7 +409,7 @@ class TkinterApplication(
         # app = self.mainwindow = guitk.MainWindow(self.root, self.iocontroller, self.taskFile, self.settings)
         self.mainwindow = guitk.mainwindowtk.MainWindow(
             self.root, self.iocontroller, self.taskFile, self.settings
-        )
+        )  # TODO : Attention, il y a un double appel de init (1 dans __init__, le suivant dans taskcoach.py), risque de double ouverture de mainwindow !
         # app.pack(fill=tk.BOTH, expand=True)
         # self.mainwindow.pack(fill=tk.BOTH, expand=True)
         self.mainwindow.grid(row=0, column=0, sticky="news")

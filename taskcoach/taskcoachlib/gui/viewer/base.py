@@ -630,7 +630,9 @@ class Viewer(wx.Panel, patterns.Observer, metaclass=PreViewer):
                 imageList.Add(bitmap)
                 # print(f"Viewer.createImageList : ImageList: {imageList}")
             except Exception:
-                log.debug(f"Viewer.createImageList : Erreur lors du chargement de l'image '{image}'")
+                log.debug(
+                    f"Viewer.createImageList : Erreur lors du chargement de l'image '{image}'"
+                )
                 raise
             self.imageIndex[image] = index
         # print(

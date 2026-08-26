@@ -343,7 +343,15 @@ class BaseTaskViewer(
                 pub.subscribe(
                     self.onAppearanceSettingChange, appearanceSetting
                 )
-        pub.subscribe(self.onAppearanceSettingChange, "settings.window.theme")
+        pub.subscribe(
+            self.onAppearanceSettingChange,
+            "settings.window.theme",
+        )  # TODO : manque l'argument value
+        # pub.subscribe(
+        #     self.onAppearanceSettingChange,
+        #     "settings.window.theme",
+        #     value=appearanceSetting,
+        # )  # TODO : l'argument value est inadéquate
         self.registerObserver(
             self.onAttributeChanged_Deprecated,
             eventType=task.Task.appearanceChangedEventType(),
@@ -1970,14 +1978,32 @@ class CalendarViewer(
             use_system = self.settings.getboolean(
                 section, "other_month_bg_system"
             )
-            if use_system:
-                self.widget.SetOtherMonthColor(None)
-            else:
-                color_tuple = self.settings.getvalue(section, "other_month_bg")
-                self.widget.SetOtherMonthColor(wx.Colour(*color_tuple))
+            if hasattr(
+                self.widget, "SetOtherMonthColor"
+            ):  # TODO : protection contre l'absence de cette méthode SetOtherMonthColor dans certaines versions de wxPython
+                if use_system:
+                    self.widget.SetOtherMonthColor(None)
+                else:
+                    color_tuple = self.settings.getvalue(
+                        section, "other_month_bg"
+                    )
+                    self.widget.SetOtherMonthColor(wx.Colour(*color_tuple))
 
             # self.widget.RefreshAllItems(0)
-            self.widget.scheduleRefresh(0)
+            # self.widget.scheduleRefresh(0)
+            if isinstance(self.widget, widgets.treectrl.TreeListCtrl):
+                self.widget.scheduleRefresh(0)
+            elif isinstance(self.widget, widgets.Calendar):
+                # self.widget.RefreshSchedule()  # TODO : Pourquoi cela ne fonctionne pas ?
+                print(
+                    f"CalendarViewer.reconfig : Type de widget Calendar détecté, mais RefreshSchedule() ne fonctionne pas."
+                )
+                self.widget.RefreshAllItems(0)
+            else:
+                print(
+                    f"CalendarViewer.reconfig : Type de widget inattendu : {type(self.widget)}"
+                )
+                self.widget.scheduleRefresh(0)
         finally:
             self.widget.Thaw()
 

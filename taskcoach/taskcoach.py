@@ -47,7 +47,8 @@ log = logging.getLogger(__name__)
 
 
 def namer(name):
-    return name + ".txt"
+    # return "/log/" + name + ".txt"
+    return name + ".log"
     # Avec la date et l'heure :
     # return name + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".txt"
     # return name + "_" + datetime.now().strftime("%Y-%m-%d_%H-%M") + ".txt"
@@ -122,7 +123,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
         # logging.FileHandler("taskcoach.log", mode='w', encoding='utf-8'),
-        # logging.handlers.RotatingFileHandler("taskcoach.log", mode='w', encoding='utf-8'),
+        # logging.handlers.RotatingFileHandler(
+        #     "taskcoach.log", mode="w", encoding="utf-8"
+        # ),
         rh,
         logging.StreamHandler(),  # Affiche aussi dans la console
     ],
@@ -217,7 +220,7 @@ def start():
     """Traîte les options (arguments) de ligne de commande et démarre l'application.
 
     Cette fonction traite les options de ligne de commande, initialise l'application
-    et démarre-lance la boucle principale. Il gère également le profilage si l'option --profile
+    et démarre/lance la boucle principale. Il gère également le profilage si l'option --profile
     est spécifiée.
     """
     # Correctif pour wxPython 4+ (Phoenix)
@@ -285,19 +288,21 @@ def start():
     app = None
     if options.gui_name == "wx":
         # Lancement de l'initialisation de l'application version wxPython:
+        log.debug("start : Lancement de la version wxPython.")
         app = application.application.Application(
             options, args
         )  # définition de la variable app comme application avec options et args
         # app = application.Application(tcargs)
-    if options.gui_name == "tk":
+    elif options.gui_name == "tk":
         # Lancement de l'initialisation de l'application version tkinter:
+        log.debug("start : Lancement de la version tkinter.")
         app = application.tkapplication.TkinterApplication(options, args)
         # print("taskcoach.py: options.profile:", options.profile)  # is False !
     log.debug("Option --profile active : %s", options.profile)
     # Lancement de l'application :
     # Il est impératif d'appeler explicitement app.init() avant de démarrer l'application,
     # car c'est cette méthode qui charge les préférences utilisateur et prépare l'interface.
-    app.init()  # logique
+    app.init()  # logique, 2nd appel d'init (le 1er est dans tkapplication.TkinterApplication.__init)
 
     if options.profile:
         # if options["profile"]:

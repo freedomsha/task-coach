@@ -1134,7 +1134,8 @@ class MainWindow(
 
     def saveSettings(self):
         """
-        Sauvegarde les paramètres actuels de la fenêtre, y compris les dimensions, la perspective et le nombre de visionneuses.
+        Sauvegarder les paramètres actuels de la fenêtre,
+        y compris les dimensions, la perspective et le nombre de visionneuses.
         """
         log.info(
             "save.Settings : Sauvegarde des paramètres actuels de la fenêtre.(simulation)"
@@ -1153,7 +1154,9 @@ class MainWindow(
 
     def __save_perspective(self):
         """
-        Sauvegarde la perspective actuelle de la fenêtre, c'est-à-dire l'organisation des différents volets et composants (barre d'outils, visionneuses, etc.).
+        Sauvegarde la perspective actuelle de la fenêtre,
+        c'est-à-dire l'organisation des différents volets et composants
+        (barre d'outils, visionneuses, etc.).
         """
         log.debug(
             "MainWindow.__save_perspective: Sauvegarde de la perspective (mock)."

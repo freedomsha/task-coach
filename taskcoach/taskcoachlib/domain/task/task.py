@@ -282,10 +282,10 @@ class Task(
         # _kwargs_for_super.pop(
         #     "status", None
         # )  # Prevent passing TaskStatus object to SynchronizedObject's internal status
-        print(
+        log.debug(
             f"Task.__init__ : récupère status de kwargs, _kwargs_for_super = {_kwargs_for_super}."
         )
-        print(f"Task.__init__ : donc kwargs reste = {kwargs}.")
+        log.debug(f"Task.__init__ : donc kwargs reste = {kwargs}.")
 
         # # Appels explicites aux constructeurs des classes mixin
         # # Ces appels doivent être faits avant l'appel à super().__init__()
@@ -323,7 +323,7 @@ class Task(
         # # note.NoteOwner.__init__(self, *args, **kwargs)
         # # attachment.AttachmentOwner.__init__(self, *args, **kwargs)
         # # 3️⃣ Appel du constructeur parent
-        print(
+        log.debug(
             f"Task.__init__ : vérification avant super : attachments = {attachments}, kwargs = {kwargs}."
         )
         # établir le contrat attendu par NoteOwner et AttachmentOwner, à savoir que ces collections sont toujours itérables.
@@ -431,7 +431,7 @@ class Task(
         # 4. Task-specific initialization
         #    Set Task's internal __status to the semantic TaskStatus object
         # self.__status = status
-        print(
+        log.debug(
             f"Task.__init__ : récupère l'argument task_status = {self.__task_status}."
         )
         # if isinstance(self.__status, int):  # Ensure it's a TaskStatus object
@@ -800,12 +800,14 @@ class Task(
         )
         # # state["children"] = list(self.children())  # Assure que les enfants sont inclus
         # state["children"] = [child.copy() for child in self.children()]  # Créer de nouveaux objets
-        print(f"Task.__getcopystate__ : DEBUG : children={self.children()}.")
+        log.debug(
+            f"Task.__getcopystate__ : DEBUG : children={self.children()}."
+        )
         log.debug(f"DEBUG - Task.__getcopystate__() renvoie : {state}")
-        print(
+        log.debug(
             f"DEBUG Task.__getcopystate__ : state.keys() = {sorted(state.keys())}"
         )
-        print(
+        log.debug(
             f"DEBUG Task.__getcopystate__ : state['children'] = "
             f"{state.get('children', '<absent>')}"
         )
@@ -847,6 +849,9 @@ class Task(
         # print(f"Task.addCategory : ✅ DEBUG - Résultat de super().addCategory() = {result}")
         # print(f"Task.addCategory : ✅ DEBUG - Après ajout, self.categories() = {self.categories()}")
 
+        log.debug(
+            f"Task.addCategory : ✅ DEBUG - Résultat de super().addCategory() = {result}"
+        )
         if result:
             self.recomputeAppearance(True, event=kwargs.pop("event"))
 
@@ -905,7 +910,7 @@ class Task(
         """
         # print(f"Task.addChild : Avant l'ajout, vérifie si child={child} existe dans self.children={self.children}")
         if child in self.children():
-            print(
+            log.debug(
                 f"Task.addChild : !!! child={child} existe déjà dans self.children={self.children}"
             )
             return
@@ -2445,22 +2450,24 @@ class Task(
         # Si recursive est vrai et que la tâche a au moins un effort actif
         if recursive and self.isBeingTracked():
             # Retourne l'icône de l'horloge
-            print("Task.icon : retourne clock_icon")
+            log.debug("Task.icon : retourne clock_icon")
             return "clock_icon"
         # Récupère l'icône de l'objet composite
         myIcon = super().icon()
-        print(f"Task.icon : a récupéré l'icône {myIcon} de la méthode super.")
+        log.debug(
+            f"Task.icon : a récupéré l'icône {myIcon} de la méthode super."
+        )
         # Si recursive est vrai et que l'icône est vide("") ou None
         if recursive and not myIcon:
             # Essayer de récupérer l'icône récursive
             try:
                 myIcon = self.__recursiveIcon
-                print(
+                log.debug(
                     f"Task.icon : a récupéré l'icône self.__recursiveIcon={myIcon}"
                 )
             except AttributeError:
                 myIcon = self.__computeRecursiveIcon()
-                print(
+                log.exception(
                     f"Task.icon : a récupéré l'icône {myIcon} de la méthode self.__computeRecursiveIcon()."
                 )
         # Retourne l'icône au pluriel ou au singulier selon que l'objet a ou non des enfants.
@@ -2995,7 +3002,7 @@ class Task(
                              (si recursive est True),
                              sinon inclure les prérequis des enfants.
         """
-        print(
+        log.info(
             f"DEBUG - Task.prerequisites called with recursive={recursive}, upwards={upwards} for task={self}"
         )
         prerequisites = set(self.__prerequisites)
@@ -3006,8 +3013,8 @@ class Task(
         elif recursive and not upwards:
             for child in self.children(recursive=True):
                 prerequisites |= child.prerequisites()
-        print(
-            f"DEBUG - Task.prerequisites returning prerequisites={prerequisites} for task={self}"
+        log.debug(
+            f"DEBUG - Task.prerequisites returning prerequisites={prerequisites} for task={self} !"
         )
         return prerequisites
 
@@ -3043,7 +3050,7 @@ class Task(
         Args :
             prerequisites (iterable): Les prérequis à ajouter.
         """
-        print(
+        log.info(
             f"DEBUG - Task.addPrerequisites called with prerequisites={prerequisites} for task={self}"
         )
         prerequisites = set(prerequisites)
@@ -3057,12 +3064,12 @@ class Task(
             newValue=self.prerequisites(),
             sender=self,
         )
-        print(
-            f"DEBUG - Task.addPrerequisites updated prerequisites={self.prerequisites()} for task={self}"
+        log.debug(
+            f"DEBUG - Task.addPrerequisites updated prerequisites={self.prerequisites()} for task={self} !"
         )
 
     def removePrerequisites(self, prerequisites):
-        print(
+        log.debug(
             f"DEBUG - Task.removePrerequisites called with prerequisites={prerequisites} for task={self}"
         )
         prerequisites = set(prerequisites)
@@ -3075,8 +3082,8 @@ class Task(
             newValue=self.prerequisites(),
             sender=self,
         )
-        print(
-            f"DEBUG - Task.removePrerequisites updated prerequisites={self.prerequisites()} for task={self}"
+        log.debug(
+            f"DEBUG - Task.removePrerequisites updated prerequisites={self.prerequisites()} for task={self} !"
         )
 
     def addTaskAsDependencyOf(self, prerequisites):

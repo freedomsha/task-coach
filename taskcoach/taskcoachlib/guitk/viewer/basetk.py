@@ -475,7 +475,7 @@ class Viewer(ttk.Frame, patterns.Observer):
         # # self.toolbar.pack(fill=tk.X, expand=False, pady=5)
         # self.toolbar.pack(fill=tk.X, expand=False, side=tk.TOP)
         self.toolbar.grid(
-            row=0, column=0, sticky="new"
+            row=0, column=0, sticky="ewn"
         )  # Positionnement en haut
 
         # 3. Créer le widget principal, enfant de 'self._sizer'

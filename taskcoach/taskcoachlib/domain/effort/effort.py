@@ -338,7 +338,9 @@ class Effort(baseeffort.BaseEffort, base.object.Object):
             )
         )
         # print(
-        log.debug("Effort.__getcopystate__ : %s %s", self.task(), type(self.task()))
+        log.debug(
+            "Effort.__getcopystate__ : %s %s", self.task(), type(self.task())
+        )
         return state
 
     def _computeDuration(self):

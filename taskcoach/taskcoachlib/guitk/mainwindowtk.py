@@ -480,7 +480,9 @@ class MainWindow(
             "MainWindow: ✅ Initialisation des composants principaux de la fenêtre terminée et perspective de la fenêtre restaurée."
         )
 
-        self.toolbar_frame.grid(row=0, column=0, sticky="ew")
+        self.toolbar_frame.grid(
+            row=0, column=0, sticky="ew"
+        )  # TODO : A revoir où mettre cette ligne !
         self.viewer.grid(row=1, column=0, sticky="nsew")
         self.status_bar.grid(row=2, column=0, sticky="ew")
 
@@ -892,6 +894,7 @@ class MainWindow(
         log.debug(
             "MainWindow._init_window : Initialisation de la fenêtre principale."
         )
+        # Définition du nom du fichier de tâches
         self.__filename = self.taskFile.filename()
         self.__setTitle()
         # self.SetIcons(artprovider.iconBundle("taskcoach")) # Déjà fait dans __init__
@@ -1158,7 +1161,8 @@ class MainWindow(
         # Logique spécifique à AUI/wxPython à réimplémenter pour Tkinter.
         self.settings.set("view", "perspective", "mock_perspective_data")
         # perspective = self.manager.SavePerspective()
-        perspective = self.main_frame.grid_info()
+        # perspective = self.main_frame.grid_info()
+        perspective = self.grid_info()
         self.settings.set("view", "perspective", perspective)
 
     def __save_position(self) -> None:

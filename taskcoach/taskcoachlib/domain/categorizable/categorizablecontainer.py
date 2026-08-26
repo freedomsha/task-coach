@@ -46,12 +46,20 @@ class CategorizableContainer(base.Collection):
 
     @patterns.eventSource
     def extend(self, items, event=None):
-        print(f"CategorizableContainer.extend: pour {self}, items : {items} !")
+        log.info(
+            f"CategorizableContainer.extend: pour {self}, items : {items}."
+        )
         super().extend(items, event=event)
+        log.debug(
+            f"CategorizableContainer.extend : ajoute {items} à {super()} avec event={event}."
+        )
         for item in self._compositesAndAllChildren(items):
             for category in item.categories():
+                log.debug(
+                    f"CategorizableContainer.extend : ajoute le catégorisable {item} à {category} avec event={event}."
+                )
                 category.addCategorizable(item, event=event)
-        print(
+        log.info(
             f"CategorizableContainer.extend: après traitement de {self}, items : {items} !"
         )
 

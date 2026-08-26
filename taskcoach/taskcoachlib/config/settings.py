@@ -359,7 +359,7 @@ class Settings(CachingConfigParser):
         """
         Initialisez les paramètres avec les valeurs par défaut.
         """
-        print(
+        log.info(
             "Settings.initializeWithDefaults : Initialisation des paramètres avec les valeurs par défaut."
         )
         for section in self.sections():
@@ -368,7 +368,7 @@ class Settings(CachingConfigParser):
             self.add_section(section)
             for key, value in list(settings.items()):
                 # Don't Notify observers while we are initializing
-                print(
+                log.info(
                     f"Settings.initializeWithDefaults : Initialisation de la section '{section}', paramètre '{key}' avec la valeur par défaut '{value}'."
                 )
                 super().set(section, key, value)
@@ -586,7 +586,9 @@ class Settings(CachingConfigParser):
             La valeur result corrigée.
         """
         original = result
-        print(f"Settings._fixValuesFromOldIniFiles : Corrige result={result}")
+        log.debug(
+            f"Settings._fixValuesFromOldIniFiles : Corrige result={result}"
+        )
         # À partir de la version 1.1.0, les propriétés de date des tâches (startDate,
         # dueDate et CompletionDate) sont des datetimes :
         taskDateColumns = ("startDate", "dueDate", "completionDate")
@@ -630,7 +632,7 @@ class Settings(CachingConfigParser):
                 # ValueError: malformed node or string on line 1: Call(func=Name(id='dict', ctx=Load()), args=[], keywords=[keyword(arg='subject', value=Constant(value=10, kind=None))])
             # except SyntaxError:
             except (SyntaxError, ValueError) as e:
-                print(
+                log.error(
                     f"Settings._fixValuesFromOldIniFiles : Error occurred while evaluating columnwidths : {e}"
                 )
                 # columnWidthMap = dict()
@@ -644,7 +646,7 @@ class Settings(CachingConfigParser):
                         if "=" in arg:
                             key, value = arg.split("=", 1)
                             columnWidthMap[key.strip()] = int(value.strip())
-                    print(
+                    log.debug(
                         f"Settings._fixValuesFromOldIniFiles : columnWidthMap={columnWidthMap}"
                     )
                 #     return columnWidthMap
@@ -1068,19 +1070,19 @@ class Settings(CachingConfigParser):
             str: The path to the configuration directory.
         """
         if self.__iniFileSpecifiedOnCommandLine:
-            print(
+            log.info(
                 f"Settings.path : Retourne le chemin du fichier .ini spécifié sur la ligne de commande. self.pathToIniFileSpecifiedOnCommandLine()={self.pathToIniFileSpecifiedOnCommandLine()}"
             )
             return self.pathToIniFileSpecifiedOnCommandLine()
         elif forceProgramDir or self.getboolean(
             "file", "saveinifileinprogramdir"
         ):
-            print(
+            log.info(
                 f"Settings.path : Retourne le chemin du répertoire du programme. self.pathToProgramDir()={self.pathToProgramDir()}"
             )
             return self.pathToProgramDir()
         else:
-            print(
+            log.info(
                 f"Settings.path : Retourne le chemin du répertoire de configuration. self.pathToConfigDir(environ)={self.pathToConfigDir(environ)}"
             )
             return self.pathToConfigDir(environ)
@@ -1212,17 +1214,17 @@ class Settings(CachingConfigParser):
         Returns :
             str : Le chemin d'accès au répertoire du programme.
         """
-        print(
+        log.info(
             "Settings.pathToProgramDir : Détermine le chemin du répertoire du programme."
         )
         # path = sys.argv[0]
         path = os.path.abspath(sys.argv[0])
-        print(
+        log.info(
             f"Settings.pathToProgramDir : Chemin absolu du programme : path={path}"
         )
         if not os.path.isdir(path):
             path = os.path.dirname(path)
-            print(
+            log.info(
                 f"Settings.pathToProgramDir : path n'est pas un répertoire, prend le répertoire parent : path={path}"
             )
         # Normaliser le chemin pour éviter les problèmes de chemin absolu local

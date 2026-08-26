@@ -262,9 +262,13 @@ class TkinterApplication(
         """
         # Remplacer les vérificateurs de version et de messages
         if self.settings.getboolean("version", "notify"):
-            print("Vérificateur de version démarré (maquette)")
+            log.debug(
+                "TkinterApplication.start : !!! Vérificateur de version démarré (maquette)"
+            )
         if self.settings.getboolean("view", "developermessages"):
-            print("Vérificateur de messages de développeur démarré (maquette)")
+            log.debug(
+                "TkinterApplication.start : !!! Vérificateur de messages de développeur démarré (maquette)"
+            )
 
         self.__copy_default_templates()
         # self.mainwindow.show()  # On suppose que la classe MainWindow a une méthode show() (tk.lift())
@@ -286,7 +290,9 @@ class TkinterApplication(
         # Pour que le programme fonctionne correctement, vous ne devez pas appeler self.init(**kwargs) dans start(), car la méthode __init__() est un constructeur qui n'est appelé qu'une seule fois lorsque l'objet est créé. L'appeler à nouveau serait incorrect.
         #
         # La solution consiste à s'assurer que les lignes qui créent et positionnent le MainWindow sont bien placées à l'intérieur de la méthode start(), comme dans l'exemple que je vous ai donné précédemment.
-        log.info("Lancement de l'application Tkinter...")
+        log.info(
+            "TkinterApplication.start : !!! Lancement de l'application Tkinter..."
+        )
 
         # # Crée la fenêtre principale
         # self.mainwindow = mainwindowtk.MainWindow(self.root, self.iocontroller, self.taskFile, self.settings)
@@ -321,7 +327,9 @@ class TkinterApplication(
     def __copy_default_templates(self):
         """Copier les modèles par défaut"""
         # Logique de la copie des modèles (maquettée)
-        print("Modèles par défaut copiés (maquette)")
+        log.debug(
+            "TkinterApplication.__copy_default_templates : !!! Modèles par défaut copiés (maquette)"
+        )
 
     def init(self, loadSettings=True, loadTaskFile=True):
         """Initialise l'application."""
@@ -530,7 +538,7 @@ class TkinterApplication(
         # La création d'une icône dans la barre des tâches n'est pas une fonctionnalité native de tkinter.
         # Des bibliothèques tierces comme 'pystray' seraient nécessaires.
         if self.__can_create_task_bar_icon():
-            print(
+            log.debug(
                 "Icône de la barre des tâches non créée car elle n'est pas prise en charge par tkinter."
             )
         self.taskBarIcon = None

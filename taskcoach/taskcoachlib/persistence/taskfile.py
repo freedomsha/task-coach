@@ -119,26 +119,26 @@ def _isCloud(path):
         (bool) : Vrai si le chemin se trouve dans un répertoire synchronisé avec le cloud, sinon False.
     """
     path = os.path.abspath(path)
-    print(
+    log.debug(
         f"_isCloud : Vérification du chemin '{path}' pour les indicateurs de synchronisation cloud."
     )
     while True:
         for name in [".dropbox.cache", ".csync_journal.db"]:
             if os.path.exists(os.path.join(path, name)):
-                print(
+                log.debug(
                     f"_isCloud : Indicateur de synchronisation cloud trouvé : '{name}' dans '{path}'."
                 )
                 return True
         path, name = os.path.split(path)
-        print(
+        log.debug(
             f"_isCloud : Chemin actuel '{path}', nom de fichier vérifié '{name}'."
         )
         if name == "":
-            print(
+            log.info(
                 "_isCloud : Aucun indicateur de synchronisation cloud trouvé dans les chemins parents."
             )
             return False
-        print(
+        log.debug(
             f"_isCloud : Aucun indicateur trouvé dans '{path}', remontant au parent..."
         )
         return False
@@ -174,8 +174,8 @@ class TaskCoachFilesystemNotifier(FilesystemNotifier):
         Gérez les modifications de fichiers en notifiant l’instance TaskFile associée.
         """
         self.__taskFile.onFileChanged()
-        # log.info(
-        print(
+        log.info(
+            # print(
             "TaskCoachFileSystemNotifier.onFileChanged : Modification détectée sur le fichier '%s'",
             self.__taskFile,
         )
@@ -1006,35 +1006,35 @@ class TaskFile(patterns.Observer):
         Args :
             event (Event) : L'événement.
         """
-        print(
+        log.debug(
             "ChangeMonitor.onEffortChanged_Deprecated: event=%s" % event
         )  # Debug print
-        print(
+        log.debug(
             "ChangeMonitor.onEffortChanged_Deprecated: event.values()=%s"
             % list(event.values())
         )  # Debug print
-        print(
+        log.debug(
             "ChangeMonitor.onEffortChanged_Deprecated: event.sourcesAndValuesByType()=%s"
             % list(event.sourcesAndValuesByType().items())
         )  # Debug print
-        print(
+        log.debug(
             "ChangeMonitor.onEffortChanged_Deprecated: event.sources()=%s"
             % list(event.sources())
         )  # Debug print
         # Avoid indexing into a set returned by event.sources()
         first_source = next(iter(event.sources()), None)
-        print(
+        log.debug(
             # "ChangeMonitor.onChildRemoved: event.values(source=event.sources()[0])=%s"
             # % list(event.values(source=event.sources()[0]))
             "ChangeMonitor.onEffortChanged_Deprecated: event.values(source=first_source)=%s"
             % list(event.values(source=first_source))
         )  # Debug print
-        print(
+        log.info(
             "ChangeMonitor.onEffortChanged_Deprecated: repr(self.__changes)=%s"
             % repr(self.__changes)
         )  # Debug print
         if self.__loading or self.__saving:
-            print(
+            log.debug(
                 "ChangeMonitor.onEffortChanged_Deprecated: Ignoring event because loading or saving is in progress."
             )  # Debug print
             self.setNeedSave()
@@ -1044,7 +1044,7 @@ class TaskFile(patterns.Observer):
             for changedEffort in event.sources()
             if changedEffort.task() in self.tasks()
         ]
-        print(
+        log.debug(
             "ChangeMonitor.onEffortChanged_Deprecated: changedEfforts=%s"
             % changedEfforts
         )  # Debug print
@@ -1053,7 +1053,7 @@ class TaskFile(patterns.Observer):
             for changedEffort in changedEfforts:
                 changedEffort.markDirty()
         self.setNeedSave()
-        print(
+        log.debug(
             "ChangeMonitor.onEffortChanged_Deprecated: Finished processing event !"
         )  # Debug print
 
@@ -1247,9 +1247,9 @@ class TaskFile(patterns.Observer):
         self.__filename = filename
         self.__notifier.setFilename(filename)
         pub.sendMessage("taskfile.filenameChanged", filename=filename)
-        # log.info(
-        print(
-            f"TaskFile.setFilename : Nom de fichier défini sur : {filename}, lastFilename={self.__lastFilename}."
+        log.info(
+            # print(
+            f"TaskFile.setFilename : Nom de fichier défini sur : {filename}, lastFilename={self.__lastFilename} !"
         )
 
     def filename(self):
@@ -1593,8 +1593,8 @@ class TaskFile(patterns.Observer):
 
         Ferme le fichier de tâches et nettoie complètement l'état.
         """
-        # log.info(
-        print(
+        log.info(
+            # print(
             "TaskFile.close Ferme le fichier de tâches, en enregistrant toutes les modifications et en effaçant le contenu."
         )
         # 1. On récupère l'identifiant unique du moniteur
@@ -1603,25 +1603,25 @@ class TaskFile(patterns.Observer):
         if os.path.exists(self.filename()):
             # changes = xml.ChangesXMLReader(self.filename() + ".delta").read()
             try:
-                # log.debug(
-                print(
+                log.debug(
+                    # print(
                     f"TaskFile.close : Essaie de lire le fichier {self.filename()}.delta en mode r et d'enregistrer les changements précédents."
                 )
                 # with open(self.filename() + ".delta", "r") as f:
                 with open(self.filename() + ".delta", "rb") as f:
                     changes = xml.ChangesXMLReader(f).read()
-                    # log.debug(f"TaskFile.close : lit changes = {changes}")
-                    print(f"TaskFile.close : lit changes = {changes}")
+                    log.debug(f"TaskFile.close : lit changes = {changes}")
+                    # print(f"TaskFile.close : lit changes = {changes}")
             except FileNotFoundError as e:
                 # log.exception(
-                print(
+                log.error(
                     f"TaskFile.close : Le fichier {self.filename()}.delta n'existe pas : {e}."
                 )
                 changes = {}
             # Ensure we don't KeyError if the guid isn't present in the delta changes
             changes.pop(self.__monitor.guid(), None)
-            # log.debug(
-            print(
+            log.debug(
+                # print(
                 f"TaskFile.close : Essaie d'écrire les changements {changes} dans le fichier {self.filename()}.delta en mode wb."
             )
             # xml.ChangesXMLWriter(open(self.filename() + ".delta", "wb")).write(
@@ -1638,8 +1638,8 @@ class TaskFile(patterns.Observer):
         lastFilename_to_end = self.__lastFilename
         # self.__lastFilename = self.filename()
         # Il ne faut pas vider filename pour pouvoir le relancer !
-        # log.info("TaskFile.close règle filename sur ''")
-        print("TaskFile.close règle filename sur ''")
+        log.info("TaskFile.close règle filename sur ''")
+        # print("TaskFile.close règle filename sur ''")
         self.setFilename("")
         # # self.__guid = generate()
         # # self.__guid = str(uuid.uuid4())
@@ -1659,13 +1659,14 @@ class TaskFile(patterns.Observer):
             if self.__guid in self.__changes:
                 del self.__changes[self.__guid]
         except Exception:
-            # log.exception("Erreur nettoyage __changes")
-            print("Erreur nettoyage __changes")
+            log.exception("Erreur nettoyage __changes")
+            # print("Erreur nettoyage __changes")
         # On nettoie uniquement ce qui appartient à cette instance
         if hasattr(self, "_TaskFile__changes"):
             self.__changes.clear()
-            # log.debug(
-            print(f"TaskFile.close : Registre local {self.__guid} nettoyé.")
+            log.debug(
+                f"TaskFile.close : Registre local {self.__guid} nettoyé."
+            )
         # self.clear()
 
         # reset monitor
@@ -1686,8 +1687,8 @@ class TaskFile(patterns.Observer):
         )
         self.__needSave = False
         self.__loading = False
-        # log.debug("TaskFile.close terminé avec succès.")
-        print("TaskFile.close terminé avec succès.")
+        log.debug("TaskFile.close terminé avec succès !")
+        # print("TaskFile.close terminé avec succès.")
 
     def stop(self):
         """
@@ -1880,8 +1881,8 @@ class TaskFile(patterns.Observer):
                             guid,
                         ), duplicate_ids = self._read(fd)
                         # Vérifie directement la hiérarchie reconstruite par XMLReader avant toute manipulation de TaskFile.
-                        print(
-                            "TaskFile.load : APRÈS _read :",
+                        log.debug(
+                            "TaskFile.load : APRÈS _read : %s",
                             [
                                 (
                                     n.subject(),
@@ -1895,10 +1896,10 @@ class TaskFile(patterns.Observer):
                                 for n in notes
                             ],
                         )
-                        print(
+                        log.debug(
                             f"TaskFile.load : Données lues : tasks={tasks}, categories={categories}, notes={notes}, syncMLConfig={syncMLConfig}, changes={changes}, guid={guid}"
                         )
-                        print(
+                        log.info(
                             "taskFile.load : Après chargement fichier, nb tâches: %s",
                             len(tasks),
                         )
@@ -1916,7 +1917,7 @@ class TaskFile(patterns.Observer):
                 if duplicate_ids:
                     self._log_duplicate_ids(duplicate_ids)
             else:
-                print(
+                log.info(
                     f"TaskFile.load : Le fichier {filename} n'existe pas, initialisation d'un fichier de tâches vide."
                 )
                 tasks = []
@@ -1926,7 +1927,7 @@ class TaskFile(patterns.Observer):
                 # guid = generate()
                 guid = str(uuid.uuid4())
                 # syncMLConfig = createDefaultSyncConfig(guid)
-            print(
+            log.info(
                 f"TaskFile.load : tasks={tasks}, categories={categories}, notes={notes}, changes={changes}, guid={guid}"
             )
             self.clear()
@@ -1949,8 +1950,8 @@ class TaskFile(patterns.Observer):
             # Protection contre les erreurs d'observateurs lors de l'ajout
             try:
                 # Affiche la hiérarchie reçue directement du XMLReader avant toute insertion.
-                print(
-                    "TaskFile.load : AVANT self.notes().extend(notes) :",
+                log.debug(
+                    "TaskFile.load : AVANT self.notes().extend(notes) : %s",
                     [
                         (
                             n.subject(),
@@ -1973,8 +1974,8 @@ class TaskFile(patterns.Observer):
                 root_notes = self.notes().rootItems()
 
                 # Affiche la hiérarchie immédiatement après l'insertion dans NoteContainer.
-                print(
-                    "TaskFile.load : APRÈS self.notes().extend(notes) :",
+                log.debug(
+                    "TaskFile.load : APRÈS self.notes().extend(notes) : %s",
                     [
                         (
                             n.subject(),
@@ -1996,7 +1997,7 @@ class TaskFile(patterns.Observer):
                     exc_info=True,
                 )
                 # raise
-            print(
+            log.info(
                 f"TaskFile.load : Après extension, {len(self.tasks())} tasks={self.tasks()}, {len(self.categories())} categories={self.categories()}, {len(self.notes())} notes={self.notes()}"
             )
             log.debug(
@@ -2047,7 +2048,7 @@ class TaskFile(patterns.Observer):
 
             if os.path.exists(self.filename()):
                 # We need to reset the changes on disk because we're up to date.
-                print(
+                log.debug(
                     f"TaskFile.load : Réécrit les changements dans {self.filename()}.delta en mode wb."
                 )
                 # xml.ChangesXMLWriter(
@@ -2089,11 +2090,11 @@ class TaskFile(patterns.Observer):
         # except Exception as e:
         #     log.exception("Erreur lors du chargement du fichier de tâches : %s", filename)
         #     raise
-        print(
+        log.debug(
             f"TaskFile.load : ✅ Fichier {filename} chargé. Tâches : {self.tasks()}, Catégories : {self.categories()}"
         )
         for task in self.tasks():
-            print(
+            log.info(
                 f"TaskFile.load :    Tâche {task} -> Catégories : {task.categories()}"
             )
 
@@ -2289,8 +2290,8 @@ class TaskFile(patterns.Observer):
             # Empêche la sauvegarde pour éviter d'écraser un fichier valide
             return
 
-        # log.info(
-        print(
+        log.info(
+            # print(
             f"TaskFile.save : Sauvegarde demandée pour le fichier {self.__filename}. Nombre de tâches : {len(self.tasks())}"
         )
         # Vérifie si le fichier existe déjà
@@ -2303,8 +2304,8 @@ class TaskFile(patterns.Observer):
             shutil.copy2(self.__filename, backup)
 
             # écrit une information dans le log
-            # log.info(f"TaskFile.save : Backup créé : {backup}")
-            print(f"TaskFile.save : Backup créé : {backup}")
+            log.info(f"TaskFile.save : Backup créé : {backup}")
+            # print(f"TaskFile.save : Backup créé : {backup}")
 
         # Appelle la méthode interne qui effectue réellement l'écriture
         self._save(**kwargs)
@@ -2384,8 +2385,8 @@ class TaskFile(patterns.Observer):
             - __changes (dict) : Le dictionnaire de suivi des changements.
             - __saving (bool) : Indique si le fichier est en cours d'enregistrement, évitant des opérations concurrentes.
         """
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"TaskFile.mergeDiskChanges : Début de la fusion des modifications du disque pour {self.__filename}."
         )
         # TODO : peut-être vérifier l'état de __loading avant de commencer !
@@ -2408,8 +2409,8 @@ class TaskFile(patterns.Observer):
                 # Not using self.exists() because DummyFile.exists returns True
                 # Instead of writing the content of memory, merge changes
                 # with the on-disk version and save the result.
-                # log.debug(
-                print(
+                log.debug(
+                    # print(
                     f"TaskFile.mergeDiskChanges : Le fichier {self.__filename} existe, fusion des changements du disque."
                 )
                 # Mettre le moniteur en attente de synchronisation des changements
@@ -2417,8 +2418,8 @@ class TaskFile(patterns.Observer):
                 try:
                     # fd = self._openForRead()
                     with self._openForRead() as fd:
-                        # log.info(
-                        print(
+                        log.info(
+                            # print(
                             f"TaskFile.mergeDiskChanges : fd={fd} ouvert en mode lecture binaire !"
                         )
                         try:
@@ -2441,14 +2442,14 @@ class TaskFile(patterns.Observer):
                     self.__changes = allChanges
 
                     if self.__saving:
-                        # log.debug(
-                        print(
+                        log.debug(
+                            # print(
                             f"TaskFile.mergeDiskChanges : En cours de sauvegarde, fusionne les changements de tous les autres moniteurs dans le moniteur actuel {self.__monitor.guid()}."
                         )
                         for devGUID, changes in list(self.__changes.items()):
                             if devGUID != self.__monitor.guid():
-                                # log.debug(
-                                print(
+                                log.debug(
+                                    # print(
                                     f"TaskFile.mergeDiskChanges : Fusionne les changements du moniteur {devGUID} dans le moniteur actuel {self.__monitor.guid()}."
                                 )
                                 changes.merge(self.__monitor)
@@ -2456,8 +2457,8 @@ class TaskFile(patterns.Observer):
                     # sync = ChangeSynchronizer(self.__monitor, allChanges)
                     sync = ChangeSynchronizer(self.__monitor, self.__changes)
 
-                    # log.debug(
-                    print(
+                    log.debug(
+                        # print(
                         f"TaskFile.mergeDiskChanges : Synchronisation des changements pour les catégories, tâches et notes."
                     )
                     sync.sync(
@@ -2472,7 +2473,7 @@ class TaskFile(patterns.Observer):
                     )
 
                     self.__changes[self.__monitor.guid()] = self.__monitor
-                    print(
+                    log.debug(
                         f"TaskFile.mergeDiskChanges : self.__changes={self.__changes}."
                     )
                     # # après la fusion :
@@ -2481,8 +2482,8 @@ class TaskFile(patterns.Observer):
                     #         # Effacer
                     #         del self.__changes[the_task]
                     # self.cleaner_after_merge()
-                    # log.debug(
-                    print(
+                    log.debug(
+                        # print(
                         f"TaskFile.mergeDiskChanges : Changements fusionnés, moniteur actuel {self.__monitor.guid()} mis à jour avec les changements fusionnés."
                     )
                 finally:
@@ -2496,7 +2497,7 @@ class TaskFile(patterns.Observer):
                         hasattr(self, "_TaskFile__changeMonitor")
                         and self._TaskFile__changeMonitor
                     ):
-                        print(
+                        log.debug(
                             f"TaskFile.mergeDiskChanges : relance du moniteur {self._TaskFile__changeMonitor}."
                         )
                         # self.__changeMonitor.start()
@@ -2515,23 +2516,24 @@ class TaskFile(patterns.Observer):
                     self.__monitor.thaw()
 
             else:
-                # log.debug(
-                print(
+                log.debug(
+                    # print(
                     f"TaskFile.mergeDiskChanges : Le fichier {self.__filename} n'existe pas, aucune fusion nécessaire, initialisation des changements avec le moniteur actuel {self.__monitor.guid()}."
                 )
                 self.__changes = {self.__monitor.guid(): self.__monitor}
 
             if not self.tasks() and not os.path.exists(self.__filename):
-                # log.warning(
-                print("mergeDiskChanges aborted: no tasks and no file on disk")
+                log.warning(
+                    "mergeDiskChanges aborted: no tasks and no file on disk"
+                )
                 return
-                # log.debug(
-                print(
+                log.debug(
+                    # print(
                     f"TaskFile.mergeDiskChanges : Fusion des changements terminée, réinitialisation de tous les changements dans le moniteur actuel {self.__monitor.guid()}."
                 )
             self.__monitor.resetAllChanges()
-            # log.debug(
-            print(
+            log.debug(
+                # print(
                 f"TaskFile.mergeDiskChanges : Enregistrement des changements fusionnés dans le fichier {self.__filename}.delta."
             )
             # fd = self._openForWrite(".delta")
@@ -2541,14 +2543,14 @@ class TaskFile(patterns.Observer):
             #     fd.close()
             with self._openForWrite(".delta") as fd:
                 # with open(self.filename() + ".delta", "w+b") as fd:
-                # log.debug(
-                print(
+                log.debug(
+                    # print(
                     f"TaskFile.mergeDiskChanges : fd={fd} ouvert en mode écriture binaire pour les changements fusionnés !"
                 )
                 writer = xml.ChangesXMLWriter(fd)
                 writer.write(self.changes())
-                # log.debug(
-                print(
+                log.debug(
+                    # print(
                     f"TaskFile.mergeDiskChanges : Changements fusionnés écrits dans {self.__filename}.delta avec succès."
                 )
                 # fd.close()
@@ -2590,20 +2592,20 @@ class TaskFile(patterns.Observer):
 
         # 3. Purge radicale de self.__changes (votre méthode de nettoyage actuelle)
         if hasattr(self, "__changes"):
-            print(f"effacement de self.__changes={self.__changes}")
+            log.debug(f"effacement de self.__changes={self.__changes}")
             self.__changes.clear()
 
         # Nettoyage des dictionnaires locaux
         # Si la méthode changes() renvoie une copie ou un dictionnaire sous-jacent :
         if hasattr(self, "_TaskFile__changes") and self._TaskFile__changes:
-            print(
+            log.debug(
                 f"effacement de self._TaskFile__changes={self._TaskFile__changes}"
             )
             self._TaskFile__changes.clear()
         if hasattr(self, "__changes") and self.__changes:
             self.__changes.clear()
-        print(
-            "TaskFile.mergeDiskChanges : Fusion terminée et ChangeMonitor réaligné."
+        log.debug(
+            "TaskFile.mergeDiskChanges : Fusion terminée et ChangeMonitor réaligné !"
         )
 
     def saveas(self, filename):
@@ -2652,10 +2654,10 @@ class TaskFile(patterns.Observer):
             self.rememberCategoryLinks(categoryMap, self.notes())
 
             # Enregistrer les liens de catégorie pour les tâches et notes du mergeFile
-            print(
+            log.debug(
                 f"TaskFile.merge : Enregistrement des liens de catégorie pour les tâches et notes du mergeFile id {id(mergeFile)}."
             )
-            print(
+            log.debug(
                 f"TaskFile.merge : mergeFile.tasks()={mergeFile.tasks()}, mergeFile.notes()={mergeFile.notes()}."
             )
             self.rememberCategoryLinks(categoryMap, mergeFile.tasks())
@@ -2665,7 +2667,7 @@ class TaskFile(patterns.Observer):
             self.tasks().removeItems(
                 self.objectsToOverwrite(self.tasks(), mergeFile.tasks())
             )
-            print(
+            log.debug(
                 f"TaskFile.merge : Fusion des tâches du mergeFile id {id(mergeFile)} dans self.tasks() id {id(self.tasks())}."
             )
             self.tasks().extend(mergeFile.tasks().rootItems())
@@ -2674,7 +2676,7 @@ class TaskFile(patterns.Observer):
             self.notes().removeItems(
                 self.objectsToOverwrite(self.notes(), mergeFile.notes())
             )
-            print(
+            log.debug(
                 f"TaskFile.merge : Fusion des notes du mergeFile id {id(mergeFile)} dans self.notes() id {id(self.notes())}."
             )
             self.notes().extend(mergeFile.notes().rootItems())
@@ -2685,13 +2687,13 @@ class TaskFile(patterns.Observer):
                     self.categories(), mergeFile.categories()
                 )
             )
-            print(
+            log.debug(
                 f"TaskFile.merge : Fusion des catégories du mergeFile id {id(mergeFile)} dans self.categories() id {id(self.categories())}."
             )
             self.categories().extend(mergeFile.categories().rootItems())
             # Restaurer les liens après la fusion.
             self.restoreCategoryLinks(categoryMap)
-            print(
+            log.debug(
                 f"TaskFile.merge : Restauration des liens de catégorie après la fusion du mergeFile id {id(mergeFile)}."
             )
             mergeFile.close()
@@ -2760,12 +2762,12 @@ class TaskFile(patterns.Observer):
                         categoryToLinkLater.id(), []
                     ).append(categorizable)
                 else:
-                    # log.warning(
-                    print(
+                    log.warning(
+                        # print(
                         f"TaskFile.rememberCategoryLinks : ⚠️ Catégorie introuvable pour l'objet {categorizable} (ID: {categorizable.id()})"
                     )
-                    print(
-                        f"TaskFile.rememberCategoryLinks : Ignorer un lien de catégorie avec une catégorie None ou une catégorie sans ID pour l'objet catégorisable {categorizable}."
+                    log.debug(
+                        f"TaskFile.rememberCategoryLinks : Ignorer un lien de catégorie avec une catégorie None ou une catégorie sans ID pour l'objet catégorisable {categorizable} !"
                     )
 
     def restoreCategoryLinks(self, categoryMap):
@@ -2785,7 +2787,7 @@ class TaskFile(patterns.Observer):
         categories = self.categories()
         for categoryId, categorizables in categoryMap.items():
             if categoryId is None:
-                print(
+                log.debug(
                     f"TaskFile.restoreCategoryLinks: ⚠️ categoryId est None dans categoryMap pour les objets : {categorizables}"
                 )
                 continue  # Éviter les None
@@ -2794,25 +2796,25 @@ class TaskFile(patterns.Observer):
             # except IndexError:
             #     continue  # Subcategory was removed by the merge
             except (IndexError, AttributeError):
-                print(
+                log.error(
                     f"TaskFile.restoreCategoryLinks: ⚠️ Catégorie avec ID {categoryId} introuvable dans self.categories()"
                 )
                 continue  # La catégorie n'existe pas
                 # La sous-catégorie a été supprimée par la fusion
             for categorizable in categorizables:
                 if categorizable is None:
-                    print(
+                    log.debug(
                         f"TaskFile.restoreCategoryLinks: ⚠️ Objet catégorisable est None dans categoryMap pour la catégorie {categoryId}"
                     )
                     continue
                 try:
                     categorizable.addCategory(categoryToLink)
                     categoryToLink.addCategorizable(categorizable)
-                    print(
+                    log.debug(
                         f"TaskFile.restoreCategoryLinks: ✅ Lien restauré entre {categorizable} et {categoryToLink}"
                     )
                 except Exception as e:
-                    print(
+                    log.exception(
                         f"TaskFile.restoreCategoryLinks: ⚠️ Échec de la restauration du lien pour {categorizable} : {e}"
                     )
 
@@ -3059,17 +3061,17 @@ class LockedTaskFile(TaskFile):
             (FileLock or DummyLockFile) : L'instance de fichier de verrouillage.
         """
         if operating_system.isWindows() and self.__isCloud(filename):
-            print(
+            log.debug(
                 f"LockedTaskFile.__createLockFile : {filename} est dans un répertoire synchronisé avec le cloud sur Windows, utilisation de DummyLockFile."
             )
             return DummyLockFile()
         if self.__isFuse(filename):
-            print(
+            log.debug(
                 f"LockedTaskFile.__createLockFile : {filename} est dans un système de fichiers FUSE, utilisation de lockfile.MkdirFileLock."
             )
             return lockfile.MkdirFileLock(filename)
         # Création et retourne un objet FileLock pour le nom de fichier donné.
-        print(
+        log.debug(
             f"LockedTaskFile.__createLockFile : {filename} est dans un système de fichiers standard, utilisation de lockfile.FileLock."
         )
         # return lockfile.FileLock(filename)
@@ -3077,8 +3079,8 @@ class LockedTaskFile(TaskFile):
             filename
         )  # Lock access to a file using atomic property of link(2).
         # log.debug(
-        print(
-            f"LockedTaskFile.__createLockFile : a Créé un lockfile pour {filename} : {lockfile_to_return}"
+        log.debug(
+            f"LockedTaskFile.__createLockFile : a Créé un lockfile pour {filename} : {lockfile_to_return} !"
         )
         return lockfile_to_return
 
@@ -3092,8 +3094,8 @@ class LockedTaskFile(TaskFile):
         # )
         # return filename + ".lock"
         path_of_lockfile = filename + ".lock"
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"LockedTaskFile.__getLockPath : Le chemin du fichier de verrouillage pour {filename} est {path_of_lockfile}"
         )
         return path_of_lockfile
@@ -3108,8 +3110,8 @@ class LockedTaskFile(TaskFile):
             (bool) : True si le fichier de tâche est verrouillé, False sinon.
         """
         # return self.__lock and self.__lock.is_locked()
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"LockedTaskFile.is_locked : Vérifie si le fichier de tâches est verrouillé avec self.__lock={self.__lock} et self.__lock_acquired={self.__lock_acquired}"
         )
         return self.__lock is not None and self.__lock_acquired
@@ -3121,7 +3123,7 @@ class LockedTaskFile(TaskFile):
         Returns :
             (bool) : True si le fichier de tâches est verrouillé par le processus en cours, False sinon.
         """
-        print(
+        log.debug(
             f"LockedTaskFile.is_locked_by_me : Vérifie si le fichier de tâches est verrouillé par ce processus avec self.__lock={self.__lock} et self.__lock_acquired={self.__lock_acquired}"
         )
         # return self.is_locked() and self.__lock.i_am_locking()  # i_am_locking ne fonctionne pas avec fastener.
@@ -3139,23 +3141,23 @@ class LockedTaskFile(TaskFile):
         be released (best effort release). After releasing,
         it sets the lock to None and updates the lock_acquired flag.
         """
-        print(
+        log.debug(
             f"LockedTaskFile.release_lock : Tentative de libération du verrou pour {self.filename()} avec self.__lock={self.__lock} et self.__lock_acquired={self.__lock_acquired}."
         )
         # if self.is_locked_by_me():
         #     self.__lock.release()
         if self.__lock is not None and self.__lock_acquired:
             try:
-                print(
+                log.debug(
                     f"LockedTaskFile.release_lock : Libération du verrou pour {self.filename()} avec self.__lock={self.__lock}."
                 )
                 self.__lock.release()
             except Exception as e:
-                print(
+                log.exception(
                     f"LockedTaskFile.release_lock : Erreur lors de la libération du verrou pour {self.filename()} : {e}. Ignorée."
                 )
                 pass  # Best effort release
-            print(
+            log.debug(
                 f"LockedTaskFile.release_lock : Redéfinition de self.__lock à None et self.__lock_acquired à False pour {self.filename()}."
             )
             self.__lock_acquired = False
@@ -3176,7 +3178,7 @@ class LockedTaskFile(TaskFile):
         Args :
             filename (str) : Le nom du fichier à verrouiller.
         """
-        print(
+        log.debug(
             f"LockedTaskFile.acquire_lock : Tentative d'acquisition du verrou pour {filename}."
         )
         # Vérifier si le fichier actuel est déjà verrouillé par le processus en cours.
@@ -3184,7 +3186,7 @@ class LockedTaskFile(TaskFile):
         #     self.__lock = self.__createLockFile(filename)
         #     self.__lock.acquire(5)
         if self.is_locked_by_me():
-            print(
+            log.debug(
                 f"LockedTaskFile.acquire_lock : Le fichier de tâches est déjà verrouillé par ce processus, pas besoin d'acquérir à nouveau le verrou pour {filename}."
             )
             return  # Already holding the lock
@@ -3192,14 +3194,14 @@ class LockedTaskFile(TaskFile):
         # Création d'un objet FileLock pour le nom de fichier donné.
         # Création du nom du fichier de verrouillage.
         lock_path = self.__getLockPath(filename)
-        print(
+        log.debug(
             f"LockedTaskFile.acquire_lock : Tentative d'acquisition du verrou pour {filename} avec lock_path={lock_path}."
         )
         # Create the lock file only once, and reuse it for subsequent acquisitions.
         # try:
         self.__lock = fasteners.InterProcessLock(lock_path)
         # self.__lock = self.__createLockFile(lock_path)
-        print(
+        log.debug(
             f"LockedTaskFile.acquire_lock : Créé le verrou pour {filename} : {self.__lock}"
         )
         try:
@@ -3209,27 +3211,27 @@ class LockedTaskFile(TaskFile):
             acquired = self.__lock.acquire(
                 timeout=0.5
             )  # timeout en secondes, pas en millisecondes. timeout=0.1 est équivalent à un non-blocking.
-            print(
+            log.debug(
                 f"LockedTaskFile.acquire_lock : Tentative d'acquisition du verrou pour {filename} a retourné {acquired}."
             )
             if not acquired:
-                print(
+                log.debug(
                     f"LockedTaskFile.acquire_lock : Échec de l'acquisition du verrou pour {filename}, le fichier est verrouillé par un autre processus."
                 )
                 self.__lock = None
                 raise LockTimeout(f"File is locked: {filename}")
-            print(
+            log.debug(
                 f"LockedTaskFile.acquire_lock : Verrou acquis pour {filename} avec self.__lock={self.__lock}."
             )
             self.__lock_acquired = True
         except LockTimeout:
-            print(
+            log.exception(
                 f"LockedTaskFile.acquire_lock : LockTimeout : Le fichier {filename} est verrouillé par un autre processus, verrou non acquis."
             )
             self.__lock_acquired = False
             raise
         except (PermissionError, OSError) as e:
-            print(
+            log.error(
                 f"LockedTaskFile.acquire_lock : LockFailed : Impossible d'acquérir le verrou pour {filename} en raison de l'erreur : {e}"
             )
             self.__lock = None
@@ -3242,23 +3244,23 @@ class LockedTaskFile(TaskFile):
         Args :
             filename (str) : Le nom de fichier sur lequel briser le verrou.
         """
-        print(
+        log.info(
             f"LockedTaskFile.break_lock : Tentative de briser le verrou pour {filename}."
         )
         # self.__lock = self.__createLockFile(filename)
         # self.__lock.break_lock()
         lock_path = self.__getLockPath(filename)
-        print(
+        log.info(
             f"LockedTaskFile.break_lock : Le chemin du fichier de verrouillage pour {filename} est {lock_path}."
         )
         try:
             if os.path.exists(lock_path):
-                print(
+                log.debug(
                     f"LockedTaskFile.break_lock : Le fichier de verrouillage {lock_path} existe, tentative de suppression."
                 )
                 os.remove(lock_path)
         except OSError:
-            print(
+            log.error(
                 f"LockedTaskFile.break_lock : Erreur lors de la suppression du fichier de verrouillage {lock_path}, il peut être nécessaire de le supprimer manuellement !"
             )
             pass  # If we can't remove it, acquire will fail anyway
@@ -3271,12 +3273,12 @@ class LockedTaskFile(TaskFile):
             if self.filename() and os.path.exists(self.filename()):
                 self.acquire_lock(self.filename())
 
-            print(
+            log.info(
                 f"LockedTaskFile.close : Fermeture du fichier de tâches {self.filename()} avec verrouillage."
             )
             super().close()
         finally:
-            print(
+            log.info(
                 f"LockedTaskFile.close : Relâchement du verrou pour {self.filename()} après la fermeture."
             )
             if self.__lock_acquired:  # Vérifier avant relâche
@@ -3294,8 +3296,7 @@ class LockedTaskFile(TaskFile):
             lock (bool) : (optional) S'il faut acquérir un verrou. La valeur par défaut est True.
             breakLock (bool) : (optional) S'il faut briser un verrou existant. La valeur par défaut est False.
         """
-        # log.debug(
-        print(
+        log.info(
             f"LockedTaskFile.load : Appelé avec self={self}, filename={filename}, lock={lock}, breakLock={breakLock}"
         )
         filename = filename or self.filename()
@@ -3306,21 +3307,19 @@ class LockedTaskFile(TaskFile):
         try:
             if lock and filename:
                 if breakLock:
-                    # log.debug(
-                    print(
+                    log.debug(
                         f"LockedTaskFile.load : Brise le verrou de {filename}."
                     )
                     self.break_lock(filename)
-                # log.debug(
-                print(
+                log.debug(
                     f"LockedTaskFile.load : Acquière un verrou pur {filename}.lock."
                 )
                 self.acquire_lock(filename)
-            # log.debug(f"LockedTaskFile.load : Charge le fichier {filename}.")
-            print(f"LockedTaskFile.load : Charge le fichier {filename}.")
+            log.debug(f"LockedTaskFile.load : Charge le fichier {filename}.")
+            # print(f"LockedTaskFile.load : Charge le fichier {filename}.")
             return super().load(filename)
         except Exception:
-            print(
+            log.error(
                 f"LockedTaskFile.load : Erreur lors du chargement du fichier {filename}, le verrou restera en place pour éviter les problèmes de sécurité des données."
             )
             # # Release lock if load fails ! NON, sinon on peut perdre le verrou en cas d'erreur de parsing XML,
@@ -3331,8 +3330,8 @@ class LockedTaskFile(TaskFile):
             raise
         # Le verrou doit être maintenu tant que le fichier est ouvert.
         finally:  # <-- SUPPRIMER LE FINALLY qui relâche le verrou en cas de succès.
-            # log.debug("LockedTaskFile.load : Finalement relâche le verrou.")
-            print("LockedTaskFile.load : Finalement relâche le verrou.")
+            log.debug("LockedTaskFile.load : Finalement relâche le verrou.")
+            # print("LockedTaskFile.load : Finalement relâche le verrou.")
             if self.__lock_acquired:  # Vérifier avant relâche
                 self.release_lock()  # Cela relâche le verrou systématiquement à la fin du chargement.
             # C'est une erreur majeure si l'intention est de garder le fichier verrouillé
@@ -3350,21 +3349,19 @@ class LockedTaskFile(TaskFile):
         Args :
             **kwargs : arguments de mots clés supplémentaires.
         """
-        # log.debug(
-        print(
+        log.info(
             f"LockedTaskFile.save : Appelé avec self={self}, kwargs={kwargs}"
         )
 
         # self.acquire_lock(self.filename())
         # We should already hold the lock from load()
         if not self.is_locked_by_me() and self.filename():
-            # log.debug(
-            print(
+            log.debug(
+                # print(
                 f"LockedTaskFile.save : Acquière un verrou pour {self.filename()} avant de sauvegarder."
             )
             self.acquire_lock(self.filename())
-            # log.debug(
-            print(
+            log.debug(
                 f"LockedTaskFile.save : Verrou acquis pour {self.filename()}, maintenant en train de sauvegarder."
             )
         try:
@@ -3375,8 +3372,8 @@ class LockedTaskFile(TaskFile):
         # Philosophie incohérente : Si le verrou doit être maintenu pendant toute la session (comme expliqué dans load()), il ne faut jamais le relâcher automatiquement après save().
         # Impact : Une autre instance ou processus pourrait modifier le fichier pendant que la session est encore active mais que le verrou a été relâché.
         finally:
-            print(
-                f"LockedTaskFile.save : Relâchement du verrou pour {self.filename()} après la sauvegarde."
+            log.info(
+                f"LockedTaskFile.save : Relâchement du verrou pour {self.filename()} après la sauvegarde !"
             )
             self.release_lock()
         # return super().save(**kwargs)
@@ -3394,13 +3391,13 @@ class LockedTaskFile(TaskFile):
         # We should already hold the lock from load()
         try:
             if not self.is_locked_by_me() and self.filename():
-                print(
+                log.debug(
                     f"LockedTaskFile.mergeDiskChanges : Acquière un verrou pour {self.filename()} avant de fusionner les changements du disque."
                 )
                 self.acquire_lock(self.filename())
             super().mergeDiskChanges()
         finally:
-            print(
+            log.debug(
                 f"LockedTaskFile.mergeDiskChanges : Relâchement du verrou pour {self.filename()} après la fusion des changements du disque."
             )
             if self.__lock_acquired:  # Vérifier avant relâche

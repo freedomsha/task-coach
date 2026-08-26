@@ -264,7 +264,7 @@ class Attribute(object):
         if owner is not None:
             # Vérifie si la nouvelle valeur est différente de l'actuelle pour éviter les appels d'événements inutiles.
             if value == self.__value:
-                print(
+                log.debug(
                     f"Attribute.set : La valeur de {self} est déjà définie ainsi : {value}"
                 )
                 return False

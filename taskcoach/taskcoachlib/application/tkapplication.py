@@ -199,7 +199,9 @@ class TkinterApplication(
 
         self.initTwisted()
         # self.registerApp()
-        self.init(**kwargs)  # 1er appel à init ! Le suivant est dans taskcoach.py.
+        self.init(
+            **kwargs
+        )  # 1er appel à init ! Le suivant est dans taskcoach.py.
 
         # Remplacement de l'initialisation du sessionMonitor
         if operating_system.isGTK():

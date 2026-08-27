@@ -307,8 +307,8 @@ class SynchronizedObject(object):
             )  # On met STATUS_NEW UNIQUEMENT si rien n'est défini
         has_old_status = False
         # sauf si on veut forcer un autre statut via kwargs
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"SynchronizedObject.__init__ : ✅ Après assignation : self.__status = {self.__status}"
         )
         # print(
@@ -332,7 +332,7 @@ class SynchronizedObject(object):
             super().__init__(*args, **kwargs)
         except TypeError:
             super().__init__()
-        print("SynchronizedObject : Initialisé !")
+        log.info("SynchronizedObject : Initialisé !")
 
     @classmethod
     def markDeletedEventType(class_):
@@ -374,8 +374,8 @@ class SynchronizedObject(object):
         Returns :
             dict : L'état de l'objet, incluant l'état de synchronisation.
         """
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             "Synchronized.__getstate__ : avant super status =",
             self.getStatus(),
         )
@@ -384,12 +384,12 @@ class SynchronizedObject(object):
             state = super().__getstate__()
         except AttributeError:
             state = dict()
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"Synchronized.__getstate__ : après super status = {self.getStatus()}"
         )
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"SynchronizedObject.__getstate__ : après super et avant update state={state}."
         )
         # TODO :
@@ -401,7 +401,7 @@ class SynchronizedObject(object):
         state["status"] = self.__status
 
         # ---^ : Member 'object' of 'object | dict[Any, Any]' does not have attribute '__setitem__'
-        print(f"SynchronizedObject.__getstate__ : retourne state {state}.")
+        log.info(f"SynchronizedObject.__getstate__ : retourne state {state} !")
         return state
 
     @patterns.eventSource
@@ -421,8 +421,8 @@ class SynchronizedObject(object):
             state (dict) : L’état à définir. Etat sauvegardé de l'objet.
             event : (event) L'événement optionnel associé à la définition de l'état à transmettre.
         """
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"SynchronizedObject.__setstate__ : pour state {state} et event {event}."
         )
 
@@ -567,8 +567,8 @@ class SynchronizedObject(object):
         #     # print("🟡 getStatus : self.__status est None → Forçage à STATUS_CHANGED (2)")
         #     self.__status = self.STATUS_CHANGED  # Force le recalcul
 
-        # log.debug(
-        print(
+        log.debug(
+            # print(
             f"✅ SynchronizedObject.getStatus renvoie {self.__status} - de type {type(self.__status)} pour l'objet {self}."
         )
         return self.__status
@@ -604,7 +604,7 @@ class SynchronizedObject(object):
         if self.__status == self.STATUS_NONE or force:
             self.__status = self.STATUS_CHANGED
             # print(f"SynchronizedObject.setStatusDirty : 🛑 DEBUG - Modification de self.__status pour {self} : {self.__status}")
-            print(
+            log.debug(
                 f"SynchronizedObject.setStatusDirty : 🛑 Modification de self.__status pour {self} : {self.__status}"
             )
 
@@ -955,7 +955,7 @@ class Object(SynchronizedObject):
             selectedIcon (str) : Chemin vers l'icône utilisée lorsque l'objet est sélectionné.
             ordering (int) : Un entier représentant l'ordre de tri de l'objet parmi ses pairs.
         """
-        print(f"Object.__init__ : reçoit args={args} et kwargs={kwargs}")
+        log.info(f"Object.__init__ : reçoit args={args} et kwargs={kwargs}")
         # print(f"Object.__init__ : self avant init={self}")  # AttributeError: 'CompositeObject' object has no attribute '_Object__subject'
         # Récupère et définit
         Attribute = attribute.Attribute  # Raccourci pour la classe Attribute
@@ -1700,27 +1700,32 @@ class Object(SynchronizedObject):
         # assert state["selectedIcon"] == new_state["selectedIcon"]
 
         # Construction explicite du dictionnaire d'état.
-        print("Object.__getstate__() : Appelé par ", self.__class__.__name__)
+        log.debug(
+            "Object.__getstate__() : Appelé par ", self.__class__.__name__
+        )
         # try:
         #     # On récupère l'état hérité (ex : depuis SynchronizedObject)
         #     state = super().__getstate__()
         # except AttributeError:
         #     state = dict()
         state = self.safe_super_state(self, Object)
-        print(f"Object.__getstate__() après super et avant update: {state}")
+        log.debug(
+            f"Object.__getstate__() après super et avant update: {state}"
+        )
         # log.debug(f"Object.__getstate__() : state avant update: {state}")
         # log.debug(f"DEBUG - Object.__getstate__() avant update subject.get() : {self.__subject.get()}")
         # if hasattr(self, 'subject'):
         #     log.debug(f"Object.__setstate__() - subject avant update: {self.subject}")
         # else:
         if not hasattr(self, "subject"):
-            # log.debug(
-            print("Object.__setstate__() - subject non défini avant update.")
+            log.debug(
+                "Object.__setstate__() - subject non défini avant update."
+            )
 
         # On ajoute uniquement les champs publics attendus,
         # extraits via les attributs "Attribute".
         # Extraction propre des valeurs scalaires
-        print(f"Object.__getstate__() : update")
+        log.debug(f"Object.__getstate__() : update")
         state.update(
             dict(
                 id=self.__id,  # Identifiant unique de l'objet
@@ -1736,7 +1741,7 @@ class Object(SynchronizedObject):
                 selectedIcon=self.__selectedIcon.get(),  # Ordre d'affichage ou de tri
             )
         )
-        print(
+        log.debug(
             f"Object.__getstate__() : state après update: {state} avant nettoyage"
         )
         # Object.__getstate__ ne doit JAMAIS filtrer les attributs des sous-classes
@@ -1772,16 +1777,18 @@ class Object(SynchronizedObject):
                 # if key.startswith("_"):
                 del state[key]
 
-        print(
+        log.debug(
             f"Object.__getstate__() : state après nettoyage: {state} avant validation"
         )
         self.validate_state(state)
 
-        print("Object.__getstate : GETSTATE KEYS =", sorted(state.keys()))
+        log.debug("Object.__getstate : GETSTATE KEYS =", sorted(state.keys()))
 
         # DEBUG : Affichage de l'état sérialisé pour vérification
-        # log.debug(f"DEBUG - Object.__getstate__() renvoie : {state}")
-        print(f"Object.__getstate__() renvoie : {state} après validation !")
+        log.debug(
+            f"Object.__getstate__() renvoie : {state} après validation !"
+        )
+        # print(f"Object.__getstate__() renvoie : {state} après validation !")
         #
         return state
 
@@ -1855,14 +1862,14 @@ class Object(SynchronizedObject):
             state (dict) : L’état à définir.
             event : (event) L'événement associé à la définition de l'état.
         """
-        print(
+        log.info(
             f"Object.__setstate__ : avant super, state={state} et event={event} avec l'id(event)={id(event)}."
         )
-        print("DEBUG Object.__setstate__ AVANT super : self.__dict__=")
-        print(self.__dict__)
-        print("Liste des attributs:")
+        log.debug("DEBUG Object.__setstate__ AVANT super : self.__dict__=")
+        log.debug(self.__dict__)
+        log.debug("Liste des attributs:")
         for key in state:
-            print(key)
+            log.debug(key)
 
         # Toujours recréer les conteneurs d'attributs d'abord
         self.createAttributes()
@@ -1889,7 +1896,7 @@ class Object(SynchronizedObject):
         try:
             super().__setstate__(filtered_state, event=event)
         except AttributeError as error:
-            print("ERREUR super().__setstate__ :", error)
+            log.error("ERREUR super().__setstate__ :", error)
             raise
         # log.debug(f"Object.__setstate__() - Entrée, state dict: {state}")
 
@@ -2232,9 +2239,9 @@ class Object(SynchronizedObject):
             (Object) : Une nouvelle instance reconstruite de l'objet avec le même état.
         """
         state = self.__getcopystate__()
-        print("Object.copy : DEBUG - COPY STATE =", state)
+        log.debug("Object.copy : DEBUG - COPY STATE =", state)
         # print(f"object.Object.__getcopystate__ : DEBUG - __getcopystate__() : {state}")  # Ajoute ce print
-        print(f"{self.__class__.__name__}.copy() state={state}")
+        log.debug(f"{self.__class__.__name__}.copy() state={state}")
 
         copied_object = self.__class__(**state)
         # return self.__class__(**state)  # Accessor kind: Getter
@@ -2931,30 +2938,35 @@ class Object(SynchronizedObject):
     # --- Effective Event Handlers ---
 
     def _onEffectiveFgColorChanged(self, event):
-        print(
-            "_onEffectiveFgColorChanged event =",
+        log.debug(
+            "_onEffectiveFgColorChanged event =%s %s",
             event,
             id(event) if event else None,
         )
         event.addSource(self, type=self.effectiveFgColorChangedEventType())
 
     def _onEffectiveBgColorChanged(self, event):
-        print(
-            "_onEffectiveBgColorChanged event =",
+        log.debug(
+            "_onEffectiveBgColorChanged event =%s %s",
             event,
             id(event) if event else None,
         )
         event.addSource(self, type=self.effectiveBgColorChangedEventType())
 
     def _onEffectiveIconChanged(self, event):
-        print(
-            "_onEffectiveIconChanged event =",
+        log.debug(
+            "_onEffectiveIconChanged event =%s %s",
             event,
             id(event) if event else None,
         )
         event.addSource(self, type=self.effectiveIconChangedEventType())
 
     def _onEffectiveFontChanged(self, event):
+        log.debug(
+            "_onEffectiveFontChanged event =%s %s",
+            event,
+            id(event) if event else None,
+        )
         event.addSource(self, type=self.effectiveFontChangedEventType())
 
     # --- Effective Event Types ---
@@ -3149,7 +3161,9 @@ class CompositeObject(
         Returns :
             state (dict) : Le dictionnaire d'état pour créer une copie.
         """
-        print("CompositeObject.__getcopystate__ : enfants =", self.children())
+        log.debug(
+            "CompositeObject.__getcopystate__ : enfants =", self.children()
+        )
         try:
             state = super().__getcopystate__()
         except AttributeError:

@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 # Malheureusement, je ne peux pas convertir directement le fichier tooltip.py de wxPython à Tkinter.
 # C'est une tâche complexe qui demande une connaissance approfondie des deux frameworks, et une simple conversion ligne par ligne n'est pas possible en raison de leurs architectures et de leurs systèmes de gestion d'événements fondamentalement différents.
 #
@@ -173,7 +174,7 @@ import tkinter as tk
 from tkinter import Toplevel, Label
 import textwrap
 
-from taskcoachlib.widgets import SimpleToolTip
+# from taskcoachlib.widgets import SimpleToolTip  # TODO : !?
 
 
 class ToolTip:
@@ -184,7 +185,9 @@ class ToolTip:
     qui apparaît lorsque la souris reste sur un widget pendant un court instant.
     """
 
-    def __init__(self, widget, text="ToolTip", wraplength=250, delay=500, **kwargs):
+    def __init__(
+        self, widget, text="ToolTip", wraplength=250, delay=500, **kwargs
+    ):
         # def __init__(self, widget, delay=500):
         """
         Initialise l'info-bulle.
@@ -252,17 +255,23 @@ class ToolTip:
         """
         # Crée la fenêtre de l'info-bulle
         self.tooltip_window = Toplevel(self.widget)
-        self.tooltip_window.wm_overrideredirect(True)  # Masque la barre de titre et les bordures
-        self.tooltip_window.wm_attributes("-topmost", True)  # Rends la fenêtre toujours visible au-dessus
+        self.tooltip_window.wm_overrideredirect(
+            True
+        )  # Masque la barre de titre et les bordures
+        self.tooltip_window.wm_attributes(
+            "-topmost", True
+        )  # Rends la fenêtre toujours visible au-dessus
 
         # Crée une étiquette pour le texte
-        label = Label(self.tooltip_window,
-                      text=self.text,
-                      background="#ffffe0",  # Couleur de fond jaune pâle typique des info-bulles
-                      relief="solid",
-                      borderwidth=1,
-                      justify="left",
-                      font=("Arial", 10))
+        label = Label(
+            self.tooltip_window,
+            text=self.text,
+            background="#ffffe0",  # Couleur de fond jaune pâle typique des info-bulles
+            relief="solid",
+            borderwidth=1,
+            justify="left",
+            font=("Arial", 10),
+        )
         label.pack(padx=2, pady=2)
 
         # Calcule et définit la position de la fenêtre
@@ -285,7 +294,9 @@ class ToolTip:
             self.tooltip_window = None
 
 
-ToolTipMixin = SimpleToolTip = ToolTip  # Alias pour compatibilité avec le code existant
+ToolTipMixin = SimpleToolTip = (
+    ToolTip  # Alias pour compatibilité avec le code existant
+)
 
 
 # Exemple d'utilisation

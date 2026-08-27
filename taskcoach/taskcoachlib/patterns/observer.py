@@ -82,6 +82,8 @@ import functools
 from pubsub import pub
 import os
 
+log = logging.getLogger(__name__)
+
 # Optionally install a tracer for PyPubSub sendMessage calls when
 # TASKCOACH_TRACE_PUBSUB is set. This helps debugging why TaskFile
 # (which listens via pubsub) does or does not receive messages.
@@ -91,11 +93,13 @@ if os.environ.get("TASKCOACH_TRACE_PUBSUB") in ("1", "true", "True"):
 
         def _traced_sendMessage(topic, *args, **kwargs):
             try:
-                print(
-                    f"pub.sendMessage: topic={topic!r}, args={args}, kwargs={kwargs}"
+                log.debug(
+                    f"_traced_sendMessage : pub.sendMessage: topic={topic!r}, args={args}, kwargs={kwargs}"
                 )
             except Exception:
-                print("pub.sendMessage: (trace) failed to stringify message")
+                log.exception(
+                    "_trace_sendMessage : pub.sendMessage: (trace) failed to stringify message"
+                )
             return _orig_sendMessage(topic, *args, **kwargs)
 
         pub.sendMessage = _traced_sendMessage
@@ -106,8 +110,6 @@ if os.environ.get("TASKCOACH_TRACE_PUBSUB") in ("1", "true", "True"):
 # - W0142: * or ** magic
 # - W0622: Redefining builtin types
 # pylint: disable=W0142,W0622
-
-log = logging.getLogger(__name__)
 
 
 class List(list):
@@ -750,7 +752,7 @@ class Event(object):
         """
         # Publisher().notifyObservers(self)
         if getattr(self, "_sending", False):
-            print("Event send : Cycle détecté dans les événements.")
+            # print("Event send : Cycle détecté dans les événements.")
             log.error("Event send : Cycle détecté dans les événements.")
             return
         self._sending = True
@@ -851,7 +853,7 @@ def eventSource(f):
         )
         return result
 
-    print("eventSource : retourne decorator !")
+    log.debug("eventSource : retourne decorator !")
     return decorator
 
 
@@ -1312,7 +1314,7 @@ class Publisher(object, metaclass=singleton.Singleton):
 
         if not event.sources():
             if trace_pubsub:
-                print(
+                log.debug(
                     f"Publisher.notifyObservers: event has no sources, event={event}"
                 )
             return
@@ -1345,17 +1347,15 @@ class Publisher(object, metaclass=singleton.Singleton):
 
         if trace_pubsub:
             try:
-                print(
-                    "Publisher.notifyObservers: event types=",
+                log.debug(
+                    "Publisher.notifyObservers: event types=%s, sources=%s, event=%s",
                     list(types),
-                    " sources=",
                     list(event.sources()),
-                    " event=",
                     event,
                 )
             except Exception:
                 # Ensure tracing never raises
-                print(
+                log.exception(
                     "Publisher.notifyObservers: (trace) failed to stringify event"
                 )
 

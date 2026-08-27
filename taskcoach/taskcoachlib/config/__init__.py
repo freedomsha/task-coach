@@ -22,5 +22,9 @@ y compris toutes les valeurs par défaut des options.
 """
 
 from taskcoachlib.config.settings import Settings as Settings  # noqa: E402
+
 # from taskcoachlib.config.options import OptionParser, ApplicationOptionParser, OptionGroup
-from taskcoachlib.config.arguments import ApplicationArgumentParser as ApplicationArgumentParser  # noqa: E402
+from taskcoachlib.config.arguments import (
+    ApplicationArgumentParser as ApplicationArgumentParser,
+)  # noqa: E402
+from taskcoachlib.config.gui import GUI_NAME

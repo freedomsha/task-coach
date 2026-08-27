@@ -998,10 +998,12 @@ class SelectMenu(Menu):
 # activateNextViewerId = wx.NewIdRef()
 # activatePreviousViewerId = wx.NewIdRef()
 
-# activateNextViewerId = wx.ID_ANY
-activateNextViewerId = wx.NewId()
-# activatePreviousViewerId = wx.ID_ANY
-activatePreviousViewerId = wx.NewId()
+activateNextViewerId = wx.ID_ANY
+# activateNextViewerId = wx.NewId()
+# activateNextViewerId = wx.NewIdRef(count=1)
+activatePreviousViewerId = wx.ID_ANY
+# activatePreviousViewerId = wx.NewId()
+# activatePreviousViewerId = wx.NewIdRef(count=1)
 
 # activateNextViewerId = wx.NewIdRef().GetId()
 # activatePreviousViewerId = wx.NewIdRef().GetId()

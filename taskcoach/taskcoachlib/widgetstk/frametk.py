@@ -9,6 +9,7 @@ Cette implémentation n'est pas une conversion 1:1, mais une adaptation
 des concepts de gestion de panneaux de wxPython AUI vers Tkinter,
 car les deux bibliothèques ont des architectures différentes.
 """
+
 # La conversion directe du fichier frame.py de wxPython vers Tkinter
 # n'est pas possible ni utile dans l'état actuel.
 # La structure et la gestion des fenêtres et des panneaux (panes)
@@ -117,8 +118,11 @@ car les deux bibliothèques ont des architectures différentes.
 # construire votre interface. N'hésitez pas à me dire si vous souhaitez
 # approfondir l'un de ces concepts ou si vous avez d'autres fichiers à convertir !
 
+import logging
 import tkinter as tk
 from tkinter import ttk
+
+log = logging.getLogger(__name__)
 
 # Définition des "panneaux" comme des identifiants simples
 # Dans une application réelle, ces noms seraient probablement des noms de classes de widgets
@@ -133,6 +137,7 @@ class TtkManagedFrame:
     Ce n'est PAS un remplacement direct, mais une implémentation simplifiée
     pour une architecture de type gestionnaire de panneaux.
     """
+
     def __init__(self, master=None, title="Task Coach"):
         """
         Initialise le cadre principal.
@@ -181,13 +186,20 @@ class TtkManagedFrame:
         # avec un LabelFrame ou d'autres widgets pour le titre et les contrôles.
         if floating:
             # Crée une fenêtre de haut niveau pour le panneau flottant
-            toplevel = tk.Toplevel(self.root)
+            toplevel = tk.Toplevel(self.root, name="floating with addPane")
             toplevel.title(caption)
             window.pack(in_=toplevel, fill=tk.BOTH, expand=True)
             self.panes[name] = toplevel
         else:
             # Ajoute le panneau à la fenêtre principale
-            window.pack(in_=self.main_frame, fill=tk.BOTH, expand=True, side=tk.LEFT, padx=5, pady=5)
+            window.pack(
+                in_=self.main_frame,
+                fill=tk.BOTH,
+                expand=True,
+                side=tk.LEFT,
+                padx=5,
+                pady=5,
+            )
             # window.pack(in_=self.main_notebook, fill=tk.BOTH, expand=True, side=tk.LEFT, padx=5, pady=5)
             self.panes[name] = window
             self.docked_panes.append(name)
@@ -220,8 +232,10 @@ class TtkManagedFrame:
             window.pack_forget()
 
             # Crée une nouvelle fenêtre flottante
-            toplevel = tk.Toplevel(self.root)
-            toplevel.title(window.winfo_class())  # Utilise le nom de la classe comme titre par défaut
+            toplevel = tk.Toplevel(self.root, name="floating with float")
+            toplevel.title(
+                window.winfo_class()
+            )  # Utilise le nom de la classe comme titre par défaut
 
             # Repack le widget dans la nouvelle fenêtre
             window.pack(in_=toplevel, fill=tk.BOTH, expand=True)
@@ -229,9 +243,9 @@ class TtkManagedFrame:
             # Met à jour le dictionnaire des panneaux et la liste des panneaux ancrés
             self.panes[name] = toplevel
             self.docked_panes.remove(name)
-            print(f"Le panneau '{name}' est maintenant flottant.")
+            log.info(f"Le panneau '{name}' est maintenant flottant.")
         else:
-            print(f"Le panneau '{name}' n'est pas ancré.")
+            log.info(f"Le panneau '{name}' n'est pas ancré.")
 
     def setPaneTitle(self, name, title):
         """
@@ -248,7 +262,9 @@ class TtkManagedFrame:
             else:
                 # Si ce n'est pas un Toplevel, il peut être nécessaire
                 # de modifier un widget de titre si vous l'avez ajouté.
-                print(f"Impossible de définir le titre du panneau '{name}' car ce n'est pas un Toplevel.")
+                log.info(
+                    f"Impossible de définir le titre du panneau '{name}' car ce n'est pas un Toplevel."
+                )
 
     def start_loop(self):
         """
@@ -257,16 +273,20 @@ class TtkManagedFrame:
         self.root.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Exemple d'utilisation
     main_frame = TtkManagedFrame(title="Task Coach (Simulacre Tkinter)")
 
     # Création de quelques widgets à utiliser comme "panneaux"
-    pane1 = ttk.Frame(main_frame.main_frame, width=200, height=400, style='Blue.TFrame')
+    pane1 = ttk.Frame(
+        main_frame.main_frame, width=200, height=400, style="Blue.TFrame"
+    )
     # pane1 = ttk.Frame(main_frame.main_notebook, width=200, height=400, style='Blue.TFrame')
     ttk.Label(pane1, text="Panneau 1 (Liste des tâches)").pack(expand=True)
 
-    pane2 = ttk.Frame(main_frame.main_frame, width=300, height=400, style='Red.TFrame')
+    pane2 = ttk.Frame(
+        main_frame.main_frame, width=300, height=400, style="Red.TFrame"
+    )
     # pane2 = ttk.Frame(main_frame.main_notebook, width=300, height=400, style='Red.TFrame')
     ttk.Label(pane2, text="Panneau 2 (Détails de la tâche)").pack(expand=True)
 
@@ -275,7 +295,11 @@ if __name__ == '__main__':
     main_frame.addPane(pane2, "Détails", PANEL_DETAIL, floating=False)
 
     # Ajout d'un bouton pour tester la fonction `float`
-    float_button = ttk.Button(main_frame.main_frame, text="Rendre flottant le panneau 2", command=lambda: main_frame.float(PANEL_DETAIL))
+    float_button = ttk.Button(
+        main_frame.main_frame,
+        text="Rendre flottant le panneau 2",
+        command=lambda: main_frame.float(PANEL_DETAIL),
+    )
     # float_button = ttk.Button(main_frame.main_notebook, text="Rendre flottant le panneau 2", command=lambda: main_frame.float(PANEL_DETAIL))
     float_button.pack(side=tk.BOTTOM, pady=10)
 

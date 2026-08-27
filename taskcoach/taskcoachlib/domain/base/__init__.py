@@ -16,6 +16,45 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# Tu as actuellement un système qui fonctionne depuis longtemps,
+# avec beaucoup de logique métier imbriquée dans Object, Owner, Task, Category,
+# les métaclasses et les événements.
+# Dans ce contexte, passer directement à un framework générique
+# de sérialisation serait risqué.
+# La phase "safe mais minimale" va te permettre
+# de stabiliser le comportement avant toute refactorisation.
+
+# Phase 1 : Stabilisation
+# 1. Définir les invariants de sérialisation
+# Avant même de modifier Task ou Category,
+# documenter noir sur blanc les invariants.
+# Pour tout objet dérivant de Object :
+# state["status"]
+# state["id"]
+# state["subject"]
+# state["description"]
+# state["creationDateTime"]
+# state["modificationDateTime"]
+# state["fgColor"]
+# state["bgColor"]
+# state["font"]
+# state["icon"]
+# state["selectedIcon"]
+# state["ordering"]
+
+# doivent toujours survivre à :
+# state = obj.__getstate__()
+# new_obj = type(obj)()
+# new_obj.__setstate__(state)
+# new_state = new_obj.__getstate__()
+
+# Autrement dit :
+# assert state["status"] == new_state["status"]
+# assert state["id"] == new_state["id"]
+# assert state["subject"] == new_state["subject"]
+# assert state["description"] == new_state["description"]
+# ...
+
 from .object import Object, CompositeObject, SynchronizedObject
 from .attribute import Attribute, SetAttribute
 from .collection import Collection

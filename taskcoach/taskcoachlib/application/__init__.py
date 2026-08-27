@@ -31,6 +31,6 @@ if gui_name == "wx":
 #
 # except ImportError:
 #     from taskcoachlib.application.application import Application, TkinterApplication
-if gui_name == "tk":
+elif gui_name == "tk":
     log.info("application avec tk")
     from taskcoachlib.application.tkapplication import TkinterApplication

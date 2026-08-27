@@ -90,10 +90,10 @@ class IdProvider(set):
         # # # # utiliser wx.NewIdRef().GetId() pour générer des IDs uniques :
         # # # return wx.NewIdRef().GetId()
         # #
-        new_id = wx.NewId()
+        # new_id = wx.NewId()
         # # new_id = wx.NewIdRef().GetId()  # Ne fonctionne pas !
         # new_id = wx.NewIdRef()
-        # new_id = wx.ID_ANY
+        new_id = wx.ID_ANY
 
         # Si aucun ID libre n'est trouvé, génère un nouvel ID
         # new_id = self.counter

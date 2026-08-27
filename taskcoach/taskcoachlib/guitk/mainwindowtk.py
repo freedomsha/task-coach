@@ -544,7 +544,7 @@ class MainWindow(
 
             if should_quit or self.__shutdown:
                 log.debug("MainWindow.onClose: Quitter l'application.")
-                self.saveSettings()
+                # self.saveSettings()  # !!! Peut-être déjà trop tard ! quitApplication a déjà enregistré !
                 # Assurer la fermeture propre des ressources.
                 self.taskFile.stop()  # Arrêter le suivi des tâches.
                 self._idleController.stop()  # Arrêter le contrôleur d'inactivité.

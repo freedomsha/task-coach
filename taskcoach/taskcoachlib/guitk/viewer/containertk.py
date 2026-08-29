@@ -372,7 +372,9 @@ class ViewerContainer(ttk.PanedWindow):
         # viewer.pack(expand=True, fill="both")
         # viewer.pack(fill="both", expand=True, padx=10, pady=5)  # copie de factorytk.MockViewerContainer
         # viewer.grid(row=0, column=0)  # A essayer !
-        viewer.grid(row=self.viewer_count + 1, column=0, padx=10, pady=5)  # TODO : Attention, peut-être double avec celui de factory addViewers ! A retirer ?
+        viewer.grid(
+            row=self.viewer_count + 1, column=0, padx=10, pady=5
+        )  # TODO : Attention, peut-être double avec celui de factory addViewers ! A retirer ?
 
         # if isinstance(viewer, ViewerContainer):
         #     # viewer.pack(fill="both", expand=True, padx=10, pady=5)

@@ -163,29 +163,58 @@ class ViewerContainer(ttk.PanedWindow):
 
     Cette classe délègue explicitement certaines méthodes attendues
     par les UICommand vers la visionneuse actuellement active.
+
+    Methods:
+        __init__ (self, parent_widget, settings, *args, **kwargs) : Initialise le conteneur de visionneuses.
+        componentsCreated : Méthode appelée lorsque les composants sont créés.
+        advanceSelection (self, forward) : Avancer ou reculer dans la liste des visionneuses.
+        isViewerContainer : Retourne qu'il s'agit d'un conteneur de visionneuse.
+        isTreViewer : Retourne si la visionneuse active est une visionneuse arborescente.
+        __bind_event_handlers : Inscrit les gestionnaires d'événements pour la fermeture et le changement d'onglet.
+        __getitem__ (self, index) : Retourne la visionneuse à l'index défini.
+        __len__ : Retourne le nombre de visionneuses.
+        addViewer (self, viewer, *args, *kwargs) : Crée et ajoute une visionneuse au conteneur.
     """
+
     # def __init__(self, containerWidget, settings, *args, **kwargs):
     def __init__(self, parent_widget, settings, *args, **kwargs):
         """
-        Initialise le conteneur de visionneuse.
+        Initialise le conteneur de visionneuses.
 
         Args:
-            containerWidget: Le widget conteneur (par exemple, une fenêtre Tk).
+            parent_Widget: Le widget conteneur (par exemple, une fenêtre Tk).
             settings: Paramètres de l'application.
             *args: Arguments supplémentaires.
             **kwargs: Arguments nommés supplémentaires.
+
+        Attributes:
+            self.viewer_count :
+            self._label : Titre du conteneur
+            self.containerWidget : Le widget conteneur (par exemple, une fenêtre Tk, toplevel, ou ici MainWindow).
+            self._settings : Paramètres de l'application.
+            self.viewers : list des visionneuses contenus.
+            self._active_viewer : Le viewer actif.
+            self._notify_active_viewer :
         """
         # Vous avez deux problèmes.
         # Tout d’abord, super().__init__ ne doit recevoir que parent_widget,
         # puis la visionneuse doit être ajoutée directement au bloc-notes.
-        log.debug("ViwerContainer.__init__ : Initialisation du conteneur de visionneuses.")
+        log.debug(
+            "ViwerContainer.__init__ : Initialisation du conteneur de visionneuses."
+        )
         # super().__init__(containerWidget)
         # super().__init__(parent_widget)
         # super().__init__(parent_widget, *args, text="ViewerContainer", **kwargs)  # text ne fonctionne pas dans PanedWindow
-        super().__init__(parent_widget, *args, **kwargs)  # text ne fonctionne pas dans PanedWindow
+        super().__init__(
+            parent_widget, *args, **kwargs
+        )  # text ne fonctionne pas dans PanedWindow
         # TODO : copier factorytk Mock
         self.viewer_count = 0  # copie de factorytk.MockViewerContainer
-        self._label = ttk.Label(self, text="Conteneur de visualisateurs...")
+        self._label = ttk.Label(
+            self,
+            name="visual_conteneur",
+            text="Conteneur de visualisateurs...",
+        )
         # self._label.pack(pady=20)
         self._label.grid(row=1, column=0, padx=10, pady=10)
         # self.containerWidget = containerWidget  # Le widget conteneur (par exemple, une fenêtre Tk).
@@ -202,13 +231,18 @@ class ViewerContainer(ttk.PanedWindow):
         # self.paned_window.pack(fill=tk.BOTH, expand=True)
 
         self._active_viewer = None  # Initialisation importante
-        self._notify_active_viewer = False  # A ajuster en fonction de l'utilisation
+        self._notify_active_viewer = (
+            False  # A ajuster en fonction de l'utilisation
+        )
         self.__bind_event_handlers()
         # super().__init__(*args, **kwargs)
         # super().__init__(containerWidget, settings, *args, **kwargs)
         log.debug("ViewerContainer.__init__ : Conteneur initialisé !")
 
     def componentsCreated(self):
+        """
+        Enregistre dans l'attribut _notify_active_viewer que les éléments sont créés.
+        """
         self._notify_active_viewer = True
 
     def advanceSelection(self, forward):
@@ -217,13 +251,23 @@ class ViewerContainer(ttk.PanedWindow):
             return  # Pas assez de visionneuses pour avancer la sélection
 
         active_viewer = self.activeViewer()
-        current_index = self.viewers.index(active_viewer) if active_viewer else 0
+        current_index = (
+            self.viewers.index(active_viewer) if active_viewer else 0
+        )
         minimum_index, maximum_index = 0, len(self.viewers) - 1
 
         if forward:
-            new_index = current_index + 1 if minimum_index <= current_index < maximum_index else minimum_index
+            new_index = (
+                current_index + 1
+                if minimum_index <= current_index < maximum_index
+                else minimum_index
+            )
         else:
-            new_index = current_index - 1 if minimum_index < current_index <= maximum_index else maximum_index
+            new_index = (
+                current_index - 1
+                if minimum_index < current_index <= maximum_index
+                else maximum_index
+            )
 
         self.activateViewer(self.viewers[new_index])
 
@@ -253,9 +297,11 @@ class ViewerContainer(ttk.PanedWindow):
         # self.notebook.bind("<<NotebookTabChanged>>", self.onPageChanged)  # Changement d'onglet
 
     def __getitem__(self, index):
+        """Retourne la visionneuse à l'index défini."""
         return self.viewers[index]
 
     def __len__(self):
+        """Retourne le nombre de visionneuses."""
         return len(self.viewers)
 
     # def addViewer(self, viewer, title: str, floating=False):
@@ -302,11 +348,15 @@ class ViewerContainer(ttk.PanedWindow):
     def addViewer(self, viewer, *args, **kwargs):
         # def _add_viewer(self, viewer, *args, **kwargs):
         """
-        Crée et ajoute un visualiseur (viewer) au conteneur.
+        Crée et ajoute une visionneuse (viewer) au conteneur.
         """
+        # Cette méthode fait double emploi avec celle de factorytk.py !
+        # C'est factorytk.py qui s'occupe de l'affichage des visionneuses !
         # log.info(f"ViewerContainer.addViewer : Ajout du visualiseur {viewer_class.__name__}.")
         # log.info(f"ViewerContainer.addViewer : Ajout du visualiseur {viewer.__name__}.")
-        log.info(f"ViewerContainer.addViewer : Ajout du visualiseur {viewer.title()}.")
+        log.info(
+            f"ViewerContainer.addViewer : Ajout du visualiseur {viewer.title()}."
+        )
 
         # viewer_frame = ttk.Frame(self.notebook)
 
@@ -314,6 +364,7 @@ class ViewerContainer(ttk.PanedWindow):
         # viewer = viewer_class(viewer_frame, *args, **kwargs)
         # Ajoute le viewer à la liste des viewers.
         self.viewers.append(viewer)
+
         # Ajoute le viewer au bandeau de viewers
         # self.paned_window.add(viewer)  # viewer doit être un widget Tkinter
 
@@ -321,7 +372,8 @@ class ViewerContainer(ttk.PanedWindow):
         # viewer.pack(expand=True, fill="both")
         # viewer.pack(fill="both", expand=True, padx=10, pady=5)  # copie de factorytk.MockViewerContainer
         # viewer.grid(row=0, column=0)  # A essayer !
-        viewer.grid(row=self.viewer_count+1, column=0, padx=10, pady=5)
+        viewer.grid(row=self.viewer_count + 1, column=0, padx=10, pady=5)  # TODO : Attention, peut-être double avec celui de factory addViewers ! A retirer ?
+
         # if isinstance(viewer, ViewerContainer):
         #     # viewer.pack(fill="both", expand=True, padx=10, pady=5)
         #     viewer.grid(row=self.viewer_count+1, column=0, padx=10, pady=5)
@@ -340,12 +392,16 @@ class ViewerContainer(ttk.PanedWindow):
             self.activateViewer(viewer)
         if self._active_viewer is None:
             self.activateViewer(viewer)
-        log.info(f"ViewerContainer.addViewer : Le visualiseur {viewer.title()} a été ajouté au conteneur. Total = {self.viewer_count} visulaiseurs.")
+        log.info(
+            # f"ViewerContainer.addViewer : Le visualiseur {viewer.title()} a été ajouté au conteneur. Total = {self.viewer_count} visionneuses."
+            f"ViewerContainer.addViewer : Le visualiseur {viewer.title()} a été ajouté au conteneur. Total = {self.__len__()} visionneuses."
+        )
 
     def removeViewer(self, viewer):
         """Retire un visualiseur du conteneur."""
         for i, (v, frame) in enumerate(self.viewers):
             if v == viewer:
+                # Retire la visionneuse de la liste
                 # self.notebook.forget(i)
                 self.viewers.pop(i)
                 viewer.grid_forget()  # Important pour libérer les ressources
@@ -415,11 +471,15 @@ class ViewerContainer(ttk.PanedWindow):
             if self._active_viewer == viewer:
                 self._active_viewer = None
                 if self.viewers:
-                    self.activateViewer(self.viewers[0])  # Activer une autre visionneuse si possible
+                    self.activateViewer(
+                        self.viewers[0]
+                    )  # Activer une autre visionneuse si possible
 
     def activateViewer(self, viewer_to_activate):
         """Active la visionneuse spécifiée."""
-        log.info(f"ViewerContainer.activateViewer : Activation du visualiseur {viewer_to_activate.title()}.")
+        log.info(
+            f"ViewerContainer.activateViewer : Activation du visualiseur {viewer_to_activate.title()}."
+        )
         # # Trouver l'index de l'onglet correspondant au viewer
         # for i, v in enumerate(self.viewers):
         #     if v == viewer_to_activate:
@@ -437,7 +497,7 @@ class ViewerContainer(ttk.PanedWindow):
             if v == viewer_to_activate:
                 v.config(relief=tk.SUNKEN)  # exemple
             else:
-                v.config(relief=tk.RAISED)   # exemple
+                v.config(relief=tk.RAISED)  # exemple
 
     # def activeViewer(self):
     def activeViewer(self):
@@ -462,7 +522,9 @@ class ViewerContainer(ttk.PanedWindow):
         """
         viewer = self.activeViewer()
         if viewer is None:
-            raise AttributeError(f"'ViewerContainer' object has no attribute '{attribute}'")
+            raise AttributeError(
+                f"'ViewerContainer' object has no attribute '{attribute}'"
+            )
         return getattr(viewer, attribute)
         # if self._active_viewer:
         #     try:
@@ -488,14 +550,18 @@ class ViewerContainer(ttk.PanedWindow):
 
     def sendViewerStatusEvent(self):
         """Envoie un événement de statut de la visionneuse."""
-        pub.sendMessage("viewer.status")  # À adapter ou supprimer si pubsub n'est pas utilisé
+        pub.sendMessage(
+            "viewer.status"
+        )  # À adapter ou supprimer si pubsub n'est pas utilisé
         pass
 
     def __ensure_active_viewer_has_focus(self):
         if not self.activeViewer():
             return
 
-        window_focused = tk.Tk().focus_displayof()  # équivalent de wx.Window.FindFocus()
+        window_focused = (
+            tk.Tk().focus_displayof()
+        )  # équivalent de wx.Window.FindFocus()
         if operating_system.isMacOsXTiger_OrOlder() and window_focused is None:
             # Si SearchCtrl a le focus sur Mac OS X Tiger,
             # tk.Tk().focus_displayof() renvoie None.
@@ -514,7 +580,9 @@ class ViewerContainer(ttk.PanedWindow):
                 parent = None
 
                 # Si le visualiseur actif n'a pas le focus, le définir
-        self.containerWidget.after(0, self.activeViewer().focus_set)  # Utilisation de after pour éviter les problèmes de focus
+        self.containerWidget.after(
+            0, self.activeViewer().focus_set
+        )  # Utilisation de after pour éviter les problèmes de focus
 
     def onPageChanged(self, event=None):
         """Gestionnaire de l'événement de changement de page."""
@@ -641,28 +709,37 @@ class ViewerContainer(ttk.PanedWindow):
 #
 #     root.mainloop()
 # Exemple d'utilisation (à adapter)
-if __name__ == '__main__':
+if __name__ == "__main__":
     root = tk.Tk()
     root.title("ViewerContainer avec ttk.PanedWindow")
     settings = {}  # Vos paramètres
 
-    container = ViewerContainer(root, settings) # root est le parent
+    container = ViewerContainer(root, settings)  # root est le parent
 
     # Créer des viewers de test (doivent être des widgets Tkinter)
-    class DummyViewer(tk.Text):  # Définir DummyViewer comme sous-classe de tk.Text
+    class DummyViewer(
+        tk.Text
+    ):  # Définir DummyViewer comme sous-classe de tk.Text
         def __init__(self, parent, title, *args, **kwargs):
             super().__init__(parent, *args, **kwargs)
             self.title_str = title
 
         def title(self):
             return self.title_str
-    viewer1 = DummyViewer(container.paned_window, "Viewer 1", bg="lightblue")  # container.paned_window est le parent
+
+    viewer1 = DummyViewer(
+        container.paned_window, "Viewer 1", bg="lightblue"
+    )  # container.paned_window est le parent
     viewer1.insert(tk.END, "Viewer 1 Content")
-    viewer2 = DummyViewer(container.paned_window, "Viewer 2", bg="lightgreen")  # container.paned_window est le parent
+    viewer2 = DummyViewer(
+        container.paned_window, "Viewer 2", bg="lightgreen"
+    )  # container.paned_window est le parent
     viewer2.insert(tk.END, "Viewer 2 Content")
 
     container.addViewer(viewer1)
     container.addViewer(viewer2)
     # container.pack(fill=tk.BOTH, expand=True)  # Afficher le ViewerContainer
-    container.grid(row=0, column=0, sticky="nsew")  # Utiliser grid pour afficher le ViewerContainer
+    container.grid(
+        row=0, column=0, sticky="nsew"
+    )  # Utiliser grid pour afficher le ViewerContainer
     root.mainloop()

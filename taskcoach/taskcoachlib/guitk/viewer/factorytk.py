@@ -3,7 +3,12 @@
 Ce module gère la création et l'ajout de visualisateurs (viewers) à l'interface utilisateur.
 Basé sur le fichier factory.py original de Task Coach.
 """
-# Le fichier factory.py est une partie importante de la logique de l'application, car il gère l'instanciation de différents types de vues (TaskViewer, NoteViewer, etc.) de manière dynamique. La principale adaptation pour cette version Tkinter consiste à s'assurer que les classes addViewers et addOneViewer utilisent les bons objets de conteneur de vues (viewerContainer) et les classes de vues converties.
+
+# Le fichier factory.py est une partie importante de la logique de l'application,
+# car il gère l'instanciation de différents types de vues
+# (TaskViewer, NoteViewer, etc.) de manière dynamique.
+# La principale adaptation pour cette version Tkinter consiste à
+# s'assurer que les classes addViewers et addOneViewer utilisent les bons objets de conteneur de vues (viewerContainer) et les classes de vues converties.
 #
 # J'ai inclus des classes de simulation pour tous les modules et classes de vues (task, effort, category, note, ViewerContainer) afin que le fichier soit autonome et puisse être exécuté pour démontrer son fonctionnement.
 import logging
@@ -12,9 +17,11 @@ from tkinter import ttk, messagebox
 from typing import Any, Dict, List, Type
 
 from taskcoachlib.config import settings
+
 # from taskcoachlib.config.settings import settings  # erreur
 from taskcoachlib.guitk import artprovidertk
 from taskcoachlib.guitk import uicommand
+
 # Importations des classes de viewers réelles
 from taskcoachlib.guitk.viewer import basetk
 from taskcoachlib.guitk.viewer import categorytk
@@ -120,6 +127,7 @@ def viewerTypes() -> List[str]:
 #  contient une référence à son propre widget parent (viewer_container.containerWidget)
 #  qui est utilisé lors de l'initialisation des visualisateurs individuels.
 
+
 # Double initialisation : Je vois deux initialisations des visionneuses dans les journaux.
 # Cela se produit parce que l’initialisation des visionneuses se trouve dans la classe factory,
 # mais aussi dans addViewersToContainer.
@@ -134,13 +142,20 @@ class addViewers:
 
     # def __init__(self, viewer_container: Any, task_file: Any, settings: settings):
     def __init__(self, viewer_container: Any, task_file: Any, settings):
-        log.debug(f"addViewers.__init__ : Ajoute des visualiseurs dans le viewer_container={viewer_container} avec task_file={task_file} et settings={settings}.")
+        log.debug(
+            f"addViewers.__init__ : Ajoute des visualiseurs dans le viewer_container={viewer_container} avec task_file={task_file} et settings={settings}."
+        )
         self.__viewer_container = viewer_container  # Conteneur de visualiseurs
         self.__task_file = task_file
         self.__settings = settings
-        self.floating = False  # Start viewers floating? Not when restoring layout
-        self.__viewer_init_args = (viewer_container.containerWidget, task_file,
-                                   settings)  # si container est mainwindow pour wx, containerWidget est Tk
+        self.floating = (
+            False  # Start viewers floating? Not when restoring layout
+        )
+        self.__viewer_init_args = (
+            viewer_container.containerWidget,
+            task_file,
+            settings,
+        )  # si container est mainwindow pour wx, containerWidget est Tk
         self.__add_all_viewers()
         # self.__viewer_container.__add_all_viewers()
 
@@ -153,15 +168,19 @@ class addViewers:
     #         self._add_viewer(viewer_class)
 
     def __add_all_viewers(self):
-        """ Open viewers as saved previously in the settings.
+        """Open viewers as saved previously in the settings.
 
         Ouvrez les visionneuses telles qu'elles ont été enregistrées précédemment dans les paramètres.
         """
-        log.debug("addViewers.__add_all_viewers : Ouvre toutes les visionneuses.")
+        log.debug(
+            "addViewers.__add_all_viewers : Ouvre toutes les visionneuses."
+        )
         # self._add_viewer(notetk.Noteviewer)  # Il échoue parce que ne fournit pas d'implémentations pour les méthodes abstraites requises, comme décrit dans l'erreur console.
 
         # self._add_viewer(category.Categoryviewer)
-        self._add_viewer(tasktk.Taskviewer)  # 24/11/2025 échoue, passe le 03/12
+        self._add_viewer(
+            tasktk.Taskviewer
+        )  # 24/11/2025 échoue, passe le 03/12
         # self._add_viewer(tasktk.TaskStatsViewer)  # 03/12/2025
         # self._add_viewer(tasktk.SquareTaskViewer)  # 03/12/2025 il faut trouver une alternative au module squaremap(wxpython)
         # self._add_viewer(tasktk.TimelineViewer)
@@ -230,7 +249,9 @@ class addViewers:
         #     except KeyError:
         #         log.warning(f"Impossible de trouver la classe de visualisateur pour : {viewer_name}")
 
-        log.debug("addViewers.__add_all_viewers : Tout les visualiseurs sont ouverts !")
+        log.debug(
+            "addViewers.__add_all_viewers : Tout les visualiseurs sont ouverts !"
+        )
 
     # def add_viewers(self, viewer_type: str) -> List[Type[ttk.Frame]]:
     #     """Ajoute les visualisateurs du type spécifié."""
@@ -247,7 +268,9 @@ class addViewers:
     def _add_viewer(self, viewer_class: Type[Viewer]) -> None:
         # def _add_viewer(self, viewer_class, config_section, new_item_type):
         """Ajoute un seul visualisateur (viewer) de la classe spécifiée au conteneur."""
-        log.debug(f"addViewers._add_viewer : Ajoute le visualiseur {viewer_class.__name__}.")
+        log.debug(
+            f"addViewers._add_viewer : Ajoute le visualiseur {viewer_class.__name__}."
+        )
         # # Le nom de la section des paramètres est maintenant un argument à part entière.
         # settings_section = viewer_class.settingsSection()
         # # viewer_kwargs = self._viewer_kwargs(viewer_class)
@@ -266,7 +289,7 @@ class addViewers:
             self.__viewer_container.containerWidget,
             self.__task_file,
             self.__settings,
-            **self._viewer_kwargs(viewer_class)
+            **self._viewer_kwargs(viewer_class),
         )  # Corrected line
 
         # TypeError: Can't instantiate abstract class Taskviewer without an implementation for abstract methods 'bitmap', 'createWidget', 'isShowingAttachments', 'isShowingCategories', 'isShowingEffort', 'isShowingNotes', 'isShowingTasks', 'isTreeViewer', 'isViewerContainer', 'visibleColumns'
@@ -285,6 +308,7 @@ class addViewers:
         self.__viewer_container.addViewer(viewer_instance)
         # self.__viewer_container.addViewer(viewer_instance, floating=self.floating)
         # self.__viewer_container.pack(fill="both", expand=True, padx=10, pady=5)
+        # viewer.grid(row=self.viewer_count + 1, column=0, padx=10, pady=5)
 
         # Sauf qu'il faut instancier le visualiseur avec le nom du parent.
         # Remplacez l'instanciation ici
@@ -297,7 +321,9 @@ class addViewers:
         #     # configSection=config_section,
         #     # newItemType=new_item_type
         # )
-        log.debug(f"addViewers._add_viewer : Le visualiseur {viewer_class.__name__} a été ajouté au conteneur {self.__viewer_container} !")
+        log.debug(
+            f"addViewers._add_viewer : Le visualiseur {viewer_class.__name__} a été ajouté au conteneur {self.__viewer_container} !"
+        )
 
     def addViewersToContainer(self):
         self.__add_all_viewers()
@@ -307,11 +333,15 @@ class addViewers:
         viewer_classes: List[Type[ttk.Frame]] = []
         for viewer_type in viewerTypes():
             number_of_viewers = self._number_of_viewers_to_add(
-                globals()[viewer_type.replace("viewer", "")].__dict__[viewer_type.capitalize()]
+                globals()[viewer_type.replace("viewer", "")].__dict__[
+                    viewer_type.capitalize()
+                ]
             )
             for _ in range(number_of_viewers):
                 viewer_classes.append(
-                    globals()[viewer_type.replace("viewer", "")].__dict__[viewer_type.capitalize()]
+                    globals()[viewer_type.replace("viewer", "")].__dict__[
+                        viewer_type.capitalize()
+                    ]
                 )
         return viewer_classes
 
@@ -334,6 +364,8 @@ class addViewers:
         return {"settingsSection": viewer_class.__name__.lower()}
 
     # Analysons le code et fournissons la version correcte.
+
+
 # L’objectif est de faire en sorte que addViewers crée des visionneuses
 # en fonction des paramètres, et qu’addOneViewer crée une visionneuse
 # avec des arguments de mots-clés potentiellement supplémentaires.
@@ -343,22 +375,27 @@ class addOneViewer(addViewers):
     """
     Classe pour ajouter un seul visualisateur d'une classe spécifiée.
     """
+
     floating = True
 
     # def __init__(self, viewer_container: Any, task_file: Any, settings: settings, viewer_class: Type[ttk.Frame], **kwargs: Any):
     def __init__(
-            self,
-            viewer_container: Any,
-            task_file: Any,
-            settings,
-            viewer_class: Type[ttk.Frame],
-            **kwargs: Any
+        self,
+        viewer_container: Any,
+        task_file: Any,
+        settings,
+        viewer_class: Type[ttk.Frame],
+        **kwargs: Any,
     ):
-        log.debug(f"addOneViewer.__init__ : Ajoute le visualiseur {viewer_class.__name__}.")
+        log.debug(
+            f"addOneViewer.__init__ : Ajoute le visualiseur {viewer_class.__name__}."
+        )
         self.__viewer_class = viewer_class
         self.__kwargs = kwargs
         super().__init__(viewer_container, task_file, settings)
-        log.debug(f"addOneViewer.__init__ : Le visualiseur {viewer_class.__name__} a été ajouté.")
+        log.debug(
+            f"addOneViewer.__init__ : Le visualiseur {viewer_class.__name__} a été ajouté."
+        )
 
     def _number_of_viewers_to_add(self, viewer_class: Type[ttk.Frame]) -> int:
         return 1 if viewer_class == self.__viewer_class else 0
@@ -371,7 +408,7 @@ class addOneViewer(addViewers):
 
 
 # --- DÉMONSTRATION ---
-if __name__ == '__main__':
+if __name__ == "__main__":
     root = tk.Tk()
     root.title("Factory Demo")
 
@@ -383,15 +420,21 @@ if __name__ == '__main__':
         def __init__(self, parent: tk.Tk):
             super().__init__(parent)
             self.viewer_count = 0  # Copié dans containertk.ViewerContainer
-            self.pack(fill="both", expand=True)  # Copié dans mainmenutk._create_viewer_container
-            self._label = ttk.Label(self, text="Conteneur de visualisateurs...")
+            self.pack(
+                fill="both", expand=True
+            )  # Copié dans mainmenutk._create_viewer_container
+            self._label = ttk.Label(
+                self, text="Conteneur de visualisateurs..."
+            )
             self._label.pack(pady=20)
             print("Conteneur de visualisateurs créé.")
 
         def add_viewer(self, viewer: ttk.Frame):
             viewer.pack(fill="both", expand=True, padx=10, pady=5)
             self.viewer_count += 1
-            self._label.config(text=f"Visualisateurs ajoutés: {self.viewer_count}")
+            self._label.config(
+                text=f"Visualisateurs ajoutés: {self.viewer_count}"
+            )
 
     # Création des objets de simulation
     # mock_settings = settings()
@@ -401,7 +444,9 @@ if __name__ == '__main__':
     # Démonstration de addViewers (ajoute les visualisateurs selon les paramètres)
     print("--- Démarrage de la démonstration addViewers ---")
     # add_viewers_strategy = addViewers(viewer_container, mock_task_file, mock_settings)
-    add_viewers_strategy = addViewers(viewer_container, mock_task_file, settings)
+    add_viewers_strategy = addViewers(
+        viewer_container, mock_task_file, settings
+    )
     add_viewers_strategy()
 
     root.mainloop()

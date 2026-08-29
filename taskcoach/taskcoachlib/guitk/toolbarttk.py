@@ -67,7 +67,7 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
         super().__init__(parent, text="ToolBar", **kwargs)
         # log.debug(f"Initializing ToolBar in parent window: {type(window).__name__}, size: {size}")
         log.debug(
-            f"ToolBar __init__ : initialise dans le parent widget: {parent}{type(parent).__name__}, controller window: {type(window).__name__}, avec des icones de taille: {size}"
+            f"ToolBar.__init__ : initialise dans le parent widget: {parent}{type(parent).__name__}, controller window: {type(window).__name__}, avec des icones de taille: {size}"
         )
         self.parent = parent
         self.__window = window  # On garde 'window' pour la logique

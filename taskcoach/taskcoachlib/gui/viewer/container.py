@@ -122,6 +122,7 @@ class ViewerContainer(object):
 
     def addViewer(self, viewer, floating=False):
         """Ajoute un nouveau volet avec la visionneuse spécifiée."""
+        # C'est factory.py qui s'occupe de l'affichage !
         name = viewer.settingsSection()  # Nouvelle ligne
         self.containerWidget.addPane(
             viewer, viewer.title(), name, floating=floating

@@ -399,6 +399,13 @@ class MainWindow(
         Cette méthode configure les variables membres, lie les événements, crée les composants de la fenêtre,
         et restaure la perspective de la fenêtre depuis les paramètres.
 
+        Args :
+            parent (tk.Tk) : Classe/fenêtre parente contenant MainWindow.
+            iocontroller (IOController) : Contrôleur d'entrée/sortie pour gérer les fichiers.
+            taskFile (TaskFile) : Fichier de tâches à manipuler, contenant les tâches, catégories, et efforts.
+            settings (Settings) : Paramètres utilisateur de l'application à appliquer à la fenêtre principale.
+            *args, **kwargs : Arguments supplémentaires pour la fenêtre.
+
         Attributs :
             __filename (str) : Nom du fichier de tâches actuellement ouvert (None par défaut).
             __dirty (bool) : Indicateur indiquant si le fichier a été modifié sans être sauvegardé (initialisé à False).
@@ -424,13 +431,6 @@ class MainWindow(
             - EVT_CLOSE : Lie la fermeture de la fenêtre à la méthode `onClose`.
             - EVT_ICONIZE : Gère la minimisation de la fenêtre avec `onIconify`.
             - EVT_SIZE : Gère le redimensionnement de la fenêtre avec `onResize`.
-
-        Args :
-            parent (tk.Tk) : Classe/fenêtre parente contenant MainWindow.
-            iocontroller (IOController) : Contrôleur d'entrée/sortie pour gérer les fichiers.
-            taskFile (TaskFile) : Fichier de tâches à manipuler, contenant les tâches, catégories, et efforts.
-            settings (Settings) : Paramètres utilisateur de l'application à appliquer à la fenêtre principale.
-            *args, **kwargs : Arguments supplémentaires pour la fenêtre.
         """
         log.info("****************************************************")
         log.info("* Début d'initialisation de MainWindow (Tkinter) *****")
@@ -448,8 +448,19 @@ class MainWindow(
         # self.title(meta.name)
         # self.title("MainWindow")
         # self.geometry("800x600")  # Taille par défaut
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)  # Pour le viewer
+        # Définir les propriétés de l'index de colonne(s) et de ligne(s) de la grille gérée par ce conteneur.
+        # L'index peut être un numéro de colonne ou de ligne ;
+        # lors de la définition des options,
+        # il peut également s'agir d'une liste de numéros de colonnes ou de lignes,
+        # de la chaîne « all » pour affecter chaque colonne ou chaque ligne,
+        # ou d'un widget enfant dont les colonnes ou lignes occupées sont affectées.
+        # Les options prises en charge sont minsize, weight(vitesse de croissance), uniform et pad.
+        self.grid_columnconfigure(
+            0, weight=1
+        )  # La fenêtre principale ne comprend qu'une seule colonne.
+        self.grid_rowconfigure(
+            1, weight=1
+        )  # et 2 lignes, pour l'en-tête et Pour le viewer
 
         # self.protocol("WM_DELETE_WINDOW", self.onClose)  # Gérer la fermeture de la fenêtre
         # self.bind("<Unmap>", self.onIconify)  # Gérer la minimisation (Unmap sur X11)
@@ -462,7 +473,7 @@ class MainWindow(
         self.__filename = None  # Nom du fichier de tâches actuellement ouvert (None par défaut).
         self.__dirty = False  # Indicateur indiquant si le fichier a été modifié sans être sauvegardé (initialisé à False).
         self.__shutdown = False  # Indicateur indiquant si l'application est en cours d'arrêt (initialisé à False).
-        self.toolbar_frame = None  # Initialisation de la Barre d'outils pour les actions courantes
+        self.toolbar_frame = None  # Initialisation de la Barre d'outils pour les actions courantes sur None, est-ce judicieux ? _create_window_components() le crée ensuite.
 
         self._handling_resize = False
         # self.__dimensions_tracker = windowdimensionstracker.WindowDimensionsTracker(self, settings)
@@ -480,6 +491,7 @@ class MainWindow(
             "MainWindow: ✅ Initialisation des composants principaux de la fenêtre terminée et perspective de la fenêtre restaurée."
         )
 
+        # Disposition des éléments ! Peut-être les mettre dans _create_window_components() ou __init_window_components() pour éviter des unresolved ou créer une méthode propre !
         self.toolbar_frame.grid(
             row=0, column=0, sticky="ew"
         )  # TODO : A revoir où mettre cette ligne !
@@ -631,7 +643,7 @@ class MainWindow(
         Crée et initialise les différents composants de la fenêtre,
         comme les barres d'outils, les barres de statut, et les autres éléments de l'interface graphique.
 
-        Les viewer, la barre de statut, la barre de menu, et le contrôleur de rappel sont créés ici.
+        Les visionneuses, la barre de statut, la barre de menu, et le contrôleur de rappel sont créés ici.
         """
         # La méthode _create_window_components dans MainWindow appelle showToolBar
         # pour s'assurer que la barre d'outils est instanciée lors de la création de la fenêtre.
@@ -779,6 +791,7 @@ class MainWindow(
             f"MainWindow._create_status_bar : Création d'une barre de status et association avec la fenêtre principale {self}."
         )
         self.status_bar = statustk.StatusBar(self, self.viewer)
+        # Colle la barre de status en bas de la fenêtre principale
         # self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         self.status_bar.grid(row=10, column=0, sticky="ews")
         log.info(

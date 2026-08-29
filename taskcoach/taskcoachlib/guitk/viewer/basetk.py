@@ -166,7 +166,7 @@ class Viewer(ttk.Frame, patterns.Observer):
             **kwargs : Arguments nommés supplémentaires.
         """
         log.debug(
-            f"Viewer.__init__ : Initialisation d'une nouvelle visionneuse self={self.__class__.__name__}."
+            f"Viewer.__init__ : Initialisation d'une nouvelle visionneuse self={self.__class__.__name__} avec parent={parent}."
         )
         ttk.Frame.__init__(self, parent)  # Initialisation de ttk.Frame
         # ttk.Frame.__init__(self, parent, *args, **kwargs)  # Initialisation de ttk.Frame
@@ -195,7 +195,7 @@ class Viewer(ttk.Frame, patterns.Observer):
         self._popupMenus = []  # Menus contextuels
 
         # Le widget de la barre d'outils sera créé par un module adapté
-        # Le widget principal (par exemple, Treeview) doit être créé par la sous-classe
+        # Le widget principal (par exemple, Treeview) doit être créé par la sous-classe TreeViewer
         # Présentation :
         self.__presentation = self.createSorter(
             self.createFilter(self.domainObjectsToView())
@@ -211,16 +211,16 @@ class Viewer(ttk.Frame, patterns.Observer):
         # Initialiser les widgets à None. Ils seront créés dans initLayout.
         self._sizer = None
         self.toolbar = None
-        log.debug(
-            f"Viewer.__init__ : crée le widget {self} avec parent={parent}."
-        )
-        self.widget = self.createWidget(
-            parent
-        )  # Crée le widget pour afficher les objets.(Taskviewer,...)
-
-        # self.widget.pack(fill=tk.BOTH, expand=True, side=tk.TOP)
-        self.widget.grid(row=2, column=2, sticky="news")
-        # !!! self.widget est aussi créé dans initLayout ! ?
+        # log.debug(
+        #     f"Viewer.__init__ : crée le widget {self} avec parent={parent}."
+        # )
+        # self.widget = self.createWidget(
+        #     parent
+        # )  # Crée le widget pour afficher les objets.(Taskviewer,...)
+        #
+        # # self.widget.pack(fill=tk.BOTH, expand=True, side=tk.TOP)
+        # self.widget.grid(row=1, column=0, sticky="news")
+        # !!! self.widget est aussi créé dans initLayout dans un parent=_sizer ! ?
         # Appeler initLayout MAINTENANT pour créer la structure.
         self.initLayout()
 
@@ -478,16 +478,29 @@ class Viewer(ttk.Frame, patterns.Observer):
             row=0, column=0, sticky="ewn"
         )  # Positionnement en haut
 
+        # log.debug(
+        #     f"Viewer.__init__ : crée le widget {self} avec parent={parent}."
+        # )
+        # self.widget = self.createWidget(
+        #     parent
+        # )  # Crée le widget pour afficher les objets.(Taskviewer,...)
+        #
+        # # self.widget.pack(fill=tk.BOTH, expand=True, side=tk.TOP)
+        # self.widget.grid(row=2, column=2, sticky="news")
+
         # 3. Créer le widget principal, enfant de 'self._sizer'
         #    On passe self._sizer comme parent à la méthode createWidget
         # self.widget = self.createWidget(self._sizer)
         self.widget = self.createWidget(parent=self._sizer)
+        log.debug(
+            f"Viewer.__init__ : crée le widget {self} avec parent={self._sizer}."
+        )
         # Ajout du widget principal
         # 4. Packer le widget principal à l'intérieur de 'self._sizer'
         # # self._sizer.Add(self.widget, proportion=1, flag=wx.EXPAND)
         # self.widget.pack(in_=self._sizer, fill=tk.BOTH, expand=True)  # Remplissage horizontal et vertical, expansion
         # self.widget.pack(fill=tk.BOTH, expand=True, side=tk.TOP)
-        self.widget.grid(row=0, column=2, sticky="new")
+        self.widget.grid(row=1, column=0, sticky="new")
         # if hasattr(self.widget, "GetCanvas"):
         #     self.widget.GetCanvas().pack(padx=10, pady=10, expand=True, fill="both")
         # else:

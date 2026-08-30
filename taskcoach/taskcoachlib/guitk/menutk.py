@@ -5,6 +5,7 @@ Ce module contient les classes pour gérer les différents types de menus
 utilisés dans Task Coach, adaptés pour une utilisation avec Tkinter.
 Il s'agit d'une conversion du module wxPython original.
 """
+
 # C'est un code wxPython assez complexe qui utilise des mixins,
 # un système d'observateurs et des commandes UI pour gérer les menus.
 #
@@ -37,18 +38,34 @@ from tkinter import PhotoImage, ttk
 import logging
 from os import path as ospath
 
-from taskcoachlib import guitk, patterns, persistence, help  # pylint: disable=W0622
+from taskcoachlib import (
+    guitk,
+    patterns,
+    persistence,
+    help,
+)  # pylint: disable=W0622
 from taskcoachlib.domain import task, base, category
 from taskcoachlib.i18n import _
+
 # Les modules suivants devront être adaptés pour Tkinter
 # et le reste de votre application.
 from taskcoachlib.guitk import artprovidertk, uicommand, viewer
-from taskcoachlib.guitk.uicommand import base_uicommandtk  # Ceci doit être converti
-from taskcoachlib.guitk.uicommand import uicommandtk as uicommand  # Ceci doit être converti
-from taskcoachlib.guitk.uicommand import uicommandcontainertk  # Ceci doit être converti
-from taskcoachlib.guitk.uicommand import settings_uicommandtk  # Ceci doit être converti
+from taskcoachlib.guitk.uicommand import (
+    base_uicommandtk,
+)  # Ceci doit être converti
+from taskcoachlib.guitk.uicommand import (
+    uicommandtk as uicommand,
+)  # Ceci doit être converti
+from taskcoachlib.guitk.uicommand import (
+    uicommandcontainertk,
+)  # Ceci doit être converti
+from taskcoachlib.guitk.uicommand import (
+    settings_uicommandtk,
+)  # Ceci doit être converti
 from taskcoachlib.guitk.viewer import categorytk, efforttk, notetk, tasktk
-from pubsub import pub  # Ceci doit être converti ou remplacé par un autre mécanisme
+from pubsub import (
+    pub,
+)  # Ceci doit être converti ou remplacé par un autre mécanisme
 from taskcoachlib import patterns  # Ceci doit être converti
 
 log = logging.getLogger(__name__)
@@ -68,6 +85,7 @@ log = logging.getLogger(__name__)
 # pour le manipuler (par exemple, appendUICommand).
 # Cette approche rend le code plus modulaire et potentiellement plus facile
 # à adapter à d'autres frameworks à l'avenir si nécessaire.
+
 
 # class Menu(uicommandcontainer.UICommandContainerMixin):
 # class Menu(tk.Menu, uicommandcontainertk.UICommandContainerMixin):
@@ -105,7 +123,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
     """
 
     # # def __init__(self, window, tearoff=0):
-    def __init__(self, parent, parent_mainwindow=None, tearoff=0, *args, **kwargs):
+    def __init__(
+        self, parent, parent_mainwindow=None, tearoff=0, *args, **kwargs
+    ):
         # def __init__(self, parent_window, *args, **kwargs):
         """
         Initialise un nouveau Menu Tkinter Task Coach.
@@ -124,14 +144,18 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         #     *args : Arguments supplémentaires.
         #     **kwargs : Arguments nommés supplémentaires.
         # """
-        log.info(f"Menu : Création du menu de base pour Tkinter."
-                 f"Menu : Initialisation de self={self.__class__.__name__}")
+        log.info(
+            f"Menu : Création du menu de base pour Tkinter."
+            f"Menu : Initialisation de self={self.__class__.__name__}"
+        )
         # Appel du constructeur de la classe parente tk.Menu
         # tearoff, menu déchirable ou non.
         # Si vous définissez tearoff = 0,
         # le menu n'aura pas de fonction de déchirement et des choix seront ajoutés à partir de la position 0.
         # --- Détermination de la fenêtre principale AVANT toute assertion ---
-        log.debug(f"Menu : avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_mainwindow} de type {type(parent_mainwindow)}.")
+        log.debug(
+            f"Menu : avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_mainwindow} de type {type(parent_mainwindow)}."
+        )
         # Si parent_mainwindow n'est pas fourni, on suppose que parent est la fenêtre principale
         # Je préfère que ce soit clair dans l'appel.
         # À supprimer (ou ne plus utiliser comme fallback) :
@@ -148,11 +172,17 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         #         f"({type(parent_mainwindow)}). "
         #         "Types acceptés : tk.Tk, tk.Toplevel, tk.Frame, tk.LabelFrame, tk.Menu."
         #     )
-        uicommandcontainertk.assert_valid_parent_window(parent_mainwindow, self)
-        log.debug(f"Menu : récupère le nom de la fenêtre principale parente parent_mainwindow={parent_mainwindow}.")
+        uicommandcontainertk.assert_valid_parent_window(
+            parent_mainwindow, self
+        )
+        log.debug(
+            f"Menu : récupère le nom de la fenêtre principale parente parent_mainwindow={parent_mainwindow}."
+        )
         # --- Initialisation du mixin UICommand (assertion ici) ---
         # uicommandcontainertk.UICommandContainerMixin.__init__(self, parent_window=parent_mainwindow, tearoff=tearoff)
-        uicommandcontainertk.UICommandContainerMixin.__init__(self, parent_window=parent_mainwindow)
+        uicommandcontainertk.UICommandContainerMixin.__init__(
+            self, parent_window=parent_mainwindow
+        )
 
         # --- Initialisation du menu Tkinter ---
         # super().__init__(window, tearoff=tearoff)
@@ -165,7 +195,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         # self._window = window
         self.__parent = parent  # Stockez la référence au parent direct
         self.__window = parent_mainwindow  # Stockez la référence à la fenêtre principale comme dans la version wxPython
-        log.debug(f"Menu : self={self.__class__.__name__} et self._window={self.__window.__class__.__name__}")
+        log.debug(
+            f"Menu : self={self.__class__.__name__} et self._window={self.__window.__class__.__name__}"
+        )
         # La version wxPython vérifie que _window est bien une instance valide
         # de wx.Window (ou une de ses sous-classes) ici !
         # self._menu = tk.Menu(window, tearoff=tearoff)
@@ -191,7 +223,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         Note : Tkinter ne gère pas les objets 'MenuItem' comme wxPython.
         Nous devons utiliser l'ID ou l'index. Ici, nous utilisons l'ID.
         """
-        log.info(f"Menu.DestroyItem supprime l'élément avec l'ID {menuItem_id}")
+        log.info(
+            f"Menu.DestroyItem supprime l'élément avec l'ID {menuItem_id}"
+        )
         # Suppression de tous les éléments du menu.  TODO ?
         # Retirer tous les liens bind. TODO ?
         # Supprimer l'élément (avec la méthode super()). TODO ?
@@ -199,20 +233,24 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
             # self._menu.delete(menuItem_id)
             self.delete(menuItem_id)
         except tk.TclError as e:
-            log.error(f"Erreur lors de la suppression de l'élément de menu avec l'ID {menuItem_id}: {e}")
+            log.error(
+                f"Erreur lors de la suppression de l'élément de menu avec l'ID {menuItem_id}: {e}"
+            )
         # Libérer l'identifiant. TODO ?
 
     def clearMenu(self):
-        """ Supprimez tous les éléments du menu. """
+        """Supprimez tous les éléments du menu."""
         # self._menu.delete(0, tk.END)
         self.delete(0, tk.END)
         # self.delete(0, "end")
         self._accels = []
         self._observers = []
-        log.debug("Menu.clearMenu : Tous les éléments et observateurs ont été supprimés.")
+        log.debug(
+            "Menu.clearMenu : Tous les éléments et observateurs ont été supprimés."
+        )
 
     def accelerators(self):
-        """ Retourne la liste des raccourcis clavier du menu."""
+        """Retourne la liste des raccourcis clavier du menu."""
         return self._accels
 
     # def appendUICommands(self, *uiCommands):
@@ -274,7 +312,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         """
         # log.info("Menu.appendUICommand called")
         # log.info(f"Menu.appendUICommand ajoute l' uiCommand {uiCommand.__class__.__name__} au menu {self.__class__.__name__}")
-        log.info(f"Menu.appendUICommand ajoute l' uiCommand {uiCommand.menuText} au menu {self.__class__.__name__} délégué à uiCommand.addToMenu.")
+        log.info(
+            f"Menu.appendUICommand ajoute l' uiCommand {uiCommand.menuText} au menu {self.__class__.__name__} délégué à uiCommand.addToMenu."
+        )
 
         # # Le code wxPython original appelait `uiCommand.addToMenu`.
         # # Pour Tkinter, nous devrons adapter cette logique.
@@ -346,26 +386,41 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
             if window is None or cmd is None:
                 return
             # préférence : méthode publique setMainWindow(window)
-            if hasattr(cmd, 'setMainWindow'):
+            if hasattr(cmd, "setMainWindow"):
                 try:
                     cmd.setMainWindow(window)
                     return
                 except Exception:
-                    log.debug("Échec de l'appel setMainWindow sur uiCommand, tentative d'affectation d'attributs.")
+                    log.debug(
+                        "Échec de l'appel setMainWindow sur uiCommand, tentative d'affectation d'attributs."
+                    )
             # essais d'attributs internes connus
-            for attr in ('_mainWindow', '_window', 'parent_window', 'mainwindow'):
+            for attr in (
+                "_mainWindow",
+                "_window",
+                "parent_window",
+                "mainwindow",
+            ):
                 try:
                     if hasattr(cmd, attr) or True:
                         setattr(cmd, attr, window)
                 except Exception:
                     # ne pas arrêter sur une erreur d'affectation
-                    log.debug("Impossible d'affecter %s sur %s", attr, cmd.__class__.__name__, exc_info=True)
+                    log.debug(
+                        "Impossible d'affecter %s sur %s",
+                        attr,
+                        cmd.__class__.__name__,
+                        exc_info=True,
+                    )
 
         # assure que la commande a une référence à la fenêtre principale utilisée ici
         try:
             _ensure_main_window(uiCommand, self.__window)
         except Exception:
-            log.debug("Problème lors de l'initialisation de la main window sur uiCommand", exc_info=True)
+            log.debug(
+                "Problème lors de l'initialisation de la main window sur uiCommand",
+                exc_info=True,
+            )
 
         # # Utilisez une condition pour déterminer le type de commande à ajouter
         # if hasattr(uiCommand, 'kind'):
@@ -383,7 +438,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
             # Attention à ne pas mettre addToMenu 2 fois, sinon duplication de la liste des commandes !
             # uiCommand.addToMenu(menu=self, window=self._window)
             # peut-être faire comme dans la version wxPython
-            cmd = uiCommand.addToMenu(menu=self, window=self.__window)  # TODO : Est-ce que cela fonctionne ? Pas pour 'Save selected task as template'
+            cmd = uiCommand.addToMenu(
+                menu=self, window=self.__window
+            )  # TODO : Est-ce que cela fonctionne ? Pas pour 'Save selected task as template'
             # La méthode appendUICommand de menutk.py doit simplement
             # appeler la méthode addToMenu de l'objet UICommand.
             # Cela permet à la classe UICommand de gérer sa propre logique d'ajout au menu.
@@ -394,23 +451,28 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
             # récupérer les accélérateurs si la commande les expose
             accels = []
             try:
-                accels = getattr(uiCommand, 'accelerators', lambda: [])()
+                accels = getattr(uiCommand, "accelerators", lambda: [])()
             except Exception:
                 try:
                     # parfois c'est une propriété liste
-                    accels = getattr(uiCommand, 'accelerators', []) or []
+                    accels = getattr(uiCommand, "accelerators", []) or []
                 except Exception:
                     accels = []
             if accels:
                 self._accels.extend(accels)
-            log.debug(f"Menu.appendUICommand : Le conteneur self={self.__class__.__name__} a les accelerateurs {self._accels}.")
+            log.debug(
+                f"Menu.appendUICommand : Le conteneur self={self.__class__.__name__} a les accelerateurs {self._accels}."
+            )
 
             # Gestion des observateurs - observer pattern :
             if isinstance(uiCommand, patterns.Observer):
                 self._observers.append(uiCommand)
 
         except Exception as e:
-            log.error(f"Menu.appendUICommand : Échec de l'ajout de UICommand '{uiCommand.menuText}' : {e}", exc_info=True)
+            log.error(
+                f"Menu.appendUICommand : Échec de l'ajout de UICommand '{uiCommand.menuText}' : {e}",
+                exc_info=True,
+            )
             # Échec de l'ajout de UICommand 'Save selected task as &template' : 'IOController' object has no attribute 'curselection'
 
         # garde une seconde chance d'ajouter les accélérateurs si la commande expose une méthode différente
@@ -418,7 +480,7 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         #  Les accélérateurs définis dans la UICommand sont ajoutés
         #  à la liste des accélérateurs du menu.
         try:
-            if hasattr(uiCommand, 'accelerators'):
+            if hasattr(uiCommand, "accelerators"):
                 self._accels.extend(uiCommand.accelerators())
         except Exception:
             pass
@@ -428,7 +490,10 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         # if isinstance(uiCommand, patterns.Observer):
         #     # Ajoute le menu uiCommand à la liste de menus _observers
         #     self._observers.append(uiCommand)
-        if isinstance(uiCommand, patterns.Observer) and uiCommand not in self._observers:
+        if (
+            isinstance(uiCommand, patterns.Observer)
+            and uiCommand not in self._observers
+        ):
             self._observers.append(uiCommand)
         # Retourne cmd :
         #  La variable cmd (qui devrait être l'ID de l'élément de menu retourné
@@ -498,7 +563,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         icon = None
         if bitmap:
             icon = artprovidertk.getIcon(bitmap, (16, 16))
-        log.debug(f"appendMenu : Ajout du sous-menu {text} à la liste des menus de {self.__class__.__name__} et la méthode add_cascade avec l'icône {icon}.")
+        log.debug(
+            f"appendMenu : Ajout du sous-menu {text} à la liste des menus de {self.__class__.__name__} et la méthode add_cascade avec l'icône {icon}."
+        )
         # --- Ajout effectif du menu ---
         # # self._menu.add_cascade(label=text, menu=subMenu.tk_menu)
         self.add_cascade(label=text, menu=subMenu)
@@ -521,7 +588,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         """
         # self.add_separator()
         # ttk.Separator(self, orient=tk.VERTICAL).pack(side=tk.LEFT, padx=2)
-        ttk.Separator(self, orient=tk.HORIZONTAL).pack(side=tk.BOTTOM, padx=2)  # Ne fonctionne pas directement ici !
+        ttk.Separator(self, orient=tk.HORIZONTAL).pack(
+            side=tk.BOTTOM, padx=2
+        )  # Ne fonctionne pas directement ici !
         # raise NotImplementedError("La méthode 'AppendSeparator' doit être implémentée par la classe qui utilise ce mixin.")
 
     # def invokeMenuItem(self, menuItem):
@@ -552,7 +621,9 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         """
         subMenu = Menu(self.__window, tearoff=0)
         self.appendMenu(menuTitle, subMenu)
-        subMenu.appendUICommands(*uiCommands)  # Sauf que appendUICommands devrait appartenir à uicommandcontainer.UICommandContainerMixin
+        subMenu.appendUICommands(
+            *uiCommands
+        )  # Sauf que appendUICommands devrait appartenir à uicommandcontainer.UICommandContainerMixin
 
 
 class DynamicMenu(Menu):
@@ -560,7 +631,9 @@ class DynamicMenu(Menu):
     Menu dynamique qui se met à jour automatiquement.
     """
 
-    def __init__(self, parent, parent_mainwindow, parentMenu=None, labelInParentMenu=""):
+    def __init__(
+        self, parent, parent_mainwindow, parentMenu=None, labelInParentMenu=""
+    ):
         """
         Initialise un menu dynamique.
 
@@ -575,7 +648,9 @@ class DynamicMenu(Menu):
                 Libellé du menu dans le menu parent.
         """
         log.info("DynamicMenu : Création du menu Dynamique pour Tkinter.")
-        log.debug(f"DynamicMenu : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_mainwindow} de type {type(parent_mainwindow)}.")
+        log.debug(
+            f"DynamicMenu : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_mainwindow} de type {type(parent_mainwindow)}."
+        )
         super().__init__(parent=parent, parent_mainwindow=parent_mainwindow)
         self._parentMenu = parentMenu
         self._labelInParentMenu = self.__GetLabelText(labelInParentMenu)
@@ -601,7 +676,7 @@ class DynamicMenu(Menu):
         self.updateMenu()
 
     def updateMenu(self):
-        """ Met à jour les éléments du menu. """
+        """Met à jour les éléments du menu."""
         self.updateMenuItems()
 
     def updateMenuItems(self):
@@ -615,12 +690,12 @@ class DynamicMenu(Menu):
         # en fonction de l'état actuel de l'application.
 
     def enabled(self):
-        """ Renvoie un booléen indiquant si ce menu doit être activé. """
+        """Renvoie un booléen indiquant si ce menu doit être activé."""
         return True
 
     @staticmethod
     def __GetLabelText(menuText):
-        """ Supprimez les accélérateurs du menuTexte. """
+        """Supprimez les accélérateurs du menuTexte."""
         return menuText.replace("&", "")
 
 
@@ -628,6 +703,7 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
     """
     Menu dynamique qui obtient ses commandes UI d'un visualiseur (`viewer`).
     """
+
     def __init__(self, viewer, parentMenu=None, labelInParentMenu=""):
         # Super() est appelé sur le constructeur de DynamicMenu, qui lui-même
         # appelle le constructeur de Menu (la classe parente).
@@ -651,7 +727,9 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
         # de viewer.
         # Exemple avec pubsub si vous le convertissez :
         # pub.subscribe(self.onUpdateMenu, "viewer.selection_changed")
-        log.warning("`DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate` est un placeholder. L'événement doit être lié à votre système de gestion des événements.")
+        log.warning(
+            "`DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate` est un placeholder. L'événement doit être lié à votre système de gestion des événements."
+        )
 
     def updateMenuItems(self):
         """
@@ -659,7 +737,7 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
         disponibles dans le visualiseur.
         """
         self.clearMenu()
-        if self._viewer and hasattr(self._viewer, 'uiCommands'):
+        if self._viewer and hasattr(self._viewer, "uiCommands"):
             self._uiCommands = self._viewer.uiCommands()
             self.appendUICommands(*self._uiCommands)
 
@@ -685,13 +763,21 @@ class MainMenu(Menu):
     ainsi que leurs sous-menus respectifs.
 
     """
+
     # la classe MainMenu qui prend en charge la création de la barre de menus
     # principale et de ses sous-menus (Fichier, Édition, etc.).
     # Notez que les commandes UI (uicommand.FileNew, uicommand.EditUndo, etc.)
     # devront être converties pour fonctionner correctement avec Tkinter.
     # def __init__(self, parent, iocontroler, settings):
-    def __init__(self, parent, parent_window, settings,
-                 iocontroller, viewerContainer, taskFile):
+    def __init__(
+        self,
+        parent,
+        parent_window,
+        settings,
+        iocontroller,
+        viewerContainer,
+        taskFile,
+    ):
         """
         Initialise la barre de menu principale avec tous les sous-menus.
 
@@ -714,12 +800,16 @@ class MainMenu(Menu):
             f"MainMenu : parent_window doit être une instance de tk.Tk "
             f"(reçu : {type(parent_window)})."
         )
-        log.info(f"MainMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}.")
+        log.info(
+            f"MainMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}."
+        )
         # Initialisation du menu Tkinter + mixin
         # super().__init__(parent, tearoff=0)  # Ici, parent EST la mainwindow
         # super().__init__(parent, parent_window, tearoff=0)  # Ici, parent EST la mainwindow
         # super().__init__(parent, tearoff=0)  # Ici, parent EST la mainwindow
-        super().__init__(parent, parent_mainwindow=parent_window, tearoff=0)  # Ici, parent EST la mainwindow
+        super().__init__(
+            parent, parent_mainwindow=parent_window, tearoff=0
+        )  # Ici, parent EST la mainwindow
         # Stockage des dépendances
         self.taskFile = taskFile  # Ajout de taskFile
         self.settings = settings  # Ajout de settings
@@ -826,17 +916,74 @@ class MainMenu(Menu):
         #     (ActionMenu(self, parent_window, settings, taskFile, viewerContainer), _("&Actions")),
         #     (HelpMenu(self, parent_window, settings, iocontroller), _("&Help"))]:
         for menulisted, text in [
-            (FileMenu(self, self.parent_window, self.settings, self._iocontroller, self.viewerContainer), _("&File")),
-            (EditMenu(self, self.parent_window, self.settings, self._iocontroller, self.viewerContainer), _("&Edit")),
-            (ViewMenu(self, self.parent_window, self.settings, self.viewerContainer, self.taskFile), _("&View")),
-            (NewMenu(self, self.parent_window, self.settings, self.taskFile, self.viewerContainer), _("&New")),
-            (ActionMenu(self, self.parent_window, self.settings, self.taskFile, self.viewerContainer), _("&Actions")),
-            (HelpMenu(self, self.parent_window, self.settings, self._iocontroller), _("&Help"))]:
-            log.debug(f"MainMenu._create_menus : Création du menu {text} avec la liste {menulisted}.")
+            (
+                FileMenu(
+                    self,
+                    self.parent_window,
+                    self.settings,
+                    self._iocontroller,
+                    self.viewerContainer,
+                ),
+                _("&File"),
+            ),
+            (
+                EditMenu(
+                    self,
+                    self.parent_window,
+                    self.settings,
+                    self._iocontroller,
+                    self.viewerContainer,
+                ),
+                _("&Edit"),
+            ),
+            (
+                ViewMenu(
+                    self,
+                    self.parent_window,
+                    self.settings,
+                    self.viewerContainer,
+                    self.taskFile,
+                ),
+                _("&View"),
+            ),
+            (
+                NewMenu(
+                    self,
+                    self.parent_window,
+                    self.settings,
+                    self.taskFile,
+                    self.viewerContainer,
+                ),
+                _("&New"),
+            ),
+            (
+                ActionMenu(
+                    self,
+                    self.parent_window,
+                    self.settings,
+                    self.taskFile,
+                    self.viewerContainer,
+                ),
+                _("&Actions"),
+            ),
+            (
+                HelpMenu(
+                    self, self.parent_window, self.settings, self._iocontroller
+                ),
+                _("&Help"),
+            ),
+        ]:
+            log.debug(
+                f"MainMenu._create_menus : Création du menu {text} avec la liste {menulisted}."
+            )
             self._menulisted = menulisted
-            log.debug(f"MainMenu._create_menus : Appel de appendMenu pour {text}")
+            log.debug(
+                f"MainMenu._create_menus : Appel de appendMenu pour {text}"
+            )
             # log.debug(f"MainMenu : Ajout du menu {menulisted}{text} au menuBar MainMenu {self}")
-            self.appendMenu(text, self._menulisted)  # Tous doivent être de forme ('&Name', tk.Menu)
+            self.appendMenu(
+                text, self._menulisted
+            )  # Tous doivent être de forme ('&Name', tk.Menu)
             # self.add_cascade(label=text, menu=self._menulisted)  # Tous doivent être de forme ('&Name', tk.Menu)
             # self.add_cascade(label=text, menu=menulisted)  # Tous doivent être de forme ('&Name', tk.Menu)
             log.debug(f"Menu {text} ajouté avec succès !")
@@ -845,17 +992,24 @@ class MainMenu(Menu):
         # parent.config(menu=self)  # Problème ?
         # self.parent_window.config(menu=self)  # Problème ?
         # self.parent.config(menu=self)  # A essayer !
-        log.info("MainMenu : Menu principal configuré pour la fenêtre parente.")
+        log.info(
+            "MainMenu : Menu principal configuré pour la fenêtre parente."
+        )
 
 
 class FileMenu(Menu):
     """
     Classe pour le menu "Fichier", adapté pour Tkinter.
     """
+
     # def __init__(self, parent, settings, iocontroller, viewerContainer):
-    def __init__(self, parent, parent_window, settings, iocontroller, viewerContainer):
+    def __init__(
+        self, parent, parent_window, settings, iocontroller, viewerContainer
+    ):
         log.info("FileMenu : Création du menu Fichier.")
-        log.info(f"FileMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}.")
+        log.info(
+            f"FileMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}."
+        )
         # super().__init__(parent, tearoff=0)
         super().__init__(parent, parent_mainwindow=parent_window, tearoff=0)
         self.parent = parent
@@ -880,23 +1034,33 @@ class FileMenu(Menu):
             uicommand.FileSave(iocontroller=self._iocontroller),
             uicommand.FileMergeDiskChanges(iocontroller=self._iocontroller),
             uicommand.FileSaveAs(iocontroller=self._iocontroller),
-            uicommand.FileSaveSelection(iocontroller=self._iocontroller,
-                                        viewer=self._viewerContainer),
+            uicommand.FileSaveSelection(
+                iocontroller=self._iocontroller, viewer=self._viewerContainer
+            ),
             # ),
         )
         # self.add_command(label=uicommand.FileNew[menuText])
         if not self.settings.getboolean("feature", "syncml"):
-            self.appendUICommands(uicommand.FilePurgeDeletedItems(iocontroller=self._iocontroller))
+            self.appendUICommands(
+                uicommand.FilePurgeDeletedItems(
+                    iocontroller=self._iocontroller
+                )
+            )
         self.appendUICommands(
             None,
-            uicommand.FileSaveSelectedTaskAsTemplate(iocontroller=self._iocontroller,
-                                                     viewer=self._iocontroller),
+            uicommand.FileSaveSelectedTaskAsTemplate(
+                iocontroller=self._iocontroller, viewer=self._iocontroller
+            ),
             uicommand.FileImportTemplate(iocontroller=self._iocontroller),
             uicommand.FileEditTemplates(settings=self.settings),
             None,
             uicommand.PrintPageSetup(settings=self.settings),
-            uicommand.PrintPreview(viewer=self._viewerContainer, settings=self.settings),
-            uicommand.Print(viewer=self._viewerContainer, settings=self.settings),
+            uicommand.PrintPreview(
+                viewer=self._viewerContainer, settings=self.settings
+            ),
+            uicommand.Print(
+                viewer=self._viewerContainer, settings=self.settings
+            ),
             None,  # Séparateur
         )
         self.appendUICommands(
@@ -907,7 +1071,9 @@ class FileMenu(Menu):
         )
         self.appendUICommands(
             None,
-            uicommand.FileManageBackups(iocontroller=self._iocontroller, settings=self.settings)
+            uicommand.FileManageBackups(
+                iocontroller=self._iocontroller, settings=self.settings
+            ),
         )
         if self.settings.getboolean("feature", "syncml"):
             try:
@@ -915,8 +1081,11 @@ class FileMenu(Menu):
             except ImportError:
                 pass
             else:
-                self.appendUICommands(uicommand.FileSynchronize(iocontroller=self._iocontroller,
-                                                                settings=self.settings))
+                self.appendUICommands(
+                    uicommand.FileSynchronize(
+                        iocontroller=self._iocontroller, settings=self.settings
+                    )
+                )
         # self.__recentFilesStartPosition = len(self)  # ?
         self.appendUICommands(
             None,
@@ -930,20 +1099,31 @@ class ExportMenu(Menu):
     """
     Le sous-menu "Exporter", adapté pour Tkinter.
     """
+
     # def __init__(self, parent, iocontroller, settings):
     def __init__(self, parent, parent_window, iocontroller, settings):
         log.info("ExportMenu : Création du menu Exporter.")
-        log.info(f"ExportMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}.")
+        log.info(
+            f"ExportMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}."
+        )
         # super().__init__(parent, tearoff=0)
         super().__init__(parent, parent_mainwindow=parent_window, tearoff=0)
 
         self.appendUICommands(
             # uicommand.ExportToFile(iocontroler=iocontroler, settings=settings),
             # uicommand.ExportAsText(iocontroler=iocontroler, settings=settings),
-            uicommand.FileExportAsHTML(iocontroller=iocontroller, settings=settings),
-            uicommand.FileExportAsCSV(iocontroller=iocontroller, settings=settings),
-            uicommand.FileExportAsICalendar(iocontroller=iocontroller, settings=settings),
-            uicommand.FileExportAsTodoTxt(iocontroller=iocontroller, settings=settings),
+            uicommand.FileExportAsHTML(
+                iocontroller=iocontroller, settings=settings
+            ),
+            uicommand.FileExportAsCSV(
+                iocontroller=iocontroller, settings=settings
+            ),
+            uicommand.FileExportAsICalendar(
+                iocontroller=iocontroller, settings=settings
+            ),
+            uicommand.FileExportAsTodoTxt(
+                iocontroller=iocontroller, settings=settings
+            ),
         )
 
 
@@ -951,10 +1131,13 @@ class ImportMenu(Menu):
     """
     Le sous-menu "Importer", adapté pour Tkinter.
     """
+
     # def __init__(self, parent, iocontroller):
     def __init__(self, parent, parent_window, iocontroller):
         log.info("ImportMenu : Création du menu Importer.")
-        log.info(f"ImportMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}.")
+        log.info(
+            f"ImportMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}."
+        )
         # super().__init__(parent, tearoff=0)
         super().__init__(parent, parent_mainwindow=parent_window, tearoff=0)
         self.appendUICommands(
@@ -978,10 +1161,13 @@ class TaskTemplateMenu(DynamicMenu):
         fillMenu (self, uiCommands) : Remplit le menu avec les commandes UI.
         getUICommands (self) : Récupère les commandes UI liées aux modèles de tâches.
     """
+
     # def __init__(self, parent, taskList, settings):
     def __init__(self, parent, parent_window, taskList, settings):
         log.debug("TaskTemplateMenu : Création du menu Modèle de Tâche.")
-        log.debug(f"TaskTemplateMenu : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_window} de type {type(parent_window)}.")
+        log.debug(
+            f"TaskTemplateMenu : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_window} de type {type(parent_window)}."
+        )
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
         self.settings = settings
@@ -991,7 +1177,9 @@ class TaskTemplateMenu(DynamicMenu):
         # # Règle ABSOLUE
         # # ❌ Ne jamais appeler self.mainWindow() dans un __init__
         # parent_window est déjà la fenêtre principale Tk, inutile (et dangereux) de la recalculer.
-        super().__init__(parent, parent_mainwindow=parent_window, parentMenu=parent_window)  # TODO : parentMenu=parent ou parent_window ?
+        super().__init__(
+            parent, parent_mainwindow=parent_window, parentMenu=parent_window
+        )  # TODO : parentMenu=parent ou parent_window ?
 
     def registerForMenuUpdate(self):
         pub.subscribe(self.onTemplatesSaved, "templates.saved")
@@ -1008,10 +1196,14 @@ class TaskTemplateMenu(DynamicMenu):
 
     def getUICommands(self):
         path = self.settings.pathToTemplatesDir()
-        commands = [uicommand.TaskTemplateNew(ospath.join(path, name),
-                                              taskList=self.taskList,
-                                              settings=self.settings) for name in
-                    persistence.TemplateList(path).names()]
+        commands = [
+            uicommand.TaskTemplateNew(
+                ospath.join(path, name),
+                taskList=self.taskList,
+                settings=self.settings,
+            )
+            for name in persistence.TemplateList(path).names()
+        ]
         if not commands:
             log.info("Aucun modèle de tâche trouvé dans : %s", path)
         return commands
@@ -1021,8 +1213,11 @@ class EditMenu(Menu):
     """
     Le menu "Édition", adapté pour Tkinter.
     """
+
     # def __init__(self, parent, settings, iocontroler, viewerContainer):
-    def __init__(self, parent, parent_window, settings, iocontroler, viewerContainer):
+    def __init__(
+        self, parent, parent_window, settings, iocontroler, viewerContainer
+    ):
         log.info("EditMenu : Création du menu Édition.")
         # super().__init__(parent, tearoff=0)
         super().__init__(parent, parent_mainwindow=parent_window, tearoff=0)
@@ -1037,7 +1232,7 @@ class EditMenu(Menu):
             None,
             uicommand.Edit(viewer=viewerContainer),
             uicommand.Delete(viewer=viewerContainer),
-            None
+            None,
         )
         #     None,
         #     uicommand.EditFind(),
@@ -1059,8 +1254,9 @@ class SelectMenu(Menu):
         super().__init__(parent, parent_mainwindow=parent_window)
         kwargs = dict(viewer=viewerContainer)
         # pylint: disable=W0142
-        self.appendUICommands(uicommand.SelectAll(**kwargs),
-                              uicommand.ClearSelection(**kwargs))
+        self.appendUICommands(
+            uicommand.SelectAll(**kwargs), uicommand.ClearSelection(**kwargs)
+        )
 
 
 class ViewMenu(Menu):
@@ -1069,8 +1265,11 @@ class ViewMenu(Menu):
 
     Ce menu contient des options pour gérer l'affichage, les modes de vue, les filtres, les colonnes, etc.
     """
+
     # def __init__(self, parent, settings, viewerContainer, taskFile):
-    def __init__(self, parent, parent_window, settings, viewerContainer, taskFile):
+    def __init__(
+        self, parent, parent_window, settings, viewerContainer, taskFile
+    ):
         """
         Initialise le menu Voir avec divers sous-menus comme les options d'affichage et les colonnes.
 
@@ -1080,7 +1279,9 @@ class ViewMenu(Menu):
             viewerContainer :
             taskFile :
         """
-        log.info(f"ViewMenu : Création du menu View/Affichage. {self.__class__.__name__}")
+        log.info(
+            f"ViewMenu : Création du menu View/Affichage. {self.__class__.__name__}"
+        )
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
         # super().__init__(parent)
@@ -1089,7 +1290,9 @@ class ViewMenu(Menu):
         self.appendMenu(
             _("&New viewer"),
             # ViewViewerMenu(parent, settings, viewerContainer, taskFile),
-            ViewViewerMenu(parent, parent_window, settings, viewerContainer, taskFile),
+            ViewViewerMenu(
+                parent, parent_window, settings, viewerContainer, taskFile
+            ),
             # "viewnewviewer",
         )
         activateNextViewer = uicommand.ActivateViewer(
@@ -1112,11 +1315,13 @@ class ViewMenu(Menu):
             activateNextViewer,
             activatePreviousViewer,
             uicommand.RenameViewer(viewer=viewerContainer),
-            None
+            None,
         )
         # log.debug("ViewMenu : Ajout du menu : Mode")
         # self.appendMenu(_("&Mode"), ModeMenu(parent, self, _("&Mode")))
-        self.appendMenu(_("&Mode"), ModeMenu(parent, self.mainWindow(), _("&Mode")))
+        self.appendMenu(
+            _("&Mode"), ModeMenu(parent, self.mainWindow(), _("&Mode"))
+        )
         # self.appendMenu(
         #     _("&Mode"),
         #     ModeMenu(
@@ -1150,27 +1355,30 @@ class ViewMenu(Menu):
         #     _("&Rounding"), RoundingMenu(parent, self, _("&Rounding"))
         # )
         self.appendMenu(
-            _("&Rounding"), RoundingMenu(parent, self.mainWindow(), _("&Rounding"))
+            _("&Rounding"),
+            RoundingMenu(parent, self.mainWindow(), _("&Rounding")),
         )
         self.appendUICommands(None)
         # log.debug("ViewMenu : Ajout du menu : Options d'arborescence")
         self.appendMenu(
             _("&Tree options"),
             # ViewTreeOptionsMenu(parent, viewerContainer),
-            ViewTreeOptionsMenu(parent, parent_window, viewerContainer)
+            ViewTreeOptionsMenu(parent, parent_window, viewerContainer),
             # "treeview"
         )
         self.appendUICommands(None)
         # log.debug("ViewMenu : Ajout du menu : Barre d'Outils")
         # self.appendMenu(_("T&oolbar"), ToolBarMenu(parent, settings))
-        self.appendMenu(_("T&oolbar"), ToolBarMenu(parent, parent_window, settings))
+        self.appendMenu(
+            _("T&oolbar"), ToolBarMenu(parent, parent_window, settings)
+        )
         self.appendUICommands(
             # uicommand.UICheckCommand(
             settings_uicommandtk.UICheckCommand(
                 settings=settings,
                 menuText=_("Status&bar"),
                 helpText=_("Show/hide status bar"),
-                setting="statusbar"
+                setting="statusbar",
             )
         )
         log.debug("ViewMenu initialisé avec succès !")
@@ -1178,7 +1386,9 @@ class ViewMenu(Menu):
 
 class ViewViewerMenu(Menu):
     # def __init__(self, parent, settings, viewerContainer, taskFile):
-    def __init__(self, parent, parent_window,  settings, viewerContainer, taskFile):
+    def __init__(
+        self, parent, parent_window, settings, viewerContainer, taskFile
+    ):
         log.info("Création du menu View Viewer.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
@@ -1186,7 +1396,9 @@ class ViewViewerMenu(Menu):
         # super().__init__(parent)
         super().__init__(parent, parent_mainwindow=parent_window)
         ViewViewer = uicommand.ViewViewer
-        kwargs = dict(viewer=viewerContainer, taskFile=taskFile, settings=settings)
+        kwargs = dict(
+            viewer=viewerContainer, taskFile=taskFile, settings=settings
+        )
         # pylint: disable=W0142
         # TODO : A remettre ! ->
         viewViewerCommands = [
@@ -1265,10 +1477,11 @@ class ViewViewerMenu(Menu):
                 helpText=_("Open a new tab with a viewer that displays notes"),
                 viewerClass=guitk.viewer.notetk.Noteviewer,
                 **kwargs,
-            )
+            ),
         ]
         try:
             import igraph
+
             viewViewerCommands.append(
                 ViewViewer(
                     menuText=_("&Dependency Graph"),
@@ -1288,20 +1501,24 @@ class ViewViewerMenu(Menu):
 class ViewTreeOptionsMenu(Menu):
     # def __init__(self, parent, viewerContainer):
     def __init__(self, parent, parent_window, viewerContainer):
-        log.info("ViewTreeOptionsMenu : Création du menu des Options de vue Arborescente.")
+        log.info(
+            "ViewTreeOptionsMenu : Création du menu des Options de vue Arborescente."
+        )
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
         # super().__init__(parent)
         super().__init__(parent, parent_mainwindow=parent_window)
         self.appendUICommands(
             uicommand.ViewExpandAll(viewer=viewerContainer),
-            uicommand.ViewCollapseAll(viewer=viewerContainer))
+            uicommand.ViewCollapseAll(viewer=viewerContainer),
+        )
 
 
 class ModeMenu(DynamicMenuThatGetsUICommandsFromViewer):
     def enabled(self):
-        return self.__window.viewer.hasModes() and \
-            bool(self.__window.viewer.getModeUICommands())
+        return self.__window.viewer.hasModes() and bool(
+            self.__window.viewer.getModeUICommands()
+        )
 
     def getUICommands(self):
         return self.__window.viewer.getModeUICommands()
@@ -1309,7 +1526,9 @@ class ModeMenu(DynamicMenuThatGetsUICommandsFromViewer):
 
 class FilterMenu(DynamicMenuThatGetsUICommandsFromViewer):
     def enabled(self):
-        return self.__window.viewer.isFilterable() and bool(self.__window.viewer.getFilterUICommands())
+        return self.__window.viewer.isFilterable() and bool(
+            self.__window.viewer.getFilterUICommands()
+        )
 
     def getUICommands(self):
         return self.__window.viewer.getFilterUICommands()
@@ -1343,6 +1562,7 @@ class ToolBarMenu(Menu):
     """
     Création du menu de ToolBar.
     """
+
     # def __init__(self, parent, settings):
     def __init__(self, parent, parent_window, settings):
         log.info("Création du menu de la Barre d'Outils.")
@@ -1367,7 +1587,7 @@ class ToolBarMenu(Menu):
                 (32, 32),
                 _("&Large images"),
                 _("Large images (32x32) on the toolbar"),
-            )
+            ),
         ]:
             toolbarCommands.append(
                 # uicommand.UIRadioCommand(
@@ -1387,8 +1607,11 @@ class NewMenu(Menu):
     """
     Création du menu Nouveau dans la barre de Menu.
     """
+
     # def __init__(self, parent, settings, taskFile, viewerContainer):
-    def __init__(self, parent, parent_window, settings, taskFile, viewerContainer):
+    def __init__(
+        self, parent, parent_window, settings, taskFile, viewerContainer
+    ):
         log.info("Création du menu New/Nouveau.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
@@ -1402,13 +1625,15 @@ class NewMenu(Menu):
             ),
             uicommand.NewTaskWithSelectedTasksAsDependencies(
                 taskList=tasks, viewer=viewerContainer, settings=settings
-            )
+            ),
         )
         # log.debug("NewMenu : Ajout du menu : Nouvelle tâche depuis les archives")
         self.appendMenu(
             _("New task from &template"),
             # TaskTemplateMenu(parent, taskList=tasks, settings=settings),
-            TaskTemplateMenu(parent, parent_window, taskList=tasks, settings=settings),
+            TaskTemplateMenu(
+                parent, parent_window, taskList=tasks, settings=settings
+            ),
             # "newtmpl"
         )
         self.appendUICommands(
@@ -1417,20 +1642,23 @@ class NewMenu(Menu):
                 viewer=viewerContainer,
                 effortList=taskFile.efforts(),
                 taskList=tasks,
-                settings=settings
+                settings=settings,
             ),
             uicommand.CategoryNew(
                 categories=taskFile.categories(), settings=settings
             ),
             uicommand.NoteNew(notes=taskFile.notes(), settings=settings),
             None,
-            uicommand.NewSubItem(viewer=viewerContainer))
+            uicommand.NewSubItem(viewer=viewerContainer),
+        )
         log.debug("NewMenu : devrait être ajouté !")
 
 
 class ActionMenu(Menu):
     # def __init__(self, parent, settings, taskFile, viewerContainer):
-    def __init__(self, parent, parent_window, settings, taskFile, viewerContainer):
+    def __init__(
+        self, parent, parent_window, settings, taskFile, viewerContainer
+    ):
         log.info("Création du menu Action.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
@@ -1445,8 +1673,9 @@ class ActionMenu(Menu):
         # log.debug("📌 [DEBUG] ActionMenu : Ajout d’un attachement :")
         self.appendUICommands(
             uicommand.AddAttachment(viewer=viewerContainer, settings=settings),
-            uicommand.OpenAllAttachments(viewer=viewerContainer,
-                                         settings=settings),
+            uicommand.OpenAllAttachments(
+                viewer=viewerContainer, settings=settings
+            ),
             None,
             uicommand.AddNote(viewer=viewerContainer, settings=settings),
             uicommand.OpenAllNotes(viewer=viewerContainer, settings=settings),
@@ -1460,7 +1689,10 @@ class ActionMenu(Menu):
             ToggleCategoryMenu(
                 # parent, categories=categories, viewer=viewerContainer
                 # parent, parent_window, categories=categories, viewer=viewerContainer
-                parent=parent, parent_window=parent_window, categories=categories, viewer=viewerContainer
+                parent=parent,
+                parent_window=parent_window,
+                categories=categories,
+                viewer=viewerContainer,
             ),
             # "folder_blue_arrow_icon"
         )
@@ -1476,7 +1708,7 @@ class ActionMenu(Menu):
             uicommand.TaskMarkCompleted(
                 settings=settings, viewer=viewerContainer
             ),
-            None
+            None,
         )
         # log.debug("ActionMenu : Ajout du menu : Changement de priorité/tâche")
         self.appendMenu(
@@ -1488,12 +1720,15 @@ class ActionMenu(Menu):
         self.appendUICommands(
             None,
             uicommand.EffortStart(viewer=viewerContainer, taskList=tasks),
-            uicommand.EffortStop(viewer=viewerContainer, effortList=efforts, taskList=tasks),
-            uicommand.EditTrackedTasks(taskList=tasks, settings=settings))
+            uicommand.EffortStop(
+                viewer=viewerContainer, effortList=efforts, taskList=tasks
+            ),
+            uicommand.EditTrackedTasks(taskList=tasks, settings=settings),
+        )
 
     def Check(self, checked):
         """Méthode de compatibilité wxPython pour cocher/décocher le menu"""
-        if hasattr(self, '_check_var'):
+        if hasattr(self, "_check_var"):
             self._check_var.set(checked)
 
 
@@ -1511,7 +1746,8 @@ class TaskPriorityMenu(Menu):
             uicommand.TaskIncPriority(**kwargs),
             uicommand.TaskDecPriority(**kwargs),
             uicommand.TaskMaxPriority(**kwargs),
-            uicommand.TaskMinPriority(**kwargs))
+            uicommand.TaskMinPriority(**kwargs),
+        )
 
 
 class HelpMenu(Menu):
@@ -1537,7 +1773,8 @@ class HelpMenu(Menu):
             None,
             uicommand.HelpAbout(),
             uicommand.CheckForUpdate(settings=settings),
-            uicommand.HelpLicense())
+            uicommand.HelpLicense(),
+        )
         log.debug("HelpMenu : devrait être ajouté !")
 
 
@@ -1545,6 +1782,7 @@ class TaskBarMenu(Menu):
     """
     Menu de la barre de tâche pour TaskCoach.
     """
+
     #     Problème : Le problème est effectivement que TaskBarIcon
     #     n'est pas une sous-classe de wx.Window, et les menus wxPython
     #     (comme ceux gérés par UICommandContainerMixin) sont
@@ -1568,11 +1806,14 @@ class TaskBarMenu(Menu):
         )
         self.appendUICommands(None)  # Separator
         self.appendUICommands(
-            uicommand.EffortNew(effortList=efforts, taskList=tasks,
-                                settings=settings),
-            uicommand.CategoryNew(categories=taskFile.categories(),
-                                  settings=settings),
-            uicommand.NoteNew(notes=taskFile.notes(), settings=settings))
+            uicommand.EffortNew(
+                effortList=efforts, taskList=tasks, settings=settings
+            ),
+            uicommand.CategoryNew(
+                categories=taskFile.categories(), settings=settings
+            ),
+            uicommand.NoteNew(notes=taskFile.notes(), settings=settings),
+        )
         self.appendUICommands(None)  # Separator
         label = _("&Start tracking effort")
         # log.debug("taskBArMenu : Ajout du menu : Départ d'effort pour la tâche.")
@@ -1595,24 +1836,33 @@ class TaskBarMenu(Menu):
 
 
 class ToggleCategoryMenu(DynamicMenu):
-    def __init__(self, parent, parent_window, categories, viewer):  # pylint: disable=W0621
+    def __init__(
+        self, parent, parent_window, categories, viewer
+    ):  # pylint: disable=W0621
         log.info("Création du menu Toggle Catégorie.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
         self.categories = categories
         self.viewer = viewer
+        self.__window = parent_window
         # super().__init__(parent)
         super().__init__(parent, parent_window)
         log.info("Menu Toggle Catégorie initialisé.")
 
     def registerForMenuUpdate(self):
-        for eventType in (self.categories.addItemEventType(),
-                          self.categories.removeItemEventType()):
-            patterns.Publisher().registerObserver(self.onUpdateMenu,
-                                                  eventType=eventType,
-                                                  eventSource=self.categories)
-        patterns.Publisher().registerObserver(self.onUpdateMenu,
-                                              eventType=category.Category.subjectChangedEventType())
+        for eventType in (
+            self.categories.addItemEventType(),
+            self.categories.removeItemEventType(),
+        ):
+            patterns.Publisher().registerObserver(
+                self.onUpdateMenu,
+                eventType=eventType,
+                eventSource=self.categories,
+            )
+        patterns.Publisher().registerObserver(
+            self.onUpdateMenu,
+            eventType=category.Category.subjectChangedEventType(),
+        )
 
     def updateMenuItems(self):
         self.clearMenu()
@@ -1635,11 +1885,16 @@ class ToggleCategoryMenu(DynamicMenu):
         categories = categories[:]
         categories.sort(key=lambda category: category.subject().lower())
         for category in categories:
-            uiCommand = uicommand.ToggleCategory(category=category,
-                                                 viewer=self.viewer)
-            log.debug(f"ToggleCategoryMenu.addMenuItemsForCategories : Ajout du sous-menu : {uiCommand} dans {menuToAdd} fenêtre {self.__window}")
+            uiCommand = uicommand.ToggleCategory(
+                category=category, viewer=self.viewer
+            )
+            log.debug(
+                f"ToggleCategoryMenu.addMenuItemsForCategories : Ajout du sous-menu : {uiCommand} dans {menuToAdd} fenêtre {self.__window}"
+            )
             uiCommand.addToMenu(menuToAdd, self.__window)
-        categoriesWithChildren = [category for category in categories if category.children()]
+        categoriesWithChildren = [
+            category for category in categories if category.children()
+        ]
         if categoriesWithChildren:
             menuToAdd.AppendSeparator()
             for category in categoriesWithChildren:
@@ -1647,7 +1902,9 @@ class ToggleCategoryMenu(DynamicMenu):
                 subMenu = Menu(self.__window)
                 # log.debug(f"subMenu={subMenu}")
                 # self.addMenuItemsForCategories(category.children(), subMenu)
-                self.addMenuItemsForCategories(category.get_tree_children(), subMenu)
+                self.addMenuItemsForCategories(
+                    category.get_tree_children(), subMenu
+                )
                 # log.debug(f"ToggleCategoryMenu.addMenuItemsForCategories : Ajout du sous-menu : {self.subMenuLabel(category)}{subMenu} dans {menuToAdd}")
                 menuToAdd.AppendSubMenu(subMenu, self.subMenuLabel(category))
 
@@ -1661,22 +1918,27 @@ class ToggleCategoryMenu(DynamicMenu):
 
 
 class StartEffortForTaskMenu(DynamicMenu):
-    def __init__(self, taskBarIcon, tasks, parentMenu=None,
-                 labelInParentMenu=""):
+    def __init__(
+        self, taskBarIcon, tasks, parentMenu=None, labelInParentMenu=""
+    ):
         log.info("Création du menu Début d'effort de tâche.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
         self.tasks = tasks
         super().__init__(taskBarIcon, parentMenu, labelInParentMenu)
-        log.info("StartEffortForTaskMenu : Menu début d'effort de tâche créé !")
+        log.info(
+            "StartEffortForTaskMenu : Menu début d'effort de tâche créé !"
+        )
 
     def registerForMenuUpdate(self):
-        for eventType in (self.tasks.addItemEventType(),
-                          self.tasks.removeItemEventType()):
+        for eventType in (
+            self.tasks.addItemEventType(),
+            self.tasks.removeItemEventType(),
+        ):
             # patterns.Publisher().registerObserver(self.onUpdateMenu_Deprecated,
-            patterns.Publisher().registerObserver(self.onUpdateMenu,
-                                                  eventType=eventType,
-                                                  eventSource=self.tasks)
+            patterns.Publisher().registerObserver(
+                self.onUpdateMenu, eventType=eventType, eventSource=self.tasks
+            )
         # for eventType in (task.Task.subjectChangedEventType(),
         #                   task.Task.trackingChangedEventType(),
         #                   task.Task.plannedStartDateTimeChangedEventType(),
@@ -1697,25 +1959,39 @@ class StartEffortForTaskMenu(DynamicMenu):
             self.addMenuItemForTask(trackableRootTask, self)
 
     def addMenuItemForTask(self, task, menuItem):  # pylint: disable=W0621
-        uiCommand = uicommand.EffortStartForTask(task=task, taskList=self.tasks)
-        log.debug(f"StartEffortForTaskMenu.addMenuItemForTask Ajoute le menu {uiCommand} à {menuItem} fenêtre {self.__window}")
+        uiCommand = uicommand.EffortStartForTask(
+            task=task, taskList=self.tasks
+        )
+        log.debug(
+            f"StartEffortForTaskMenu.addMenuItemForTask Ajoute le menu {uiCommand} à {menuItem} fenêtre {self.__window}"
+        )
         uiCommand.addToMenu(menuItem, self.__window)
-        trackableChildren = [child for child in task.children() if
-                             child in self.tasks and not child.completed()]
+        trackableChildren = [
+            child
+            for child in task.children()
+            if child in self.tasks and not child.completed()
+        ]
         if trackableChildren:
             trackableChildren.sort(key=lambda child: child.subject())
             subMenu = Menu(self.__window)
             for child in trackableChildren:
                 self.addMenuItemForTask(child, subMenu)
-            log.debug(f"StartEffortForTaskMenu.addMenuItemForTask : Ajout du sous-menu : {task.subject()} (subtasks){subMenu} dans {menuItem}")
-            menuItem.AppendSubMenu(subMenu, _("%s (subtasks)") % task.subject())
+            log.debug(
+                f"StartEffortForTaskMenu.addMenuItemForTask : Ajout du sous-menu : {task.subject()} (subtasks){subMenu} dans {menuItem}"
+            )
+            menuItem.AppendSubMenu(
+                subMenu, _("%s (subtasks)") % task.subject()
+            )
 
     def enabled(self):
         return bool(self._trackableRootTasks())
 
     def _trackableRootTasks(self):
-        return [rootTask for rootTask in self.tasks.rootItems()
-                if not rootTask.completed()]
+        return [
+            rootTask
+            for rootTask in self.tasks.rootItems()
+            if not rootTask.completed()
+        ]
 
 
 class TaskPopupMenu(Menu):
@@ -1728,7 +2004,18 @@ class TaskPopupMenu(Menu):
         __init__ (self, mainwindow, settings, tasks, efforts, categories, taskViewer) :
             Initialise le menu contextuel des tâches.
     """
-    def __init__(self, parent, settings, tasks, efforts, categories, taskViewer, parent_window=None, **kwargs):
+
+    def __init__(
+        self,
+        parent,
+        settings,
+        tasks,
+        efforts,
+        categories,
+        taskViewer,
+        parent_window=None,
+        **kwargs,
+    ):
         log.info("TaskPopupMenu : Création du menu Popup de Tâche.")
         # super().__init__(parent)
         super().__init__(parent, parent_mainwindow=parent_window, **kwargs)
@@ -1749,23 +2036,25 @@ class TaskPopupMenu(Menu):
             uicommand.Delete(viewer=taskViewer),
             None,
             uicommand.AddAttachment(viewer=taskViewer, settings=settings),
-            uicommand.OpenAllAttachments(viewer=taskViewer,
-                                         settings=settings),
+            uicommand.OpenAllAttachments(viewer=taskViewer, settings=settings),
             None,
-            uicommand.AddNote(viewer=taskViewer,
-                              settings=settings),
+            uicommand.AddNote(viewer=taskViewer, settings=settings),
             uicommand.OpenAllNotes(viewer=taskViewer, settings=settings),
             None,
             uicommand.Mail(viewer=taskViewer),
-            None)
+            None,
+        )
         # log.debug("TaskPopupMenu : Ajout du menu : Toggle Categorie")
-        self.appendMenu(_("&Toggle category"),
-                        ToggleCategoryMenu(parent=parent,
-                                           parent_window=parent_window,
-                                           categories=categories,
-                                           viewer=taskViewer),
-                        # "folder_blue_arrow_icon"
-                        )
+        self.appendMenu(
+            _("&Toggle category"),
+            ToggleCategoryMenu(
+                parent=parent,
+                parent_window=parent_window,
+                categories=categories,
+                viewer=taskViewer,
+            ),
+            # "folder_blue_arrow_icon"
+        )
         # Les commandes de menu sont ici
         # log.debug("TaskPopupMenu - Ajout du menu Toggle Categorie : Ajout des commandes :")
         self.appendUICommands(
@@ -1773,22 +2062,30 @@ class TaskPopupMenu(Menu):
             uicommand.TaskMarkInactive(settings=settings, viewer=taskViewer),
             uicommand.TaskMarkActive(settings=settings, viewer=taskViewer),
             uicommand.TaskMarkCompleted(settings=settings, viewer=taskViewer),
-            None)
+            None,
+        )
         # log.debug("TaskPopupMenu : Ajout du menu : Priorité")
-        self.appendMenu(_("&Priority"),
-                        TaskPriorityMenu(parent, parent_window, tasks, taskViewer),
-                        # "incpriority"
-                        )
+        self.appendMenu(
+            _("&Priority"),
+            TaskPriorityMenu(parent, parent_window, tasks, taskViewer),
+            # "incpriority"
+        )
         # Les commandes de menu sont ici :
         self.appendUICommands(
             None,
-            uicommand.EffortNew(viewer=taskViewer, effortList=efforts,
-                                taskList=tasks, settings=settings),
+            uicommand.EffortNew(
+                viewer=taskViewer,
+                effortList=efforts,
+                taskList=tasks,
+                settings=settings,
+            ),
             uicommand.EffortStart(viewer=taskViewer, taskList=tasks),
             uicommand.EffortStop(
-                viewer=taskViewer, effortList=efforts, taskList=tasks),
+                viewer=taskViewer, effortList=efforts, taskList=tasks
+            ),
             None,
-            uicommand.NewSubItem(viewer=taskViewer))
+            uicommand.NewSubItem(viewer=taskViewer),
+        )
         log.info("TaskPopupMenu : Terminée - Menu Popup de Tâche créé.")
 
 
@@ -1857,8 +2154,12 @@ class EffortPopupMenu(Menu):
         self.efforts = efforts
         self.settings = settings
         self.effortViewer = effortViewer
-        self.effort_start_var = tk.BooleanVar()  # Variable de contrôle pour EffortStart
-        self.effort_stop_var = tk.BooleanVar()   # Variable de contrôle pour EffortStop
+        self.effort_start_var = (
+            tk.BooleanVar()
+        )  # Variable de contrôle pour EffortStart
+        self.effort_stop_var = (
+            tk.BooleanVar()
+        )  # Variable de contrôle pour EffortStop
         self.appendUICommands(
             uicommand.EditCut(viewer=effortViewer),
             uicommand.EditCopy(viewer=effortViewer),
@@ -1867,12 +2168,18 @@ class EffortPopupMenu(Menu):
             uicommand.Edit(viewer=effortViewer),
             uicommand.Delete(viewer=effortViewer),
             None,
-            uicommand.EffortNew(viewer=effortViewer, effortList=efforts,
-                                taskList=tasks, settings=settings),
+            uicommand.EffortNew(
+                viewer=effortViewer,
+                effortList=efforts,
+                taskList=tasks,
+                settings=settings,
+            ),
             uicommand.EffortStartForEffort(
-                viewer=effortViewer, taskList=tasks),
+                viewer=effortViewer, taskList=tasks
+            ),
             uicommand.EffortStop(
-                viewer=effortViewer, effortList=efforts, taskList=tasks),
+                viewer=effortViewer, effortList=efforts, taskList=tasks
+            ),
         )
         self.add_commands()
         log.info("EffortPopupMenu : Menu Popup Effort créé !")
@@ -1882,12 +2189,12 @@ class EffortPopupMenu(Menu):
         self.add_checkbutton(
             label="Démarrer l'effort",
             variable=self.effort_start_var,
-            command=self.on_effort_start
+            command=self.on_effort_start,
         )
         self.add_checkbutton(
             label="Arrêter l'effort",
             variable=self.effort_stop_var,
-            command=self.on_effort_stop
+            command=self.on_effort_stop,
         )
 
     def on_effort_start(self):
@@ -1899,6 +2206,8 @@ class EffortPopupMenu(Menu):
         # Logique pour arrêter l'effort
         self.effort_start_var.set(False)
         self.effort_stop_var.set(True)
+
+
 # Dans cet exemple :
 #
 # effort_start_var et effort_stop_var sont des variables de contrôle de type BooleanVar qui stockent l'état coché/décoché des éléments de menu.
@@ -1917,9 +2226,17 @@ class CategoryPopupMenu(Menu):
     Le menu CategoryPopupMenu s’appuie fortement sur UICommandContainerMixin,
     notamment avec 'self.appendUICommands([...])'.
     """
+
     # def __init__(self, parent, settings, taskFile, categoryViewer,
-    def __init__(self, parent, parent_window, settings, taskFile, categoryViewer,
-                 localOnly=False):
+    def __init__(
+        self,
+        parent,
+        parent_window,
+        settings,
+        taskFile,
+        categoryViewer,
+        localOnly=False,
+    ):
         log.info("Création du menu Popup Catégorie.")
         # log.debug("Affichage du menu contextuel pour les catégories.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
@@ -1939,33 +2256,42 @@ class CategoryPopupMenu(Menu):
             uicommand.Delete(viewer=categoryViewer),
             None,
             uicommand.AddAttachment(viewer=categoryViewer, settings=settings),
-            uicommand.OpenAllAttachments(viewer=categoryViewer,
-                                         settings=settings),
+            uicommand.OpenAllAttachments(
+                viewer=categoryViewer, settings=settings
+            ),
             None,
             uicommand.AddNote(viewer=categoryViewer, settings=settings),
             uicommand.OpenAllNotes(viewer=categoryViewer, settings=settings),
             None,
-            uicommand.Mail(viewer=categoryViewer))
+            uicommand.Mail(viewer=categoryViewer),
+        )
         if not localOnly:
             self.appendUICommands(
                 None,
-                uicommand.NewTaskWithSelectedCategories(taskList=tasks,
-                                                        settings=settings,
-                                                        categories=categories,
-                                                        viewer=categoryViewer),
-                uicommand.NewNoteWithSelectedCategories(notes=notes,
-                                                        settings=settings,
-                                                        categories=categories,
-                                                        viewer=categoryViewer))
+                uicommand.NewTaskWithSelectedCategories(
+                    taskList=tasks,
+                    settings=settings,
+                    categories=categories,
+                    viewer=categoryViewer,
+                ),
+                uicommand.NewNoteWithSelectedCategories(
+                    notes=notes,
+                    settings=settings,
+                    categories=categories,
+                    viewer=categoryViewer,
+                ),
+            )
         self.appendUICommands(
-            None,
-            uicommand.NewSubItem(viewer=categoryViewer))
+            None, uicommand.NewSubItem(viewer=categoryViewer)
+        )
         log.info("CategoryPopupMenu : Menu Popup Catégorie créé !")
 
 
 class NotePopupMenu(Menu):
     # def __init__(self, parent, settings, categories, noteViewer):
-    def __init__(self, parent, parent_window, settings, categories, noteViewer):
+    def __init__(
+        self, parent, parent_window, settings, categories, noteViewer
+    ):
         log.info("Création du menu Popup Note.")
         # log.debug("Affichage du menu contextuel pour les notes.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
@@ -1985,26 +2311,25 @@ class NotePopupMenu(Menu):
             uicommand.OpenAllAttachments(viewer=noteViewer, settings=settings),
             None,
             uicommand.Mail(viewer=noteViewer),
-            None)
-        # log.debug("NotePopupMenu : Ajout du menu : Toggle Categorie")
-        self.appendMenu(_("&Toggle category"),
-                        ToggleCategoryMenu(parent,
-                                           parent_window,
-                                           categories=categories,
-                                           viewer=noteViewer),
-                        # "folder_blue_arrow_icon"
-                        )
-        self.appendUICommands(
             None,
-            uicommand.NewSubItem(viewer=noteViewer))
+        )
+        # log.debug("NotePopupMenu : Ajout du menu : Toggle Categorie")
+        self.appendMenu(
+            _("&Toggle category"),
+            ToggleCategoryMenu(
+                parent, parent_window, categories=categories, viewer=noteViewer
+            ),
+            # "folder_blue_arrow_icon"
+        )
+        self.appendUICommands(None, uicommand.NewSubItem(viewer=noteViewer))
         log.debug("NotePopupMenu : Menu créé !")
 
 
 class ColumnPopupMenuMixin(object):
-    """ Mixin class for column header popup menu's. These menu's get the
-        column index property set by the control popping up the menu to
-        indicate which column the user clicked. See
-        widgets._CtrlWithColumnPopupMenuMixin. """
+    """Mixin class for column header popup menu's. These menu's get the
+    column index property set by the control popping up the menu to
+    indicate which column the user clicked. See
+    widgets._CtrlWithColumnPopupMenuMixin."""
 
     def __setColumn(self, columnIndex):
         self.__columnIndex = columnIndex  # pylint: disable=W0201
@@ -2015,7 +2340,7 @@ class ColumnPopupMenuMixin(object):
     columnIndex = property(__getColumn, __setColumn)
 
     def getUICommands(self):
-        """ Get the UI commands for the column popup menu.
+        """Get the UI commands for the column popup menu.
 
         Obtenez les commandes de l'interface utilisateur pour le menu contextuel de la colonne.
         """
@@ -2029,33 +2354,41 @@ class ColumnPopupMenuMixin(object):
         #     #                      columnIndex=self.columnIndex),
         #     None,
         # ] + self.__window.getColumnUICommands()
-        log.error(f"ColumnPopupMenuMixin.getUICommands : La méthode doit être implémentée dans la classe dérivée.")
+        log.error(
+            f"ColumnPopupMenuMixin.getUICommands : La méthode doit être implémentée dans la classe dérivée."
+        )
 
 
 # TODO : Vérifier l'ordre d'héritage, car il peut être crucial.
 # Voir la discussion ci-dessous.
 # Problème de self.__window dans  ColumnPopupMenuMixin.getUICommands
 # class ColumnPopupMenu(ColumnPopupMenuMixin, Menu):
-class ColumnPopupMenu(Menu, ColumnPopupMenuMixin):  # Inversion de l'ordre d'héritage
+class ColumnPopupMenu(
+    Menu, ColumnPopupMenuMixin
+):  # Inversion de l'ordre d'héritage
     # L'ordre d'héritage est crucial.
     # Il faut que Menu (qui est tk.Menu et UICommandContainerMixin) soit en premier,
     # et ColumnPopupMenuMixin en second.
     # Cela garantit que ColumnPopupMenu est bien un menu Tkinter
     # et qu'il hérite des fonctionnalités de gestion des commandes UI de Menu.
     # De plus, cela permet d'initialiser correctement les mixins.
-    """ Column header popup menu.
+    """Column header popup menu.
     Menu contextuel pour les colonnes.
     """
 
     def __init__(self, parent, parent_mainwindow):
         # def __init__(self, parent, parent_window, viewer):
-        log.info(f"ColumnPopupMenu : Création du menu Popup Colonne dans la fenêtre parente {parent}.")
+        log.info(
+            f"ColumnPopupMenu : Création du menu Popup Colonne dans la fenêtre parente {parent}."
+        )
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
         # super().__init__(window)
         # super().__init__(window, parent_window)
         # self.__window = window  # Needed for getUICommands
-        Menu.__init__(self, parent, parent_mainwindow, tearoff=0)  # Initialise tk.Menu et UICommandContainerMixin
+        Menu.__init__(
+            self, parent, parent_mainwindow, tearoff=0
+        )  # Initialise tk.Menu et UICommandContainerMixin
         self.__window = parent  # Needed for getUICommands. Stocke la référence à la fenêtre.
         ColumnPopupMenuMixin.__init__(self)  # Initialise ColumnPopupMenuMixin
         # Cette ligne stocke la référence à la fenêtre dans un attribut privé __window.
@@ -2070,23 +2403,31 @@ class ColumnPopupMenu(Menu, ColumnPopupMenuMixin):  # Inversion de l'ordre d'hé
         # L'appel à self.getUICommands() permet de récupérer les commandes UI
         # à ajouter au menu contextuel.
         # window.after(0, self.appendUICommands, *self.getUICommands())  # TODO
-        log.debug("ColumnPopupMenu : CallAfter passé avec succès. Menu Popup Colonne terminé !")
+        log.debug(
+            "ColumnPopupMenu : CallAfter passé avec succès. Menu Popup Colonne terminé !"
+        )
 
     def appendUICommands(self, *args, **kwargs):
         # Prepare for PyDeadObjectError since we're called from wx.CallAfter
-        log.debug("ColumnPopupMenu.appendUICommands essaie d'ajouter une commande via la méthode super.")
+        log.debug(
+            "ColumnPopupMenu.appendUICommands essaie d'ajouter une commande via la méthode super."
+        )
         try:
             super().appendUICommands(*args, **kwargs)
             # print(f"tclib.gui.menu.AppendUICommands: {uiCommand}, id = {uiCommand.id}") # Ajout de journalisation
         # except wx.PyDeadObjectError:
         except RuntimeError as e:
-            log.error(f"ColumnPopupMenu.appendUICommands : La méthode super plante à cause de {e}.", exc_info=True)
+            log.error(
+                f"ColumnPopupMenu.appendUICommands : La méthode super plante à cause de {e}.",
+                exc_info=True,
+            )
         log.debug("ColumnPopupMenu.appendUICommands : Commande ajoutée !")
 
 
-class EffortViewerColumnPopupMenu(ColumnPopupMenuMixin,
-                                  DynamicMenuThatGetsUICommandsFromViewer):
-    """ Column header popup menu. """
+class EffortViewerColumnPopupMenu(
+    ColumnPopupMenuMixin, DynamicMenuThatGetsUICommandsFromViewer
+):
+    """Column header popup menu."""
 
     def registerForMenuUpdate(self):
         pub.subscribe(self.onChangeAggregation, "effortviewer.aggregation")
@@ -2097,7 +2438,9 @@ class EffortViewerColumnPopupMenu(ColumnPopupMenuMixin,
 
 class AttachmentPopupMenu(Menu):
     # def __init__(self, parent, settings, attachments, attachmentViewer):
-    def __init__(self, parent, parent_window, settings, attachments, attachmentViewer):
+    def __init__(
+        self, parent, parent_window, settings, attachments, attachmentViewer
+    ):
         log.info("Création du menu Popup Attachment.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
@@ -2112,9 +2455,11 @@ class AttachmentPopupMenu(Menu):
             uicommand.Delete(viewer=attachmentViewer),
             None,
             uicommand.AddNote(viewer=attachmentViewer, settings=settings),
-            uicommand.OpenAllNotes(viewer=attachmentViewer,
-                                   settings=settings),
+            uicommand.OpenAllNotes(viewer=attachmentViewer, settings=settings),
             None,
-            uicommand.AttachmentOpen(viewer=attachmentViewer,
-                                     attachments=attachments,
-                                     settings=settings))
+            uicommand.AttachmentOpen(
+                viewer=attachmentViewer,
+                attachments=attachments,
+                settings=settings,
+            ),
+        )

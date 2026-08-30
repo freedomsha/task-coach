@@ -435,6 +435,9 @@ class MainWindow(
         log.info("****************************************************")
         log.info("* Début d'initialisation de MainWindow (Tkinter) *****")
         log.info("****************************************************")
+        log.info(
+            f"avec parent={parent}, iocontroller={iocontroller}, taskFile={taskFile}, settings={settings}, *args={args} et **kwargs={kwargs}."
+        )
         self.__splash = kwargs.pop("splash", None)
         super().__init__(
             parent, *args, text="MainWindow", **kwargs
@@ -654,6 +657,9 @@ class MainWindow(
         log.debug(
             "mainWindow._create_window_components : Lance une classe-méthode pour ajouter des viewers dans self.viewer."
         )
+        log.debug(
+            "mainWindow._create_window_components : Lance une classe-méthode pour ajouter des viewers dans le conteneur self.viewer."
+        )
         # viewer.factorytk.addViewers(self.viewer, self.taskFile, self.settings)
         factorytk.addViewers(
             self.viewer, self.taskFile, self.settings
@@ -768,7 +774,7 @@ class MainWindow(
             row=0, column=0, sticky="news"
         )  # Colle le conteneur pour qu'il remplisse l'espace disponible
         log.debug(
-            f"MainWindow._create_viewer_container : Conteneur {self.viewer} de visionneuses créé !"
+            f"MainWindow._create_viewer_container : Conteneur de visionneuses {self.viewer} créé !"
         )
 
     def _create_status_bar(self) -> None:

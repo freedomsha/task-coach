@@ -108,19 +108,19 @@ if __name__ == '__main__':
     print("Demande de mot de passe pour la première fois.")
     pwd1 = GetPassword(domain, username)
     if pwd1:
-        print(f"Mot de passe récupéré : {pwd1}")
+        print("Mot de passe récupéré (valeur masquée).")
     else:
         print("Mot de passe non fourni.")
 
     print("\nDeuxième demande de mot de passe (devrait être récupéré du cache).")
     pwd2 = GetPassword(domain, username)
     if pwd2:
-        print(f"Mot de passe récupéré : {pwd2}")
+        print("Mot de passe récupéré depuis le cache (valeur masquée).")
 
     print("\nDemande de mot de passe avec réinitialisation du cache.")
     pwd3 = GetPassword(domain, username, reset=True)
     if pwd3:
-        print(f"Nouveau mot de passe récupéré : {pwd3}")
+        print("Nouveau mot de passe récupéré (valeur masquée).")
 
     # Pour que la fenêtre de dialogue reste ouverte pendant le test
     # Ajoutez un mainloop si nécessaire, mais dans cet exemple, les boîtes de dialogue

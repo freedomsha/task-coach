@@ -80,6 +80,9 @@ NTLM_TYPE2_FLAGS = (NTLM_NegotiateUnicode |
                     NTLM_Negotiate128 |
                     NTLM_Negotiate56)
 
+# At the top with other constants
+NTLM_HASH_ALGORITHM = "md4"
+
 # Indicates that this is the last AV_PAIR in the list. AvLen MUST be 0.
 # This type of information MUST be present in the AV pair list.
 NTLM_MsvAvEOL = 0
@@ -400,7 +403,8 @@ def create_NT_hashed_password_v1(passwd, user=None, domain=None):
     if re.match(r'^[\w]{32}:[\w]{32}$', passwd):
         return binascii.unhexlify(passwd.split(':')[1])
 
-    digest = hashlib.new('md4', passwd.encode('utf-16le')).digest()
+    # digest = hashlib.new('md4', passwd.encode('utf-16le')).digest() 
+    digest = hashlib.new(NTLM_HASH_ALGORITHM, passwd.encode('utf-16le')).digest()
     return digest
 
 
@@ -412,4 +416,5 @@ def create_NT_hashed_password_v2(passwd, user, domain):
 
 
 def create_sessionbasekey(password):
-    return hashlib.new('md4', create_NT_hashed_password_v1(password)).digest()
+    # return hashlib.new('md4', create_NT_hashed_password_v1(password)).digest()
+    return hashlib.new(NTLM_HASH_ALGORITHM, create_NT_hashed_password_v1(password)).digest()

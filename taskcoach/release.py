@@ -536,7 +536,9 @@ def registering_with_PyPI(settings, options):
         pypirc.write('[pypi]\n')
         pypirc.write('repository=https://upload.pypi.org/legacy/\n')
         pypirc.write('username=%s\n' % username)
-        pypirc.write('password=%s\n' % password)
+        # For security reasons, the password is no longer written to .pypirc.
+        # Please use a secure authentication mechanism for PyPI uploads (e.g. environment variables, keyring, or API token).
+        # See: https://packaging.python.org/specifications/pypirc/#authentication or https://twine.readthedocs.io/en/latest/
     # pylint: disable=W0404
     from setup import setupOptions
     languages_pypi_does_not_know = ['Basque', 'Belarusian', 'Breton',

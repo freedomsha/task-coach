@@ -58,6 +58,9 @@ NTLM_Negotiate128 = 0x20000000
 NTLM_NegotiateKeyExchange = 0x40000000
 NTLM_Negotiate56 = 0x80000000
 
+# At the top with other constants
+NTLM_HASH_ALGORITHM = "md4"
+
 # we send these flags with our type 1 message
 NTLM_TYPE1_FLAGS = (
     NTLM_NegotiateUnicode
@@ -568,7 +571,13 @@ def create_NT_hashed_password_v1(passwd, user=None, domain=None):
     if re.match(r"^\w{32}:\w{32}$", passwd):
         return binascii.unhexlify(passwd.split(":")[1])
 
-    digest = hashlib.new("md4", passwd.encode("utf-16le")).digest()
+    # Typr Safety : Consider validating that passwd is a string before encoding
+    if not isinstance(passwd, str):
+        raise TypeError(f"passwd must be a string, got {type(passwd)}")
+        
+    # Directly encode to UTF-16LE without unnecessary intermediate steps
+    # digest = hashlib.new("md4", passwd.encode("utf-16le")).digest()
+    digest = hashlib.new(NTLM_HASH_ALGORITHM, passwd.encode("utf-16le")).digest()
     return digest
 
 
@@ -582,7 +591,8 @@ def create_NT_hashed_password_v2(passwd, user, domain):
 
 
 def create_sessionbasekey(password):
-    return hashlib.new("md4", create_NT_hashed_password_v1(password)).digest()
+    # return hashlib.new("md4", create_NT_hashed_password_v1(password)).digest()
+    return hashlib.new(NTLM_HASH_ALGORITHM, create_NT_hashed_password_v1(password)).digest()
 
 
 if __name__ == "__main__":

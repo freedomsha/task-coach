@@ -825,11 +825,14 @@ class TreeListCtrl(
 
     def insert(self, parent, index, iid=None, **kwargs):
         """Délègue l'appel à ttk.Treeview.insert."""
-        return self.insert(parent, index, iid=iid, **kwargs)
+        # return self.insert(parent, index, iid=iid, **kwargs)  # boucle infini !
+        # TreeListCtrl hérite directement de ttk.treeview
+        return super().insert(parent, index, iid=iid, **kwargs)
 
     def delete(self, *items):
         """Délègue l'appel à ttk.Treeview.delete."""
-        return self.delete(*items)
+        # return self.delete(*items)
+        return super().delete(*items)
 
     def pack(self, **kwargs):
         """Délègue l'appel à ttk.Treeview.pack."""
@@ -881,7 +884,7 @@ class TreeListCtrl(
             log.debug(
                 f"TreeListCtrl._configure_column : Heading configuré pour la colonne '{col_name}': {self.heading(col_name)}"
             )
-            self.tree.column(
+            self.tree.column(  # super()?
                 col_name, width=col.width, minwidth=50, stretch=True
             )
 

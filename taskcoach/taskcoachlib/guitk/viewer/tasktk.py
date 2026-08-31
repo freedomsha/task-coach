@@ -2830,7 +2830,7 @@ class Taskviewer(
             ]
 
             # Ajouter l'élément au Treeview
-            item_id = self.widget.insert(
+            item_id = self.widget.tree.insert(
                 parent, "end", text=task_text, values=values
             )
 
@@ -2840,16 +2840,18 @@ class Taskviewer(
 
             # Ajouter les sous-tâches récursivement
             if hasattr(task, "children"):
-                # # if hasattr(task, 'the_children'):
-                # # for subtask in task.children():
-                # for subtask in task.get_tree_children():
-                #     self._add_task_to_tree(subtask, parent=item_id)
-                # Modification ici avec appel a get_tree_children
-                for subtask in self.__task_file.tasks().get_tree_children(
-                    task
-                ):
+                # # # if hasattr(task, 'the_children'):
+                # # # for subtask in task.children():
+                # # for subtask in task.get_tree_children():
+                # #     self._add_task_to_tree(subtask, parent=item_id)
+                # # Modification ici avec appel a get_tree_children
+                # for subtask in self.__task_file.tasks().get_tree_children(
+                #     task
+                # ):
+                for subtask in task.children():
                     log.debug(
-                        f"Taskviewer._add_task_to_tree : Ajout de la sous-tâche '{subtask.subject()}' à la tâche '{task_text}'."
+                        f"Taskviewer._add_task_to_tree : Ajout de la sous-tâche "
+                        f"'{subtask.subject()}' à la tâche '{task_text}'."
                     )
                     self._add_task_to_tree(subtask, parent=item_id)
 
@@ -2860,6 +2862,75 @@ class Taskviewer(
             log.error(
                 f"Taskviewer._add_task_to_tree : Erreur lors de l'ajout de la tâche: {e}"
             )
+
+    # def _add_task_to_tree(self, task, parent="", visited=None):
+    #     """
+    #     Ajoute une tâche et ses sous-tâches au Treeview.
+    #     """
+    #
+    #     if visited is None:
+    #         visited = set()
+    #
+    #     task_key = task.id() if hasattr(task, "id") else id(task)
+    #
+    #     if task_key in visited:
+    #         log.error(
+    #             "Taskviewer._add_task_to_tree : cycle détecté pour la tâche %r",
+    #             task_key,
+    #         )
+    #         return
+    #
+    #     visited.add(task_key)
+    #
+    #     try:
+    #         task_text = (
+    #             task.subject() if hasattr(task, "subject") else str(task)
+    #         )
+    #
+    #         values = [
+    #             self._get_task_status(task),
+    #             self._get_task_priority(task),
+    #             self._get_task_due_date(task),
+    #             self._get_task_effort(task),
+    #         ]
+    #
+    #         item_id = self.widget.insert(
+    #             parent,
+    #             "end",
+    #             text=task_text,
+    #             values=values,
+    #         )
+    #
+    #         if hasattr(task, "id"):
+    #             self.__tree_items[task.id()] = item_id
+    #
+    #         if hasattr(task, "children"):
+    #             for subtask in task.children():
+    #                 log.debug(
+    #                     "Taskviewer._add_task_to_tree : "
+    #                     "Ajout de la sous-tâche '%s' à la tâche '%s'.",
+    #                     subtask.subject(),
+    #                     task_text,
+    #                 )
+    #                 self._add_task_to_tree(
+    #                     subtask,
+    #                     parent=item_id,
+    #                     visited=visited,
+    #                 )
+    #
+    #         log.debug(
+    #             "Taskviewer._add_task_to_tree : Tâche '%s' ajoutée.",
+    #             task_text,
+    #         )
+    #
+    #     except Exception:
+    #         log.exception(
+    #             "Taskviewer._add_task_to_tree : "
+    #             "Erreur lors de l'ajout de la tâche '%s'",
+    #             task_text if "task_text" in locals() else task,
+    #         )
+    #     finally:
+    #         visited.remove(task_key)
 
     def _get_task_status(self, task) -> str:
         """Retourne le statut de la tâche."""
@@ -4023,7 +4094,7 @@ class Taskviewer(
         tasks = self.taskFile.tasks()
         self._insert_tasks(tasks, parent_item="")
 
-    def _insert_tasks(self, tasks: List[domain.task], parent_item: str):
+    def _insert_tasks(self, tasks: List[domain.task.Task], parent_item: str):
         """Insère les tâches de manière récursive."""
         for task in tasks:
             item_id = self.widget.insert(
@@ -4775,7 +4846,7 @@ if __name__ == "__main__":
             self._categories = MockCategories()
             self._efforts = []
 
-        def tasks(self) -> List[domain.task]:
+        def tasks(self) -> List[domain.task.Task]:
             return self._tasks
 
         def categories(self):

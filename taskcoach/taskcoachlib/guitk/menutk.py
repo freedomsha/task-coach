@@ -195,6 +195,12 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
         # self._window = window
         self.__parent = parent  # Stockez la référence au parent direct
         self.__window = parent_mainwindow  # Stockez la référence à la fenêtre principale comme dans la version wxPython
+        # self.__window = parent_mainwindow or parent.winfo_toplevel()
+        if self.__window is None and parent is not None:
+            self.__window = parent.winfo_toplevel()
+
+        if self.__window is None:
+            raise AssertionError("Menu : parent_window est None.")
         log.debug(
             f"Menu : self={self.__class__.__name__} et self._window={self.__window.__class__.__name__}"
         )
@@ -619,7 +625,11 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
             menuTitle : Titre du sous-menu.
             uiCommands : Liste des commandes à ajouter.
         """
+        log.debug(
+            f"Menu.appendSubMenuWithUICommands : création du sous-menu {menuTitle} et y ajoute les commandes {uiCommands}."
+        )
         subMenu = Menu(self.__window, tearoff=0)
+        # subMenu = Menu(self.viewer.winfo_toplevel(), tearoff=0)  # ou ceci ?
         self.appendMenu(menuTitle, subMenu)
         subMenu.appendUICommands(
             *uiCommands
@@ -831,6 +841,9 @@ class MainMenu(Menu):
 
     def _create_menus(self):
         """Crée et ajoute les menus principaux."""
+        log.debug(
+            "MainMenu._create_menus : création et ajout des menus principaux."
+        )
         # Création des sous-menus
         # self._fileMenu = self.appendSubMenuWithUICommands(
         #     "&Fichier",
@@ -986,14 +999,16 @@ class MainMenu(Menu):
             )  # Tous doivent être de forme ('&Name', tk.Menu)
             # self.add_cascade(label=text, menu=self._menulisted)  # Tous doivent être de forme ('&Name', tk.Menu)
             # self.add_cascade(label=text, menu=menulisted)  # Tous doivent être de forme ('&Name', tk.Menu)
-            log.debug(f"Menu {text} ajouté avec succès !")
+            log.debug(
+                f"MainMenu._create_menus : Menu {text} ajouté avec succès !"
+            )
 
         # Lier le menu à la fenêtre
         # parent.config(menu=self)  # Problème ?
         # self.parent_window.config(menu=self)  # Problème ?
         # self.parent.config(menu=self)  # A essayer !
         log.info(
-            "MainMenu : Menu principal configuré pour la fenêtre parente."
+            "MainMenu._create_menus : Menu principal configuré pour la fenêtre parente !"
         )
 
 
@@ -1021,7 +1036,7 @@ class FileMenu(Menu):
 
     def add_file_commands(self):
         """Ajoute les commandes spécifiques au menu Fichier."""
-        log.debug("FileMenu : Ajout des commandes.")
+        log.debug("FileMenu.add_file_commands : Ajout des commandes.")
         self.appendUICommands(
             # self.appendSubMenuWithUICommands(
             # _("&File"),
@@ -1049,7 +1064,9 @@ class FileMenu(Menu):
         self.appendUICommands(
             None,
             uicommand.FileSaveSelectedTaskAsTemplate(
-                iocontroller=self._iocontroller, viewer=self._iocontroller
+                # iocontroller=self._iocontroller, viewer=self._iocontroller
+                iocontroller=self._iocontroller,
+                viewer=self._viewerContainer,
             ),
             uicommand.FileImportTemplate(iocontroller=self._iocontroller),
             uicommand.FileEditTemplates(settings=self.settings),
@@ -1102,9 +1119,9 @@ class ExportMenu(Menu):
 
     # def __init__(self, parent, iocontroller, settings):
     def __init__(self, parent, parent_window, iocontroller, settings):
-        log.info("ExportMenu : Création du menu Exporter.")
+        log.info("ExportMenu.__int__ : Création du menu Exporter.")
         log.info(
-            f"ExportMenu : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}."
+            f"ExportMenu.__init__ : self={self.__class__.__name__}, parent={parent.__class__.__name__}, parent_window={parent_window.__class__.__name__ if parent_window else 'None'}."
         )
         # super().__init__(parent, tearoff=0)
         super().__init__(parent, parent_mainwindow=parent_window, tearoff=0)
@@ -1205,7 +1222,10 @@ class TaskTemplateMenu(DynamicMenu):
             for name in persistence.TemplateList(path).names()
         ]
         if not commands:
-            log.info("Aucun modèle de tâche trouvé dans : %s", path)
+            log.info(
+                "TaskTemplateMenu.getUICommands : Aucun modèle de tâche trouvé dans : %s",
+                path,
+            )
         return commands
 
 
@@ -1896,7 +1916,12 @@ class ToggleCategoryMenu(DynamicMenu):
             category for category in categories if category.children()
         ]
         if categoriesWithChildren:
-            menuToAdd.AppendSeparator()
+            # menuToAdd.AppendSeparator()
+            log.debug(
+                "ToggleCategoryMenu.addMenuItemsForCategories : ajoute un séparateur."
+            )
+            menuToAdd.add_separator()
+            # menuToAdd.add_h_separator()  # ou ceci ?
             for category in categoriesWithChildren:
                 # log.debug("ToggleCategoryMenu.addMenuItemsForCategories : est-ce là l'erreur!")
                 subMenu = Menu(self.__window)
@@ -2317,7 +2342,10 @@ class NotePopupMenu(Menu):
         self.appendMenu(
             _("&Toggle category"),
             ToggleCategoryMenu(
-                parent, parent_window, categories=categories, viewer=noteViewer
+                parent=parent,
+                parent_window=parent_window,
+                categories=categories,
+                viewer=noteViewer,
             ),
             # "folder_blue_arrow_icon"
         )

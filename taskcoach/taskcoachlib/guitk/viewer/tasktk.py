@@ -2251,6 +2251,9 @@ class Taskviewer(
         self.__tree_items = (
             {}
         )  # Mappe les IDs de tâches aux IDs d'éléments Treeview
+        self.__items_to_tasks = (
+            {}
+        )  # Ajout du mapping inverse item_id -> task.id()
         self.widget = None
 
         # Section de configuration
@@ -2741,6 +2744,18 @@ class Taskviewer(
         return self.widget  # Retourner le TreeListCtrl
         # return frame
 
+    def _widget_is_alive(self):
+        """Indique si le widget Tk associé existe encore."""
+        widget = getattr(self, "widget", None)
+
+        if widget is None:
+            return False
+
+        try:
+            return bool(widget.winfo_exists())
+        except tk.TclError:
+            return False
+
     def _createPopupMenus(self):
         """
         Crée et enregistre tous les menus contextuels du Taskviewer.
@@ -2782,18 +2797,28 @@ class Taskviewer(
         """Rafraîchit l'affichage des tâches."""
         log.debug("Taskviewer._refresh_tasks : Rafraîchissement des tâches.")
 
+        if not self._widget_is_alive():
+            log.debug(
+                "Taskviewer._refresh_tasks : widget absent ou déjà détruit."
+            )
+            return
+
         if self.widget is None:
             log.warning("Taskviewer._refresh_tasks : Treeview non initialisé.")
             return
 
-        # Effacer les éléments existants
-        for item in self.widget.get_children():
-            self.widget.delete(item)
-
-        self.__tree_items.clear()
-
-        # Obtenir les tâches du fichier de tâches
         try:
+            # Effacer les éléments existants
+            for item in self.widget.get_children():
+                self.widget.delete(item)
+
+            # Efface le dictionnaire des éléments de l'arbre
+            self.__tree_items.clear()
+            # Bien penser à vider l'autre dictionnaire
+            self.__items_to_tasks.clear()
+
+            # Obtenir les tâches du fichier de tâches
+            # try:
             tasks = self.__task_file.tasks()
             log.debug(
                 f"Taskviewer._refresh_tasks : {len(tasks)} tâches trouvées."
@@ -2802,9 +2827,15 @@ class Taskviewer(
             # Afficher les tâches
             for task in tasks:
                 self._add_task_to_tree(task)
-        except Exception as e:
-            log.error(
-                f"Taskviewer._refresh_tasks : Erreur lors de la récupération des tâches: {e}"
+            # except Exception as e:
+            #     log.error(
+            #         f"Taskviewer._refresh_tasks : Erreur lors de la récupération des tâches: {e}"
+            #     )
+        except tk.TclError as error:
+            log.warning(
+                "Taskviewer._refresh_tasks : widget détruit pendant "
+                "le rafraîchissement : %s",
+                error,
             )
 
     def _add_task_to_tree(self, task, parent=""):
@@ -2815,6 +2846,7 @@ class Taskviewer(
             task: L'objet Task à ajouter
             parent: L'ID du parent (pour les sous-tâches)
         """
+        # TODO : n'y a-t-il pas doublon avec _insert_tasks() ?
         try:
             # Obtenir le texte et les valeurs de la tâche
             task_text = (
@@ -2837,6 +2869,8 @@ class Taskviewer(
             # Stocker le mappage task -> item_id
             if hasattr(task, "id"):
                 self.__tree_items[task.id()] = item_id
+                # et inverse item_id -> task
+                self.__items_to_tasks[item_id] = task
 
             # Ajouter les sous-tâches récursivement
             if hasattr(task, "children"):
@@ -4096,6 +4130,7 @@ class Taskviewer(
 
     def _insert_tasks(self, tasks: List[domain.task.Task], parent_item: str):
         """Insère les tâches de manière récursive."""
+        # TODO : Ne fait-il pas doublons avec _add_task_to_tree() ?
         for task in tasks:
             item_id = self.widget.insert(
                 parent_item,
@@ -4103,6 +4138,12 @@ class Taskviewer(
                 text=task.subject,
                 values=(str(task.dueDateTime), task.priority),
             )
+
+            if hasattr(task, "id"):
+                task_id = task.id()
+                self.__tree_items[task_id] = item_id
+                self.__items_to_tasks[item_id] = task
+
             # if task.children():
             if task.get_tree_children():
                 # self._insert_tasks(task.children(), parent_item=item_id)
@@ -4126,10 +4167,11 @@ class Taskviewer(
     def refresh(self, *args, **kwargs):
         """Rafraîchit la vue, à implémenter correctement.
         Override de refresh pour Tkinter - appelle _refresh_tasks."""
+        # TODO : à implémenter correctement !
         log.debug(
             "Taskviewer.refresh :  Rafraîchissement de la vue des tâches."
         )
-        # self._populate_tree()
+        # self._populate_tree()  # Ne plus l'appeler dans la version tk !
         # self._refresh_tasks()
         try:
             self._refresh_tasks()
@@ -4232,9 +4274,44 @@ class Taskviewer(
         return _("Tâches")
 
     def curselection(self) -> List[Any]:
-        """Retourne les tâches sélectionnées."""
-        selected_items = self.widget.selection() if self.widget else []
-        return [item for item in selected_items]
+        """Retourne les tâches (objets Task) sélectionnées."""
+        # Fait la conversion vers les objets de domaine.
+        # Faire attention à distinguer les deux types de sélection :
+        # widget.selection()
+        #     retourne les identifiants Treeview, par exemple I043
+        #
+        # curselection()
+        #     devrait normalement retourner les objets Task attendus par les commandes
+
+        # selected_items = self.widget.selection() if self.widget else []
+        # # return [item for item in selected_items]
+        widget = getattr(self, "widget", None)
+
+        if widget is None:
+            return []
+
+        try:
+            # if not self.winfo_exists():
+            if not widget.winfo_exists():
+                return []
+            # except tk.TclError:
+            #     return []
+            #
+            # try:
+            selected_items = widget.selection()
+
+            return [
+                # # self._objectBelongingTo(item)
+                # item
+                self.__items_to_tasks[item_id]
+                # # for item in self.selection()
+                # for item in selected_items
+                for item_id in selected_items
+                if item_id in self.__items_to_tasks
+            ]
+
+        except tk.TclError:
+            return []
 
     # # Overide de Viewer.updateSelection pour Tkinter
     # def updateSelection(self, sendViewerStatusEvent=True):
@@ -4791,6 +4868,9 @@ else:
             for (
                 widget
             ) in self.hbox.winfo_children():  # Suppression des anciens widgets
+                log.debug(
+                    f"TaskInterdepsViewer._refresh : suppression de l'ancien widget {widget}."
+                )
                 widget.destroy()
             graph_png_bm.pack()  # Pack layout pour Tkinter
             # wx.CallAfter(self.scrolled_panel.SendSizeEvent) # A remplacer

@@ -209,6 +209,7 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
 
     def appendUICommand(self, ui_command):
         """Appends a single UI command to the toolbar."""
+        log.debug(f"TooBar.appendUICommand : Ajoute la command {ui_command}")
         if ui_command is None:
             # Separator
             # ttk.Separator(self, orient=tk.VERTICAL).pack(side=tk.LEFT, padx=2)

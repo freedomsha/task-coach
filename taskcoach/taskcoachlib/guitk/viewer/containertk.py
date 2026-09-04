@@ -514,8 +514,11 @@ class ViewerContainer(ttk.PanedWindow):
         # else:
         #     return None
         # return self.viewer.focus_get()
-        return self.focus_get()
-        # return self._active_viewer
+        # return self.focus_get()
+        log.debug(
+            f"ViewerContainer.activeViewer : retourne self._active_viewer={self._active_viewer} !"
+        )
+        return self._active_viewer
         # return self._active_viewer
 
     def __getattr__(self, attribute):
@@ -615,10 +618,29 @@ class ViewerContainer(ttk.PanedWindow):
         # Délégation vers le viewer actif
         # return self.activeViewer.curselection()
         viewer = self.activeViewer()
-        if hasattr(viewer, "curselection"):
+
+        # if hasattr(viewer, "curselection"):
+        #     return viewer.curselection()
+        # return []
+
+        if viewer is None:
+            return []
+        try:
             return viewer.curselection()
+        except (AttributeError, tk.TclError):
+            return []
         return []
-        return ()
+
+    def curselectionIsInstanceOf(self, class_):
+        viewer = self.activeViewer()
+
+        if viewer is None:
+            return False
+
+        try:
+            return viewer.curselectionIsInstanceOf(class_)
+        except (AttributeError, tk.TclError):
+            return False
 
     def isAnyItemExpandable(self):
         """

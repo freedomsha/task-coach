@@ -1448,7 +1448,17 @@ class TreeListCtrl(
     # pour récupérer les données associées à l'item,
     # qui est l'équivalent de self.GetItemPyData(item) dans wxPython.
     def curselection(self) -> List[Any]:
-        """Retourne la liste des objets de domaine associés aux éléments sélectionnés."""
+        """Retourne la liste des objets de domaine associés aux éléments sélectionnés.
+
+        Treeview.selection()
+            → identifiants des lignes Treeview
+
+        _objectBelongingTo(item)
+            → objet métier associé à la ligne
+
+        TreeListCtrl.curselection()
+            → objets Task sélectionnés
+        """
         # return [self.GetItemPyData(item) for item in self.GetSelections()]
         # wx.lib.agw.ultimatelistctrl.UltimateListCtrl.GetItemPyData
         # return [self.GetItemPyData(item) for item in self.GetSelections()]
@@ -1724,6 +1734,9 @@ class TreeListCtrl(
     def StopEditing(self):
         """Arrête l'édition du label."""
         if self._edit_widget:
+            log.debug(
+                f"TreeListCtrl.StopEditing : Arrêt et destruction du widget {self._edit_widget}."
+            )
             self._edit_widget.destroy()
             self._edit_widget = None
 

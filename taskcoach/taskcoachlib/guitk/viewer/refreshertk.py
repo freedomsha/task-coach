@@ -4,6 +4,7 @@ Ce module fournit des classes qui implémentent des stratégies de rafraîchisse
 pour les visualisateurs.
 Basé sur le fichier refresher.py original de Task Coach.
 """
+
 # Le fichier refresher.py est responsable de la mise à jour périodique des vues, en particulier pour les éléments qui changent avec le temps, comme le temps restant sur une tâche. Dans la version wxPython originale, cela est géré par un wx.Timer.
 #
 # Dans cette conversion pour Tkinter, j'ai remplacé le wx.Timer par la méthode after() de Tkinter, qui permet de planifier l'exécution d'une fonction après un certain délai. Cela simule le comportement du minuteur et permet de mettre à jour l'interface utilisateur à intervalles réguliers sans bloquer l'application.
@@ -106,17 +107,25 @@ class MinuteRefresher:
 
 
 class SecondRefresher(patterns.Observer):
-    """ Cette classe peut être utilisée par les téléspectateurs pour se rafraîchir chaque seconde
+    """Cette classe peut être utilisée par les téléspectateurs pour se rafraîchir chaque seconde
     chaque fois que des éléments (tâches, efforts) sont suivis.
     """
-    def __init__(self, viewer: Any, onRefresh: Optional[Callable] = None, interval: int = 1000):
+
+    def __init__(
+        self,
+        viewer: Any,
+        onRefresh: Optional[Callable] = None,
+        interval: int = 1000,
+    ):
         self.__viewer = viewer
         self.__id = IdProvider.get()
         self.__timerId: Optional[str] = None
         self.__interval = interval
         self.__trackedItems: Set[Any] = set()
 
-        self.__onRefresh = onRefresh if onRefresh is not None else viewer._refresh
+        self.__onRefresh = (
+            onRefresh if onRefresh is not None else viewer._refresh
+        )
 
         pub.subscribe(self.onModified, "domain.event.item.modified")
         pub.subscribe(self.onDeleted, "domain.event.item.deleted")
@@ -135,15 +144,32 @@ class SecondRefresher(patterns.Observer):
 
     def onModified(self, item: Any, **kwargs: Any):
         if item in self.__trackedItems:
-            self.setTrackedItems(self.trackedItems(self.__viewer.presentation()))
+            self.setTrackedItems(
+                self.trackedItems(self.__viewer.presentation())
+            )
 
     def onDeleted(self, item: Any):
+        # try:
+        #     if self.secondRefresher is not None:
+        #         self.secondRefresher.stop()
+        # except Exception:
+        #     log.exception("Impossible d'arrêter secondRefresher")
+        #
+        # try:
+        #     if self.minuteRefresher is not None:
+        #         self.minuteRefresher.stop()
+        # except Exception:
+        #     log.exception("Impossible d'arrêter minuteRefresher")
         if item in self.__trackedItems:
-            self.setTrackedItems(self.trackedItems(self.__viewer.presentation()))
+            self.setTrackedItems(
+                self.trackedItems(self.__viewer.presentation())
+            )
 
     def onAdded(self, item: Any, parent: Any):
         if self.trackedItems([item]):
-            self.setTrackedItems(self.trackedItems(self.__viewer.presentation()))
+            self.setTrackedItems(
+                self.trackedItems(self.__viewer.presentation())
+            )
 
     # def onEverySecond(self, event=None):  # Retiré pour tkinter
 
@@ -175,7 +201,9 @@ class SecondRefresher(patterns.Observer):
 
     def startClock(self):
         if self.__timerId is None:
-            self.__timerId = self.__viewer.after(self.__interval, self._onTimer)
+            self.__timerId = self.__viewer.after(
+                self.__interval, self._onTimer
+            )
 
     def stopClock(self):
         if self.__timerId is not None:
@@ -199,7 +227,12 @@ class SecondRefresher(patterns.Observer):
 
     @staticmethod
     def trackedItems(items: List[Any]) -> List[Any]:
-        return [item for item in items if hasattr(item, 'isBeingTracked') and item.isBeingTracked(recursive=True)]
+        return [
+            item
+            for item in items
+            if hasattr(item, "isBeingTracked")
+            and item.isBeingTracked(recursive=True)
+        ]
 
 
 # --- DÉMONSTRATION ---
@@ -218,22 +251,29 @@ if __name__ == "__main__":
         def __repr__(self) -> str:
             return f"MockTask('{self.name}', tracked={self._is_tracked})"
 
-
     class MockViewer(tk.Frame):
         def __init__(self, parent: tk.Tk, tasks: List[MockTask]):
             super().__init__(parent)
             self._tasks = tasks
-            self._label = tk.Label(self, text="Démarrage du rafraîchissement...")
+            self._label = tk.Label(
+                self, text="Démarrage du rafraîchissement..."
+            )
             self._label.pack(pady=20)
             self._refresh_count = 0
 
             # Initialisation du Refresher
-            self.refresher = SecondRefresher(self, interval=1000)  # Intervalle d'1 seconde pour la démo
+            self.refresher = SecondRefresher(
+                self, interval=1000
+            )  # Intervalle d'1 seconde pour la démo
 
         def _refresh(self):
             self._refresh_count += 1
-            self._label.config(text=f"Rafraîchissement #{self._refresh_count}\nObjets suivis: {len(self.refresher.currentlyTrackedItems())}")
-            print(f"Rafraîchissement #{self._refresh_count}. Objets suivis: {self.refresher.currentlyTrackedItems()}")
+            self._label.config(
+                text=f"Rafraîchissement #{self._refresh_count}\nObjets suivis: {len(self.refresher.currentlyTrackedItems())}"
+            )
+            print(
+                f"Rafraîchissement #{self._refresh_count}. Objets suivis: {self.refresher.currentlyTrackedItems()}"
+            )
 
         def presentation(self) -> List[MockTask]:
             return self._tasks

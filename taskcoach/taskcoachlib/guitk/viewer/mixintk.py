@@ -257,6 +257,17 @@ class SortableViewerMixin(object):
                       self.presentation().sortEventType())
 
     def detach(self):
+        try:
+            if self.secondRefresher is not None:
+                self.secondRefresher.stop()
+        except Exception:
+            log.exception("Impossible d'arrêter secondRefresher")
+
+        try:
+            if self.minuteRefresher is not None:
+                self.minuteRefresher.stop()
+        except Exception:
+            log.exception("Impossible d'arrêter minuteRefresher")
         super().detach()
         pub.unsubscribe(self.onSortOrderChanged,
                         self.presentation().sortEventType())

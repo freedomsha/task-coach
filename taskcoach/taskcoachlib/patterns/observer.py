@@ -760,7 +760,9 @@ class Event(object):
             Publisher().notifyObservers(self)
         except Exception as e:
             log.exception(
-                f"Event send : Exception lors de l'envoi de l'événement : {e}"
+                f"Event send : Exception lors de l'envoi de l'événement : {e}",
+                exc_info=True,
+                stack_info=True,
             )
         finally:
             self._sending = False

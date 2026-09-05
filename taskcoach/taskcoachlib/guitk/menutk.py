@@ -1856,6 +1856,13 @@ class TaskBarMenu(Menu):
 
 
 class ToggleCategoryMenu(DynamicMenu):
+    """Menu permuter de catégorie.
+
+    ToggleCategoryMenu doit bien être créé
+    même si categoryViewer n'est pas affiché.
+    Il sert justement à modifier les catégories depuis le menu d'une tâche.
+    """
+
     def __init__(
         self, parent, parent_window, categories, viewer
     ):  # pylint: disable=W0621
@@ -1924,7 +1931,8 @@ class ToggleCategoryMenu(DynamicMenu):
             # menuToAdd.add_h_separator()  # ou ceci ?
             for category in categoriesWithChildren:
                 # log.debug("ToggleCategoryMenu.addMenuItemsForCategories : est-ce là l'erreur!")
-                subMenu = Menu(self.__window)
+                # subMenu = Menu(self.__window)
+                subMenu = Menu(self, self.__window)
                 # log.debug(f"subMenu={subMenu}")
                 # self.addMenuItemsForCategories(category.children(), subMenu)
                 self.addMenuItemsForCategories(

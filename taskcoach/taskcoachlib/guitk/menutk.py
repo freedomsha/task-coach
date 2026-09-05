@@ -1896,15 +1896,20 @@ class ToggleCategoryMenu(DynamicMenu):
 
     def updateMenuItems(self):
         self.clearMenu()
+        log.info(
+            f"ToggleCategoryMenu.updateMenuItems : essaie d'ajouter le menu {self} à {self.categories.rootItems()}"
+        )
         self.addMenuItemsForCategories(self.categories.rootItems(), self)
 
     def addMenuItemsForCategories(self, categories, menuToAdd):
         """
-        Ajoute des éléments de Menu, Trie et construit le menu pour les catégories
+        Ajoute des éléments de Menu, Trie et construit le menu pour les catégories.
+
+        Ajoute récursivement les catégories au menu Tkinte.
 
         Args :
-            categories :
-            menu :
+            categories : (itérable) Liste des catégories.
+            menuToAdd : Menu Tkinter auquel ajouter la liste de catégories.
 
         Returns :
 
@@ -1913,6 +1918,7 @@ class ToggleCategoryMenu(DynamicMenu):
         # Trie et construit le menu pour les catégories
         # log.debug("ToggleCategoryMenu.addMenuItemsForCategories : Ajout de %d catégories au menu.", len(categories))
         categories = categories[:]
+        # categories = list(categories)
         categories.sort(key=lambda category: category.subject().lower())
         for category in categories:
             uiCommand = uicommand.ToggleCategory(
@@ -1925,6 +1931,9 @@ class ToggleCategoryMenu(DynamicMenu):
         categoriesWithChildren = [
             category for category in categories if category.children()
         ]
+        if not categoriesWithChildren:
+            return
+
         if categoriesWithChildren:
             # menuToAdd.AppendSeparator()
             log.debug(
@@ -1937,12 +1946,18 @@ class ToggleCategoryMenu(DynamicMenu):
                 # subMenu = Menu(self.__window)
                 subMenu = Menu(self, self.__window)
                 # log.debug(f"subMenu={subMenu}")
+                log.info(
+                    f"ToggleCategoryMenu.addMenuItemsForCategories : Ajoute le sous-menu {subMenu} à {category}."
+                )
                 # self.addMenuItemsForCategories(category.children(), subMenu)
                 self.addMenuItemsForCategories(
-                    category.get_tree_children(), subMenu
+                    # category.get_tree_children(), subMenu
+                    category.children(),
+                    subMenu,
                 )
                 # log.debug(f"ToggleCategoryMenu.addMenuItemsForCategories : Ajout du sous-menu : {self.subMenuLabel(category)}{subMenu} dans {menuToAdd}")
-                menuToAdd.AppendSubMenu(subMenu, self.subMenuLabel(category))
+                # menuToAdd.AppendSubMenu(subMenu, self.subMenuLabel(category))
+                menuToAdd.appendMenu(self.subMenuLabel(category), subMenu)
 
     @staticmethod
     def subMenuLabel(category):  # pylint: disable=W0621
@@ -2015,9 +2030,10 @@ class StartEffortForTaskMenu(DynamicMenu):
             log.debug(
                 f"StartEffortForTaskMenu.addMenuItemForTask : Ajout du sous-menu : {task.subject()} (subtasks){subMenu} dans {menuItem}"
             )
-            menuItem.AppendSubMenu(
-                subMenu, _("%s (subtasks)") % task.subject()
-            )
+            # menuItem.AppendSubMenu(
+            #     subMenu, _("%s (subtasks)") % task.subject()
+            # )
+            menuItem.appendMenu(_("%s (subtasks)") % task.subject(), subMenu)
 
     def enabled(self):
         return bool(self._trackableRootTasks())

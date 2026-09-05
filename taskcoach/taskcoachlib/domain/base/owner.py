@@ -311,7 +311,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             **kwargs : Arguments de mots clés arbitraires.
         """
         # NB: we use a simple list here. Maybe we should use a container type.
-        log.debug(
+        log.info(
             f"Owner.constructor : Initialise l'instance avec la liste des objets possédés pour {name}."
         )
         # setattr(instance, "_%s__%ss" % (name, klass.__ownedType__.lower()),
@@ -492,17 +492,18 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
             newObjects (list) : La nouvelle liste des objets possédés.
             event : L'événement à déclencher.
         """
-        log.debug(
+        log.info(
             "DomainObjectOwnerMetaclass.setObjects : \n=== SETOBJECTS ==="
         )
-        log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : ID(instance) = %s",
+        log.info(
+            "DomainObjectOwnerMetaclass.setObjects : avec ID(instance) = %s et TYPE(instance) = %s",
             id(instance),
-        )
-        log.debug(
-            "DomainObjectOwnerMetaclass.setObjects : TYPE(instance) = %s",
             type(instance),
         )
+        # log.debug(
+        #     "DomainObjectOwnerMetaclass.setObjects : ",
+        #     type(instance),
+        # )
         log.debug(
             "DomainObjectOwnerMetaclass.setObjects : DICT = %s",
             instance.__dict__,
@@ -535,7 +536,7 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
         # setattr(instance, _attribute_name(""), newObjects)
         setattr(instance, current_owned_attr_name, newObjects)
         log.debug(
-            f"DomainObjectOwnerMetaclass.setObjects : - Value of {current_owned_attr_name} after setattr: {getattr(instance, current_owned_attr_name, 'N/A')}"
+            f"DomainObjectOwnerMetaclass.setObjects : Value of {current_owned_attr_name} after setattr: {getattr(instance, current_owned_attr_name, 'N/A')}"
         )
         changedEvent(instance, event, *newObjects)  # pylint: disable=W0142
 
@@ -548,14 +549,14 @@ def DomainObjectOwnerMetaclass(name, bases, ns):
     # attribute = _attribute_name("")
     attribute = f"set{klass.__ownedType__}s"
     log.debug(
-        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG écriture attribut : %s",
+        "DomainObjectOwnerMetaclass.setObjects :  : DEBUG écriture de l'attribut %s",
         attribute,
     )
     # setattr(instance, attribute, newObjects)
     setattr(klass, attribute, setObjects)
     # print("DEBUG après écriture :", instance.__dict__)
     log.debug(
-        "DomainObjectOwnerMetaclass.setObjects : DEBUG après écriture : %s",
+        "DomainObjectOwnerMetaclass.setObjects : DEBUG après écriture klass._dict__ : %s",
         klass.__dict__,
     )
 

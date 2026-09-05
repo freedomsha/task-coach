@@ -91,10 +91,19 @@ logging.getLogger("PIL").setLevel(logging.WARNING)
 # TODO : Faire un tri selon les dossiers name importants (application, changes, command,
 #  config, domain, filesystem, gui, help, i18n, iphone, mailer, meta, notify, patterns,
 #  persistence, powermgt, speak, syncml, thirdparty, tools, widgets, workaround)
+# Observateurs et événements fréquents
+logging.getLogger("taskcoachlib.patterns.observer").setLevel(logging.INFO)
 # logging.getLogger("__main__").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.application").setLevel(logging.INFO)
-# logging.getLogger("taskcoachlib.filesystem").setLevel(logging.INFO)
-# logging.getLogger("taskcoachlib.config.settings").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.domain.base.owner").setLevel(logging.INFO)
+# Réduire les lectures répétées des attributs
+logging.getLogger("taskcoachlib.domain.base.attribute").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.domain.base.filter").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.filesystem").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.filesystem.fs_poller").setLevel(
+    logging.WARNING
+)
+logging.getLogger("taskcoachlib.config.settings").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.application.application").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.persistence.taskfile").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.gui.mainwindow").setLevel(logging.INFO)
@@ -103,6 +112,18 @@ logging.getLogger("taskcoachlib.gui.uicommand.settings_uicommand").setLevel(
     logging.INFO
 )
 logging.getLogger("taskcoachlib.gui.toolbar").setLevel(logging.INFO)
+# # Réduire les logs très fréquents de l'interface Tkinter
+# logging.getLogger("taskcoachlib.guitk").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.guitk.mainwindowtk").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.guitk.menutk").setLevel(
+#     logging.WARNING
+# )  # en cours->debug !
+# logging.getLogger("taskcoachlib.guitk.uicommand.settings_uicommandtk").setLevel(
+#     logging.INFO
+# )
+# logging.getLogger("taskcoachlib.guitk.viewer.basetk").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.guitk.viewer.tasktk").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.guitk.toolbarttk").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.widgets.treectrl").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.widgets.itemctrl").setLevel(logging.INFO)
 logging.getLogger("taskcoachlib.widgets.autowidth").setLevel(logging.INFO)
@@ -277,7 +298,9 @@ def start():
     # print(vars(options), args)
     # print(f"taskcoach.py: options:{vars(options)} args:{args}")
     log.info(
-        "Arguments analys\u00e9s : options=%s, args=%s", vars(options), args
+        "start : Arguments analys\u00e9s : options=%s, args=%s",
+        vars(options),
+        args,
     )
 
     # Définir le GUI global (pour tous les modules)
@@ -302,7 +325,13 @@ def start():
     # Lancement de l'application :
     # Il est impératif d'appeler explicitement app.init() avant de démarrer l'application,
     # car c'est cette méthode qui charge les préférences utilisateur et prépare l'interface.
-    app.init()  # logique, 2nd appel d'init (le 1er est dans tkapplication.TkinterApplication.__init)
+    # app.init()  # logique, 2nd appel d'init (le 1er est dans tkapplication.TkinterApplication.__init)
+    if options.gui_name == "wx":
+        app.init()
+    elif options.gui_name == "tk":
+        # TkinterApplication.__init__ effectue déjà l'initialisation
+        # Ne pas appeler init() une seconde fois si le constructeur l'a déjà fait
+        pass
 
     if options.profile:
         # if options["profile"]:

@@ -735,6 +735,9 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
         """
         # Vous devrez adapter cette ligne pour votre système d'événements
         # de viewer.
+        # self._window.Bind(
+        #     wx.EVT_MENU_OPEN, self.onUpdateMenu_Deprecated
+        # )  # ancien
         # Exemple avec pubsub si vous le convertissez :
         # pub.subscribe(self.onUpdateMenu, "viewer.selection_changed")
         log.warning(

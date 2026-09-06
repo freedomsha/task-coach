@@ -683,7 +683,29 @@ class DynamicMenu(Menu):
         Met à jour le menu lorsque l'événement est déclenché.
         """
         log.debug("DynamicMenu.onUpdateMenu : Mise à jour.")
-        self.updateMenu()
+        # self.updateMenu()
+        log.debug(
+            "DynamicMenu.onUpdateMenu : menu=%s, newValue=%r, sender=%r",
+            self.__class__.__name__,
+            newValue,
+            sender,
+        )
+
+        try:
+            self.updateMenu()  # Reconstruit directement le menu sans passer par la gestion d'erreur prévue.
+            # self.onUpdateMenu()  # Gestionnaire prévu pour les événements
+        except tk.TclError as error:
+            log.warning(
+                "DynamicMenuThatGetsUICommandsFromViewer.onUpdateMenu : "
+                "menu Tkinter indisponible : %s",
+                error,
+            )
+        except RuntimeError as error:
+            log.error(
+                "DynamicMenu.onUpdateMenu : erreur : %s",
+                error,
+                exc_info=True,
+            )
 
     def updateMenu(self):
         """Met à jour les éléments du menu."""
@@ -740,15 +762,87 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
         # )  # ancien
         # Exemple avec pubsub si vous le convertissez :
         # pub.subscribe(self.onUpdateMenu, "viewer.selection_changed")
-        log.warning(
-            "`DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate` est un placeholder. L'événement doit être lié à votre système de gestion des événements."
+        # onUpdateMenu() existe.
+        # log.warning(
+        #     "`DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate` est un placeholder. L'événement doit être lié à votre système de gestion des événements."
+        # )
+        # viewer = self._viewer
+        # log.info(
+        #     "DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate : "
+        #     "viewer=%r, type=%s",
+        #     self._viewer,
+        #     type(self._viewer).__name__,
+        # )
+
+        # log.info(
+        #     "DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate : "
+        #     "attributs viewer liés aux événements : %s",
+        #     [
+        #         name
+        #         for name in dir(self._viewer)
+        #         if "event" in name.lower()
+        #         or "selection" in name.lower()
+        #         or "change" in name.lower()
+        #     ],
+        # )
+
+        # log.info(
+        #     "DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate : "
+        #     "Publisher=%r",
+        #     patterns.Publisher(),
+        # )
+        # En attente :
+        if getattr(self, "_menu_update_registered", False):
+            log.debug(
+                "DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate : "
+                "postcommand déjà enregistré pour %r",
+                self,
+            )
+            return
+        #
+        # eventType = self._viewer.selectionChangedEventType()
+        #
+        # Dans wxPython, registerForMenuUpdate() ne surveille pas
+        # un changement de sélection. Il demande une mise à jour
+        # lorsque le menu est sur le point de s’ouvrir.
+        # Pour Tkinter, l’équivalent direct est l’option postcommand de tk.Menu.
+        # Cette commande est appelée juste avant l’affichage du menu.
+        self.configure(postcommand=self.onUpdateMenu)
+        # patterns.Publisher().registerObserver(
+        #     self.onUpdateMenu,
+        #     eventType=eventType,
+        # #     eventSource=self._viewer,
+        #     eventSource=viewer,
+        # )
+        self._menu_update_registered = True
+        #
+        log.debug(
+            "DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate : "
+            # "observer enregistré pour eventType=%r, eventSource=%r",
+            # eventType,
+            # viewer,
+            "postcommand enregistré sur %r",
+            self,
         )
+        # Dans le code wxPython, _window est une fenêtre wx qui reçoit l’événement.
+        # Dans Tkinter, il ne faut pas appliquer postcommand à _window,
+        # car _window semble être la fenêtre principale ou le parent.
+        # Il faut l’appliquer au menu dynamique lui-même.
+        # <<MenuSelect>> correspond à la sélection d’un élément dans un menu ;
+        # <Button-1> dépend des événements souris ;
+        # <Map> concerne l’affichage du widget, pas spécifiquement l’ouverture logique du menu ;
+        # postcommand est précisément prévu pour mettre à jour un menu avant son affichage.
 
     def updateMenuItems(self):
         """
         Met à jour les items du menu en fonction des commandes UI
         disponibles dans le visualiseur.
         """
+        log.debug(
+            "DynamicMenuThatGetsUICommandsFromViewer.updateMenuItems : "
+            "mise à jour pour viewer=%r",
+            self._viewer,
+        )
         self.clearMenu()
         if self._viewer and hasattr(self._viewer, "uiCommands"):
             self._uiCommands = self._viewer.uiCommands()

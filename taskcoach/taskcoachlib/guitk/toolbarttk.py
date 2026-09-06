@@ -237,6 +237,12 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
             # # On stocke l'ID dans le widget Tkinter lui-même pour le retrouver plus tard
             # button.ui_command_id = ui_command.id
             widget = ui_command.appendToToolBar(self)  # peut renvoyer None
+            log.debug(
+                "ToolBar.appendUICommand : appendToToolBar(%r) a retourné %r de type %s",
+                ui_command,
+                widget,
+                type(widget).__name__ if widget is not None else "None",
+            )
 
             if widget is None:
                 # Tentative de détection du widget créé (dernier nouvel enfant)
@@ -247,12 +253,13 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
                 if new_children:
                     widget = new_children[-1]
                     log.warning(
-                        "ToolBar.appendUICommand : détecte un nouveau widget créé par appendToToolBar."
+                        f"ToolBar.appendUICommand : détecte un nouveau widget {widget} créé par appendToToolBar.",
+                        stack_info=True,
                     )
                 elif hasattr(ui_command, "_widget"):
                     widget = getattr(ui_command, "_widget")
                     log.warning(
-                        "ToolBar.appendUICommand : récupère ui_command._widget."
+                        f"ToolBar.appendUICommand : récupère ui_command._widget : {widget}."
                     )
                 else:
                     log.error(

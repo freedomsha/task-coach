@@ -22,6 +22,7 @@ d’interface utilisateur dans des menus ou des barres d’outils.
 L'attribut _window est essentiel car il représente la fenêtre Tkinter
 à laquelle le menu ou la barre d'outils est associé.
 """
+
 # coding=utf-8
 # """ Mixin pour les conteneurs de commandes d'interface utilisateur Tkinter.
 # Ce mixin fournit la méthode appendUICommands pour ajouter des commandes UI
@@ -70,6 +71,7 @@ import tkinter as tk
 import tkinterdnd2
 from tkinterdnd2 import *
 from tkinter import ttk
+
 # from tkinter import Menu
 
 # Assurez-vous que taskcoachlib.gui.newid existe et est compatible avec Tkinter
@@ -80,12 +82,13 @@ log = logging.getLogger(__name__)
 
 
 class UICommandContainerMixin(object):
-    """ Mixin pour les classes qui agissent comme des conteneurs de commandes
+    """Mixin pour les classes qui agissent comme des conteneurs de commandes
     d'interface utilisateur (comme les menus ou les barres d'outils).
 
     Fournit la méthode appendUICommands nécessaire aux classes
     qui veulent ajouter des commandes UI à des menus ou barres d'outils.
     """
+
     # Ce mixin fournit la méthode appendUICommands
     # pour ajouter des commandes UI à un conteneur (comme un menu ou une barre d'outils).
     # Il gère les séparateurs et les sous-menus
@@ -107,7 +110,9 @@ class UICommandContainerMixin(object):
         self.__window = parent_window
         # Stocke la configuration tearoff
         self._tearoff = tearoff
-        log.debug(f"UICommandContainerMixin : La classe {self.__class__.__name__} initialise pour ajouter des commandes UI dans self.__window={self.__window} de classe {self.__window.__class__.__name__}.")
+        log.debug(
+            f"UICommandContainerMixin : La classe {self.__class__.__name__} initialise pour ajouter des commandes UI dans self.__window={self.__window} de classe {self.__window.__class__.__name__}."
+        )
         # if not isinstance(parent_window, (tk.Tk, tk.Frame, tk.Menu)):
         #     log.warning(f"UICommandContainerMixin : parent_window={parent_window.__class__.__name__}(type={type(parent_window)}) doit être de type tk.Tk ou tk.Frame ou tk.Menu!")
         #     log.warning(f"UICommandContainerMixin : self={self.__class__.__name__}(type={type(self)}) doit être un menu !")
@@ -117,16 +122,44 @@ class UICommandContainerMixin(object):
         # if not hasattr(self, "__window") or self.__window is None:
         #     # log.error("UICommandContainerMixin.__init__ : parent_window n’a pas été fourni et __window est également None.")
         #     log.error("UICommandContainerMixin.__init__ : parent_window n’a pas été fourni.")
-        if not hasattr(self, '_tearoff'):
-            log.warning("UICommandContainerMixin.__init__ : l'attribut _tearoff est manquant.")
-        if not isinstance(self.__window, (tk.Tk, tk.Frame, tk.LabelFrame, tk.Menu, tkinterdnd2.TkinterDnD.Tk)) or not issubclass(type(self.__window), (tk.Tk, tk.LabelFrame, tk.Frame, tk.Menu, tkinterdnd2.TkinterDnD.Tk)):
-            log.warning(f"UICommandContainerMixin.__init__ : parent_window={self.__window.__class__.__name__}(type={type(self.__window)}) doit être de type tk.Tk ou tk.Frame ou tk.Menu!")
+        if not hasattr(self, "_tearoff"):
+            log.warning(
+                "UICommandContainerMixin.__init__ : l'attribut _tearoff est manquant."
+            )
+        if not isinstance(
+            self.__window,
+            (
+                tk.Tk,
+                tk.Frame,
+                tk.LabelFrame,
+                tk.Menu,
+                tkinterdnd2.TkinterDnD.Tk,
+            ),
+        ) or not issubclass(
+            type(self.__window),
+            (
+                tk.Tk,
+                tk.LabelFrame,
+                tk.Frame,
+                tk.Menu,
+                tkinterdnd2.TkinterDnD.Tk,
+            ),
+        ):
+            log.warning(
+                f"UICommandContainerMixin.__init__ : parent_window={self.__window.__class__.__name__}(type={type(self.__window)}) doit être de type tk.Tk ou tk.Frame ou tk.Menu!"
+            )
         if not isinstance(self, tk.Menu):
-            log.warning(f"UICommandContainerMixin.__init__ : self={self.__class__.__name__}(type={type(self)}) doit être un menu !")
+            log.warning(
+                f"UICommandContainerMixin.__init__ : self={self.__class__.__name__}(type={type(self)}) doit être un menu !"
+            )
         if not isinstance(self._tearoff, int):
-            log.warning(f"UICommandContainerMixin.__init__ : tearoff={self._tearoff}(type={type(self._tearoff)}) doit être un entier !")
+            log.warning(
+                f"UICommandContainerMixin.__init__ : tearoff={self._tearoff}(type={type(self._tearoff)}) doit être un entier !"
+            )
         if not (self._tearoff == 0 or self._tearoff == 1):
-            log.warning(f"UICommandContainerMixin.__init__ : tearoff={self._tearoff} doit être 0 ou 1 !")
+            log.warning(
+                f"UICommandContainerMixin.__init__ : tearoff={self._tearoff} doit être 0 ou 1 !"
+            )
         # if isinstance(self.__window, tk.Menu):
         #     log.debug(f"UICommandContainerMixin.__init__ : Crée un menu Tkinter avec tearoff={self._tearoff}.")
         #     tk.Menu.__init__(self, self.__window, tearoff=self._tearoff)
@@ -149,7 +182,7 @@ class UICommandContainerMixin(object):
         #     log.debug("UICommandContainerMixin.__init__ : l'attribut subMenu n'existe pas encore.")
 
     def appendUICommands(self, *uiCommands, **kwargs):
-        """ Ajout des *uiCommands.
+        """Ajout des *uiCommands.
 
         Cette méthode, qui est mélangée dans une classe de menu,
         prend une liste de UICommand et les ajoute au menu.
@@ -182,7 +215,9 @@ class UICommandContainerMixin(object):
                 # None : Ajoute un séparateur.
                 # self.AppendSeparator()
                 self.add_separator()
-                log.debug(f"UICommandContainerMixin.appendUICommands : ajoute un séparateur dans {self.__class__.__name__}!")
+                log.debug(
+                    f"UICommandContainerMixin.appendUICommands : ajoute un séparateur dans {self.__class__.__name__}!"
+                )
                 # self.add_separator()
                 # elif isinstance(uiCommand, (str, str)):  # TODO : A convertir ?
                 # label = wx.MenuItem(self, text=uiCommand)
@@ -195,19 +230,28 @@ class UICommandContainerMixin(object):
             elif isinstance(uiCommand, tuple):
                 # tuple : Crée un sous-menu et y ajoute les commandes UI.
                 menuTitle, menuUICommands = uiCommand[0], uiCommand[1:]
-                log.debug(f"UICommandContainerMixin.appendUICommands : ajoute le sous-menu {menuTitle} avec une liste de commandes {menuUICommands}!")
+                log.debug(
+                    f"UICommandContainerMixin.appendUICommands : ajoute le sous-menu {menuTitle} avec une liste de commandes {menuUICommands}!"
+                )
                 self.appendSubMenuWithUICommands(menuTitle, menuUICommands)
             else:
                 # Autre (supposé être une instance de UICommand) : ajoute la commande.
                 # self.appendUICommand(uiCommand)
                 # log.debug(f"UICommandContainerMixin.appendUICommands : ajoute la commande {uiCommand} !")
                 try:
+                    log.debug(
+                        f"UICommandContainerMixin.appendUICommands : ajoute la commande {uiCommand} !"
+                    )
                     self.appendUICommand(uiCommand)
-                    log.debug(f"UICommandContainerMixin.appendUICommands : ajoute la commande {uiCommand} !")
                 except NotImplementedError:
-                    log.error(f"UICommandContainerMixin.appendUICommands : La méthode appendUICommand n'est pas implémentée dans {self.__class__.__name__}.")
+                    log.error(
+                        f"UICommandContainerMixin.appendUICommands : La méthode appendUICommand n'est pas implémentée dans {self.__class__.__name__}."
+                    )
                 except Exception as e:
-                    log.error(f"UICommandContainerMixin.appendUICommands : Erreur lors de l'ajout de la commande {uiCommand}: {e}", exc_info=True)
+                    log.error(
+                        f"UICommandContainerMixin.appendUICommands : Erreur lors de l'ajout de la commande {uiCommand}: {e}",
+                        exc_info=True,
+                    )
 
             # fileopen_command = uicommand.FileOpen(iocontroller=self._iocontroller)
             # fileopen_command.addToMenu(self, parent_window)
@@ -226,13 +270,20 @@ class UICommandContainerMixin(object):
         # Pour éviter une importation circulaire, nous supposons
         # que la classe Menu est disponible dans taskcoachlib.guitk
         from taskcoachlib.guitk import menutk
-        if not hasattr(self, '_window') or self.__window is None:
-            log.warning("UICommandContainerMixin.appendSubMenuWithUICommands : l'attribut _window est manquant ou None.")
+
+        if not hasattr(self, "_window") or self.__window is None:
+            log.warning(
+                "UICommandContainerMixin.appendSubMenuWithUICommands : l'attribut _window est manquant ou None."
+            )
             return
         self.subMenu = menutk.Menu(self.__window, tearoff=0)
-        log.warning(f"UICommandContainerMixin.appendSubMenuWithUICommands : Crée la sous-menu {self.submenu} à self.__window={self.__window}.")
+        log.warning(
+            f"UICommandContainerMixin.appendSubMenuWithUICommands : Crée la sous-menu {self.submenu} à self.__window={self.__window}."
+        )
         # self.add_cascade(label=menuTitle, menu=subMenu)
-        log.info(f"UICommandContainerMixin.appendSubMenuWithUICommands : Ajoute le sous-menu {menuTitle} à self.__window={self.__window}.")
+        log.info(
+            f"UICommandContainerMixin.appendSubMenuWithUICommands : Ajoute le sous-menu {menuTitle} à self.__window={self.__window}."
+        )
         self.subMenu.appendUICommands(*uiCommands)
         self.__window.add_cascade(label=menuTitle, menu=self.subMenu)
 
@@ -241,7 +292,9 @@ class UICommandContainerMixin(object):
         Ajoute une seule commande UI au conteneur.
         Cette méthode doit être implémentée par la classe qui utilise ce mixin.
         """
-        raise NotImplementedError("La méthode 'appendUICommand' doit être implémentée par la classe qui utilise ce mixin.")
+        raise NotImplementedError(
+            "La méthode 'appendUICommand' doit être implémentée par la classe qui utilise ce mixin."
+        )
 
     def add_separator(self):
         # def appendSeparator(self):
@@ -333,7 +386,9 @@ def assert_valid_parent_window(parent_window, owner):
 
     # Vérifie que parent_window est un type Tkinter autorisé
     # if not isinstance(parent_window, (tk.Tk, tk.Toplevel, tk.Frame, tk.LabelFrame, tk.Menu)):
-    if not isinstance(parent_window, (tk.Tk, tk.Toplevel, tkinterdnd2.TkinterDnD.Tk)):
+    if not isinstance(
+        parent_window, (tk.Tk, tk.Toplevel, tkinterdnd2.TkinterDnD.Tk)
+    ):
         raise AssertionError(
             f"{owner.__class__.__name__} : parent_window invalide "
             f"({type(parent_window)}). "

@@ -6564,6 +6564,7 @@ class ToolbarChoiceCommandMixin(object):
             combo.pack(side="left", padx=2, pady=2)
             widget = combo
         else:
+            # Si aucun choix n'est disponible:
             # fallback simple si pas d'option : bouton déroulant vide via OptionMenu si combobox non disponible
             opt = tk.OptionMenu(toolbar, self._var, "")
             opt.pack(side="left", padx=2, pady=2)
@@ -6894,7 +6895,8 @@ class EffortViewerAggregationChoice(
     def appendToToolBar(self, *args, **kwargs):
         """Ajoute le contrôle de choix à la barre d'outils
         et initialise la sélection en fonction des paramètres enregistrés."""
-        super().appendToToolBar(*args, **kwargs)
+        # super().appendToToolBar(*args, **kwargs)
+        widget = super().appendToToolBar(*args, **kwargs)
         self.setChoice(
             self.settings.gettext(self.viewer.settingsSection(), "aggregation")
         )
@@ -6902,6 +6904,7 @@ class EffortViewerAggregationChoice(
             self.on_setting_changed,
             "settings.%s.aggregation" % self.viewer.settingsSection(),
         )
+        return widget
 
     def doChoice(self, choice):
         """Enregistre le choix d'agrégation dans les paramètres de l'application."""
@@ -6983,7 +6986,8 @@ class TaskViewerTreeOrListChoice(
     def appendToToolBar(self, *args, **kwargs):
         """Ajoute le contrôle de choix à la barre d'outils
         et initialise la sélection en fonction des paramètres enregistrés."""
-        super().appendToToolBar(*args, **kwargs)
+        # super().appendToToolBar(*args, **kwargs)
+        widget = super().appendToToolBar(*args, **kwargs)
         self.setChoice(
             self.settings.getboolean(self.viewer.settingsSection(), "treemode")
         )
@@ -6995,6 +6999,7 @@ class TaskViewerTreeOrListChoice(
         #     self.on_setting_changed,
         #     f"settings.{self.viewer.settingsSection()}.treemode",
         # )
+        return widget
 
     def doChoice(self, choice):
         """Enregistre le choix d'affichage dans les paramètres de l'application."""
@@ -7081,10 +7086,12 @@ class CategoryViewerFilterChoice(
     def appendToToolBar(self, *args, **kwargs):
         """Ajoute le contrôle de choix à la barre d'outils
         et initialise la sélection en fonction du paramètre enregistré."""
-        super().appendToToolBar(*args, **kwargs)
+        # super().appendToToolBar(*args, **kwargs)
+        widget = super().appendToToolBar(*args, **kwargs)
         pub.subscribe(
             self.on_setting_changed, "settings.view.categoryfiltermatchall"
         )
+        return widget
 
     def isSettingChecked(self):
         """Vérifie si le mode de filtrage "toutes les catégories" est sélectionné."""
@@ -7142,7 +7149,8 @@ class SquareTaskViewerOrderChoice(
     def appendToToolBar(self, *args, **kwargs):
         """Ajoute le contrôle de choix à la barre d'outils
         et initialise la sélection en fonction du paramètre enregistré."""
-        super().appendToToolBar(*args, **kwargs)
+        # super().appendToToolBar(*args, **kwargs)
+        widget = super().appendToToolBar(*args, **kwargs)
         pub.subscribe(
             self.on_setting_changed,
             "settings.%s.sortby" % self.viewer.settingsSection(),
@@ -7151,6 +7159,7 @@ class SquareTaskViewerOrderChoice(
         #     self.on_setting_changed,
         #     f"settings.{self.viewer.settingsSection()}.sortby",
         # )
+        return widget
 
     def doChoice(self, choice):
         """Enregistre le critère de tri dans les paramètres de l'application."""
@@ -7473,7 +7482,6 @@ class ViewerPieChartAngle(ViewerCommand, settings_uicommandtk.SettingsCommand):
         Ajoute le contrôle de curseur à la barre d'outils spécifiée
         et initialise sa valeur en fonction des paramètres enregistrés.
         """
-        # TODO :
         # pylint: disable=W0201
         # self.sliderCtrl = wx.Slider(
         #     toolbar,
@@ -7492,12 +7500,17 @@ class ViewerPieChartAngle(ViewerCommand, settings_uicommandtk.SettingsCommand):
         # self.sliderCtrl.Bind(wx.EVT_SLIDER, self.onSlider)
         self.sliderCtrl.bind(
             "<ButtonRelease-1>", self.onSlider
-        )  # TODO : Adapter pour Tkinter
+        )  # TODO : à Adapter pour Tkinter
         # toolbar.AddControl(self.sliderCtrl)
         # toolbar.AddWidget(self.sliderCtrl)  # TODO : Adapter pour Tkinter
         self.setCurrentAngle()
-        self.sliderCtrl.pack(side="left")  # TODO : Adapter pour Tkinter
-        pass
+        # self.sliderCtrl.pack(side="left")  # TODO : Adapter pour Tkinter
+        self.sliderCtrl.pack(side=tk.LEFT, padx=2, pady=2)
+        # TODO : Faut-il ajouter ceci ? :
+        # Référence générique utilisée par certains composants Tkinter.
+        # self._widget = self.sliderCtrl
+        # pass
+        return self.sliderCtrl
 
     def unbind(self, window, itemId):
         """Détache les liaisons d'événements du contrôle de curseur."""
@@ -7647,9 +7660,15 @@ class AlwaysRoundUp(settings_uicommandtk.UICheckCommand, ViewerCommand):
         # toolbar.AddControl(self.checkboxCtrl)
         # self.checkboxCtrl.pack(side="left")  # A Adapter pour Tkinter
         self.checkboxCtrl.pack(side=tk.LEFT, padx=2, pady=2)
+        # TODO : Dois-je ajouter ceci ? :
+        # Référence générique utilisée par certains composants Tkinter.
+        # self._widget = self.checkboxCtrl
         # S'assurer que l'état initial du checkbox est correct
         self._variable.set(self.isSettingChecked())
         # self.tools.append(self.checkboxCtrl)  # TODO : Si vous voulez les suivre dans une liste
+        # Faut-il ajouter ceci ? Oui
+        # si la méthode crée une ttk.Checkbutton, elle doit retourner self.checkboxCtrl
+        return self.checkboxCtrl
 
     def unbind(self, window, itemId):
         """Détache les liaisons d'événements de la case à cocher."""
@@ -7717,6 +7736,7 @@ class ConsolidateEffortsPerTask(
 
     def __init__(self, *args, **kwargs):
         self.checkboxCtrl = None
+        self._consolidate_var = None
         super().__init__(
             menuText=_("&Consolidate efforts per task"),
             helpText=_(
@@ -7726,22 +7746,66 @@ class ConsolidateEffortsPerTask(
             **kwargs,
         )
 
-    # TODO
     def appendToToolBar(self, toolbar):
-        """Ajoute la case à cocher à la barre d'outils.
+        """Ajoute une case à cocher à la barre d'outils.
 
-        Ajoutez un contrôle de case à cocher à la barre d’outils."""
+        Ajoutez un contrôle de case à cocher à la barre d’outils.
+
+        Returns:
+            ttk.Checkbutton: Le widget créé."""
         # # pylint: disable=W0201
         # self.checkboxCtrl = wx.CheckBox(toolbar, label=self.menuText)
         # self.checkboxCtrl.Bind(wx.EVT_CHECKBOX, self.onCheck)
         # toolbar.AddControl(self.checkboxCtrl)
+        self._consolidate_var = tk.BooleanVar(
+            master=toolbar,
+            value=self.isSettingChecked(),
+        )
 
-    def unbind(self, window, itemId):
-        """Détache les liaisons d'événements de la case à cocher."""
+        self.checkboxCtrl = ttk.Checkbutton(
+            toolbar,
+            text=self.menuText.replace("&", ""),
+            variable=self._consolidate_var,
+            command=self.onCheck,
+        )
+
+        self.checkboxCtrl.pack(
+            side=tk.LEFT,
+            padx=2,
+            pady=2,
+        )
+
+        # Référence générique utilisée par certains composants Tkinter.
+        self._widget = self.checkboxCtrl
+
+        log.debug(
+            "ConsolidateEffortsPerTask.appendToToolBar : "
+            "case à cocher créée : %r",
+            self.checkboxCtrl,
+        )
+
+        return self.checkboxCtrl
+
+    # def unbind(self, window, itemId):
+    def unbind(self, window=None, itemId=None):
+        """
+        Détache les liaisons d'événements de la case à cocher.
+
+        Détache les événements et libère la référence au widget Tkinter.
+        """
         # if self.checkboxCtrl is not None:
         #     self.checkboxCtrl.Unbind(wx.EVT_CHECKBOX)
         #     self.checkboxCtrl = None
         # super().unbind(window, itemId)
+        if self.checkboxCtrl is not None:
+            try:
+                self.checkboxCtrl.configure(command="")
+            except tk.TclError:
+                pass
+
+            self.checkboxCtrl = None
+
+        self._consolidate_var = None
 
     def isSettingChecked(self):
         """Vérifie si la consolidation des efforts est activée."""
@@ -7749,31 +7813,66 @@ class ConsolidateEffortsPerTask(
             self.viewer.settingsSection(), "consolidateeffortspertask"
         )
 
+    # Pourquoi ne pas utiliser _isMenuItemChecked(event) ?
+    # Cette méthode provient de la logique wxPython, où l’état est récupéré depuis un événement de menu ou une wx.CheckBox.
+    # Avec Tkinter, le contrôle est directement lié à :
+    # self._consolidate_var
+    # L’état se récupère donc ainsi :
+    # self._consolidate_var.get()
+    # Le callback de ttk.Checkbutton est également appelé sans événement :
+    # command=self.onCheck
+    # D’où la signature :
+    # def onCheck(self, event=None):
     def onCheck(self, event=None):
-        """Enregistre l'état de la consolidation dans les paramètres de l'application."""
-        self.setSetting(self._isMenuItemChecked(event))
+        """Enregistre l'état courant de la consolidation dans les paramètres de l'application."""
+        # self.setSetting(self._isMenuItemChecked(event))
+        if self._consolidate_var is not None:
+            value = bool(self._consolidate_var.get())
+        elif self.checkboxCtrl is not None:
+            value = bool(self.checkboxCtrl.instate(["selected"]))
+        else:
+            value = self.isSettingChecked()
+
+        self.setSetting(value)
 
     def doCommand(self, event=None):
-        """Enregistre l'état de la consolidation dans les paramètres de l'application."""
-        self.setSetting(self._isMenuItemChecked(event))
+        """Enregistre l'état courant de la consolidation dans les paramètres de l'application."""
+        # self.setSetting(self._isMenuItemChecked(event))
+        self.onCheck(event)
 
     def setSetting(self, consolidateEffortsPerTask):
         """Enregistre l'état de la consolidation dans les paramètres de l'application."""
+        value = bool(consolidateEffortsPerTask)
+
         self.settings.setboolean(
             self.viewer.settingsSection(),
             "consolidateeffortspertask",
-            consolidateEffortsPerTask,
+            # consolidateEffortsPerTask,
+            value,
         )
 
     def setValue(self, value):
         """Définit l'état de la case à cocher."""
-        if self.checkboxCtrl is not None:
-            self.checkboxCtrl.SetValue(value)
+        # if self.checkboxCtrl is not None:
+        #     self.checkboxCtrl.SetValue(value)
+        value = bool(value)
+
+        if self._consolidate_var is not None:
+            self._consolidate_var.set(value)
+        elif self.checkboxCtrl is not None:
+            if value:
+                self.checkboxCtrl.state(["selected"])
+            else:
+                self.checkboxCtrl.state(["!selected"])
 
     def enable(self, enable=True):
         """Active ou désactive la case à cocher."""
+        # if self.checkboxCtrl is not None:
+        #     self.checkboxCtrl.Enable(enable)
         if self.checkboxCtrl is not None:
-            self.checkboxCtrl.Enable(enable)
+            self.checkboxCtrl.configure(
+                state="normal" if enable else "disabled"
+            )
 
 
 # --- Other commands (simulated/adapted) ---

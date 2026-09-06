@@ -1454,9 +1454,15 @@ class Observer(object):
             super().__init__(*args, **kwargs)
             # Removed super().__init__(*args, **kwargs) as object.__init__ does not accept arguments
             # TypeError: object.__init__() takes exactly one argument (the instance to initialize)
-        except TypeError as e:
-            log.error(f"Observer.__init__ : erreur super : {e}")
-            super().__init__(*args)
+        except TypeError as error:
+            log.warning(f"Observer.__init__ : erreur super : {error}")
+            log.info(
+                "Observer.__init__ : L'erreur 'object.__init__() takes exactly one argument (the instance to initialize)' est prise en compte avec une nouvelle ligne super() !"
+            )
+            try:
+                super().__init__(*args)
+            except Exception as e:
+                log.exception(f"Observer.__init__ : erreur super : {e}.")
         # super().__init__()  # Poursuit l'initialisation avec la classe suivante dans la MRO. En l'occurrence, wx.EvtHandler.
         # log.debug(f"Observer.__init__ : Liste des observateurs : {self.__observers}")
 

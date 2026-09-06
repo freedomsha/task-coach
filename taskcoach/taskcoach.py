@@ -92,7 +92,7 @@ logging.getLogger("PIL").setLevel(logging.WARNING)
 #  config, domain, filesystem, gui, help, i18n, iphone, mailer, meta, notify, patterns,
 #  persistence, powermgt, speak, syncml, thirdparty, tools, widgets, workaround)
 # Observateurs et événements fréquents
-logging.getLogger("taskcoachlib.patterns.observer").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.patterns.observer").setLevel(logging.INFO)
 # logging.getLogger("__main__").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.application").setLevel(logging.INFO)
 logging.getLogger("taskcoachlib.domain.base.owner").setLevel(logging.INFO)

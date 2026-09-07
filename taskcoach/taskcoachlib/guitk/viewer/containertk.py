@@ -142,10 +142,24 @@
 # Apparence : L'apparence des widgets Tkinter peut être différente de celle des widgets wxPython.
 #   Vous devrez peut-être personnaliser l'apparence avec des thèmes ttk.
 import logging
+import os
+import sys
 import tkinter as tk
 import tkinter.ttk as ttk
-from taskcoachlib import operating_system
-import taskcoachlib.guitk.menutk
+
+try:
+    from taskcoachlib import operating_system
+except ModuleNotFoundError:
+    current_file = __file__ if "__file__" in globals() else "containertk.py"
+    current_dir = os.path.dirname(os.path.abspath(current_file))
+    taskcoach_dir = os.path.abspath(
+        os.path.join(current_dir, "..", "..", "..")
+    )
+    if taskcoach_dir not in sys.path:
+        sys.path.insert(0, taskcoach_dir)
+    from taskcoachlib import operating_system
+
+# import taskcoachlib.guitk.menutk
 from pubsub import pub  # pip install PyPubSub
 
 log = logging.getLogger(__name__)
@@ -528,7 +542,7 @@ class ViewerContainer(ttk.PanedWindow):
         viewer = self.activeViewer()
         if viewer is None:
             raise AttributeError(
-                f"'ViewerContainer' object has no attribute '{attribute}'"
+                f"ViewerContainer.__getattr__ : 'ViewerContainer' object has no attribute '{attribute}'"
             )
         return getattr(viewer, attribute)
         # if self._active_viewer:
@@ -723,7 +737,8 @@ class ViewerContainer(ttk.PanedWindow):
 #     container = ViewerContainer(root, settings)
 #
 #     # Créer des viewers de test (doivent être des widgets Tkinter)
-#     viewer1 = tk.Text(container.paned_window, bg="lightblue")
+#     viewer1 = tk.Text(container.
+#     paned_window, bg="lightblue")
 #     viewer1.insert(tk.END, "Viewer 1 Content")
 #     viewer2 = tk.Text(container.paned_window, bg="lightgreen")
 #     viewer2.insert(tk.END, "Viewer 2 Content")
@@ -747,21 +762,33 @@ if __name__ == "__main__":
         def __init__(self, parent, title, *args, **kwargs):
             super().__init__(parent, *args, **kwargs)
             self.title_str = title
+            self.bind(
+                "<FocusIn>", lambda event: container.activateViewer(self)
+            )
 
         def title(self):
             return self.title_str
 
+        def isTreeViewer(self):
+            return False
+
     viewer1 = DummyViewer(
-        container.paned_window, "Viewer 1", bg="lightblue"
-    )  # container.paned_window est le parent
+        container,
+        "Viewer 1",
+        bg="lightblue",
+    )  # container est le parent
     viewer1.insert(tk.END, "Viewer 1 Content")
     viewer2 = DummyViewer(
-        container.paned_window, "Viewer 2", bg="lightgreen"
-    )  # container.paned_window est le parent
+        container,
+        "Viewer 2",
+        bg="lightgreen",
+    )  # container est le parent
     viewer2.insert(tk.END, "Viewer 2 Content")
 
     container.addViewer(viewer1)
     container.addViewer(viewer2)
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
     # container.pack(fill=tk.BOTH, expand=True)  # Afficher le ViewerContainer
     container.grid(
         row=0, column=0, sticky="nsew"

@@ -2289,8 +2289,10 @@ if __name__ == "__main__":
 
             # Créer des menus contextuels de test
             item_menu = Menu(self, tearoff=0)
-            item_menu.add_command(label="Modifier")
-            item_menu.add_command(label="Supprimer")
+            item_menu.add_command(label="Modifier", command=self.on_edit_menu)
+            item_menu.add_command(
+                label="Supprimer", command=self.on_delete_menu
+            )
             item_menu.add_separator()
             item_menu.add_command(
                 label="Propriétés", command=self.on_properties
@@ -2304,55 +2306,33 @@ if __name__ == "__main__":
                 label="Trier descendant", command=self.on_sort_desc
             )
             column_menu.add_separator()
-            column_menu.add_command(label="Cacher la colonne")
-
-            # self.config(menu=item_menu)
-            # self.config(menu=column_menu)
-
-            # # Création du conteneur TreeListCtrl
-            # frame = ttk.Frame(self, padding=10)
-            # frame.pack(fill=tk.BOTH, expand=True)
-            # Instanciation
-            # Note: CheckTreeCtrl hérite de TreeListCtrl, donc il profitera des corrections
+            column_menu.add_command(
+                label="Cacher la colonne", command=self.on_hide_column
+            )
 
             # Scrollbars
             vsb = ttk.Scrollbar(self, orient="vertical")
             hsb = ttk.Scrollbar(self, orient="horizontal")
 
-            # # Crée une instance de TreeCtrl, TreeListCtrl ou CheckTreeCtrl
-            # # self.tree = TreeCtrl(self)
-            # self.tree = TreeListCtrl(
-            #     self,
-            #     self,
-            #     columns=columns,
-            #     selectCommand=self.on_select,
-            #     editCommand=self.on_edit,
-            #     dragAndDropCommand=self.on_drag_and_drop,
-            #     itemPopupMenu=item_menu,
-            #     columnPopupMenu=column_menu
-            # )
-            # self.tree.pack(fill=tk.BOTH, expand=True)
-            # self.tree = CheckTreeCtrl(
-            tree = CheckTreeCtrl(
+            self.tree = CheckTreeCtrl(
                 self,  # Parent widget
                 self.adapter,  # Adapter
                 columns=columns,  # Colonnes
                 checkCommand=self.on_check,
                 dragAndDropCommand=self.on_drag_drop,
                 itemPopupMenu=item_menu,
+                columnPopupMenu=column_menu,
                 # Configuration du scroll via kwargs supportés par ttk.Treeview
                 yscrollcommand=vsb.set,
                 xscrollcommand=hsb.set,
             )
 
             # Liaison des scrollbars au treeview
-            vsb.config(command=tree.yview)
-            # hsb.config(command=self.tree.xscroll)  # AttributeError: 'CheckTreeCtrl' object has no attribute 'xscroll'
-            # Erreur de frappe : la méthode correcte est xview
-            hsb.config(command=tree.xview)
+            vsb.config(command=self.tree.yview)
+            hsb.config(command=self.tree.xview)
 
             # Layout avec grid
-            tree.grid(row=0, column=0, sticky="nsew")
+            self.tree.grid(row=0, column=0, sticky="nsew")
             vsb.grid(row=0, column=1, sticky="ns")
             hsb.grid(row=1, column=0, sticky="ew")
 
@@ -2361,7 +2341,9 @@ if __name__ == "__main__":
 
             # Barre de boutons
             button_frame = ttk.Frame(self)
-            button_frame.pack(fill=tk.X, padx=10, pady=5)
+            button_frame.grid(
+                row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5
+            )
 
             ttk.Button(button_frame, text="Ajouter", command=self.on_add).pack(
                 side=tk.LEFT, padx=2
@@ -2386,8 +2368,7 @@ if __name__ == "__main__":
             # Note: Ceci peuple le widget visuel, pas l'adaptateur.
             # Dans une vraie app, on remplirait l'adaptateur puis on appellerait RefreshAllItems.
             # Élément parent
-            # parent1_id = self.tree.insert("", "end", text="Projet A - Migration TaskCoach")
-            parent1 = self.insert(
+            parent1 = self.tree.insert(
                 "",
                 "end",
                 text="Projet A - Migration TaskCoach",
@@ -2395,10 +2376,7 @@ if __name__ == "__main__":
                 tags=("type_checkbox",),
             )
 
-            # # Enfants du parent 1
-            # self.tree.insert(parent1_id, "end", text="Rédiger le rapport")
-            # self.tree.insert(parent1_id, "end", text="Réaliser la présentation")
-            task1 = self.insert(
+            task1 = self.tree.insert(
                 parent1,
                 "end",
                 text="Convertir itemctrl.py",
@@ -2406,7 +2384,7 @@ if __name__ == "__main__":
                 tags=("type_checkbox", "checked"),
             )
 
-            task2 = self.insert(
+            task2 = self.tree.insert(
                 parent1,
                 "end",
                 text="Convertir treectrl.py",
@@ -2414,7 +2392,7 @@ if __name__ == "__main__":
                 tags=("type_checkbox",),
             )
 
-            task3 = self.insert(
+            task3 = self.tree.insert(
                 parent1,
                 "end",
                 text="Tests d'intégration",
@@ -2423,9 +2401,7 @@ if __name__ == "__main__":
             )
 
             # Élément parent 2 avec une case à cocher exclusive - Projet B avec statut exclusif
-            # parent2_id = self.tree.insert("", "end", text="Tâches du projet B")
-            # parent2 = self.tree.insert("", "end", text="Statut du projet", values=("", ""), tags=('type_exclusive_checkbox',))
-            parent2 = self.insert(
+            parent2 = self.tree.insert(
                 "",
                 "end",
                 text="Projet B - Documentation",
@@ -2433,20 +2409,11 @@ if __name__ == "__main__":
                 tags=("type_checkbox",),
             )
 
-            # # # Enfants du parent 2
-            # # child1 = self.tree.insert(parent2_id, "end", text="Coder le module 1")
-            # # self.tree.insert(parent2_id, "end", text="Coder le module 2")
-            #
-            # # Enfants du parent 2 (exclusifs)
-            # self.tree.insert(parent2, "end", text="En cours",
-            #                  values=("", ""), tags=('type_exclusive_checkbox', 'checked'))
-            # self.tree.insert(parent2, "end", text="Terminé",
-            #                  values=("", ""), tags=('type_exclusive_checkbox',))
-            status_parent = self.insert(
+            status_parent = self.tree.insert(
                 parent2, "end", text="Statut", values=("", ""), tags=()
             )
 
-            self.insert(
+            self.tree.insert(
                 status_parent,
                 "end",
                 text="En cours",
@@ -2454,7 +2421,7 @@ if __name__ == "__main__":
                 tags=("type_exclusive_checkbox", "checked"),
             )
 
-            self.insert(
+            self.tree.insert(
                 status_parent,
                 "end",
                 text="En attente",
@@ -2462,7 +2429,7 @@ if __name__ == "__main__":
                 tags=("type_exclusive_checkbox",),
             )
 
-            self.insert(
+            self.tree.insert(
                 status_parent,
                 "end",
                 text="Terminé",
@@ -2470,11 +2437,8 @@ if __name__ == "__main__":
                 tags=("type_exclusive_checkbox",),
             )
 
-            # # Sous-enfant
-            # self.tree.insert(child1, "end", text="Tester le module")
-
             # Projet C
-            parent3 = self.insert(
+            parent3 = self.tree.insert(
                 "",
                 "end",
                 text="Projet C - Maintenance",
@@ -2482,7 +2446,7 @@ if __name__ == "__main__":
                 tags=("type_checkbox",),
             )
 
-            self.insert(
+            self.tree.insert(
                 parent3,
                 "end",
                 text="Corriger bugs mineurs",
@@ -2492,27 +2456,27 @@ if __name__ == "__main__":
 
         def on_select(self, event):
             """Gère la sélection d'un élément."""
-            item_id = self.identify_row(event.y)
+            item_id = self.tree.identify_row(event.y)
             if item_id:
-                print(f"Élément sélectionné : {self.item(item_id, 'text')}")
+                print(
+                    f"Élément sélectionné : {self.tree.item(item_id, 'text')}"
+                )
 
         def on_edit(self, item_id):
             """Gère l'édition du label d'un élément."""
-            print(f"Édition de l'élément : {self.item(item_id, 'text')}")
+            print(f"Édition de l'élément : {self.tree.item(item_id, 'text')}")
             # L'implémentation de l'édition réelle se trouve dans le mixin ou dans la classe principale
 
         def on_check(self, item, checked, final=True):
             """Callback lors du cochage."""
             if final:
-                # print(f"Check: {self.tree.item(item, 'text')} -> {checked}")
-                text = self.item(item, "text")
+                text = self.tree.item(item, "text")
                 state = "cochée" if checked else "décochée"
                 print(f"Tâche '{text}' {state}")
 
         def on_drag_and_drop(self, event):
             """Gère l'action de glisser-déposer."""
             print("Action de glisser-déposer terminée.")
-            # self.tree.rebuild_data_model()
 
         def on_drag_drop(self, event):
             """Callback après glisser-déposer."""
@@ -2520,9 +2484,9 @@ if __name__ == "__main__":
 
         def on_edit_menu(self):
             """Éditer l'élément sélectionné."""
-            selection = self.selection()
+            selection = self.tree.selection()
             if selection:
-                print(f"Édition de: {self.item(selection[0], 'text')}")
+                print(f"Édition de: {self.tree.item(selection[0], 'text')}")
 
         def on_delete_menu(self):
             """Supprimer l'élément sélectionné."""
@@ -2533,11 +2497,11 @@ if __name__ == "__main__":
             selection = self.tree.selection()
             if selection:
                 item = selection[0]
-                print(f"\nPropriétés de '{self.item(item, 'text')}':")
-                print(f"  Valeurs: {self.item(item, 'values')}")
-                print(f"  Tags: {self.item(item, 'tags')}")
-                print(f"  Coché: {self.IsItemChecked(item)}")
-                print(f"  Type: {self.GetItemType(item)}")
+                print(f"\nPropriétés de '{self.tree.item(item, 'text')}':")
+                print(f"  Valeurs: {self.tree.item(item, 'values')}")
+                print(f"  Tags: {self.tree.item(item, 'tags')}")
+                print(f"  Coché: {self.tree.IsItemChecked(item)}")
+                print(f"  Type: {self.tree.GetItemType(item)}")
 
         def on_sort_asc(self):
             """Tri ascendant."""
@@ -2553,37 +2517,37 @@ if __name__ == "__main__":
 
         def on_add(self):
             """Ajouter un nouvel élément."""
-            selection = self.selection()
+            selection = self.tree.selection()
             parent = selection[0] if selection else ""
 
-            new_item = self.insert(
+            new_item = self.tree.insert(
                 parent,
                 "end",
                 text="Nouvelle tâche",
                 values=("", "Normale"),
                 tags=("type_checkbox",),
             )
-            self.selection_set(new_item)
-            self.see(new_item)
+            self.tree.selection_set(new_item)
+            self.tree.see(new_item)
             print("Nouvelle tâche ajoutée")
 
         def on_delete(self):
             """Supprimer les éléments sélectionnés."""
-            selection = self.selection()
+            selection = self.tree.selection()
             for item in selection:
-                text = self.item(item, "text")
-                self.delete(item)
+                text = self.tree.item(item, "text")
+                self.tree.delete(item)
                 print(f"Tâche '{text}' supprimée")
 
         def on_expand_all(self):
             """Développer tous les éléments."""
 
             def expand_recursive(item):
-                self.item(item, open=True)
-                for child in self.get_children(item):
+                self.tree.item(item, open=True)
+                for child in self.tree.get_children(item):
                     expand_recursive(child)
 
-            for item in self.get_children():
+            for item in self.tree.get_children():
                 expand_recursive(item)
 
         def on_collapse_all(self):
@@ -2591,10 +2555,10 @@ if __name__ == "__main__":
 
             def collapse_recursive(item):
                 self.tree.item(item, open=False)
-                for child in self.get_children(item):
+                for child in self.tree.get_children(item):
                     collapse_recursive(child)
 
-            for item in self.get_children():
+            for item in self.tree.get_children():
                 collapse_recursive(item)
 
     # Lancement de l'application

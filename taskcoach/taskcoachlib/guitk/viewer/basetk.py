@@ -669,6 +669,10 @@ class Viewer(ttk.Frame, patterns.Observer):
         """Gère la sélection d'éléments et les changements de sélection."""
         # if self.__selectingAllItems:
         #     return
+        # if self.destroy() or self.__selectingAllItems:  # destroy() détruisait la fenêtre TaskViewer !
+        #     return
+        if not self.winfo_exists() or self.__selectingAllItems:
+            return
         # self.updateSelection()
         # # ou :
         # try:

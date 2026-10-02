@@ -498,7 +498,7 @@ class MainWindow(
         self.toolbar_frame.grid(
             row=0, column=0, sticky="ew"
         )  # TODO : A revoir où mettre cette ligne !
-        self.viewer.grid(row=1, column=0, sticky="nsew")
+        self.viewer_container.grid(row=1, column=0, sticky="nsew")
         self.status_bar.grid(row=2, column=0, sticky="ew")
 
         try:
@@ -662,7 +662,7 @@ class MainWindow(
         )
         # viewer.factorytk.addViewers(self.viewer, self.taskFile, self.settings)
         factorytk.addViewers(
-            self.viewer, self.taskFile, self.settings
+            self.viewer_container, self.taskFile, self.settings
         )  # Ajoute les visualiseurs
         # add_viewers_strategy = addViewers(viewer_container, mock_task_file, mock_settings)
         # add_viewers_strategy = viewer.factory.addViewers(self.viewer, self.taskFile, self.settings)
@@ -682,7 +682,7 @@ class MainWindow(
         )
         self.__create_reminder_controller()
         log.debug("MainWindow._create_window_components: Composants créés.")
-        self.viewer.componentsCreated()  # Appeler la méthode
+        self.viewer_container.componentsCreated()  # Appeler la méthode
         log.debug("mainWindow._create_window_components : Terminé !")
         # self.showToolBar(self.settings.getboolean("view", "toolbar"))
         self.showToolBar(
@@ -726,9 +726,11 @@ class MainWindow(
         )
         # self.viewer = viewer.containertk.ViewerContainer(self, self.settings)
         log.debug(
-            f"MainWindow._create_viewer_container : création de self.viewer avec parent_widget={self}."
+            f"MainWindow._create_viewer_container : création de self.viewer avec parent_widget={self} et self.settings {self.settings}."
         )
-        self.viewer = containertk.ViewerContainer(self, self.settings)
+        self.viewer_container = containertk.ViewerContainer(
+            self, self.settings
+        )
         # Tkinter: Les viewers seraient des widgets Tkinter packés ou gridés
         # Pour l'exemple, nous allons juste créer un Frame comme conteneur principal
         # self.viewer_frame = tk.Frame(self, bg="lightgray")
@@ -770,11 +772,11 @@ class MainWindow(
         # log.debug("MainWindow._create_viewer_container : Le ViewerContainer pour les viewers sont instanciés et positionnés dans le MainWindow.")
 
         # self.viewer.pack(anchor="center", fill="both", expand=True)  # Colle le conteneur pour qu'il remplisse l'espace disponible
-        self.viewer.grid(
+        self.viewer_container.grid(
             row=0, column=0, sticky="news"
         )  # Colle le conteneur pour qu'il remplisse l'espace disponible
         log.debug(
-            f"MainWindow._create_viewer_container : Conteneur de visionneuses {self.viewer} créé !"
+            f"MainWindow._create_viewer_container : Conteneur de visionneuses {self.viewer_container} créé !"
         )
 
     def _create_status_bar(self) -> None:
@@ -796,7 +798,7 @@ class MainWindow(
         log.info(
             f"MainWindow._create_status_bar : Création d'une barre de status et association avec la fenêtre principale {self}."
         )
-        self.status_bar = statustk.StatusBar(self, self.viewer)
+        self.status_bar = statustk.StatusBar(self, self.viewer_container)
         # Colle la barre de status en bas de la fenêtre principale
         # self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         self.status_bar.grid(row=10, column=0, sticky="ews")
@@ -839,7 +841,7 @@ class MainWindow(
             parent_window=self.parent,
             settings=self.settings,
             iocontroller=self.iocontroller,
-            viewerContainer=self.viewer,
+            viewerContainer=self.viewer_container,
             taskFile=self.taskFile,
         )
         log.debug(
@@ -1004,7 +1006,15 @@ class MainWindow(
                     perspective = None
                     break
 
-        # Dans une vraie application, vous chargeriez ici une disposition de widgets.
+        # 1. Détruire les viewers existants
+        # for viewer in self.viewer_container.viewers:
+        for viewer in self.viewer_container.viewers[
+            :
+        ]:  # Copie pour éviter les problèmes d'itération
+            # viewer.destroy()
+            self.viewer_container.removeViewer(viewer)
+
+        # Charger ici une disposition de widgets.
         try:
             if perspective:
                 log.info(
@@ -1034,16 +1044,16 @@ class MainWindow(
         # for Frame in self.paned_windows():
         #     # Frame.Show()  # wxPython
         #     Frame.pack()  # Tkinter
-        if self.viewer.winfo_viewable():
-            log.debug(
-                f"MainWindow.__restore_perspective: Les panneaux {self.viewer} sont déjà visibles."
+        if self.viewer_container.winfo_viewable():
+            log.info(
+                f"MainWindow.__restore_perspective: Les panneaux {self.viewer_container} sont déjà visibles."
             )
         else:
-            log.debug(
-                f"MainWindow.__restore_perspective: Rendre les panneaux {self.viewer} visibles."
+            log.warning(
+                f"MainWindow.__restore_perspective: Rendre les panneaux {self.viewer_container} visibles."
             )
             # self.viewer.grid()  # Tkinter
-            self.viewer.grid_info()  # Tkinter
+            self.viewer_container.grid_info()  # Tkinter
             # for frame in self.viewer.get_all_frames():
             # frame.grid()  # Tkinter
             # if hasattr(frame.window, "title"):
@@ -1338,7 +1348,9 @@ class MainWindow(
             uicommand.FileOpen(iocontroller=self.iocontroller),
             uicommand.FileSave(iocontroller=self.iocontroller),
             uicommand.FileMergeDiskChanges(iocontroller=self.iocontroller),
-            uicommand.Print(viewer=self.viewer, settings=self.settings),
+            uicommand.Print(
+                viewer=self.viewer_container, settings=self.settings
+            ),
             None,
             uicommand.EditUndo(),
             uicommand.EditRedo(),
@@ -1527,9 +1539,9 @@ class MainWindow(
             (int) : Le nombre de visionneuses.
         """
         log.debug(
-            f"MainWindow.viewerCount: Retourne le nombre de viewers : {len(self.viewer)}."
+            f"MainWindow.viewerCount: Retourne le nombre de viewers : {len(self.viewer_container)}."
         )
-        return len(self.viewer)
+        return len(self.viewer_container)  # TODO : à vérifier s'il s'agit bien du nombre de visionneuse !
 
     # Power management
     def OnPowerState(self, state) -> None:

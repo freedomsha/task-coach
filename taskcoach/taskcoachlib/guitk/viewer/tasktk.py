@@ -2731,8 +2731,9 @@ class Taskviewer(
                 1
             )  # Hypothétique, à adapter selon l'implémentation
 
-        # Lier les événements
-        self.widget.bind("<Button-1>", self._on_tree_click)
+        # # Lier les événements
+        # self.widget.bind("<Button-1>", self._on_tree_click)
+        # # TreeListCtrl a déjà lié le même événement à son gestionnaire de sélection dans treectrltk.py.
 
         # ✅ FIX:  Charger les tâches APRÈS la création du widget
         self._refresh_tasks()
@@ -2740,7 +2741,7 @@ class Taskviewer(
         log.debug(
             "Taskviewer.createWidget : Le widget de l'arborescence des tâches est sensé être affiché !"
         )
-        log.debug("Taskviewer.createWidget : Widget Taskviewer créé.")
+        log.info("Taskviewer.createWidget : Widget Taskviewer créé !")
         return self.widget  # Retourner le TreeListCtrl
         # return frame
 
@@ -2837,6 +2838,24 @@ class Taskviewer(
                 "le rafraîchissement : %s",
                 error,
             )
+
+    def _refresh_task_details(self, task_id):
+        try:
+            task = self.taskFile.get_task_by_id(task_id)
+            if task:
+                log.debug(f"Taskviewer._refresh_task_details: Refreshing details for task ID {task_id}")
+                # Update the GUI with new task details
+                self.update_task_view(task)
+            else:
+                log.warning(f"Taskviewer._refresh_task_details: Task with ID {task_id} not found")
+        except Exception as e:
+            log.error(
+                f"Taskviewer._refresh_task_details ERROR: Unable to refresh task details for ID {task_id}: {e}"
+            )
+
+    def update_task_view(self, task):
+        # Implement the logic to update the GUI based on the new task data
+        pass  # Placeholder for actual implementation
 
     def _add_task_to_tree(self, task, parent=""):
         """
@@ -3006,7 +3025,7 @@ class Taskviewer(
         item = self.widget.identify("item", event.x, event.y)
         if item:
             log.debug(
-                f"Taskviewer._on_tree_click : Élément '{item}' sélectionné."
+                f"Taskviewer._on_tree_click : Élément '{item}' sélectionné dans le widget {self.widget} !"
             )
 
     def onBeginEdit(self, event):

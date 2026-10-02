@@ -230,9 +230,13 @@ class ViewerContainer(ttk.PanedWindow):
             text="Conteneur de visualisateurs...",
         )
         # self._label.pack(pady=20)
-        self._label.grid(row=1, column=0, padx=10, pady=10)
+        # self._label.grid(row=1, column=0, padx=10, pady=10)
+        # ttk.PanedWindow gère les viewer avec self.add(viewer,...)
+        self.add(self._label, weight=1)
         # self.containerWidget = containerWidget  # Le widget conteneur (par exemple, une fenêtre Tk).
-        self.containerWidget = parent_widget  # Le widget conteneur (par exemple, une fenêtre Tk, toplevel, ou ici MainWindow).
+        # self.containerWidget = parent_widget  # Le widget conteneur (par exemple, une fenêtre Tk, toplevel, ou ici MainWindow).
+        # Mais en fait le conteneur est ViewerContainer lui-même !
+        self.containerWidget = self
         self._settings = settings
         self.viewers = []  # Liste des visionneuses
         # # self.notebook = ttk.Notebook(containerWidget)  # Utilisation de ttk.Notebook. On utilise 'self' ici, car ViewerContainer est le parent du notebook.
@@ -382,14 +386,19 @@ class ViewerContainer(ttk.PanedWindow):
         # Ajoute le viewer au bandeau de viewers
         # self.paned_window.add(viewer)  # viewer doit être un widget Tkinter
 
-        # Placez le visualiseur à l'intérieur du nouveau cadre
-        # viewer.pack(expand=True, fill="both")
-        # viewer.pack(fill="both", expand=True, padx=10, pady=5)  # copie de factorytk.MockViewerContainer
-        # viewer.grid(row=0, column=0)  # A essayer !
-        viewer.grid(
-            row=self.viewer_count + 1, column=0, padx=10, pady=5
-        )  # TODO : Attention, peut-être double avec celui de factory addViewers ! A retirer ?
+        # ✅ Si c'est le premier viewer, le définir comme actif
+        if self._active_viewer is None:
+            self._active_viewer = viewer
 
+        # # Placez le visualiseur à l'intérieur du nouveau cadre PanedWindow
+        # # viewer.pack(expand=True, fill="both")
+        # # viewer.pack(fill="both", expand=True, padx=10, pady=5)  # copie de factorytk.MockViewerContainer
+        # # viewer.grid(row=0, column=0)  # A essayer !
+        # viewer.grid(
+        #     row=self.viewer_count, column=0, padx=10, pady=5
+        # )  # TODO : Attention, peut-être double avec celui de factory addViewers ! A retirer ?
+        self.add(viewer, weight=1)
+        self.viewer_count += 1
         # if isinstance(viewer, ViewerContainer):
         #     # viewer.pack(fill="both", expand=True, padx=10, pady=5)
         #     viewer.grid(row=self.viewer_count+1, column=0, padx=10, pady=5)

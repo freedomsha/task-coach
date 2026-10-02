@@ -2873,17 +2873,25 @@ class Taskviewer(
             )
 
             # Préparer les valeurs des colonnes
+            # values = [
+            #     self._get_task_status(task),
+            #     self._get_task_priority(task),
+            #     self._get_task_due_date(task),
+            #     self._get_task_effort(task),
+            # ]
+            # ttk.Treeview maps values to the declared data columns in order;
+            # render each logical column rather than using an unrelated fixed list.
             values = [
-                self._get_task_status(task),
-                self._get_task_priority(task),
-                self._get_task_due_date(task),
-                self._get_task_effort(task),
+                column.render(task)
+                for column in self._columns
+                if column.name() != "#0"
             ]
 
             # Ajouter l'élément au Treeview
-            item_id = self.widget.tree.insert(
-                parent, "end", text=task_text, values=values
-            )
+            # item_id = self.widget.tree.insert(
+            #     parent, "end", text=task_text, values=values
+            # )
+            item_id = self.widget.insert(parent, "end", text="", values=values)
 
             # Stocker le mappage task -> item_id
             if hasattr(task, "id"):

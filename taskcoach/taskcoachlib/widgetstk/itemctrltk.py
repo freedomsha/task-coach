@@ -1043,10 +1043,11 @@ class Column(object):
 
         self.__eventTypes = eventTypes
         self.__sortCallback = kwargs.pop("sortCallback", None)
-        # self._render = renderCallback or (lambda obj: "")
-        self.__renderCallback = kwargs.pop(
-            "renderCallback", self.defaultRenderer
-        )
+        # # self._render = renderCallback or (lambda obj: "")
+        # self.__renderCallback = kwargs.pop(
+        #     "renderCallback", self.defaultRenderer
+        # )
+        self.__renderCallback = renderCallback or self.defaultRenderer
         # self.__resizeCallback = kwargs.pop("resizeCallback", None)
         # self.__alignment = alignment
         # self.__alignment = kwargs.pop("alignment", wx.LIST_FORMAT_LEFT)

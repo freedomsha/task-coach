@@ -523,10 +523,6 @@ class TreeListCtrl(
         # Nettoyage préventif d'autres arguments potentiels
         kwargs.pop("settingsSection", None)
 
-        # Gestion spécifique des colonnes visibles pour l'init
-        # On conserve la liste complète des objets colonnes pour usage interne
-        self._columns = columns
-
         # # Extraire les colonnes
         # # Extraction des noms et colonnes visibles
         # # column_names = [c._name for c in columns]
@@ -535,25 +531,11 @@ class TreeListCtrl(
         # On prépare les identifiants pour le Treeview
         # Note : On suppose que 'columns' contient des objets Column avec une méthode name()
         # Si c'est parfois des strings, il faudra adapter.
-        log.debug(
-            f"TreeListCtrl: Tentative de récupération de toutes les colonnes column_ids avec columns.name()."
-        )
-        try:
-            column_ids = [c.name() for c in columns]
-            log.debug(f"TreeListCtrl: Réussi column_ids={column_ids}.")
-        except AttributeError:
-            # Fallback si ce sont déjà des strings (pour le débogage)
-            column_ids = [str(c) for c in columns]
-            log.debug(
-                f"TreeListCtrl: Erreur column_ids={column_ids} avec str(columns)."
-            )
-        # # Récupérer _visible_columns de kwargs si présent, sinon initialiser avec une liste vide
-        # self._visible_columns = kwargs.pop('_visible_columns', [])
-        # displaycolumns = [c._name for c in columns if c.is_shown()]
-        # displaycolumns = [c.name for c in columns if c.is_shown()]
-        # Filtrer les colonnes visibles
-        # self.display_columns = [c for c in columns if c.is_shown()]
-        self.display_columns = [c for c in columns if c.is_shown()]
+        # #0 is the hierarchy column built into ttk.Treeview, not a data column.
+        column_ids = [c.name() for c in columns if c.name() != "#0"]
+        self.display_columns = [
+            c for c in columns if c.name() != "#0" and c.is_shown()
+        ]
         log.debug(
             f"TreeListCtrl : Les colonnes visibles sont self.display_columns={self.display_columns}."
         )
@@ -562,12 +544,12 @@ class TreeListCtrl(
         # sont bien strictement ceux fournis par Column.name().
 
         # Extraire les identifiants de colonnes
-        # column_ids = [col.identifier() for col in self.display_columns]
-        display_column_ids = (
-            [c.name() for c in self.display_columns]
-            if self.display_columns
-            else "#all"
-        )
+        # display_column_ids = (
+        #     [c.name() for c in self.display_columns]
+        #     if self.display_columns
+        #     else "#all"
+        # )
+        display_column_ids = [c.name() for c in self.display_columns]
         log.debug(
             f"TreeListCtrl : La liste des identifiants des colonnes visibles sont display_column_ids={display_column_ids}."
         )
@@ -598,6 +580,7 @@ class TreeListCtrl(
             *args,
             **kwargs,
         )
+        self.column("#0", width=24, minwidth=24, stretch=False)
 
         # --- 3. ALIAS DE COMPATIBILITÉ ---
         # Astuce : Comme le reste de votre code utilise "self.tree", on fait pointer
@@ -676,6 +659,9 @@ class TreeListCtrl(
         CtrlWithColumnsMixin.__init__(
             self, parent, columns=columns, columnPopupMenu=columnPopupMenu
         )
+        # Gestion spécifique des colonnes visibles pour l'init
+        # On conserve la liste complète des objets colonnes pour usage interne
+        self._columns = columns
         # self._init_columns_mixin(columns, columnPopupMenu)
         # itemctrltk.CtrlWithColumnsMixin.__init__(self, parent, columns=columns, columnPopupMenu=columnPopupMenu)
         # # TreeCtrlDragAndDropMixin.__init__(self, parent, dragAndDropCommand=dragAndDropCommand)
@@ -2271,19 +2257,29 @@ if __name__ == "__main__":
             self.adapter = SimpleAdapter()
 
             # Définir les colonnes
-            columns = [
+            # Keep the task subject in a regular data column; Treeview's
+            # built-in #0 column is reserved for the hierarchy.
+            self.columns = [
                 Column(
-                    "task_name", "Tâche", "Tâche", width=200, is_shown=True
+                    "subject",
+                    "Sujet",
+                    width=300,
+                    renderCallback=lambda task: task["subject"],
+                    # is_shown=True,
                 ),
                 Column(
                     "due_date",
                     "Date d’échéance",
-                    "Date d'échéance",
                     width=120,
-                    is_shown=True,
+                    renderCallback=lambda task: task["due_date"],
+                    # is_shown=True,
                 ),
                 Column(
-                    "priority", "Priorité", "Priorité", width=80, is_shown=True
+                    "priority",
+                    "Priorité",
+                    width=100,
+                    renderCallback=lambda task: task["priority"],
+                    # is_shown=True,
                 ),
             ]
 
@@ -2317,7 +2313,7 @@ if __name__ == "__main__":
             self.tree = CheckTreeCtrl(
                 self,  # Parent widget
                 self.adapter,  # Adapter
-                columns=columns,  # Colonnes
+                columns=self.columns,  # Colonnes
                 checkCommand=self.on_check,
                 dragAndDropCommand=self.on_drag_drop,
                 itemPopupMenu=item_menu,
@@ -2366,111 +2362,123 @@ if __name__ == "__main__":
         def populate_tree(self):
             """Ajoute des éléments de test à l'arborescence."""
             # Note: Ceci peuple le widget visuel, pas l'adaptateur.
-            # Dans une vraie app, on remplirait l'adaptateur puis on appellerait RefreshAllItems.
-            # Élément parent
-            parent1 = self.tree.insert(
+            parent1 = self.insert_task(
                 "",
-                "end",
-                text="Projet A - Migration TaskCoach",
-                values=("2025-03-01", "Haute"),
+                "Projet A - Migration TaskCoach",
+                "2025-03-01",
+                "Haute",
                 tags=("type_checkbox",),
             )
 
-            task1 = self.tree.insert(
+            self.insert_task(
                 parent1,
-                "end",
-                text="Convertir itemctrl.py",
-                values=("2025-02-01", "Haute"),
+                "Convertir itemctrl.py",
+                "2025-02-01",
+                "Haute",
                 tags=("type_checkbox", "checked"),
             )
 
-            task2 = self.tree.insert(
+            self.insert_task(
                 parent1,
-                "end",
-                text="Convertir treectrl.py",
-                values=("2025-02-15", "Haute"),
+                "Convertir treectrl.py",
+                "2025-02-15",
+                "Haute",
                 tags=("type_checkbox",),
             )
 
-            task3 = self.tree.insert(
+            self.insert_task(
                 parent1,
-                "end",
-                text="Tests d'intégration",
-                values=("2025-02-28", "Moyenne"),
+                "Tests d'intégration",
+                "2025-02-28",
+                "Moyenne",
                 tags=("type_checkbox",),
             )
 
             # Élément parent 2 avec une case à cocher exclusive - Projet B avec statut exclusif
-            parent2 = self.tree.insert(
+            parent2 = self.insert_task(
                 "",
-                "end",
-                text="Projet B - Documentation",
-                values=("2025-04-01", "Moyenne"),
+                "Projet B - Documentation",
+                "2025-04-01",
+                "Moyenne",
                 tags=("type_checkbox",),
             )
 
-            status_parent = self.tree.insert(
-                parent2, "end", text="Statut", values=("", ""), tags=()
+            status_parent = self.insert_task(
+                parent2, "Statut", "", "", tags=()
             )
 
-            self.tree.insert(
+            self.insert_task(
                 status_parent,
-                "end",
-                text="En cours",
-                values=("", ""),
+                "En cours",
+                "",
+                "",
                 tags=("type_exclusive_checkbox", "checked"),
             )
 
-            self.tree.insert(
+            self.insert_task(
                 status_parent,
-                "end",
-                text="En attente",
-                values=("", ""),
+                "En attente",
+                "",
+                "",
                 tags=("type_exclusive_checkbox",),
             )
 
-            self.tree.insert(
+            self.insert_task(
                 status_parent,
-                "end",
-                text="Terminé",
-                values=("", ""),
+                "Terminé",
+                "",
+                "",
                 tags=("type_exclusive_checkbox",),
             )
 
             # Projet C
-            parent3 = self.tree.insert(
+            parent3 = self.insert_task(
                 "",
-                "end",
-                text="Projet C - Maintenance",
-                values=("2025-12-31", "Basse"),
+                "Projet C - Maintenance",
+                "2025-12-31",
+                "Basse",
                 tags=("type_checkbox",),
             )
 
-            self.tree.insert(
+            self.insert_task(
                 parent3,
-                "end",
-                text="Corriger bugs mineurs",
-                values=("2025-06-01", "Basse"),
+                "Corriger bugs mineurs",
+                "2025-06-01",
+                "Basse",
                 tags=("type_checkbox",),
             )
+
+        def insert_task(self, parent, subject, due_date, priority, tags=()):
+            """Insert a demo task by rendering values through each Column."""
+            task = {
+                "subject": subject,
+                "due_date": due_date,
+                "priority": priority,
+            }
+            values = [column.render(task) for column in self.columns]
+            return self.tree.insert(
+                parent, "end", text="", values=values, tags=tags
+            )
+
+        def task_subject(self, item_id):
+            """Return the subject stored in the subject data column."""
+            return self.tree.set(item_id, "subject")
 
         def on_select(self, event):
             """Gère la sélection d'un élément."""
             item_id = self.tree.identify_row(event.y)
             if item_id:
-                print(
-                    f"Élément sélectionné : {self.tree.item(item_id, 'text')}"
-                )
+                print(f"Élément sélectionné : {self.task_subject(item_id)}")
 
         def on_edit(self, item_id):
             """Gère l'édition du label d'un élément."""
-            print(f"Édition de l'élément : {self.tree.item(item_id, 'text')}")
+            print(f"Édition de l'élément : {self.task_subject(item_id)}")
             # L'implémentation de l'édition réelle se trouve dans le mixin ou dans la classe principale
 
         def on_check(self, item, checked, final=True):
             """Callback lors du cochage."""
             if final:
-                text = self.tree.item(item, "text")
+                text = self.task_subject(item)
                 state = "cochée" if checked else "décochée"
                 print(f"Tâche '{text}' {state}")
 
@@ -2486,7 +2494,7 @@ if __name__ == "__main__":
             """Éditer l'élément sélectionné."""
             selection = self.tree.selection()
             if selection:
-                print(f"Édition de: {self.tree.item(selection[0], 'text')}")
+                print(f"Édition de: {self.task_subject(selection[0])}")
 
         def on_delete_menu(self):
             """Supprimer l'élément sélectionné."""
@@ -2497,7 +2505,7 @@ if __name__ == "__main__":
             selection = self.tree.selection()
             if selection:
                 item = selection[0]
-                print(f"\nPropriétés de '{self.tree.item(item, 'text')}':")
+                print(f"\nPropriétés de '{self.task_subject(item)}':")
                 print(f"  Valeurs: {self.tree.item(item, 'values')}")
                 print(f"  Tags: {self.tree.item(item, 'tags')}")
                 print(f"  Coché: {self.tree.IsItemChecked(item)}")
@@ -2520,11 +2528,11 @@ if __name__ == "__main__":
             selection = self.tree.selection()
             parent = selection[0] if selection else ""
 
-            new_item = self.tree.insert(
+            new_item = self.insert_task(
                 parent,
-                "end",
-                text="Nouvelle tâche",
-                values=("", "Normale"),
+                "Nouvelle tâche",
+                "",
+                "Normale",
                 tags=("type_checkbox",),
             )
             self.tree.selection_set(new_item)
@@ -2535,7 +2543,7 @@ if __name__ == "__main__":
             """Supprimer les éléments sélectionnés."""
             selection = self.tree.selection()
             for item in selection:
-                text = self.tree.item(item, "text")
+                text = self.task_subject(item)
                 self.tree.delete(item)
                 print(f"Tâche '{text}' supprimée")
 

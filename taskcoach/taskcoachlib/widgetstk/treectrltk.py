@@ -561,6 +561,10 @@ class TreeListCtrl(
         # Nettoyage préventif d'autres arguments potentiels
         kwargs.pop("settingsSection", None)
 
+        # # Gestion spécifique des colonnes visibles pour l'init
+        # # On conserve la liste complète des objets colonnes pour usage interne
+        # self._columns = columns
+
         # # Extraire les colonnes
         # # Extraction des noms et colonnes visibles
         # # column_names = [c._name for c in columns]
@@ -570,6 +574,9 @@ class TreeListCtrl(
         # Note : On suppose que 'columns' contient des objets Column avec une méthode name()
         # Si c'est parfois des strings, il faudra adapter.
         # #0 is the hierarchy column built into ttk.Treeview, not a data column.
+        log.debug(
+            f"TreeListCtrl: Tentative de récupération de toutes les colonnes column_ids avec columns.name()."
+        )
         column_ids = [c.name() for c in columns if c.name() != "#0"]
         self.display_columns = [
             c for c in columns if c.name() != "#0" and c.is_shown()
@@ -909,7 +916,7 @@ class TreeListCtrl(
             log.debug(
                 f"TreeListCtrl._configure_column : Heading configuré pour la colonne '{col_name}': {self.heading(col_name)}"
             )
-            self.tree.column(  # super()?
+            self.tree.column(  # TODO : super()?
                 col_name, width=col.width, minwidth=50, stretch=True
             )
 
@@ -2488,21 +2495,9 @@ if __name__ == "__main__":
                 tags=("type_checkbox",),
             )
 
-        def insert_task(self, parent, subject, due_date, priority, tags=()):
-            """Insert a demo task by rendering values through each Column."""
-            task = {
-                "subject": subject,
-                "due_date": due_date,
-                "priority": priority,
-            }
-            values = [column.render(task) for column in self.columns]
-            return self.tree.insert(
-                parent, "end", text="", values=values, tags=tags
-            )
-
-        def task_subject(self, item_id):
-            """Return the subject stored in the subject data column."""
-            return self.tree.set(item_id, "subject")
+            self.insert(parent3, "end", text="Corriger bugs mineurs",
+                             values=("2025-06-01", "Basse"),
+                             tags=('type_checkbox',))
 
         def on_select(self, event):
             """Gère la sélection d'un élément."""
@@ -2518,6 +2513,7 @@ if __name__ == "__main__":
         def on_check(self, item, checked, final=True):
             """Callback lors du cochage."""
             if final:
+                # print(f"Check: {self.tree.item(item, 'text')} -> {checked}")
                 text = self.task_subject(item)
                 state = "cochée" if checked else "décochée"
                 print(f"Tâche '{text}' {state}")

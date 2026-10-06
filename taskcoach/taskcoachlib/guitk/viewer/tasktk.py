@@ -2895,10 +2895,18 @@ class Taskviewer(
             ]
 
             # Ajouter l'élément au Treeview
-            # item_id = self.widget.tree.insert(
-            #     parent, "end", text=task_text, values=values
+            # item_id = self.widget.insert(
+            #     parent,
+            #     "end",
+            #     text=task_text,
+            #     values=values
             # )
-            item_id = self.widget.insert(parent, "end", text="", values=values)
+            item_id = self.widget.insert(
+                parent,
+                "end",
+                text="",  # TODO : voir pour remettre task_text !?
+                values=values
+            )
 
             # Stocker le mappage task -> item_id
             if hasattr(task, "id"):

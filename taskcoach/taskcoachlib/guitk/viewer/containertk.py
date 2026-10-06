@@ -179,7 +179,7 @@ class ViewerContainer(ttk.PanedWindow):
     par les UICommand vers la visionneuse actuellement active.
 
     Attributes:
-        self.viewer_count : Compteur de
+        self.viewer_count : Compteur de conteneur
         self._label : Titre du conteneur
         self.containerWidget : Le widget conteneur (par exemple, une fenêtre Tk, toplevel, ou ici MainWindow).
         self._settings : Paramètres de l'application.

@@ -6,7 +6,6 @@
         <entry key="0">
           <value>
             <TabSessionState>
-              <option name="projectPath" value="$PROJECT_DIR$" />
               <option name="provider" value="claude" />
               <option name="sessionId" value="8e8866c5-415e-43c3-82f4-d9242c141927" />
               <option name="cwd" value="$PROJECT_DIR$" />

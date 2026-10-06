@@ -92,7 +92,7 @@ logging.getLogger("PIL").setLevel(logging.WARNING)
 #  config, domain, filesystem, gui, help, i18n, iphone, mailer, meta, notify, patterns,
 #  persistence, powermgt, speak, syncml, thirdparty, tools, widgets, workaround)
 # Observateurs et événements fréquents
-# logging.getLogger("taskcoachlib.patterns.observer").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.patterns.observer").setLevel(logging.INFO)
 # logging.getLogger("__main__").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.application").setLevel(logging.INFO)
 logging.getLogger("taskcoachlib.domain.base.owner").setLevel(logging.INFO)
@@ -105,7 +105,9 @@ logging.getLogger("taskcoachlib.filesystem.fs_poller").setLevel(
 )
 logging.getLogger("taskcoachlib.config.settings").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.application.application").setLevel(logging.INFO)
-# logging.getLogger("taskcoachlib.persistence.taskfile").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.application.tkapplication").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.persistence.taskfile").setLevel(logging.INFO)
+logging.getLogger("taskcoachlib.persistence.xml.reader").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.gui.mainwindow").setLevel(logging.INFO)
 logging.getLogger("taskcoachlib.gui.menu").setLevel(logging.WARNING)
 logging.getLogger("taskcoachlib.gui.uicommand.settings_uicommand").setLevel(
@@ -126,7 +128,7 @@ logging.getLogger("taskcoachlib.gui.toolbar").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.guitk.toolbarttk").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.widgets.treectrl").setLevel(logging.INFO)
 # logging.getLogger("taskcoachlib.widgets.itemctrl").setLevel(logging.INFO)
-logging.getLogger("taskcoachlib.widgets.autowidth").setLevel(logging.INFO)
+# logging.getLogger("taskcoachlib.widgets.autowidth").setLevel(logging.INFO)
 logging.getLogger("taskcoachlib.widgets.tooltip").setLevel(logging.INFO)
 
 filename_dated = "taskcoach_" + datetime.now().strftime("%Y%m%d%H%M") + ".log"

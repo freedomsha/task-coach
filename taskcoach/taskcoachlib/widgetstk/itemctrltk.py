@@ -1917,11 +1917,12 @@ class CtrlWithColumnsMixin(
     #             anchor=col.alignment()
     #         )
 
-    def showColumn(self, column, show=True):
+    # def showColumn(self, column_name, show=True):
+    def showColumn(self, column_name: str, show=True):
         """Affiche ou cache une colonne et gère l'indicateur de tri."""
-        super().showColumn(column, show)
+        super().showColumn(column_name, show)
         # Afficher l'indicateur de tri si la colonne qui vient d'être rendue visible est en cours de tri.
-        if show and column == self._currentSortColumn():
+        if show and column_name == self._currentSortColumn():
             self._showSortImage()
 
     def _clearSortImage(self):
@@ -1943,7 +1944,7 @@ class CtrlWithColumnsMixin(
         Met à jour l’affichage d’un item à partir de l’objet métier.
 
         Args :
-            tem: identifiant Treeview
+            item: identifiant Treeview
         """
         # Vérification item valide
         if not self._itemIsOk(item):

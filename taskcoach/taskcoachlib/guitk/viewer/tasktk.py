@@ -529,7 +529,7 @@ class BaseTaskViewer(
         """Indique que ce visualiseur affiche des tâches."""
         return True
 
-    def createFilter(self, taskList):
+    def createFilter(self, taskList):  # taskList ou presentation ?
         """
         Crée un filtre pour les tâches à visualiser.
         """
@@ -2658,6 +2658,13 @@ class Taskviewer(
             height=20,  # Hauteur en nombre de lignes visibles
             **kwargs,
         )
+        # Debugging
+        log.debug(
+            f"Taskviewer.createWidget : self.widget={self.widget}, type={type(self.widget)}"
+        )
+        log.debug(
+            f"Taskviewer.createWidget : self.widget.winfo_exists()={self.widget.winfo_exists() if hasattr(self.widget, 'winfo_exists') else 'N/A'}"
+        )
 
         # # --- CORRECTION 2 : Assigner le widget à self.tree ---
         # # C'est la référence que les méthodes Taskviewer s'attendent à trouver.
@@ -3035,6 +3042,19 @@ class Taskviewer(
             log.debug(
                 f"Taskviewer._on_tree_click : Élément '{item}' sélectionné dans le widget {self.widget} !"
             )
+        # Le clic atteint bien Taskviewer.on_tree_click
+        # — le débogueur l’a arrêté dans cette méthode,
+        # appelée depuis la boucle Tkinter —
+        # mais ce callback ne fait qu’identifier la ligne et écrire un log.
+        # Il ne sélectionne ni n’ouvre la tâche.
+        # En plus, dans tasktk.py, createWidget() lie <Button-1> à ce callback
+        # après la création du TreeListCtrl.
+        # Ce widget avait déjà lié le même événement à son gestionnaire de
+        # sélection dans treectrltk.py.
+        # Comme bind() remplace le binding précédent par défaut,
+        # le clic contourne la logique de sélection du contrôle.
+        # Les lectures de variables du débogueur ayant expiré,
+        # je ne peux pas confirmer davantage l’état runtime du frame.
 
     def onBeginEdit(self, event):
         """Gère le début de l'édition d'un élément."""
@@ -3132,7 +3152,14 @@ class Taskviewer(
     def on_select(self, event):
         selected_items = self.tree.selection()
         # Logique pour gérer la sélection d'éléments
-        print(f"Éléments sélectionnés : {selected_items}")
+        print(f"Taskviewer.on_select: Éléments sélectionnés : {selected_items}")
+        # Proposition de Ollama :
+        if selected_items:
+            for item in selected_items:
+                task_id = self.tree.item(item)["values"][0]  # Assuming the task ID is the first column value
+                log.debug(f"Taskviewer.on_select: Selected task with ID {task_id}")
+                # Handle selection here, e.g., fetch and display more details about the task
+                self._refresh_task_details(task_id)
 
     def _createColumns(self):
         """
@@ -4321,22 +4348,37 @@ class Taskviewer(
             # if not self.winfo_exists():
             if not widget.winfo_exists():
                 return []
+            if (
+                hasattr(self.widget, "winfo_exists")
+                and not self.widget.winfo_exists()
+            ):
+                log.warning(
+                    "Taskviewer.curselection : self.widget n'existe plus !"
+                )
+                return []
             # except tk.TclError:
             #     return []
             #
             # try:
-            selected_items = widget.selection()
-
-            return [
-                # # self._objectBelongingTo(item)
-                # item
-                self.__items_to_tasks[item_id]
-                # # for item in self.selection()
-                # for item in selected_items
-                for item_id in selected_items
-                if item_id in self.__items_to_tasks
-            ]
-
+            # selected_items = widget.selection()
+            #
+            # return [
+            #     # # self._objectBelongingTo(item)
+            #     # item
+            #     self.__items_to_tasks[item_id]
+            #     # # for item in self.selection()
+            #     # for item in selected_items
+            #     for item_id in selected_items
+            #     if item_id in self.__items_to_tasks
+            # ]
+            return (
+                self.widget.curselection()
+                if hasattr(self.widget, "curselection")
+                else []
+            )
+        except Exception as e:
+            log.error(f"Taskviewer.curselection : Erreur - {e}")
+            return []
         except tk.TclError:
             return []
 
@@ -4451,7 +4493,9 @@ class CheckableTaskViewer(Taskviewer):
         )
         # widget.AssignImageList(imageList)  # pylint: disable=E1101  Parameter 'which' unfilled
         # widget.AssignImageList(imageList, wx.IMAGE_LIST_NORMAL)  # pylint: disable=E1101
-        return widget
+        self.widget = widget
+        # return widget
+        return self.widget
 
     def onCheck(self, event, final):
         pass
@@ -4521,7 +4565,9 @@ class TaskStatsViewer(BaseTaskViewer):  # pylint: disable=W0223
         #     widget._series.append(
         #         wx.lib.agw.piectrl.PiePart(1)
         #     )  # pylint: disable=W0212
-        return widget
+        self.widget = widget  # Met à jour la référence
+        # return widget
+        return self.widget
 
     def createClipboardToolBarUICommands(self):
         return ()
@@ -4674,14 +4720,16 @@ else:
         def createWidget(self):
             # self.scrolled_panel = wx.lib.scrolledpanel.ScrolledPanel(self, -1) # A remplacer
             # self.scrolled_panel = ScrolledPanel(self, -1) # A remplacer
-            self.scrolled_panel = tk.Frame(
+            # self.scrolled_panel = tk.Frame(
+            scrolled_panel = tk.Frame(
                 self
             )  # Frame Tkinter pour remplacer ScrolledPanel
 
             # self.vbox = wx.BoxSizer(wx.VERTICAL) # A remplacer
             # self.hbox = wx.BoxSizer(wx.HORIZONTAL) # A remplacer
             self.vbox = tk.Frame(
-                self.scrolled_panel
+                # self.scrolled_panel
+                scrolled_panel
             )  # Frame Tkinter pour remplacer BoxSizer
             self.hbox = tk.Frame(
                 self.vbox
@@ -4710,18 +4758,24 @@ else:
                 # graph_png_bm = wx.StaticBitmap(self.scrolled_panel, wx.ID_ANY, bitmap) # A remplacer
             if bitmap:
                 graph_png_bm = tk.Label(
-                    self.scrolled_panel, image=bitmap
+                    # self.scrolled_panel, image=bitmap
+                    scrolled_panel,
+                    image=bitmap,
                 )  # Label Tkinter pour afficher l'image
                 graph_png_bm.image = bitmap  # Garder une référence pour éviter que l'image soit garbage collected
             else:
                 graph_png_bm = tk.Label(
-                    self.scrolled_panel, text="igraph ou PIL non installé"
+                    # self.scrolled_panel, text="igraph ou PIL non installé"
+                    scrolled_panel,
+                    text="igraph ou PIL non installé",
                 )
                 # self.hbox.Add(graph_png_bm, 1, wx.ALL, 3) # A remplacer
             graph_png_bm.pack()  # Pack layout pour Tkinter
             # self.scrolled_panel.SetupScrolling() # A remplacer
+            self.widget = scrolled_panel
 
-            return self.scrolled_panel
+            # return self.scrolled_panel
+            return scrolled_panel
 
         def createClipboardToolBarUICommands(self):
             return ()

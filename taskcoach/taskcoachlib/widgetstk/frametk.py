@@ -136,6 +136,14 @@ class TtkManagedFrame:
     Simule une gestion de panneaux similaire à AUI en utilisant Tkinter.
     Ce n'est PAS un remplacement direct, mais une implémentation simplifiée
     pour une architecture de type gestionnaire de panneaux.
+
+    Attributes:
+        self.root : Fenêtre principale.
+        self.main_frame : Gestionnaire de géométrie des panneaux.
+        self.panes : Dictionnaire pour stocker les panneaux.
+        self.docked_panes : Liste des panneaux dockés.
+        self.is_center_pane_set : Indique si le panneau central est défini.
+
     """
 
     def __init__(self, master=None, title="Task Coach"):

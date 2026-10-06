@@ -171,6 +171,59 @@ class Task(
             __dependencies :
             __shouldMarkCompletedWhenAllChildrenCompleted :
     """
+    # Voici un aperçu général de la classe Task et de ses fonctionnalités clés :
+    #
+    # 1. **Attributs des données**:
+    #    - _id: Un identifiant unique pour la tâche.
+    #    - _parent: Une référence à la catégorie ou au projet parent.
+    #    - _subject: Le sujet principal ou la description de la tâche.
+    #    - _due_date: La date à laquelle la tâche doit être terminée.
+    #    - _efforts: Le nombre estimé d'heures nécessaires pour terminer la tâche.
+    #    - _budget: le montant monétaire alloué à la tâche.
+    #    - _actual_start_time: L'heure réelle à laquelle la tâche a démarré.
+    #    - _completion_time: L'heure estimée ou réelle à laquelle la tâche sera terminée.
+    #    - _priority: Une valeur numérique représentant le niveau de priorité de la tâche.
+    #    - _hourly_fee: le taux horaire facturé pour l'exécution de la tâche.
+    #    - _fixed_fee:un montant fixe facturé pour l'exécution de la tâche.
+    #    - _reminder_date_time: La date et l'heure auxquelles un rappel doit être envoyé.
+    #    - _recurrence: une instance de TaskRecurrence qui définit la fréquence de répétition de la tâche.
+    #    - _should_mark_completed_when_all_children_completed : Un booléen indiquant si la tâche doit être marquée comme terminée si tous ses enfants sont également terminés.
+    #
+    # 2. **Méthodes**:
+    #    - __init__() : Initialise une nouvelle tâche avec des valeurs par défaut pour tous les attributs.
+    #    - get_id(), set_id(id) : méthodes Getter et setter pour _id.
+    #    - get_parent(), set_parent(parent) : méthodes Getter et setter pour _parent.
+    #    - get_subject(), set_subject(subject) : méthodes Getter et setter pour _subject.
+    #    - get_due_date(), set_due_date(due_date) : méthodes Getter et setter pour _due_date.
+    #    - get_efforts(), set_efforts(efforts) : méthodes Getter et setter pour _efforts.
+    #    - get_budget(), set_budget(budget) : méthodes Getter et setter pour _budget.
+    #    - get_actual_start_time(), set_actual_start_time(actual_start_time) : méthodes getter et setter pour _actual_start_time.
+    #    - get_completion_time(), set_completion_time(completion_time) : méthodes Getter et setter pour _completion_time.
+    #    - get_priority(), set_priority(priority) : méthodes Getter et setter pour _priority.
+    #    - get_hourly_fee(), set_hourly_fee(hourly_fee) : méthodes Getter et setter pour _hourly_fee.
+    #    - get_fixed_fee(), set_fixed_fee(fixed_fee) : méthodes Getter et setter pour _fixed_fee.
+    #    - get_reminder_date_time(), set_reminder_date_time(reminder_date_time) : méthodes getter et setter pour _reminder_date_time.
+    #    - get_recurrence(), set_recurrence(recurrence) : méthodes Getter et setter pour _recurrence.
+    #    - Should_mark_completed_when_all_children_completed(), set_should_mark_completed_when_all_children_completed(newValue) : méthodes getter et setter pour _should_mark_completed_when_all_children_completed.
+    #
+    # 3. **Méthodes statiques**:
+    #    - suggestPlannedStartDateTime(now=date.Now): renvoie une date/heure de début planifiée suggérée en fonction des paramètres par défaut.
+    #    - suggestActualStartDateTime(now=date.Now): renvoie une date/heure de début réelle suggérée en fonction des paramètres par défaut.
+    #    - suggestDueDateTime(now=date.Now): renvoie une date/heure d'échéance suggérée en fonction des paramètres par défaut.
+    #    - suggestCompletionDateTime(now=date.Now): renvoie une date/heure d'achèvement suggérée en fonction des paramètres par défaut.
+    #    - suggestReminderDateTime(now=date.Now): renvoie une date/heure de rappel suggérée en fonction des paramètres par défaut.
+    #    - suggestDateTime(defaultDateTimeSetting, now=date.Now) : génère une date/heure suggérée en fonction du paramètre spécifié et de l'heure actuelle.
+    #
+    # 4. **Types d'événements**:
+    #    - Méthodes pour gérer les événements de modification liés aux attributs de tâche tels que le début prévu, l'échéance, le réel, l'achèvement, les efforts, le budget, la priorité, les frais horaires, les frais fixes, la date et l'heure du rappel, la récurrence, les prérequis, les dépendances et doivent marquer comme terminé lorsque tous les enfants ont terminé leur statut.
+    #
+    # 5. **Fonctions de tri**:
+    #    - prerequisitesSortFunction(), dependenciesSortFunction() : renvoient des fonctions pour trier les tâches en fonction de leurs prérequis ou dépendances, en tenant compte de la hiérarchie des tâches en mode arborescence.
+    #
+    # 6. **Gestion des dépendances**:
+    #    - Méthodes pour gérer les dépendances et les prérequis des tâches à l'aide de références faibles.
+    #
+    # Cette classe fournit une structure complète pour représenter et gérer les tâches au sein d'un système de gestion de projet, y compris les attributs, les méthodes et les événements qui facilitent la gestion et la modification des données.
 
     # L'approche précédente avec l'attribut manglé était une mauvaise solution
     # de contournement.
@@ -218,7 +271,7 @@ class Task(
     ):
         """Initialisation de la tâche.
 
-        Initialise une nouvelle tâche avec divers attributs.
+        Initialise une nouvelle tâche avec divers attributs par défaut.
 
         Args :
             subject (str) : Sujet de la tâche.
@@ -228,13 +281,16 @@ class Task(
             actualStartDateTime (DateTime) : Date de début réelle.
             completionDateTime (DateTime) : Date d'achèvement.
             budget (TimeDelta) : Temps alloué à la tâche.
+            plannedDuration (timedelta) : Durée planifiée.
+            plannedDurationMode (str) : Mode de calcul de la durée planifiée ('implicit', 'adjdue', 'adjstart').
             priority (int) : Priorité de la tâche.
             id (str) : Identifiant unique de la tâche.
             hourlyFee (float) : Tarif horaire appliqué à la tâche.
             fixedFee (float) : Tarif fixe associé à la tâche.
             reminder (DateTime) : Date de rappel pour la tâche.
+            reminderBeforeSnooze (timedelta) : Durée avant le rappel si le rappel est sonegé.
             categories (list) : Liste des catégories assignées à la tâche.
-            efforts (list) : Liste des efforts enregistrés.
+            efforts (list) : Liste des efforts enregistrés associés à la tâche.
             shouldMarkCompletedWhenAllChildrenCompleted (bool) : Si vrai,
                 la tâche sera marquée comme terminée lorsque toutes ses
                 sous-tâches seront complétées.
@@ -242,7 +298,8 @@ class Task(
             percentageComplete (int) : Pourcentage d'achèvement de la tâche.
             prerequisites (list) : Liste des tâches prérequis.
             dependencies (list) : Liste des tâches dépendantes.
-            status (TaskStatus) : Statut initial de la tâche.
+            notes (Notes): Notes associées à la tâche.
+            attachments (Attachments): Attachements associés à la tâche.
         """
         # log.debug(
         # print(

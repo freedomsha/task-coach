@@ -1081,7 +1081,7 @@ class FileExportAsICalendar(FileExportCommand):
             return False
         return any(
             self.exportableViewer(viewer)
-            for viewer in self.mainWindow().viewer
+            for viewer in self.mainWindow().viewer_container
         )
 
     @staticmethod
@@ -1125,7 +1125,7 @@ class FileExportAsTodoTxt(FileExportCommand):
             return False
         return any(
             self.exportableViewer(viewer)
-            for viewer in self.mainWindow().viewer
+            for viewer in self.mainWindow().viewer_container
         )
 
     @staticmethod
@@ -2502,7 +2502,8 @@ class ActivateViewer(ViewerCommand):
         """
         Active la commande uniquement s'il y a plus d'une visionneuse.
         """
-        return self.viewer.containerWidget.viewerCount() > 1
+        # return self.viewer.containerWidget.viewerCount() > 1
+        return self.viewer.containerWidget.viewer_count > 1
 
 
 class HideCurrentColumn(ViewerCommand):
@@ -4966,19 +4967,45 @@ class EffortStop(EffortListCommand, TaskListCommand, ViewerCommand):
         """
         Met à jour l'état visuel (enfoncé ou non) de l'outil dans la barre d'outils.
         """
+        # Vérifie qu'une barre d'outils est actuellement associée à la commande.
         if not self.toolbar:
             return  # La barre d'outils est masquée
         # if paused != self.toolbar.GetToolState(self.id):  # Méthodes wxPython à convertir
         #     self.toolbar.ToggleTool(self.id, paused)  # méthodes wxPython
         # En Tkinter, pour un bouton 'Toggle', on change généralement le relief
         # ou on utilise un Checkbutton de type bouton.
-        # Si c'est un bouton standard, on simule l'état 'enfoncé' :
+        # Recherche le widget correspondant à cette commande.
+        # et si c'est un bouton standard, on simule l'état 'enfoncé' :
         tool_widget = self.toolbar.getToolWidget(self.id)
         # tool_widget = self.toolbar.GetToolState(self.id)
+        # Vérifie qu'un widget correspondant a été trouvé.
+        if not tool_widget:
+            # Le bouton n'existe plus, notamment lorsque la barre d'outils est en cours de destruction.
+            return
+
         if tool_widget:
+            # Détermine le relief souhaité selon l'état du suivi.
             new_relief = "sunken" if paused else "raised"
-            if tool_widget.cget("relief") != new_relief:
-                tool_widget.config(relief=new_relief)
+            # Vérifie que le widget Tkinter existe toujours avant d'interroger ses propriétés.
+            try:
+                # Vérifie que le widget existe encore dans l'interpréteur Tcl/Tk.
+                if not tool_widget.winfo_exists():
+                    # Le widget Python existe encore mais son équivalent Tcl/Tk a été détruit.
+                    return
+
+                # Lit le relief actuel du bouton.
+                current_relief = tool_widget.cget("relief")
+                # Ne modifie le widget que si son état visuel doit réellement changer.
+                if current_relief != new_relief:
+                    # Modifie le relief du bouton.
+                    tool_widget.config(relief=new_relief)
+
+            except tk.TclError:
+                # Ignore proprement un widget détruit entre deux opérations Tkinter.
+                log.debug(
+                    "EffortStop.updateToolState : le widget %r a été détruit avant sa mise à jour.",
+                    tool_widget,
+                )
         # Note sur getToolWidget(self.id) : Cette conversion suppose
         # que votre objet self.toolbar possède une méthode
         # pour retrouver le widget correspondant à un identifiant.

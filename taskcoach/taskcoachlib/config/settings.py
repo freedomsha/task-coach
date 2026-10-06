@@ -38,7 +38,8 @@ import shutil
 from pubsub import pub
 from typing import Dict, Any
 from taskcoachlib import meta, patterns, operating_system
-from taskcoachlib.i18n import _
+
+# from taskcoachlib.i18n import _
 
 # from taskcoachlib.workarounds import ExceptionAsUnicode  # unused import
 from . import defaults

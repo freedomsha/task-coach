@@ -193,9 +193,23 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
         return commands
 
     def clear(self):
-        """Clears the toolbar and all its widgets."""
+        # """Clears the toolbar and all its widgets."""
+        """Détruit tous les widgets de la barre d'outils et réinitialise ses références."""
+        # Parcourt une copie de la liste des widgets enfants de la barre d'outils.
         for widget in self.winfo_children():
+            # Détruit le widget Tkinter afin de libérer également sa commande Tcl.
             widget.destroy()
+
+        # Supprime toutes les références Python vers les anciens widgets détruits.
+        # Est-ce bien nécessaire ? self.tools ne sert-il pas à réinitialiser ?
+        self.tools.clear()
+
+        # Supprime également l'éventuel dictionnaire secondaire des widgets.
+        if hasattr(self, "_tool_by_id"):
+            # Vide le dictionnaire qui pourrait contenir des références vers les widgets détruits.
+            self._tool_by_id.clear()
+
+        # Réinitialise la liste des commandes actuellement visibles.
         self.__visibleUICommands = []
 
     def detach(self):
@@ -326,14 +340,39 @@ class ToolBar(ttk.LabelFrame, uicommandcontainertk.UICommandContainerMixin):
         # raise NotImplementedError("La méthode 'Add_h_Separator' doit être implémentée par la classe qui utilise ce mixin.")
 
     def getToolWidget(self, tool_id):
-        """Retrouve le widget dans la liste self.tools par son ID."""
+        """
+        Retourne le widget associé à un identifiant de commande encore existant.
+
+        Retrouve le widget dans la liste self.tools par son ID.
+        """
+        # Parcourt tous les widgets actuellement enregistrés dans la barre d'outils.
         for tool in self.tools:
-            # On vérifie si c'est un widget (pas un séparateur) et s'il a le bon ID
-            if (
-                hasattr(tool, "ui_command_id")
-                and tool.ui_command_id == tool_id
-            ):
-                return tool
+            # # On vérifie si c'est un widget (pas un séparateur) et s'il a le bon ID
+            # if (
+            #     hasattr(tool, "ui_command_id")
+            #     and tool.ui_command_id == tool_id
+            # ):
+            #     return tool
+            # Vérifie que l'objet possède bien l'identifiant d'une commande.
+            if not hasattr(tool, "ui_command_id"):
+                # Ignore les widgets qui ne correspondent pas à une UICommand.
+                continue
+
+            # Vérifie que l'identifiant du widget correspond à celui recherché.
+            if tool.ui_command_id != tool_id:
+                # Passe au widget suivant lorsque l'identifiant ne correspond pas.
+                continue
+
+            # Vérifie que le widget existe encore réellement dans Tcl/Tk.
+            try:
+                if tool.winfo_exists():
+                    # Retourne uniquement un widget encore valide.
+                    return tool
+            except tk.TclError:
+                # Ignore une référence vers un widget dont la commande Tcl a disparu.
+                continue
+
+        # Aucun widget valide correspondant à l'identifiant n'a été trouvé.
         return None
 
     def GetToolState(self, tool_id):

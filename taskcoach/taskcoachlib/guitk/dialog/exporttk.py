@@ -17,6 +17,7 @@ Licence Publique Générale GNU pour plus de détails.
 Vous auriez dû recevoir une copie de la Licence Publique Générale GNU
 avec ce programme. Si ce n'est pas le cas, consultez <http://www.gnu.org/licenses/>.
 """
+
 # La conversion vers Tkinter impliquera de
 # recréer les dialogues d'exportation qui gèrent les sélecteurs de vue et de colonnes,
 # ainsi que les cases à cocher pour les options d'exportation.
@@ -80,11 +81,20 @@ log = logging.getLogger(__name__)
 # les boîtes de dialogue et les gestionnaires de géométrie (`pack`, `grid`)
 # pour la disposition des widgets.
 
+
 class ViewerPicker(ttk.Frame):
     """
     Simule le sélecteur de vue pour l'exportation.
     """
-    def __init__(self, parent, exportable_viewers, active_viewer, viewer_change_callback=None, **kwargs):
+
+    def __init__(
+        self,
+        parent,
+        exportable_viewers,
+        active_viewer,
+        viewer_change_callback=None,
+        **kwargs,
+    ):
         super().__init__(parent, **kwargs)
         self.exportable_viewers = exportable_viewers
         self.active_viewer = active_viewer
@@ -92,17 +102,27 @@ class ViewerPicker(ttk.Frame):
 
         # self.label = ttk.Label(self, text=_("Viewer:"))
         # self.label.pack(side="left", padx=5, pady=5)
-        ttk.Label(self, text=_("Export items from:")).pack(side="left", padx=5, pady=5)
+        ttk.Label(self, text=_("Export items from:")).pack(
+            side="left", padx=5, pady=5
+        )
 
         self.viewer_names = [v.name for v in self.exportable_viewers]
         self.viewer_map = {v.title(): v for v in self.exportable_viewers}
-        initial_title = active_viewer.title() if active_viewer in exportable_viewers else exportable_viewers[0].title()
+        initial_title = (
+            active_viewer.title()
+            if active_viewer in exportable_viewers
+            else exportable_viewers[0].title()
+        )
         # self.viewer_var = tk.StringVar(value=self.active_viewer.name)
         self.viewer_var = tk.StringVar(value=initial_title)
 
-        self.combobox = ttk.Combobox(self, textvariable=self.viewer_var,
-                                     # values=self.viewer_names, state="readonly")
-                                     values=list(self.viewer_map.keys()), state="readonly")
+        self.combobox = ttk.Combobox(
+            self,
+            textvariable=self.viewer_var,
+            # values=self.viewer_names, state="readonly")
+            values=list(self.viewer_map.keys()),
+            state="readonly",
+        )
         self.combobox.pack(side="left", fill="x", expand=True, padx=5, pady=5)
         self.combobox.bind("<<ComboboxSelected>>", self.onViewerChanged)
 
@@ -129,10 +149,12 @@ class ViewerPicker(ttk.Frame):
         """Aucun paramètre à sauvegarder dans le ViewerPicker lui-même."""
         pass
 
+
 class ColumnPicker(ttk.Frame):
     """
     Simule le sélecteur de colonnes.
     """
+
     def __init__(self, parent, viewer, **kwargs):
         super().__init__(parent, **kwargs)
         self.grid_columnconfigure(0, weight=1)
@@ -141,7 +163,9 @@ class ColumnPicker(ttk.Frame):
         self.viewer = viewer
         # self.label = ttk.Label(self, text=_("Columns to include:"))
         # self.label.pack(side="top", anchor="w", padx=5, pady=5)
-        ttk.Label(self, text=_("Columns to export:")).grid(row=0, column=0, sticky="w", padx=5, pady=5)
+        ttk.Label(self, text=_("Columns to export:")).grid(
+            row=0, column=0, sticky="w", padx=5, pady=5
+        )
 
         self.column_vars = {}  # {column_name: tk.BooleanVar}
         self.columns_data = {}  # {column_name: MockColumn}
@@ -165,7 +189,10 @@ class ColumnPicker(ttk.Frame):
         self.columns_data.clear()
 
         if not viewer.hasHideableColumns():
-            ttk.Label(self.columns_frame, text=_("No hideable columns in this viewer.")).pack(side="top", anchor="w")
+            ttk.Label(
+                self.columns_frame,
+                text=_("No hideable columns in this viewer."),
+            ).pack(side="top", anchor="w")
             return
 
         visible_columns = [col.name for col in viewer.visibleColumns()]
@@ -177,16 +204,20 @@ class ColumnPicker(ttk.Frame):
         #     self.column_vars[col.name] = var
         for col in viewer.selectableColumns():
             var = tk.BooleanVar(value=col.name in visible_columns)
-            chk = ttk.Checkbutton(self.columns_frame, text=col.header(), variable=var)
+            chk = ttk.Checkbutton(
+                self.columns_frame, text=col.header(), variable=var
+            )
             chk.pack(side="top", anchor="w", padx=5)
             self.column_vars[col.name] = var
             self.columns_data[col.name] = col
 
     def selectedColumns(self):
         """Retourne la liste des colonnes actuellement sélectionnées (objets MockColumn)."""
-        return [self.columns_data[name]
-                for name, var in self.column_vars.items()
-                if var.get()]
+        return [
+            self.columns_data[name]
+            for name, var in self.column_vars.items()
+            if var.get()
+        ]
 
     def options(self):
         """Retourne les colonnes sélectionnées sous forme de dictionnaire d'options."""
@@ -215,9 +246,11 @@ class TkCheckBoxControl(ttk.Frame):
     def initializeCheckBox(self):
         """Initialise l'état de la case à cocher à partir des paramètres enregistrés."""
         try:
-            initial_value = self.settings.getboolean(self.section, self.setting)
+            initial_value = self.settings.getboolean(
+                self.section, self.setting
+            )
         except Exception:
-            initial_value = False # Valeur par défaut si non trouvée/corrompue
+            initial_value = False  # Valeur par défaut si non trouvée/corrompue
         self.var.set(initial_value)
 
     def options(self):
@@ -271,7 +304,7 @@ class SeparateCSSCheckBox(ttk.Frame):
         self.checkbox = ttk.Checkbutton(
             self,
             text=_("Write style information to a separate CSS file"),
-            variable=self.var
+            variable=self.var,
         )
         self.checkbox.pack(side="top", anchor="w", padx=5, pady=2)
 
@@ -283,12 +316,19 @@ class SeparateCSSCheckBox(ttk.Frame):
 
     def createHelpInformation(self):
         """Affiche une aide expliquant le fonctionnement de l'option CSS séparé."""
-        info_text = _('If a CSS file exists for the exported file, %(name)s will not overwrite it. '
-                      'This allows you to change the style information without losing your changes '
-                      'on the next export.') % meta.metaDict
+        info_text = (
+            _(
+                "If a CSS file exists for the exported file, %(name)s will not overwrite it. "
+                "This allows you to change the style information without losing your changes "
+                "on the next export."
+            )
+            % meta.metaDict
+        )
 
         # Utilisation d'un Label pour afficher le texte d'aide
-        info_label = ttk.Label(self, text=info_text, wraplength=400, justify="left")
+        info_label = ttk.Label(
+            self, text=info_text, wraplength=400, justify="left"
+        )
         info_label.pack(side="top", anchor="w", padx=10, pady=(0, 5))
 
     def options(self):
@@ -305,6 +345,7 @@ class ExportDialog(tk.Toplevel):
     """
     Classe de base pour tous les dialogues d'exportation (version Tkinter).
     """
+
     dialog_title = "Override in subclass"
     section = "export"
 
@@ -338,10 +379,14 @@ class ExportDialog(tk.Toplevel):
         ok_button = ttk.Button(button_frame, text=_("OK"), command=self.on_ok)
         ok_button.pack(side="right", padx=5)
 
-        cancel_button = ttk.Button(button_frame, text=_("Cancel"), command=self.on_cancel)
+        cancel_button = ttk.Button(
+            button_frame, text=_("Cancel"), command=self.on_cancel
+        )
         cancel_button.pack(side="right")
 
-        self.protocol("WM_DELETE_WINDOW", self.on_cancel)  # Gérer la fermeture de la fenêtre
+        self.protocol(
+            "WM_DELETE_WINDOW", self.on_cancel
+        )  # Gérer la fermeture de la fenêtre
         self.update_idletasks()
         self.center_window()
 
@@ -355,7 +400,7 @@ class ExportDialog(tk.Toplevel):
         height = self.winfo_height()
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
-        self.geometry(f'{width}x{height}+{x}+{y}')
+        self.geometry(f"{width}x{height}+{x}+{y}")
 
     def createInterior(self, pane):
         """Crée et retourne les composants internes.
@@ -368,7 +413,7 @@ class ExportDialog(tk.Toplevel):
         """Retourne la liste des viewers exportables de la fenêtre principale."""
         # return self.window.viewer
         # On suppose que self.window.viewer est une liste ou un itérable
-        return list(self.window.viewer)
+        return list(self.window.viewer_container)
 
     def activeViewer(self):
         """Retourne le viewer actuellement actif dans la fenêtre principale."""
@@ -402,34 +447,48 @@ class ExportDialog(tk.Toplevel):
 # --- Dialogues d'Exportation Spécialisés ---
 class ExportAsCSVDialog(ExportDialog):
     """Dialogue permettant d'exporter les données au format CSV."""
+
     dialog_title = _("Export as CSV")
 
     def createInterior(self, pane):
         """Crée et retourne les composants internes spécifiques à l'export CSV."""
 
         # 1. Viewer Picker
-        viewer_picker = ViewerPicker(pane, self.exportableViewers(), self.activeViewer(),
-                                     viewer_change_callback=self.onViewerChanged)
+        viewer_picker = ViewerPicker(
+            pane,
+            self.exportableViewers(),
+            self.activeViewer(),
+            viewer_change_callback=self.onViewerChanged,
+        )
         viewer_picker.pack(side="top", fill="x", padx=5, pady=5)
 
         # 2. Column Picker
         self.column_picker = ColumnPicker(pane, viewer_picker.selectedViewer)
-        self.column_picker.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        self.column_picker.pack(
+            side="top", fill="both", expand=True, padx=5, pady=5
+        )
 
         # 3. Selection Only Checkbox
         selection_only_check = SelectionOnlyCheckBox(
-            pane, self.settings, self.section, "csv_selectiononly")
+            pane, self.settings, self.section, "csv_selectiononly"
+        )
         selection_only_check.pack(side="top", anchor="w", padx=5)
 
         # 4. Separate Date and Time Checkbox
         self.separate_date_and_time_check = SeparateDateAndTimeColumnsCheckBox(
-            pane, self.settings, self.section, "csv_separatedateandtimecolumns")
+            pane, self.settings, self.section, "csv_separatedateandtimecolumns"
+        )
         self.separate_date_and_time_check.pack(side="top", anchor="w", padx=5)
 
         # Vérification initiale de l'état du contrôle de date/heure
         self.__check(viewer_picker.selectedViewer)
 
-        return [viewer_picker, self.column_picker, selection_only_check, self.separate_date_and_time_check]
+        return [
+            viewer_picker,
+            self.column_picker,
+            selection_only_check,
+            self.separate_date_and_time_check,
+        ]
 
     def onViewerChanged(self, viewer):
         """Met à jour le sélecteur de colonnes et l'option de date/heure."""
@@ -447,15 +506,19 @@ class ExportAsCSVDialog(ExportDialog):
 
 class ExportAsICalendarDialog(ExportDialog):
     """Dialogue permettant d'exporter les données au format iCalendar."""
+
     dialog_title = _("Export as iCalendar")
 
     def createInterior(self, pane):
         """Crée et retourne les composants internes spécifiques à l'export iCalendar."""
-        viewer_picker = ViewerPicker(pane, self.exportableViewers(), self.activeViewer())
+        viewer_picker = ViewerPicker(
+            pane, self.exportableViewers(), self.activeViewer()
+        )
         viewer_picker.pack(side="top", fill="x", padx=5, pady=5)
 
         selection_only_check = SelectionOnlyCheckBox(
-            pane, self.settings, self.section, "ical_selectiononly")
+            pane, self.settings, self.section, "ical_selectiononly"
+        )
         selection_only_check.pack(side="top", anchor="w", padx=5)
 
         return [viewer_picker, selection_only_check]
@@ -463,15 +526,22 @@ class ExportAsICalendarDialog(ExportDialog):
     def exportableViewers(self):
         """Retourne la liste des viewers exportables pour l'iCalendar."""
         viewers = super().exportableViewers()
-        return [viewer for viewer in viewers if
-                viewer.isShowingTasks() or
-                (viewer.isShowingEffort() and not viewer.isShowingAggregatedEffort())]
+        return [
+            viewer
+            for viewer in viewers
+            if viewer.isShowingTasks()
+            or (
+                viewer.isShowingEffort()
+                and not viewer.isShowingAggregatedEffort()
+            )
+        ]
 
 
 class ExportAsHtmlDialog(ExportDialog):
     """
     Dialogue permettant d'exporter les données au format HTML.
     """
+
     dialog_title = _("Export as HTML")
 
     # def __init__(self, *args, **kwargs):
@@ -485,28 +555,41 @@ class ExportAsHtmlDialog(ExportDialog):
     def createInterior(self, pane):
         """Crée et retourne les composants internes spécifiques à l'export HTML."""
         # viewer_picker = ViewerPicker(pane, self.exportableViewers(), self.active_viewer)
-        viewer_picker = ViewerPicker(pane, self.exportableViewers(), self.activeViewer(),
-                                     viewer_change_callback=self.onViewerChanged)
+        viewer_picker = ViewerPicker(
+            pane,
+            self.exportableViewers(),
+            self.activeViewer(),
+            viewer_change_callback=self.onViewerChanged,
+        )
         viewer_picker.pack(side="top", fill="x", padx=5, pady=5)
 
         self.column_picker = ColumnPicker(pane, viewer_picker.selectedViewer)
-        self.column_picker.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        self.column_picker.pack(
+            side="top", fill="both", expand=True, padx=5, pady=5
+        )
 
         # selection_only_check = ttk.Checkbutton(pane, text=_("Selection only"))
         selection_only_check = SelectionOnlyCheckBox(
-            pane, self.settings, self.section, "html_selectiononly")
+            pane, self.settings, self.section, "html_selectiononly"
+        )
         selection_only_check.pack(side="top", anchor="w", padx=5)
 
         # separate_css_check = ttk.Checkbutton(pane, text=_("Separate CSS file"))
         separate_css_chooser = SeparateCSSCheckBox(
-            pane, self.settings, self.section, "html_separatecss")
+            pane, self.settings, self.section, "html_separatecss"
+        )
         # separate_css_check.pack(side="top", anchor="w", padx=5)
         separate_css_chooser.pack(side="top", fill="x", padx=5, pady=5)
 
         # # Lier la mise à jour des colonnes au changement de viewer
         # viewer_picker.combobox.bind("<<ComboboxSelected>>", self.onViewerChanged)
 
-        return [viewer_picker, self.column_picker, selection_only_check, separate_css_chooser]
+        return [
+            viewer_picker,
+            self.column_picker,
+            selection_only_check,
+            separate_css_chooser,
+        ]
 
     # def onViewerChanged(self, event):
     def onViewerChanged(self, viewer):
@@ -518,15 +601,19 @@ class ExportAsHtmlDialog(ExportDialog):
 
 class ExportAsTodoTxtDialog(ExportDialog):
     """Dialogue permettant d'exporter les données au format Todo.txt."""
+
     dialog_title = _("Export as Todo.txt")
 
     def createInterior(self, pane):
         """Crée et retourne les composants internes spécifiques à l'export Todo.txt."""
-        viewer_picker = ViewerPicker(pane, self.exportableViewers(), self.activeViewer())
+        viewer_picker = ViewerPicker(
+            pane, self.exportableViewers(), self.activeViewer()
+        )
         viewer_picker.pack(side="top", fill="x", padx=5, pady=5)
 
         selection_only_check = SelectionOnlyCheckBox(
-            pane, self.settings, self.section, "todotxt_selectiononly")
+            pane, self.settings, self.section, "todotxt_selectiononly"
+        )
         selection_only_check.pack(side="top", anchor="w", padx=5)
 
         return [viewer_picker, selection_only_check]
@@ -539,8 +626,16 @@ class ExportAsTodoTxtDialog(ExportDialog):
 
 class MockViewer:
     """Classe de simulation pour les besoins de l'exemple."""
+
     # def __init__(self, name):
-    def __init__(self, name, viewer_title, is_task=False, is_effort=False, is_aggregated_effort=False):
+    def __init__(
+        self,
+        name,
+        viewer_title,
+        is_task=False,
+        is_effort=False,
+        is_aggregated_effort=False,
+    ):
         self.name = name
         # self.isShowingTasks = lambda: "Task" in self.name
         # self.columns = lambda: [
@@ -599,6 +694,7 @@ class MockViewer:
 
 class MockColumn:
     """Classe de simulation pour les colonnes."""
+
     # def __init__(self, name, label):
     def __init__(self, name, label, is_hideable=True):
         self.name = name
@@ -611,6 +707,7 @@ class MockColumn:
 
 class MockSettings:
     """Simule la classe de paramètres pour charger/sauvegarder."""
+
     def __init__(self, initial_values=None):
         self._settings = initial_values or {}
 
@@ -630,8 +727,10 @@ class MockSettings:
     def setboolean(self, section, setting, value):
         self.set(section, setting, value)
 
+
 class MockWindow:
     """Simule la fenêtre principale pour l'accès aux viewers."""
+
     def __init__(self, viewers, active_viewer):
         self.viewer = self
         self._viewers = viewers
@@ -647,24 +746,41 @@ class MockWindow:
 # Exemple d'utilisation
 if __name__ == "__main__":
     # Configuration pour le test
-    logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(levelname)s: %(message)s"
+    )
 
     root = tk.Tk()
     # root.withdraw()  # Cacher la fenêtre principale
 
     # Simuler les viewers
-    task_viewer = MockViewer(name="tasks", viewer_title=_("Task Viewer"), is_task=True)
-    effort_viewer = MockViewer(name="effort", viewer_title=_("Effort Viewer"), is_effort=True)
-    category_viewer = MockViewer(name="categories", viewer_title=_("Category Viewer"))
+    task_viewer = MockViewer(
+        name="tasks", viewer_title=_("Task Viewer"), is_task=True
+    )
+    effort_viewer = MockViewer(
+        name="effort", viewer_title=_("Effort Viewer"), is_effort=True
+    )
+    category_viewer = MockViewer(
+        name="categories", viewer_title=_("Category Viewer")
+    )
 
     all_viewers = [task_viewer, effort_viewer, category_viewer]
 
     # Simuler les paramètres et la fenêtre
-    mock_settings = MockSettings(initial_values={"export": {"csv_selectiononly": "True", "html_separatecss": "False"}})
+    mock_settings = MockSettings(
+        initial_values={
+            "export": {
+                "csv_selectiononly": "True",
+                "html_separatecss": "False",
+            }
+        }
+    )
     mock_window = MockWindow(viewers=all_viewers, active_viewer=task_viewer)
 
     print("\n--- Test 1: Export CSV Dialogue ---")
-    export_csv_dialog = ExportAsCSVDialog(root, settings=mock_settings, window=mock_window)
+    export_csv_dialog = ExportAsCSVDialog(
+        root, settings=mock_settings, window=mock_window
+    )
     # Après la fermeture du dialogue, vous pouvez vérifier les options ou les paramètres sauvegardés
     # print(f"CSV Options: {export_csv_dialog.options()}")
     # print(f"CSV Selection Only setting saved: {mock_settings.get('export', 'csv_selectiononly')}")
@@ -672,11 +788,15 @@ if __name__ == "__main__":
     # Créer une instance de dialogue
     # export_dialog = ExportAsHtmlDialog(root, settings=None, window=None)
     print("\n--- Test 2: Export HTML Dialogue ---")
-    export_html_dialog = ExportAsHtmlDialog(root, settings=mock_settings, window=mock_window)
+    export_html_dialog = ExportAsHtmlDialog(
+        root, settings=mock_settings, window=mock_window
+    )
     # print(f"HTML Options: {export_html_dialog.options()}")
 
     print("\n--- Test 3: Export Todo.txt Dialogue ---")
-    export_todotxt_dialog = ExportAsTodoTxtDialog(root, settings=mock_settings, window=mock_window)
+    export_todotxt_dialog = ExportAsTodoTxtDialog(
+        root, settings=mock_settings, window=mock_window
+    )
     # print(f"Todo.txt Options: {export_todotxt_dialog.options()}")
 
     # export_dialog.mainloop()

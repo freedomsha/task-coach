@@ -639,6 +639,10 @@ class Menu(uicommandcontainertk.UICommandContainerMixin, tk.Menu):
 class DynamicMenu(Menu):
     """
     Menu dynamique qui se met à jour automatiquement.
+
+    Attributes:
+        self._parentMenu :
+        self._labelInParentMenu :
     """
 
     def __init__(
@@ -661,13 +665,15 @@ class DynamicMenu(Menu):
         log.debug(
             f"DynamicMenu : self={self.__class__.__name__} avec parent={parent} de type {type(parent)} et parent_mainwindow={parent_mainwindow} de type {type(parent_mainwindow)}."
         )
+        self._parent = parent
+        self._parent_mainwindow = parent_mainwindow
         super().__init__(parent=parent, parent_mainwindow=parent_mainwindow)
         self._parentMenu = parentMenu
         self._labelInParentMenu = self.__GetLabelText(labelInParentMenu)
         self.registerForMenuUpdate()
         # self.updateMenu()
-        # self.mainWindow().after_idle(self.updateMenu)  # Différe l'update sauf qu'il ne faut jamais utiliser mainWindow() dans un __init__ !
-        parent_mainwindow.after_idle(self.updateMenu)  # Différe l'update
+        # self.mainWindow().after_idle(self.updateMenu)  # Diffère l'update sauf qu'il ne faut jamais utiliser mainWindow() dans un __init__ !
+        parent_mainwindow.after_idle(self.updateMenu)  # Diffère l'update
 
     def registerForMenuUpdate(self):
         """
@@ -696,8 +702,7 @@ class DynamicMenu(Menu):
             # self.onUpdateMenu()  # Gestionnaire prévu pour les événements
         except tk.TclError as error:
             log.warning(
-                "DynamicMenuThatGetsUICommandsFromViewer.onUpdateMenu : "
-                "menu Tkinter indisponible : %s",
+                "DynamicMenu.onUpdateMenu : " "menu Tkinter indisponible : %s",
                 error,
             )
         except RuntimeError as error:
@@ -734,9 +739,14 @@ class DynamicMenu(Menu):
 class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
     """
     Menu dynamique qui obtient ses commandes UI d'un visualiseur (`viewer`).
+
+    Attributes:
+        self.__parent :
+        self.__window :
+        self._uiCommands :
     """
 
-    def __init__(self, viewer, parentMenu=None, labelInParentMenu=""):
+    def __init__(self, viewer, parentMenu=None, parent_mainwindow=None, labelInParentMenu=""):
         # Super() est appelé sur le constructeur de DynamicMenu, qui lui-même
         # appelle le constructeur de Menu (la classe parente).
         # if parentMenu is None:
@@ -744,7 +754,14 @@ class DynamicMenuThatGetsUICommandsFromViewer(DynamicMenu):
         self.__parent = self._viewer = viewer
         self.__window = parentMenu
         self._uiCommands = None
-        super().__init__(viewer, parentMenu, parentMenu, labelInParentMenu)
+        # # super().__init__(viewer, parentMenu, parentMenu, labelInParentMenu)
+        # # parentMenu est le menu parent Tkinter, viewer est stocké séparément
+        # super().__init__(parentMenu, self.winfo_toplevel(), parentMenu, labelInParentMenu)
+        # Il y a un problème potentiel : au moment où super().__init__ est appelé, self n'est pas encore complètement initialisé en tant que widget Tkinter, donc self.winfo_toplevel() pourrait échouer.
+        # super().__init__(parentMenu, parentMenu, parentMenu, labelInParentMenu)
+        if parent_mainwindow is None:
+            parent_mainwindow = parentMenu.winfo_toplevel() if parentMenu else None
+        super().__init__(parentMenu, parent_mainwindow, parentMenu, labelInParentMenu)
 
     def registerForMenuUpdate(self):
         """
@@ -1392,6 +1409,7 @@ class ViewMenu(Menu):
 
         Args :
             parent :
+            parent_window :
             settings :
             viewerContainer :
             taskFile :
@@ -1435,9 +1453,11 @@ class ViewMenu(Menu):
             None,
         )
         # log.debug("ViewMenu : Ajout du menu : Mode")
+        # le constructeur de DynamicMenuThatGetsUICommandsFromViewer attend (viewer, parentMenu, labelInParentMenu)
         # self.appendMenu(_("&Mode"), ModeMenu(parent, self, _("&Mode")))
         self.appendMenu(
-            _("&Mode"), ModeMenu(parent, self.mainWindow(), _("&Mode"))
+            # _("&Mode"), ModeMenu(parent, self.mainWindow(), _("&Mode"))
+            _("&Mode"), ModeMenu(viewerContainer, self, parent_window, _("&Mode"))
         )
         # self.appendMenu(
         #     _("&Mode"),
@@ -1453,19 +1473,22 @@ class ViewMenu(Menu):
         #     _("&Filter"), FilterMenu(parent, self, _("&Filter"))
         # )
         self.appendMenu(
-            _("&Filter"), FilterMenu(parent, self.mainWindow(), _("&Filter"))
+            # _("&Filter"), FilterMenu(parent, self.mainWindow(), _("&Filter"))
+            _("&Filter"), FilterMenu(viewerContainer, self, parent_window, _("&Filter"))
         )
         # log.debug("ViewMenu : Ajout du menu : Sort/tri")
         # self.appendMenu(_("&Sort"), SortMenu(parent, self, _("&Sort")))
         self.appendMenu(
-            _("&Sort"), SortMenu(parent, self.mainWindow(), _("&Sort"))
+            # _("&Sort"), SortMenu(parent, self.mainWindow(), _("&Sort"))
+            _("&Sort"), SortMenu(viewerContainer, self, parent_window, _("&Sort"))
         )
         # # log.debug("ViewMenu : Ajout du menu : Colonnes")
         # self.appendMenu(
         #     _("&Columns"), ColumnMenu(parent, self, _("&Columns"))
         # )
         self.appendMenu(
-            _("&Columns"), ColumnMenu(parent, self.mainWindow(), _("&Columns"))
+            # _("&Columns"), ColumnMenu(parent, self.mainWindow(), _("&Columns"))
+            _("&Columns"), ColumnMenu(viewerContainer, self, parent_window, _("&Columns"))
         )
         # # log.debug("ViewMenu : Ajout du menu : Rounding/arrondi")
         # self.appendMenu(
@@ -1473,7 +1496,8 @@ class ViewMenu(Menu):
         # )
         self.appendMenu(
             _("&Rounding"),
-            RoundingMenu(parent, self.mainWindow(), _("&Rounding")),
+            # RoundingMenu(parent, self.mainWindow(), _("&Rounding")),
+            RoundingMenu(viewerContainer, self, parent_window, _("&Rounding")),
         )
         self.appendUICommands(None)
         # log.debug("ViewMenu : Ajout du menu : Options d'arborescence")
@@ -1632,47 +1656,55 @@ class ViewTreeOptionsMenu(Menu):
 
 
 class ModeMenu(DynamicMenuThatGetsUICommandsFromViewer):
+    """
+    Menu for viewing different modes.
+    Menu pour voir différents modes.
+
+    Descend de DynamicMenuThatGetsUICommandsFromViewer pour
+    obtenir ses commandes UI dynamiquement d'un visualiseur/viewer.
+
+    """
     def enabled(self):
-        return self.__window.viewer.hasModes() and bool(
-            self.__window.viewer.getModeUICommands()
+        return self.__window.viewer_container.hasModes() and bool(
+            self.__window.viewer_container.getModeUICommands()
         )
 
     def getUICommands(self):
-        return self.__window.viewer.getModeUICommands()
+        return self.__window.viewer_container.getModeUICommands()
 
 
 class FilterMenu(DynamicMenuThatGetsUICommandsFromViewer):
     def enabled(self):
-        return self.__window.viewer.isFilterable() and bool(
-            self.__window.viewer.getFilterUICommands()
+        return self.__window.viewer_container.isFilterable() and bool(
+            self.__window.viewer_container.getFilterUICommands()
         )
 
     def getUICommands(self):
-        return self.__window.viewer.getFilterUICommands()
+        return self.__window.viewer_container.getFilterUICommands()
 
 
 class ColumnMenu(DynamicMenuThatGetsUICommandsFromViewer):
     def enabled(self):
-        return self.__window.viewer.hasHideableColumns()
+        return self.__window.viewer_container.hasHideableColumns()
 
     def getUICommands(self):
-        return self.__window.viewer.getColumnUICommands()
+        return self.__window.viewer_container.getColumnUICommands()
 
 
 class SortMenu(DynamicMenuThatGetsUICommandsFromViewer):
     def enabled(self):
-        return self.__window.viewer.isSortable()
+        return self.__window.viewer_container.isSortable()
 
     def getUICommands(self):
-        return self.__window.viewer.getSortUICommands()
+        return self.__window.viewer_container.getSortUICommands()
 
 
 class RoundingMenu(DynamicMenuThatGetsUICommandsFromViewer):
     def enabled(self):
-        return self.__window.viewer.supportsRounding()
+        return self.__window.viewer_container.supportsRounding()
 
     def getUICommands(self):
-        return self.__window.viewer.getRoundingUICommands()
+        return self.__window.viewer_container.getRoundingUICommands()
 
 
 class ToolBarMenu(Menu):
@@ -1963,6 +1995,15 @@ class ToggleCategoryMenu(DynamicMenu):
     def __init__(
         self, parent, parent_window, categories, viewer
     ):  # pylint: disable=W0621
+        """
+        Initialise le menu Toggle Category.
+
+        Args:
+            parent:
+            parent_window:
+            categories:
+            viewer:
+        """
         log.info("Création du menu Toggle Catégorie.")
         # log.info("Initialisation du menu contextuel : %s", self.__class__.__name__)
 
@@ -1999,7 +2040,7 @@ class ToggleCategoryMenu(DynamicMenu):
         """
         Ajoute des éléments de Menu, Trie et construit le menu pour les catégories.
 
-        Ajoute récursivement les catégories au menu Tkinte.
+        Ajoute récursivement les catégories au menu Tkinter.
 
         Args :
             categories : (itérable) Liste des catégories.
@@ -2023,7 +2064,7 @@ class ToggleCategoryMenu(DynamicMenu):
             )
             uiCommand.addToMenu(menuToAdd, self.__window)
         categoriesWithChildren = [
-            category for a_category in categories if a_category.children()
+            a_category for a_category in categories if a_category.children()
         ]
         if not categoriesWithChildren:
             return
@@ -2044,14 +2085,15 @@ class ToggleCategoryMenu(DynamicMenu):
                     f"ToggleCategoryMenu.addMenuItemsForCategories : Ajoute le sous-menu {subMenu} à {the_category}."
                 )
                 # self.addMenuItemsForCategories(category.children(), subMenu)
-                self.addMenuItemsForCategories(
-                    # category.get_tree_children(), subMenu
-                    the_category.children(),
-                    subMenu,
-                )
-                # log.debug(f"ToggleCategoryMenu.addMenuItemsForCategories : Ajout du sous-menu : {self.subMenuLabel(category)}{subMenu} dans {menuToAdd}")
-                # menuToAdd.AppendSubMenu(subMenu, self.subMenuLabel(category))
-                menuToAdd.appendMenu(self.subMenuLabel(the_category), subMenu)
+                if the_category.children():  # Double vérification, il semblerai que ce ne soit pas forcément le cas !
+                    self.addMenuItemsForCategories(
+                        # category.get_tree_children(), subMenu
+                        the_category.children(),
+                        subMenu,
+                    )
+                    # log.debug(f"ToggleCategoryMenu.addMenuItemsForCategories : Ajout du sous-menu : {self.subMenuLabel(category)}{subMenu} dans {menuToAdd}")
+                    # menuToAdd.AppendSubMenu(subMenu, self.subMenuLabel(category))
+                    menuToAdd.appendMenu(self.subMenuLabel(the_category), subMenu)
 
     @staticmethod
     def subMenuLabel(category):  # pylint: disable=W0621

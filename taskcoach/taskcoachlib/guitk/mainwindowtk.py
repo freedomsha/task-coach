@@ -540,21 +540,24 @@ class MainWindow(
 
     def onClose(self):
         """
-        Gère la fermeture de la fenêtre, en arrêtant le suivi des tâches et en vérifiant si l'application doit quitter.
+        Gère la fermeture de la fenêtre, en arrêtant le suivi des tâches
+        et en vérifiant si l'application doit quitter.
         """
         log.info(
-            "MainWindow.onClose: Fermeture de la fenêtre par l'utilisateur."
+            "MainWindow.onClose: ******* Fermeture de la fenêtre par l'utilisateur. *******"
         )
         try:
             # Vérifier les paramètres de l'application. :
             app_instance = (
                 application.tkapplication.TkinterApplication.getInstance()
             )
+            # self.__save_perspective()  # ✅ Sauvegarde la perspective avant de fermer  -> Ne quitte plus en étant ici !
             # should_quit = application.TkinterApplication.quitApplication(force=True)
             # should_quit = application.TkinterApplication.quitApplication(self, force=True)  # ?
             should_quit = app_instance.quitApplication(force=True)  # ?
             should_hide = self.settings.getboolean("window", "hidewhenclosed")
 
+            self.__save_perspective()  # ✅ Sauvegarde la perspective avant de fermer
             self.closeEditors()
 
             if should_quit or self.__shutdown:
@@ -573,6 +576,7 @@ class MainWindow(
                 self.parent.withdraw()  # Cache la fenêtre racine
             else:
                 log.debug("MainWindow.onClose: Fermeture par défaut.")
+                self.__save_perspective()  # ✅ Sauvegarde la perspective avant de fermer
                 self.saveSettings()
                 self.taskFile.stop()
                 self._idleController.stop()
@@ -586,7 +590,7 @@ class MainWindow(
             )
         # Arrêtez le thread de détection d'inactivité à la fin du programme.
         self._idleController.stop()
-        log.info("MainWindow.onClose: Fenêtre fermée par l'utilisateur.")
+        log.info("MainWindow.onClose: Fenêtre fermée par l'utilisateur !")
 
     def onIconify(self, event):
         """
@@ -599,9 +603,9 @@ class MainWindow(
         if self.parent.wm_state() == "iconic":
             # self.withdraw()  # Cache la fenêtre
             self.parent.withdraw()  # Cache la fenêtre racine
-            log.debug("MainWindow.onIconify: Fenêtre iconifiée et cachée.")
+            log.debug("MainWindow.onIconify: Fenêtre iconifiée et cachée !")
         else:
-            log.debug("MainWindow.onIconify: Fenêtre iconifiée (non cachée).")
+            log.debug("MainWindow.onIconify: Fenêtre iconifiée (non cachée) !")
 
     def show(self):
         """Met la fenêtre racine au premier plan"""
@@ -624,7 +628,7 @@ class MainWindow(
         new_height = self.parent.winfo_height()
         self.after(10, lambda: setattr(self, "_handling_resize", False))
         log.debug(
-            f"MainWindow.onResize: Fenêtre redimensionnée à {new_width}x{new_height}."
+            f"MainWindow.onResize: Fenêtre redimensionnée à {new_width}x{new_height} !"
         )
 
         # Pour les barres d'outils et de statut, Tkinter gère la géométrie automatiquement
@@ -653,12 +657,13 @@ class MainWindow(
         log.debug(
             "MainWindow._create_window_components: Création du conteneur pour les visionneuses."
         )
+        # Création du conteneur
         self._create_viewer_container()
         log.debug(
             "mainWindow._create_window_components : Lance une classe-méthode pour ajouter des viewers dans self.viewer."
         )
         log.debug(
-            "mainWindow._create_window_components : Lance une classe-méthode pour ajouter des viewers dans le conteneur self.viewer."
+            f"mainWindow._create_window_components : Lance une classe-méthode factory.addViewers pour ajouter des viewers dans le conteneur self.viewer {self.viewer_container}."
         )
         # viewer.factorytk.addViewers(self.viewer, self.taskFile, self.settings)
         factorytk.addViewers(
@@ -923,7 +928,7 @@ class MainWindow(
             _("Welcome to %(name)s version %(version)s")
             % {"name": meta.name, "version": meta.version}
         )
-        log.debug("MainWindow.__init_window: Fenêtre principale initialisée.")
+        log.debug("MainWindow.__init_window: Fenêtre principale initialisée !")
 
     def __init_window_components(self):
         """
@@ -951,14 +956,18 @@ class MainWindow(
             self.settings.getvalue("view", "toolbar")
         )  # TODO : a remettre dès que possible.
         self.showStatusBar(self.settings.getboolean("view", "statusbar"))
-        self.__restore_perspective()  # Appelle la méthode mock
         log.debug(
-            "MainWindow.__init_window_components: Composants de fenêtre initialisés."
+            "MainWindow.__init_window_components : restauration de la perspective."
+        )
+        self.__restore_perspective()  # Appelle la méthode de restauration après la création du ViewerContainer
+        log.debug(
+            "MainWindow.__init_window_components: Composants de fenêtre initialisés !"
         )
 
     def __restore_perspective(self):
         """
-        Restaure la disposition des panneaux de la fenêtre (perspective) à partir des paramètres sauvegardés.
+        Restaure la disposition des panneaux de la fenêtre (perspective)
+        à partir des paramètres sauvegardés.
 
         Cette méthode tente de restaurer la perspective (disposition des panneaux) à partir du fichier de configuration. Elle vérifie également
         si le nombre de visionneuses diffère entre la perspective actuelle et les réglages. Si c'est le cas, elle utilise une perspective par défaut.
@@ -978,18 +987,20 @@ class MainWindow(
             - Met à jour les titres des panneaux pour refléter la traduction correcte en cas de changement de langue.
         """
         log.debug(
-            "MainWindow.__restore_perspective: Restauration de la perspective depuis les paramètres (mock)."
+            "MainWindow.__restore_perspective: Restauration de la perspective depuis les paramètres."
         )
         # Tkinter n'a pas de "perspective" AUI. Cette logique serait à réimplémenter.
         # Pour l'exemple, nous ne faisons rien de fonctionnel ici.
-        perspective = self.settings.get("view", "perspective")
+        # perspective = self.settings.get("view", "perspective")
+        perspective = self.settings.get("view", "perspective", {})
         if not perspective:
             log.info(
                 "MainWindow.__restore_perspective: Pas de perspective sauvegardée, utilisation de la disposition par défaut."
             )
+            return
         else:
             log.info(
-                "MainWindow.__restore_perspective: Perspective sauvegardée trouvée (mock)."
+                "MainWindow.__restore_perspective: Perspective sauvegardée trouvée."
             )
             for viewer_type in [
                 "taskviewer",
@@ -1000,11 +1011,12 @@ class MainWindow(
                 if self.__perspective_and_settings_viewer_count_differ(
                     viewer_type
                 ):
-                    log.info(
+                    log.warning(
                         f"MainWindow.__restore_perspective: Le nombre de visionneuses pour {viewer_type} diffère, réinitialisation de la perspective."
                     )
-                    perspective = None
-                    break
+                    # perspective = None  # ❌ Problème : écrase `perspective`
+                    # break
+                    return  # ✅ Quitte la méthode tôt (pas besoin de continuer)
 
         # 1. Détruire les viewers existants
         # for viewer in self.viewer_container.viewers:
@@ -1021,9 +1033,10 @@ class MainWindow(
                     "MainWindow.__restore_perspective: Restauration de la perspective sauvegardée (mock)."
                 )
                 # Charger la perspective (logique spécifique à AUI/wxPython à réimplémenter pour Tkinter)
+                # viewer_types = perspective.get("viewers", [])
             else:
                 log.info(
-                    "MainWindow.__restore_perspective: Utilisation de la perspective par défaut (mock)."
+                    "MainWindow.__restore_perspective: Utilisation de la perspective par défaut."
                 )
                 # Charger la perspective par défaut (logique spécifique à AUI/wxPython à réimplémenter pour Tkinter)
                 self.settings.set("view", "perspective", "default_perspective")
@@ -1039,6 +1052,42 @@ class MainWindow(
             )
             # Charger la perspective par défaut (logique spécifique à AUI/wxPython à réimplémenter pour Tkinter)
             self.settings.set("view", "perspective", "default_perspective")
+
+        # 2. Recréer les viewers depuis la perspective
+        # TODO : Ne faut-il pas utiliser factorytk.py ?
+        # viewer_types = perspective.get(
+        #     "viewers", []
+        # )  # ❌ `perspective` peut être `None`
+        # ✅ Si `perspective` est un dict, on récupère "viewers", sinon on utilise une liste vide.
+        viewer_types = (
+            perspective.get("viewers", [])
+            if isinstance(perspective, dict)
+            else []
+        )
+        for viewer_type in viewer_types:
+            try:
+                self._add_viewer(
+                    viewer_type
+                )  # TODO : Trouver quelle méthode ? factory ?
+            except Exception as e:
+                log.exception(
+                    f"MainWindow.__restore_perspective: Erreur lors de la création du viewer {viewer_type} : {e}"
+                )
+                try:
+                    self.addViewer(viewer_type)  # ou ViewerContainer ?
+                except Exception as e:
+                    log.exception(
+                        f"MainWindow.__restore_perspective: Erreur lors de l'ajout du viewer {viewer_type} : {e}"
+                    )
+
+        # Si le ViewerContainer n'existe pas encore, le créer
+        if not hasattr(self, "viewer") or self.viewer_container is None:
+            self._create_viewer_container()
+        else:
+            # Rafraîchir les viewers existants
+            for viewer in self.viewer_container.viewers:
+                if hasattr(viewer, "refresh"):
+                    viewer.refresh()
 
         # S'assurer que tous les panneaux sont visibles pour éviter les "panneaux zombies".
         # for Frame in self.paned_windows():
@@ -1061,8 +1110,20 @@ class MainWindow(
             #     # frame.window.title(frame.get_translated_title())
             #     self.viewer.title(self.viewer.winfo_name())
 
+        # 3. Définir le viewer courant
+        current_viewer_type = perspective.get("current_viewer")
+        if current_viewer_type:
+            for viewer in self.viewer_container.viewers:
+                if viewer.__class__.__name__ == current_viewer_type:
+                    # self.viewer_container.setCurrentViewer(viewer)
+                    self.viewer_container.activateViewer(viewer)
+                    break
+
+        # log.debug(
+        #     f"PerspectiveManager.restore_perspective: {viewer_types} restaurés !"
+        # )
         log.debug(
-            "MainWindow.__restore_perspective: Perspective restaurée (mock)."
+            f"MainWindow.__restore_perspective: {viewer_types} restaurés (actif: {current_viewer_type}) !"
         )
 
     def __perspective_and_settings_viewer_count_differ(self, viewer_type):
@@ -1099,6 +1160,7 @@ class MainWindow(
         S'enregistre pour recevoir des notifications de changement de composants de fenêtre, comme les barres d'outils et les barres de statut.
         Cela permet de mettre à jour l'affichage des composants en fonction des événements de l'application.
         """
+        # TODO : A réintégrer peut-être ?
         # Pour Tkinter, on utiliserait des mécanismes de callback ou des systèmes de messages personnalisés
         # si pubsub n'est pas utilisé ou si l'intégration wxPython de pubsub est retirée.
         # pub.subscribe(self.__onFilenameChanged, "taskfile.filenameChanged")
@@ -1167,7 +1229,7 @@ class MainWindow(
         y compris les dimensions, la perspective et le nombre de visionneuses.
         """
         log.info(
-            "save.Settings : Sauvegarde des paramètres actuels de la fenêtre.(simulation)"
+            "MainWindow.saveSettings : Sauvegarde les paramètres actuels de la fenêtre.(simulation)"
         )
         self.__save_viewer_counts()
         self.__save_perspective()
@@ -1183,23 +1245,55 @@ class MainWindow(
 
     def __save_perspective(self):
         """
-        Sauvegarde la perspective actuelle de la fenêtre,
+        Sauvegarder la perspective actuelle de la fenêtre,
         c'est-à-dire l'organisation des différents volets et composants
         (barre d'outils, visionneuses, etc.).
         """
-        log.debug(
-            "MainWindow.__save_perspective: Sauvegarde de la perspective (mock)."
+        # Sauvegarder :
+        # - La liste des viewers ouverts
+        # - Leur taille, position, etc. (si applicable)
+        log.debug("MainWindow.__save_perspective: Sauvegarde la perspective.")
+        # # Logique spécifique à AUI/wxPython à réimplémenter pour Tkinter.
+        # Récupérer la liste des viewers ouverts
+        viewer_types = [
+            viewer.__class__.__name__ for viewer in self.viewer.viewers
+        ]  # AttributeError: 'MainWindow' object has no attribute 'viewer' quand on quitte
+        # viewer_types = [viewer.__class__.__name__ for viewer in self.viewer_container._viewers]
+
+        # Récupérer le viewer actif
+        current_viewer_type = (
+            self.viewer.current_viewer.__class__.__name__
+            if self.viewer.current_viewer
+            else None
         )
-        # Logique spécifique à AUI/wxPython à réimplémenter pour Tkinter.
-        self.settings.set("view", "perspective", "mock_perspective_data")
-        # perspective = self.manager.SavePerspective()
-        # perspective = self.main_frame.grid_info()
-        perspective = self.grid_info()
+
+        # Sauvegarder dans les settings
+        # # self.settings.set("view", "perspective", "perspective_data")
+        # # # perspective = self.manager.SavePerspective()
+        # # # perspective = self.main_frame.grid_info()
+        # # perspective = self.grid_info()
+        # perspective = {
+        #     "viewers": [
+        #         viewer.__class__.__name__
+        #         for viewer in self.viewer_container.viewers
+        #     ],
+        #     "current_viewer": self.viewer_container.current_viewer.__class__.__name__,
+        # }
+        perspective = {
+            "viewers": viewer_types,
+            "current_viewer": current_viewer_type,
+        }
         self.settings.set("view", "perspective", perspective)
+        # log.debug(
+        #     f"PerspectiveManager.__save_perspective : perspective = {perspective}"
+        # )
+        log.debug(
+            f"MainWindow.__save_perspective: {viewer_types} sauvegardé (actif: {current_viewer_type})."
+        )
 
     def __save_position(self) -> None:
         """
-        Sauvegarde la position et la taille actuelles de la fenêtre principale dans les paramètres de l'application.
+        Sauvegarder la position et la taille actuelles de la fenêtre principale dans les paramètres de l'application.
         Cela permet de restaurer la fenêtre à la même position lors de la prochaine ouverture.
         """
         log.debug(
@@ -1529,7 +1623,7 @@ class MainWindow(
         log.debug(
             f"MainWindow.advanceSelection: Avance la sélection des tâches (forward: {forward})."
         )
-        self.viewer.advanceSelection(forward)
+        self.viewer_container.advanceSelection(forward)
 
     def viewerCount(self) -> int:
         """
@@ -1539,9 +1633,10 @@ class MainWindow(
             (int) : Le nombre de visionneuses.
         """
         log.debug(
-            f"MainWindow.viewerCount: Retourne le nombre de viewers : {len(self.viewer_container)}."
+            f"MainWindow.viewerCount: Retourne le nombre de viewers : {len(self.viewer_container)} ou {self.viewer_container.viewer_count}."
         )
-        return len(self.viewer_container)  # TODO : à vérifier s'il s'agit bien du nombre de visionneuse !
+        # return len(self.viewer_container)  # TODO : à vérifier s'il s'agit bien du nombre de visionneuse !
+        return self.viewer_container.viewer_count
 
     # Power management
     def OnPowerState(self, state) -> None:
@@ -1665,8 +1760,10 @@ class MainWindow(
         )
         self.taskFile.clear(False)
         # Ces listes seraient normalement étendues aux vraies listes de tâches/catégories
-        # self.taskFile.categories().extend(categories)  # Ajoute les nouvelles catégories.
-        # self.taskFile.tasks().extend(tasks)  # Ajoute les nouvelles tâches.
+        self.taskFile.categories().extend(
+            categories
+        )  # Ajoute les nouvelles catégories.
+        self.taskFile.tasks().extend(tasks)  # Ajoute les nouvelles tâches.
 
     def addIPhoneCategory(self, category) -> None:
         """

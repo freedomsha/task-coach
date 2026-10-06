@@ -101,13 +101,15 @@ class ViewerRequiredMixin:
 
         # Aucun viewer → on désactive la commande
         if viewer is None:
-            log.debug("UICommand sans viewer : commande désactivée.")
+            log.debug(
+                "ViewerRequiredMixin._assert_viewer_api : UICommand sans viewer : commande désactivée !"
+            )
             return False
 
         for method in methods:
             if not hasattr(viewer, method):
                 log.warning(
-                    "UICommand '%s' : méthode manquante '%s' sur %s",
+                    "ViewerRequiredMixin._assert_viewer_api : UICommand '%s' : méthode manquante '%s' sur %s",
                     self.__class__.__name__,
                     method,
                     type(viewer).__name__,

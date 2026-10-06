@@ -337,6 +337,7 @@ class TkinterApplication(
             self, "_init_called"
         ):  # ← Vérifie si init() a déjà été appelé
             return
+        log.debug("TkinterApplication.init : appelé.")
         self._init_called = True  # ← Marque init() comme appelé
 
         # Initialisation des réglages
@@ -462,9 +463,11 @@ class TkinterApplication(
         self.__create_mutex()
         self.__create_task_bar_icon()
 
+        log.debug("TkinterApplication.init : Terminé !")
         # Remplacer wx.CallAfter par root.after_idle
         self.root.after_idle(lambda: self.__close_splash(splash))
         self.root.after_idle(self.__show_tips)
+        log.debug("TkinterApplication.init : Vraiment terminé !")
 
     def __init_config(self, load_settings: bool) -> None:
         """
@@ -577,28 +580,45 @@ class TkinterApplication(
         """
         Gère la fin de la session, appelée lorsque l'utilisateur ferme la fenêtre.
         """
-        logging.info("Arrêt de la session.")
+        log.info("TkinterApplication.on_end_session : Arrêt de la session.")
         # self.quitApplication(force=True)
+        log.info("TkinterApplication.on_end_session : appelle OnQUit().")
         self.OnQuit()  # Appelle la méthode OnQuit pour gérer les arrêts de services
+        log.info(
+            "TkinterApplication.on_end_session : appelle mainwindow.OnClose()."
+        )
         self.mainwindow.onClose()  # Appelle la méthode de fermeture de MainWindow
 
         # Cette ligne est essentielle pour fermer la fenêtre Tkinter
+        log.info(
+            "TkinterApplication.on_end_session : appelle détruit la fenêtre racine root."
+        )
         self.root.destroy()
-        self.parent.destroy()
+        log.info(
+            "TkinterApplication.on_end_session : appelle détruit le parent."
+        )
+        self.parent.destroy()  # TODO : Peut-être inutile !?
         return True
 
     def on_reopen_app(self):
         # Cette fonctionnalité est liée à l'icône de la barre des tâches et n'est pas applicable.
-        print(
-            "La fonctionnalité de réouverture d'application n'est pas prise en charge."
+        log.debug(
+            "TkinterApplication.on_reopen_app : La fonctionnalité de réouverture d'application n'est pas prise en charge."
         )
 
     def quitApplication(self, force=False):
         """
         Quitte l'application et enregistre tout.
-        :param force: S'il faut forcer la fermeture même s'il y a des modifications non sauvegardées.
-        :return: True si l'application peut se fermer, False sinon.
+
+        Args:
+            force: S'il faut forcer la fermeture même s'il y a des modifications non sauvegardées.
+
+        Return:
+            True si l'application peut se fermer, False sinon.
         """
+        log.debug(
+            "TkinterApplication.quitApplication : Début de la procédure pour quitter l'application."
+        )
         if self.taskFile.isDirty() and not force:
             pass  # Gérer la boîte de dialogue de sauvegarde ici
 
@@ -629,8 +649,16 @@ class TkinterApplication(
         date.Scheduler().shutdown()
 
         # Enregistrement du fichier de tâches avant de quitter
+        log.debug(
+            "TkinterApplication.quitApplication : lance taskfile.close() pour enregistrer le fichier de tâches avant de quitter."
+        )
         self.taskFile.close()
-
+        log.debug(
+            "TkinterApplication.quitApplication : Fichier de tâches enregistré et fermé."
+        )
+        log.debug(
+            "TkinterApplication.quitApplication : lance OnQuit() pour arrêter le IdleNotifier avant de quitter."
+        )
         # self.mainwindow.OnQuit()
         self.OnQuit()
 
@@ -648,6 +676,9 @@ class TkinterApplication(
         # Attention risque de boucle avec MainWindow.onClose()
         # self.mainwindow.onClose()  # Appelle la méthode de fermeture de MainWindow  # Attention boucle !
 
+        log.debug(
+            "TkinterApplication.quitApplication : détruit la fenêtre racine root !"
+        )
         # Cette ligne est essentielle pour fermer la fenêtre Tkinter
         self.root.destroy()
         # self.root.destroy()  # Ne fonctionne pas avec le reste !
@@ -655,14 +686,16 @@ class TkinterApplication(
         return True
 
     def OnQuit(self):
-        # Stop the IdleNotifier before quitting
+        """Stop the IdleNotifier before quitting."""
         if hasattr(self, "idle_notifier") and self.idle_notifier:
             self.idle_notifier.stop()
 
     @staticmethod
     def getInstance():
         """Retourne l'instance unique de TkinterApplication."""
-        # log.debug(f"TkinterApplication.getInstance : retourne {TkinterApplication.instance}")
+        log.debug(
+            f"TkinterApplication.getInstance : retourne TkinterApplication.instance"
+        )
         # if TkinterApplication.instance is None:
         #    TkinterApplication()  # Crée l'instance si elle n'existe pas
         return TkinterApplication.instance

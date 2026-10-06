@@ -222,6 +222,7 @@ class Viewer(ttk.Frame, patterns.Observer):
         # self.widget.grid(row=1, column=0, sticky="news")
         # !!! self.widget est aussi créé dans initLayout dans un parent=_sizer ! ?
         # Appeler initLayout MAINTENANT pour créer la structure.
+        self.widget = None  # Avant initLayout qui va le définir
         self.initLayout()
 
         # self.toolbar = toolbarttk.ToolBar(self, settings, (16, 16))  # -> déplacer dans initLayout
@@ -312,6 +313,7 @@ class Viewer(ttk.Frame, patterns.Observer):
 
     def activate(self):
         """Active la visionneuse, lui donnant le focus."""
+        log.debug(f"Viewer.activate : active la visionneuse {self.widget}.")
         if self.widget:
             self.widget.focus_set()
         # pass
@@ -405,6 +407,12 @@ class Viewer(ttk.Frame, patterns.Observer):
         pub.sendMessage(self.viewerStatusEventType(), viewer=self)
 
     def statusMessages(self):
+        """
+        Retourne les messages de statut.
+
+        Returns:
+            tuple: Un tuple contenant les messages de statut.
+        """
         return "", ""
 
     def title(self):
@@ -535,7 +543,7 @@ class Viewer(ttk.Frame, patterns.Observer):
                     # Certains widgets ttk ne supportent même pas les styles personnalisés
                     pass
         log.debug(
-            f"Viewer.initLayout : initLayout de {self.__class__.__name__} terminé."
+            f"Viewer.initLayout : initLayout de {self.__class__.__name__} terminé !"
         )
 
     # @abstractmethod  # Laisser @abstractmethod si ABC est utilisé
@@ -544,6 +552,7 @@ class Viewer(ttk.Frame, patterns.Observer):
         """Crée le widget utilisé pour afficher les objets.
         (penser à gérer sa géométrie)
         À implémenter dans les sous-classes."""
+        # Penser à retourner le widget !
         raise NotImplementedError
 
     def createImageList(self):
@@ -677,8 +686,6 @@ class Viewer(ttk.Frame, patterns.Observer):
         # # ou :
         # try:
         # if self.IsBeingDeleted() or self.__selectingAllItems:
-        if self.destroy() or self.__selectingAllItems:  # TODO : A vérifier !
-            return
 
         #     tk.callAfter(self.updateSelection) # Assurez-vous que tous les événements Tk sont gérés
         # except RuntimeError:
@@ -692,30 +699,41 @@ class Viewer(ttk.Frame, patterns.Observer):
         # ✅ FIX:  Utiliser self.widget.curselection() seulement si c'est un widget avec cette méthode
         # Sinon, chercher le Treeview enfant
         # self.widget.curselection() dépendra du widget utilisé
-        log.debug(f"Viewer.updateSelection : self.widget={self.widget}")
-        # # newSelection = self.widget.curselection()  # A adapter en fonction du type de widget
-        # if isinstance(self.widget, ttk.Treeview):
-        #     newSelection = self.widget.selection()  # A adapter en fonction du type de widget
-        # else:
-        #     newSelection = self.widget.curselection()  # A adapter en fonction du type de widget
-        try:
-            if hasattr(self.widget, "curselection"):
-                # Pour les widgets qui supportent curselection (Treeview, Listbox, etc.)
-                newSelection = self.widget.curselection()
-            elif hasattr(self, "_Taskviewer__tree"):
-                # Pour Taskviewer:  utiliser le Treeview interne
-                newSelection = self._Taskviewer__tree.selection()
-            elif hasattr(self, "__tree"):
-                # Généralisé pour d'autres viewers
-                newSelection = self.__tree.selection()
-            else:
-                # Fallback:  pas de widget à sélectionner
-                newSelection = []
-        except AttributeError as e:
-            log.warning(
-                f"updateSelection:  Impossible d'obtenir la sélection:  {e}"
-            )
+        log.info(
+            f"Viewer.updateSelection : met à jour la sélection dans self.widget={self.widget}"
+        )
+        # Vérifie que le widget existe et est valide
+        if (
+            not hasattr(self, "widget")
+            or self.widget is None
+            or not hasattr(self.widget, "winfo_exists")
+            or not self.widget.winfo_exists()
+        ):
             newSelection = []
+            # # newSelection = self.widget.curselection()  # A adapter en fonction du type de widget
+            # if isinstance(self.widget, ttk.Treeview):
+            #     newSelection = self.widget.selection()  # A adapter en fonction du type de widget
+        else:
+            #     newSelection = self.widget.curselection()  # A adapter en fonction du type de widget
+            try:
+                if hasattr(self.widget, "curselection"):
+                    # Pour les widgets qui supportent curselection (Treeview, Listbox, etc.)
+                    newSelection = self.widget.curselection()
+                elif hasattr(self, "_Taskviewer__tree"):
+                    # Pour Taskviewer:  utiliser le Treeview interne
+                    newSelection = self._Taskviewer__tree.selection()
+                elif hasattr(self, "__tree"):
+                    # Généralisé pour d'autres viewers
+                    newSelection = self.__tree.selection()
+                else:
+                    # Fallback:  pas de widget à sélectionner
+                    newSelection = []
+            # except AttributeError as e:
+            except Exception as e:
+                log.error(
+                    f"Viewer.updateSelection:  Impossible d'obtenir la sélection:  {e}"
+                )
+                newSelection = []
 
         if newSelection != self.__curselection:
             self.__curselection = newSelection
@@ -746,6 +764,9 @@ class Viewer(ttk.Frame, patterns.Observer):
 
     def refresh(self, *args, **kwargs):
         """Rafraîchit les éléments affichés dans la visionneuse."""
+        log.info(
+            f"Viewer.refresh : rafraichit les éléments affichés dans la visionneuse {self}."
+        )
         if self and not self.__freezeCount:
             # # Cette méthode devra être implémentée dans les sous-classes
             # # en fonction du widget (Listbox, Treeview)
@@ -763,6 +784,7 @@ class Viewer(ttk.Frame, patterns.Observer):
             elif hasattr(self, "refresh_items"):
                 # Fallback sur refresh_items
                 self.refresh_items()
+            log.info(f"Viewer.refresh : rafraichissement de {self} temriné !")
             # Sinon, ne rien faire (le widget simple ne nécessite pas de refresh)
             # pass
 
@@ -802,6 +824,9 @@ class Viewer(ttk.Frame, patterns.Observer):
 
     def select_all(self):
         """Sélectionne tous les éléments."""
+        log.info(
+            f"Viewer.select_all : sélectionne tous les éléments de {self}."
+        )
         self.__selectingAllItems = True
         # if hasattr(self.widget, 'select_all'):
         #     self.widget.select_all()
@@ -849,6 +874,9 @@ class Viewer(ttk.Frame, patterns.Observer):
 
     def setPresentation(self, presentation):
         """Change the presentation of the viewer."""
+        log.info(
+            f"Viewer.setPresentation : change la présentation de la visionneuse {self}."
+        )
         self.__presentation = presentation
 
     def widgetCreationKeywordArguments(self):
@@ -2176,12 +2204,19 @@ if __name__ == "__main__":
         # def createWidget(self):
         def createWidget(self, parent):  # CHANGEMENT: Ajout de 'parent'
             # Crée un widget (par exemple, un Treeview ou une Listbox)
+            log.info(
+                f"MonListViewer.createWidget : crée le widget frame contenant {parent}."
+            )
             # self.widget = tk.Listbox(self)
             # self.widget = tk.Frame(self)  # Remplace par le widget approprié -> Ancien code
             frame = tk.Frame(parent)  # CHANGEMENT: Utilise 'parent'
             # Note: on ne sauvegarde pas dans self.widget ici, on le retourne.
             # La classe de base s'en occupe.
             # return self.widget
+            # Ici, il s'agit d'un frame !
+            log.info(
+                f"MonListViewer.createWidget  : retourne le frame {frame} !"
+            )
             return frame
 
         def domainObjectsToView(self):
@@ -2249,9 +2284,15 @@ if __name__ == "__main__":
         #     self.widget = self.tree
         #     return self.widget
         def createWidget(self, parent):  # CHANGEMENT: Ajout de 'parent'
+            log.info(
+                f"MonTreeViewer.createWidget : crée le widget tree contenant {parent}."
+            )
             # self.tree = ttk.Treeview(self) # Ancien code
             tree = ttk.Treeview(parent)  # CHANGEMENT: Utilise 'parent'
             # self.widget = self.tree # Ancien code
+            log.info(
+                f"MonTreeViewer.createWidget  : retourne le tree {tree} !"
+            )
             return tree
 
         def domainObjectsToView(self):

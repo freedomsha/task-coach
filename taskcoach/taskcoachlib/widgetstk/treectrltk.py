@@ -461,6 +461,44 @@ class TreeListCtrl(
 
     Équivalent Tkinter de wx.lib.agw.hypertreelist.HyperTreeList
     Combine ttk.Treeview avec des mixins pour fonctionnalités avancées.
+
+    Attributes:
+        self.resizeableColumn : Argument vestige de wxPython non supporté par ttk.Treeview.
+        self.validateDragCallback : Argument vestige de wxPython non supporté par ttk.Treeview.
+        column_ids : Identifiant des noms de colonne.
+        self.display_columns : Liste des colonnes visibles.
+        display_column_ids : Liste des identifiants des colonnes visibles.
+        self.tree : (=self)
+        self.__adapter : Adaptateur pour accéder aux données du domaine. Le frame dans lequel le TreeListCtrl sera placé.
+        self.selectCommand : Commande de sélection.
+        self.editCommand : Commande d'édition.
+        self.dragAndDropCommand : Commande de glisser/déposer.
+        self.itemPopupMenu : Menu popup des éléments.
+        self.__itemPopupMenu : idem ? !
+        self.columnPopupMenu : Menu popup des colonnes.
+        self.__columnPopupMenu : idem ? !
+        self._all_columns : toutes les colonnes disponibles
+        self._visible_columns : Liste des noms de colonnes visibles
+        self.__selection :
+        self.__columns_with_images :
+        self._edit_widget :
+        self.__checking :
+        self.__double_click_pending :
+        self.__double_click_item :
+        self.last_click_time :
+        self.dragged_items :
+        self.drag_data :
+        self.drop_position :
+        self._columns : La liste complète des objets colonnes.
+        self.checked_image :
+        self.unchecked_image :
+
+        Fonctionnalités du mixin TreeCtrlDragAndDropMixin
+        self.dragged_items :
+        self.drag_data_type :
+        self.drop_target :
+        self.drop_position :
+        self.dragAndDropCommand :
     """
 
     ct_type = 0
@@ -580,6 +618,7 @@ class TreeListCtrl(
             *args,
             **kwargs,
         )
+        # Définition de la 1ère colonne
         self.column("#0", width=24, minwidth=24, stretch=False)
 
         # --- 3. ALIAS DE COMPATIBILITÉ ---
@@ -1121,7 +1160,7 @@ class TreeListCtrl(
         #     print("Aucun tri actuel.")
         if hasattr(self, "sort_column") and self.sort_column:
             order = "↑" if not getattr(self, "sort_reverse", False) else "↓"
-            log.debug(f"Tri: {self.sort_column} {order}")
+            log.debug(f"TreeListCtrl.showSortColumn : Tri: {self.sort_column} {order}")
 
         # # Vérifier que la colonne triée est bien visible :
         # if col_name not in self['displaycolumns']:
@@ -1471,6 +1510,7 @@ class TreeListCtrl(
         """Sélectionne les éléments donnés."""
         for item in items:
             # # TODO: A revoir
+            # vérifier qu'il y a plus d'un item ou au moins un !
             # pass
             self.selection_add(item)
 

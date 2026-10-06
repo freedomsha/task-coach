@@ -870,53 +870,20 @@ class UICommand(object):
         """
         Détermine si la commande est activée.
 
-        Peut être remplacé dans une sous-classe.
-
-        Args:
-            event: L'événement qui a déclenché la vérification (non utilisé
-                   dans la classe de base, mais requis pour la compatibilité
-                   avec les sous-classes et mixins).
-
-        Returns :
-            (bool) : True si la commande est activée, sinon False.
+        Les commandes de base doivent rester actives tant qu'une sous-classe
+        ne précise pas un état spécifique. Un menu en cours de construction ou
+        un focus absent ne doit pas griser les items automatiquement.
         """
-        # return True
-        # # Cette correction est indispensable en Tk, wx ne posait pas ce problème.:
-        # try:
-        #     window_with_focus = self.mainWindow().focus_get()
-        # except KeyError:
-        #     # Le focus est sur un widget virtuel (menu en construction)
-        #     return False
-        #
-        # if window_with_focus is None:
-        #     return False
-        #
-        # return super().enabled(event)
-        main_window = self.mainWindow()  # Récupère la fenêtre principale
-        if not main_window:
-            # Fenêtre pas encore prête → on désactive la commande
-            return False
-            # À utiliser seulement si la commande n’est pas dangereuse.:
-            # return True  # autoriser pendant l'initialisation
-
-        if event is None:
-            # window_with_focus = main_window.focus_get()  # KeyError: '#!mainmenu'
-            window_with_focus = self._safe_focus_get(
-                main_window
-            )  # Focus sécurisé
-        else:
-            window_with_focus = event
-            log.warning(
-                f"UICommand.enabled : window_with_focus = event = {window_with_focus}."
-            )
-        if not window_with_focus:
-            return False
-
-        # Log pour voir à quel moment la fenêtre devient disponible.
-        # log.debug("enabled(): mainWindow=%r", self.mainWindow())
-
-        # return self.enabled(window_with_focus)
-        return True  # À n’utiliser que temporairement.
+        # Aucune règle de focus globale ne doit désactiver les commandes de base
+        # ici : les classes spécifiques doivent surcharger enabled() pour gérer
+        # les cas à sélection, sans transformer tous les menus en grisés.
+        main_window = self.mainWindow()
+        if main_window is None:
+            return True
+        return True
+        # Le grisé venait du code Tk : la commande de menu était désactivée par défaut tant que le focus n’était pas prêt, ce qui grisaillait tout le menu File.
+        # J’ai corrigé la logique pour que les commandes restent actives par défaut, sauf si une sous-classe précise un cas de désactivation explicite. En pratique, les menus “File” ne restent plus grisés à l’ouverture.
+        # Si tu veux, je peux aussi t’indiquer l’endroit exact dans le code où ce comportement était calculé.
 
     # def bind(self):
     #     """

@@ -135,14 +135,38 @@ def viewerTypes() -> List[str]:
 # laissez addViewersToContainer exécuter les initialisations des utilisateurs.
 class addViewers:
     """
-    Classe se faisant passer pour une méthode pour ajouter des visualisateurs.
+    Classe se faisant passer pour une méthode pour ajouter des visualiseurs dans un conteneur.
+
+    Attributes:
+        self.__viewer_container : Conteneur des différents visualiseurs.
+        self.__task_file : Fichier des tâches.
+        self.__settings : Paramètres de l'application.
+        self.floating : Définit si la fenêtre est flottante.
+        self.__viewer_init_args :
+
+    Methods:
+        __init__ : Initialise addViewer avec le conteneur, le fichier de tâches et les réglages.
+        __add_all_viewers : Ouvre toutes les visionneuses telles qu'elles ont été enregistrées précédemment dans les paramètres.
+        _add_viewer(self, viewer_class) : Ajoute un seul visualiseur (viewer) de la classe spécifiée au conteneur."
+        addViewersToContainer : Voir __add_all_viewers
+        _viewer_classes : Retourne la liste des classes de visualiseurs à ajouter.
+        _number_of_viewers_to_add(self, viewer_class) : Détermine le nombre de visualiseurs à ajouter pour une classe donnée.
+        _viewer_kwargs(self, viewer_class) : Retourne les arguments de mots-clés pour initialiser le visualiseur.
     """
 
     floating = False
 
     # def __init__(self, viewer_container: Any, task_file: Any, settings: settings):
     def __init__(self, viewer_container: Any, task_file: Any, settings):
-        log.debug(
+        """
+        Initialisation d'addViewers avec le conteneur, le fichier de tâches et les réglages.
+
+        Args:
+            viewer_container: Conteneur des différents visualiseurs.
+            task_file: Fichier des tâches.
+            settings: Paramètres de l'application.
+        """
+        log.warning(
             f"addViewers.__init__ : Ajoute des visualiseurs dans le viewer_container={viewer_container} avec task_file={task_file} et settings={settings}."
         )
         self.__viewer_container = viewer_container  # Conteneur de visualiseurs
@@ -159,7 +183,7 @@ class addViewers:
         self.__add_all_viewers()
         # self.__viewer_container.__add_all_viewers()
 
-        log.debug("addViewers.__init__ : Tout les visualiseurs sont ajoutés !")
+        log.info("addViewers.__init__ : Tout les visualiseurs sont ajoutés !")
 
     # def __call__(self):
     #     """Ajoute les visualisateurs à la fenêtre principale."""
@@ -267,7 +291,7 @@ class addViewers:
     # def _add_viewer(self, viewer_class: Type[ttk.Frame]):
     def _add_viewer(self, viewer_class: Type[Viewer]) -> None:
         # def _add_viewer(self, viewer_class, config_section, new_item_type):
-        """Ajoute un seul visualisateur (viewer) de la classe spécifiée au conteneur."""
+        """Ajoute un seul visualiseur (viewer) de la classe spécifiée au conteneur."""
         log.debug(
             f"addViewers._add_viewer : Ajoute le visualiseur {viewer_class.__name__}."
         )
@@ -310,6 +334,10 @@ class addViewers:
         # self.__viewer_container.pack(fill="both", expand=True, padx=10, pady=5)
         # viewer.grid(row=self.viewer_count + 1, column=0, padx=10, pady=5)
 
+        # self.__viewer_container.activateViewer(
+        #     viewer_instance
+        # )  # ✅ Active le viewer
+
         # Sauf qu'il faut instancier le visualiseur avec le nom du parent.
         # Remplacez l'instanciation ici
         # Par un appel à la nouvelle méthode addViewer dans le conteneur
@@ -326,6 +354,9 @@ class addViewers:
         )
 
     def addViewersToContainer(self):
+        """
+        Ajoute des visualiseurs au conteneur.
+        """
         self.__add_all_viewers()
 
     def _viewer_classes(self) -> List[Type[ttk.Frame]]:
@@ -346,14 +377,14 @@ class addViewers:
         return viewer_classes
 
     def _number_of_viewers_to_add(self, viewer_class: Type[ttk.Frame]) -> int:
-        """Détermine le nombre de visualisateurs à ajouter pour une classe donnée."""
+        """Détermine le nombre de visualiseurs à ajouter pour une classe donnée."""
         return self.__settings.getint(
             "view", viewer_class.__name__.lower() + "count"
         )
 
     # def _viewer_kwargs(self, viewer_class: Type[ttk.Frame]) -> Dict[str, Any]:
     def _viewer_kwargs(self, viewer_class: Type[ttk.Frame]) -> Dict[str, Any]:
-        """Retourne les arguments de mots-clés pour l'initialiseur du visualisateur."""
+        """Retourne les arguments de mots-clés pour initialiser le visualiseur."""
         # return dict()
         # # return dict(viewerContainer=self.__viewer_container) if issubclass(viewer_class, effort.EffortViewerForSelectedTasks) else dict()
         # # kwargs = super()._viewer_kwargs(viewer_class)
@@ -373,7 +404,7 @@ class addViewers:
 
 class addOneViewer(addViewers):
     """
-    Classe pour ajouter un seul visualisateur d'une classe spécifiée.
+    Classe pour ajouter un seul visualiseur d'une classe spécifiée.
     """
 
     floating = True
@@ -394,7 +425,7 @@ class addOneViewer(addViewers):
         self.__kwargs = kwargs
         super().__init__(viewer_container, task_file, settings)
         log.debug(
-            f"addOneViewer.__init__ : Le visualiseur {viewer_class.__name__} a été ajouté."
+            f"addOneViewer.__init__ : Le visualiseur {viewer_class.__name__} a été ajouté !"
         )
 
     def _number_of_viewers_to_add(self, viewer_class: Type[ttk.Frame]) -> int:

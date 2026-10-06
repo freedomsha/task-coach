@@ -20,7 +20,7 @@ utilisée à son niveau le plus simple ou avec ses fonctions avancées.
 - Python 3.8 à 3.13.
 - Les dépendances Python listées dans `requirements.txt`.
 - Un environnement graphique de bureau. L'interface Tkinter est utilisée par
-  défaut (en phase de développement); wxPython est également disponible.
+  défaut (en phase de développement); wxPython (de base) est également disponible.
 
 ## Installation et lancement
 

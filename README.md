@@ -1,8 +1,8 @@
 # Task Coach
 
-Task Coach est une application de bureau libre de gestion de tâches. Elle aide à organiser des projets complexes comme des listes simples, avec des tâches imbriquées, des échéances et le suivi du temps passé. L'application peut être utilisée à son niveau le plus simple ou avec ses fonctionnalités avancées.
+Task Coach est une application de bureau libre de gestion de tâches. Elle aide à organiser des projets complexes comme des listes simples, avec des tâches imbriquées, des échéances et le suivi du temps.
 
-Ce fork met en œuvre des améliorations et des corrections ciblées sur l'interface Tkinter, la gestion des vues et le rafraîchissement des listes de tâches, dans le cadre d'un effort de développement actif sur le projet.
+Ce fork met en œuvre des améliorations et des corrections ciblées sur l'interface Tkinter, la gestion des vues et le rafraîchissement des listes de tâches, dans le cadre d'un effort de développement actif.
 
 ## État du projet
 
@@ -13,7 +13,19 @@ Le projet est actuellement en développement actif, avec un focus particulier su
 - la gestion plus fiable des commandes UI et des menus dynamiques,
 - l'amélioration de la lisibilité et de la maintenance du code.
 
-Les derniers changements incluent des correctifs sur la création et la mise à jour des widgets de visualisation, la gestion des catégories, ainsi que l'amélioration de la logique de rendu et d'insertion des tâches.
+Les derniers changements incluent des correctifs sur la création et la mise à jour des widgets de visualisation, la gestion des catégories, ainsi que l'amélioration de la logique de rendu et d'actualisation des vues.
+
+### État de stabilité et points de vigilance
+
+Le fork est actuellement orienté vers la correction des problèmes de conception et de rafraîchissement de l'interface Tkinter, ainsi que vers la stabilisation des vues arborescentes et des menus dynamiques. Les évolutions récentes visent principalement à corriger :
+
+- les boucles de mise à jour dans les arbres de tâches,
+- les erreurs de création et de rafraîchissement des widgets de visualisation,
+- les incohérences entre le modèle de données et la vue,
+- les comportements des menus contextuels et des commandes UI lors des changements d'état,
+- la gestion des catégories et des observateurs pendant le chargement et l'actualisation des données.
+
+Aucune issue publique GitHub n'est actuellement ouverte pour ce dépôt, mais le code reste en évolution active et certains points de vigilance demeurent, notamment sur la robustesse de l'interface Tkinter et la cohérence de la synchronisation entre les modèles et les vues. Les contributions et les tests locaux restent recommandés, en particulier sur les scénarios de navigation, de création de tâches et de mise à jour de l'arborescence.
 
 ## Fonctionnalités
 
@@ -120,7 +132,7 @@ Les contributions sont bienvenues. Avant de proposer des modifications :
 
 ## Développement
 
-Le code de l'application se trouve dans `taskcoach/`, notamment dans le paquet `taskcoach/taskcoachlib/`. Les dépendances de développement et d'exécution sont déclarées dans `requirements.txt`.
+Le code de l'application se trouve dans `taskcoach/`, notamment dans le paquet `taskcoach/taskcoachlib/`. Les dépendances de développement et d'exécution sont déclarées dans `requirements.txt` et les outils de validation sont fournis avec le dépôt.
 
 ## Licence
 

@@ -4,7 +4,7 @@ Task Coach est une application de bureau libre de gestion de tâches. Elle aide 
 
 Ce fork met en œuvre des améliorations et des corrections ciblées sur l'interface Tkinter, la gestion des vues et le rafraîchissement des listes de tâches, dans le cadre d'un effort de développement actif.
 
-## État du projet
+## État du projet et objectifs
 
 Le projet est actuellement en développement actif, avec un focus particulier sur :
 
@@ -14,6 +14,10 @@ Le projet est actuellement en développement actif, avec un focus particulier su
 - l'amélioration de la lisibilité et de la maintenance du code.
 
 Les derniers changements incluent des correctifs sur la création et la mise à jour des widgets de visualisation, la gestion des catégories, ainsi que l'amélioration de la logique de rendu et d'actualisation des vues.
+
+### Objectif d'intégration au projet Task Coach officiel
+
+L'objectif à long terme de ce fork est de proposer au **projet Task Coach officiel** (http://hg.code.sf.net/p/taskcoach/repo) l'intégration de la couche Tkinter refactorisée en tant que **branche alternative stable**. Une fois que les améliorations auront atteint un niveau de stabilité suffisant, une pull request ou une proposition d'intégration sera adressée à la communauté Task Coach pour permettre aux utilisateurs de bénéficier d'une interface Tkinter plus robuste et maintenable.
 
 ### État de stabilité et points de vigilance
 
@@ -89,7 +93,7 @@ Le dépôt contient actuellement un travail de refactorisation et de correction 
 - `taskcoach/taskcoachlib/widgetstk/` : composants d'affichage des listes et arbres,
 - `taskcoach/taskcoachlib/patterns/` : mécanismes d'observation et de mise à jour.
 
-Les thèmes principaux du développement actuel sont :
+Les thèmes principaux du développement actif sont :
 
 - correction des boucles de mise à jour dans les arbres de tâches,
 - nettoyage des variables et simplification du flux de création de widgets,
@@ -129,6 +133,8 @@ Les contributions sont bienvenues. Avant de proposer des modifications :
 2. gardez les changements ciblés et explicites,
 3. testez les chemins concernés par votre modification,
 4. documentez les changements importants dans le code ou dans le README si nécessaire.
+
+Si vous souhaitez contribuer à la stabilisation de Tkinter en vue de l'intégration au projet officiel Task Coach, n'hésitez pas à signaler vos tests, vos observations et vos éventuelles améliorations.
 
 ## Développement
 

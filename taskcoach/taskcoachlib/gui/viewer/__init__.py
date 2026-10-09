@@ -28,7 +28,7 @@ from .task import (
 from .category import CategoryViewer, BaseCategoryViewer
 from .effort import EffortViewer, EffortViewerForSelectedTasks
 from .note import NoteViewer, BaseNoteViewer
-from .attachment import AttachmentViewer
+from .attachment import AttachmentViewer  # ?
 from .container import ViewerContainer
 from .factory import viewerTypes, addViewers, addOneViewer
 
@@ -40,3 +40,24 @@ except ImportError:
     pass
 else:
     from .task import TaskInterdepsViewer
+
+__all__ = [
+    "TaskViewer",
+    "TaskStatsViewer",
+    "CheckableTaskViewer",
+    "SquareTaskViewer",
+    "TimelineViewer",
+    "CalendarViewer",
+    "HierarchicalCalendarViewer",
+    "CategoryViewer",
+    "BaseCategoryViewer",
+    "EffortViewer",
+    "EffortViewerForSelectedTasks",
+    "NoteViewer",
+    "BaseNoteViewer",
+    "AttachmentViewer",  # ?
+    "ViewerContainer",
+    "viewerTypes",
+    "addViewers",
+    "addOneViewer",
+]

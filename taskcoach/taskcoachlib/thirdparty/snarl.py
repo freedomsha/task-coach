@@ -4,12 +4,19 @@
 # 0.1a: Initial release
 # 0.2a: Added basic command line functions
 # LARGELY UNTESTED REFERENCE IMPLEMENTATION
-import win32gui, win32api, win32con
-import struct, array
+# from __future__ import print_function
+
+import array
+import struct
+from builtins import object
 from ctypes import cast, POINTER, c_byte
 
+import win32api
+import win32con
+import win32gui
 
-class SNARL_COMMANDS:
+
+class SNARL_COMMANDS(object):
     SNARL_SHOW = 1
     SNARL_HIDE = 2
     SNARL_UPDATE = 3
@@ -36,12 +43,7 @@ class SNARL_COMMANDS:
         reserved1=None,
         reserved2=None,
     ):
-        if (
-            extra is None
-            and extra2 is None
-            and reserved1 is None
-            and reserved2 is None
-        ):
+        if extra is None and extra2 is None and reserved1 is None and reserved2 is None:
             command = struct.pack(
                 "ILLL1024s1024s1024s",
                 command,
@@ -84,9 +86,7 @@ class SNARL_COMMANDS:
 
         hwnd = win32gui.FindWindow(None, "Snarl")
         if hwnd:
-            return win32api.SendMessage(
-                hwnd, win32con.WM_COPYDATA, 0, cd_info[0]
-            )
+            return win32api.SendMessage(hwnd, win32con.WM_COPYDATA, 0, cd_info[0])
         else:
             return False
 
@@ -108,13 +108,7 @@ def snShowMessage(
         return False
     if sound is None:
         return SNARL_COMMANDS.sendCommand(
-            SNARL_COMMANDS.SNARL_SHOW,
-            reply,
-            timeout,
-            reply_msg,
-            title,
-            text,
-            iconPath,
+            SNARL_COMMANDS.SNARL_SHOW, reply, timeout, reply_msg, title, text, iconPath
         )
     return SNARL_COMMANDS.sendCommand(
         SNARL_COMMANDS.SNARL_SHOW,
@@ -148,10 +142,7 @@ def snHideMessage(id):
 
 # For some reason this ALWAYS returns -1 for all messages that were once displayed.
 def snIsMessageVisible(id):
-    return (
-        SNARL_COMMANDS.sendCommand(SNARL_COMMANDS.SNARL_IS_VISIBLE, id=id)
-        == -1
-    )
+    return SNARL_COMMANDS.sendCommand(SNARL_COMMANDS.SNARL_IS_VISIBLE, id=id) == -1
 
 
 # Untested
@@ -192,11 +183,16 @@ def snRevokeAlert():
 
 
 if __name__ == "__main__":
-    import sys, inspect
-    from optparse import OptionParser
+    import sys
+    import inspect
 
-    parser = OptionParser()
-    parser.add_option(
+    # from optparse import OptionParser
+    from argparse import ArgumentParser
+
+    # parser = OptionParser()
+    parser = ArgumentParser()
+    # parser.add_option("-s", "--show", action="store_const", dest="cmd",
+    parser.add_argument(
         "-s",
         "--show",
         action="store_const",
@@ -204,7 +200,8 @@ if __name__ == "__main__":
         const=snShowMessage,
         help="Show a message with the given parameters.",
     )
-    parser.add_option(
+    # parser.add_option("-u", "--update", action="store_const", dest="cmd",
+    parser.add_argument(
         "-u",
         "--update",
         action="store_const",
@@ -212,7 +209,8 @@ if __name__ == "__main__":
         const=snUpdateMessage,
         help="Update a message with the given parameters.",
     )
-    parser.add_option(
+    # parser.add_option("-c", "--hide", action="store_const", dest="cmd",
+    parser.add_argument(
         "-c",
         "--hide",
         action="store_const",
@@ -220,25 +218,29 @@ if __name__ == "__main__":
         const=snHideMessage,
         help="Hide a message with the given ID.",
     )
-    parser.add_option(
-        "-i", "--id", dest="id", help="ID to use for the update/hide."
-    )
-    parser.add_option(
+    # parser.add_option("-i", "--id", dest="id",
+    parser.add_argument("-i", "--id", dest="id", help="ID to use for the update/hide.")
+    # parser.add_option("-t", "--title", dest="title",
+    parser.add_argument(
         "-t", "--title", dest="title", help="Title to use for the show/update."
     )
-    parser.add_option(
+    # parser.add_option("-x", "--text", dest="text",
+    parser.add_argument(
         "-x", "--text", dest="text", help="Text to use for the show/update."
     )
-    parser.add_option(
+    # parser.add_option("-T", "--timeout", dest="timeout",
+    parser.add_argument(
         "-T", "--timeout", dest="timeout", help="Timeout to use for the show."
     )
-    parser.add_option(
+    # parser.add_option("-I", "--icon", dest="iconPath",
+    parser.add_argument(
         "-I", "--icon", dest="iconPath", help="Icon to use for the show."
     )
-    parser.add_option(
+    # parser.add_option("-S", "--sound", dest="sound",
+    parser.add_argument(
         "-S", "--sound", dest="sound", help="Sound to use for the show."
     )
-    if snGetVersion == False:
+    if not snGetVersion:
         print("Snarl not running!")
         sys.exit(1)
     (options, args) = parser.parse_args(sys.argv[1:])

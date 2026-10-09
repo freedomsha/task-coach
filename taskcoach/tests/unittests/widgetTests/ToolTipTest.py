@@ -16,13 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, wx
+# from builtins import object
+from ... import tctest
+import wx
 from taskcoachlib.widgets import tooltip
 
 
-class ToolTipUnderTest(
-    tooltip.ToolTipMixin, wx.Frame
-):  # pylint: disable=W0223
+class ToolTipUnderTest(tooltip.ToolTipMixin, wx.Frame):  # pylint: disable=W0223
     def GetMainWindow(self):
         return self
 
@@ -39,7 +39,7 @@ class DummyToolTipWindow(object):
         return self.size
 
 
-class ToolTipMixinTestCase(test.TestCase):
+class ToolTipMixinTestCase(tctest.TestCase):
     def setUp(self):
         self.tooltipMixin = ToolTipUnderTest(None)
 
@@ -67,7 +67,7 @@ class SimpleToolTipUnderTest(tooltip.SimpleToolTip):
         return 10, 20
 
 
-class SimpleToolTipTestCase(test.wxTestCase):
+class SimpleToolTipTestCase(tctest.wxTestCase):
     def setUp(self):
         self.tip = SimpleToolTipUnderTest(self.frame)
 
@@ -78,12 +78,7 @@ class SimpleToolTipTestCase(test.wxTestCase):
     def testOneLongLine(self):
         self.tip.SetData([(None, ["First line " * 10])])
         self.assertEqual(
-            [
-                (
-                    None,
-                    [("First line " * 7).strip(), ("First line " * 3).strip()],
-                )
-            ],
+            [(None, [("First line " * 7).strip(), ("First line " * 3).strip()])],
             self.tip.data,
         )
 

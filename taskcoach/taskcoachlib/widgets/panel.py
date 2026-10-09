@@ -22,11 +22,11 @@ import wx
 class PanelWithBoxSizer(wx.Panel):
     def __init__(self, *args, **kwargs):
         orientation = kwargs.pop("orientation", wx.VERTICAL)
-        super(PanelWithBoxSizer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__panelSizer = wx.BoxSizer(orientation)
 
     def fit(self):
-        """Call this method after all controls have been added (via add())."""
+        """ Call this method after all controls have been added (via add()). """
         self.SetSizerAndFit(self.__panelSizer)
 
     def add(self, *args, **kwargs):
@@ -36,40 +36,23 @@ class PanelWithBoxSizer(wx.Panel):
 
 
 class BoxWithFlexGridSizer(wx.Panel):
-    """A panel that is boxed and has a FlexGridSizer inside it."""
-
-    def __init__(
-        self,
-        parent,
-        label,
-        cols,
-        gap=10,
-        vgap=0,
-        hgap=0,
-        growableRow=-1,
-        growableCol=-1,
-        *args,
-        **kwargs
-    ):
-        super(BoxWithFlexGridSizer, self).__init__(parent, *args, **kwargs)
+    """ A panel that is boxed and has a FlexGridSizer inside it. """
+    def __init__(self, parent, label, cols, gap=10, vgap=0, hgap=0,
+                 growableRow=-1, growableCol=-1, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
         box = wx.StaticBox(self, label=label)
         self.__boxSizer = wx.StaticBoxSizer(box, wx.HORIZONTAL)
-        self.__entriesSizer = wx.FlexGridSizer(
-            cols=cols, vgap=gap or vgap, hgap=gap or hgap
-        )
+        self.__entriesSizer = wx.FlexGridSizer(cols=cols, vgap=gap or vgap,
+                                               hgap=gap or hgap)
         if growableRow > -1:
             self.__entriesSizer.AddGrowableRow(growableRow, proportion=1)
         if growableCol > -1:
             self.__entriesSizer.AddGrowableCol(growableCol, proportion=1)
-        self.__boxSizer.Add(
-            self.__entriesSizer,
-            proportion=1,
-            flag=wx.EXPAND | wx.ALL,
-            border=10,
-        )
+        self.__boxSizer.Add(self.__entriesSizer, proportion=1,
+                            flag=wx.EXPAND | wx.ALL, border=10)
 
     def fit(self):
-        """Call this method after all controls have been added (via add())."""
+        """ Call this method after all controls have been added (via add()). """
         self.SetSizerAndFit(self.__boxSizer)
 
     def add(self, control, *args, **kwargs):
@@ -82,26 +65,19 @@ class BoxWithFlexGridSizer(wx.Panel):
 
 
 class BoxWithBoxSizer(wx.Panel):
-    """A panel that is boxed and has a BoxSizer inside it."""
-
-    def __init__(
-        self, parent, label, orientation=wx.VERTICAL, *args, **kwargs
-    ):
-        super(BoxWithBoxSizer, self).__init__(parent, *args, **kwargs)
+    """ A panel that is boxed and has a BoxSizer inside it. """
+    def __init__(self, parent, label, orientation=wx.VERTICAL, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
         box = wx.StaticBox(self, label=label)
         self.__boxSizer = wx.StaticBoxSizer(box, wx.HORIZONTAL)
         self.__innerBoxSizer = wx.BoxSizer(orientation)
-        self.__boxSizer.Add(
-            self.__innerBoxSizer,
-            proportion=1,
-            flag=wx.EXPAND | wx.ALL,
-            border=10,
-        )
+        self.__boxSizer.Add(self.__innerBoxSizer, proportion=1,
+                            flag=wx.EXPAND | wx.ALL, border=10)
 
     def fit(self):
-        """Call this method after all controls have been added (via add())."""
+        """ Call this method after all controls have been added (via add()). """
         self.SetSizerAndFit(self.__boxSizer)
 
     def add(self, control, *args, **kwargs):
-        """Add controls to the BoxSizer."""
+        """ Add controls to the BoxSizer. """
         self.__innerBoxSizer.Add(control, *args, **kwargs)

@@ -17,10 +17,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+# from __future__ import print_function
+# from __future__ import division
 
 # Script to generate (big) task files
 
-import sys, random, wx
+# from builtins import str
+# from builtins import range
+# from past.utils import old_div
+import sys
+import random
+import wx
 
 app = wx.App(False)
 sys.path.insert(0, "..")
@@ -48,13 +55,9 @@ def randomSubject():
 
 
 def randomColor():
-    return randomThing(
-        lambda: wx.Colour(
-            random.randint(0, 255),
-            random.randint(0, 255),
-            random.randint(0, 255),
-        )
-    )
+    return randomThing(lambda: wx.Colour(random.randint(0, 255),
+                                         random.randint(0, 255),
+                                         random.randint(0, 255)))
 
 
 def randomFont():
@@ -80,9 +83,7 @@ def randomFont():
 
 
 def randomIcon():
-    return randomThing(
-        lambda: random.choice(list(artprovider.chooseableItemImages.keys()))
-    )
+    return randomThing(lambda: random.choice(list(artprovider.chooseableItemImages.keys())))
 
 
 def randomDateTime(chanceNone=0.5):
@@ -128,11 +129,9 @@ def assignCategories(categorizable, categories):
 
 def generateEffort():
     start = randomDateTime(0)
-    stop = start + date.TimeDelta(
-        hours=random.triangular(0, 10, 1),
-        minutes=random.randint(0, 60),
-        seconds=random.randint(0, 60),
-    )
+    stop = start + date.TimeDelta(hours=random.triangular(0, 10, 1),
+                                  minutes=random.randint(0, 60),
+                                  seconds=random.randint(0, 60))
     return effort.Effort(None, start, stop, description=randomDescription())
 
 

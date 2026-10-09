@@ -18,13 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib import operating_system
 from taskcoachlib.i18n import _
+# from taskcoachlib.thirdparty import aui
+# import aui2 as aui
 from wx.lib.agw import aui
 from . import notebook
 import wx
 import wx.html
 from wx.lib import sized_controls
 import os
-from ..tools import wxhelper
+from taskcoachlib.tools import wxhelper
 
 
 class Dialog(sized_controls.SizedDialog):
@@ -32,7 +34,7 @@ class Dialog(sized_controls.SizedDialog):
         self, parent, title, bitmap="edit", direction=None, *args, **kwargs
     ):
         self._buttonTypes = kwargs.get("buttonTypes", wx.OK | wx.CANCEL)
-        super(Dialog, self).__init__(
+        super().__init__(
             parent,
             -1,
             title,
@@ -49,11 +51,9 @@ class Dialog(sized_controls.SizedDialog):
             # Without this the window has no taskbar icon on Windows, and the focus comes back to the main
             # window instead of this one when returning to Task Coach through Alt+Tab. Which is probably not
             # what we want.
-            import win32gui, win32con
-
-            exStyle = win32gui.GetWindowLong(
-                self.GetHandle(), win32con.GWL_EXSTYLE
-            )
+            import win32gui
+            import win32con
+            exStyle = win32gui.GetWindowLong(self.GetHandle(), win32con.GWL_EXSTYLE)
             win32gui.SetWindowLong(
                 self.GetHandle(),
                 win32con.GWL_EXSTYLE,
@@ -88,21 +88,20 @@ class Dialog(sized_controls.SizedDialog):
         pass
 
     def createButtons(self):
-        buttonTypes = (
-            wx.OK if self._buttonTypes == wx.ID_CLOSE else self._buttonTypes
-        )
-        buttonSizer = self.CreateStdDialogButtonSizer(
-            buttonTypes
-        )  # type: wx.StdDialogButtonSizer
+        buttonTypes = wx.OK if self._buttonTypes == wx.ID_CLOSE else self._buttonTypes
+        buttonSizer = self.CreateStdDialogButtonSizer(buttonTypes)  # type: wx.StdDialogButtonSizer
         if self._buttonTypes & wx.OK or self._buttonTypes & wx.ID_CLOSE:
+            # buttonSizer.GetAffirmativeButton().bind(wx.EVT_BUTTON, self.ok)
             wxhelper.getButtonFromStdDialogButtonSizer(
                 buttonSizer, wx.ID_OK
             ).Bind(wx.EVT_BUTTON, self.ok)
         if self._buttonTypes & wx.CANCEL:
+            # buttonSizer.GetCancelButton().bind(wx.EVT_BUTTON, self.cancel)
             wxhelper.getButtonFromStdDialogButtonSizer(
                 buttonSizer, wx.ID_CANCEL
             ).Bind(wx.EVT_BUTTON, self.cancel)
         if self._buttonTypes == wx.ID_CLOSE:
+            # buttonSizer.GetAffirmativeButton().SetLabel(_('Close'))
             wxhelper.getButtonFromStdDialogButtonSizer(
                 buttonSizer, wx.ID_OK
             ).SetLabel(_("Close"))
@@ -122,11 +121,13 @@ class Dialog(sized_controls.SizedDialog):
         self.Destroy()
 
     def disableOK(self):
+        # self._buttons.GetAffirmativeButton().Disable()
         wxhelper.getButtonFromStdDialogButtonSizer(
             self._buttons, wx.ID_OK
         ).Disable()
 
     def enableOK(self):
+        # self._buttons.GetAffirmativeButton().Enable()
         wxhelper.getButtonFromStdDialogButtonSizer(
             self._buttons, wx.ID_OK
         ).Enable()
@@ -134,13 +135,9 @@ class Dialog(sized_controls.SizedDialog):
 
 class NotebookDialog(Dialog):
     def createInterior(self):
-        return notebook.Notebook(
-            self._panel,
-            agwStyle=aui.AUI_NB_DEFAULT_STYLE
-            & ~aui.AUI_NB_TAB_SPLIT
-            & ~aui.AUI_NB_TAB_MOVE
-            & ~aui.AUI_NB_DRAW_DND_TAB,
-        )
+        return notebook.Notebook(self._panel,
+                                 agwStyle=aui.AUI_NB_DEFAULT_STYLE & ~aui.AUI_NB_TAB_SPLIT &
+                                 ~aui.AUI_NB_TAB_MOVE & ~aui.AUI_NB_DRAW_DND_TAB)
 
     def fillInterior(self):
         self.addPages()
@@ -150,7 +147,7 @@ class NotebookDialog(Dialog):
 
     def ok(self, *args, **kwargs):
         self.okPages()
-        super(NotebookDialog, self).ok(*args, **kwargs)
+        super().ok(*args, **kwargs)
 
     def okPages(self, *args, **kwargs):
         for page in self._interior:
@@ -165,29 +162,25 @@ class HtmlWindowThatUsesWebBrowserForExternalLinks(wx.html.HtmlWindow):
         openedLinkInExternalBrowser = False
         if linkInfo.GetTarget() == "_blank":
             import webbrowser  # pylint: disable=W0404
-
             try:
                 webbrowser.open(linkInfo.GetHref())
                 openedLinkInExternalBrowser = True
             except webbrowser.Error:
                 pass
         if not openedLinkInExternalBrowser:
-            super(
-                HtmlWindowThatUsesWebBrowserForExternalLinks, self
-            ).OnLinkClicked(linkInfo)
+            super(HtmlWindowThatUsesWebBrowserForExternalLinks,
+                  self).OnLinkClicked(linkInfo)
 
 
 class HTMLDialog(Dialog):
     def __init__(self, title, htmlText, *args, **kwargs):
         self._htmlText = htmlText
-        super(HTMLDialog, self).__init__(
-            None, title, buttonTypes=wx.ID_CLOSE, *args, **kwargs
-        )
+        super().__init__(None, title, buttonTypes=wx.ID_CLOSE,
+                         *args, **kwargs)
 
     def createInterior(self):
-        interior = HtmlWindowThatUsesWebBrowserForExternalLinks(
-            self._panel, -1, size=(550, 400)
-        )
+        interior = HtmlWindowThatUsesWebBrowserForExternalLinks(self._panel,
+                                                                -1, size=(550, 400))
         if self._direction:
             interior.SetLayoutDirection(self._direction)
         return interior

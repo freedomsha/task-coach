@@ -16,13 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, os, shutil
+from ... import tctest
+import os
+import shutil
 from taskcoachlib import gui, config
 
 
-class TemplatesDialogTestCase(test.wxTestCase):
+class TemplatesDialogTestCase(tctest.wxTestCase):
     def setUp(self):
-        super(TemplatesDialogTestCase, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
 
         # Monkey-patching
@@ -37,7 +39,7 @@ class TemplatesDialogTestCase(test.wxTestCase):
         )
 
     def tearDown(self):
-        super(TemplatesDialogTestCase, self).tearDown()
+        super().tearDown()
         self.safelyRemove(self.path)
 
     def safelyRemove(self, path):

@@ -18,8 +18,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib import patterns
 from taskcoachlib.domain import base
-from taskcoachlib.thirdparty.pubsub import pub
+
+# try:
+#    from taskcoachlib.thirdparty.pubsub import pub
+# except ImportError:
+#    from wx.lib.pubsub import pub
+from pubsub import pub
 from .category import Category
+
+# Le module sre_constants est un détail d'implémentation interne qui a changé/disparu.
+# re.error est la manière standard et portable de capturer les erreurs d'expression régulière.
 
 
 class CategoryFilter(base.Filter):
@@ -50,10 +58,10 @@ class CategoryFilter(base.Filter):
             self.onFilterMatchingChanged,
             "settings.view.categoryfiltermatchall",
         )
-        super(CategoryFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def detach(self):
-        super(CategoryFilter, self).detach()
+        super().detach()
         self.removeObserver(self.onCategoryChanged)
 
     def filterItems(self, categorizables):

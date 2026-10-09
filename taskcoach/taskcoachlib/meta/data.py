@@ -22,16 +22,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Edit these for every release:
 
-version = "1.5.0"  # Current version number of the application
-tskversion = 37  # Current version number of the task file format, changed to 37 for release 1.3.23.
-release_day = "5"  # Day number of the release, 1-31, as string
+# from builtins import str
+# from builtins import map
+
+version = "2.0.0"  # Current version number of the application
+tskversion = 38  # Current version number of the task file format, changed to 37 for release 1.3.23.
+release_day = "13"  # Day number of the release, 1-31, as string
 release_month = "September"  # Month of the release in plain English
 release_year = "2020"  # Year of the release as string
 release_status = "stable"  # One of 'alpha', 'beta', 'stable'
 
 # No editing needed below this line for doing a release.
 
-import re, datetime
+import re  # noqa: E402
+import datetime  # noqa: E402
 
 try:
     from taskcoachlib.meta.revision import (
@@ -77,8 +81,11 @@ if revision:  # Buildbot sets revision
 
 assert release_month in months  # Try to prevent typo's
 release_month_nr = "%02d" % (months.index(release_month) + 1)
+# release_month_nr = f"{months.index(release_month) + 1:02d}"
 release_day_nr = "%02d" % int(release_day)
+# release_day_nr = f"{int(release_day):02d}"
 date = release_month + " " + release_day + ", " + release_year
+# date = f"{release_month} {release_day}, {release_year}"
 
 name = "Task Coach"
 description = "Your friendly task manager"
@@ -95,6 +102,7 @@ long_description = (
 keywords = "task manager, todo list, pim, time registration, track effort"
 author_first, author_last = "Frank", "Niessink"  # Needed for PAD file
 author = "%s %s, Jerome Laheurte, and Aaron Wolf" % (author_first, author_last)
+# author = f"{author_first} {author_last}, Jerome Laheurte, and Aaron Wolf"
 author_unicode = "%s %s, Jérôme Laheurte, and Aaron Wolf" % (
     author_first,
     author_last,
@@ -104,17 +112,30 @@ author_email = "developers@taskcoach.org"
 filename = name.replace(" ", "")
 filename_lower = filename.lower()
 
-url = "http://taskcoach.org/"  # Don't remove the trailing slash, other code is assuming it will be there
+# url = "http://taskcoach.org/"  # Ne supprimez pas la barre oblique finale, un autre code suppose qu'elle sera là
+url = "https://github.com/taskcoach/taskcoach"  # Project homepage (GitHub)
+github_url = url  # Alias for backwards compatibility
 screenshot = (
     url
     + "screenshots/Windows/0.71.2-Windows_XP-Tasks_categories_and_effort.png"
 )
-icon = url + "taskcoach.png"
-pad = url + "pad.xml"
-version_url = url + "version.txt"
-message_url = url + "messages.txt"
-download = url + "download.html"
-dist_download_prefix = "http://downloads.sourceforge.net/%s" % filename_lower
+# icon = url + "taskcoach.png"
+# icon = "{0}taskcoach.png".format(url)
+icon = f"{url}taskcoach.png"
+# pad = url + "pad.xml"
+# pad = "{0}pad.xml".format(url)
+pad = f"{url}pad.xml"
+# version_url = url + "version.txt"
+# version_url = "{0}version.txt".format(url)
+version_url = f"{url}version.txt"
+# message_url = url + "messages.txt"
+# message_url = "{0}messages.txt".format(url)
+message_url = f"{url}messages.txt"
+# download = url + "download.html"
+# download = "{0}download.html".format(url)
+download = f"{url}download.html"
+# dist_download_prefix = "http://downloads.sourceforge.net/%s" % filename_lower
+dist_download_prefix = f"http://downloads.sourceforge.net/{filename_lower}"
 faq_url = "https://answers.launchpad.net/taskcoach/+faqs"
 sf_tracker_url = "https://sourceforge.net/tracker/"
 bug_report_url = sf_tracker_url + "?func=add&group_id=130831&atid=719134"
@@ -123,7 +144,9 @@ support_request_url = sf_tracker_url + "?group_id=130831&atid=719135"
 feature_request_url = "http://taskcoach.uservoice.com"
 translations_url = "https://translations.launchpad.net/taskcoach"
 donate_url = url + "givesupport.html"
+# donate_url = f"{url}givesupport.html"
 i18n_url = url + "i18n.html"
+# i18n_url = f"{url}i18n.html"
 
 announcement_addresses = (
     "taskcoach@yahoogroups.com, python-announce-list@python.org"
@@ -168,6 +191,7 @@ platform = "Any"
 pythonversion = "2.6"
 wxpythonversionnumber = "3.0.0.0"
 wxpythonversion = "%s-unicode" % wxpythonversionnumber
+# wxpythonversion = f"{wxpythonversionnumber}-unicode"
 twistedversionnumber = "10.0"
 igraphversionnumber = "0.7"
 
@@ -231,8 +255,9 @@ languages_list = ",".join(list(languages.keys()))
 
 
 def __createDict(localsDict):
-    """Provide the local variables as a dictionary for use in string
-    formatting."""
+    """Fournissez les variables locales sous forme de dictionnaire à utiliser
+    dans le formatage de chaîne.
+    """
     metaDict = {}  # pylint: disable=W0621
     for key in localsDict:
         if not key.startswith("__"):

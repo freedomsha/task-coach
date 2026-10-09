@@ -16,12 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import division
+#
+# from builtins import object
+# from past.utils import old_div
 import wx
-from .notifier import AbstractNotifier
+from taskcoachlib.notify.notifier import AbstractNotifier
 from taskcoachlib import operating_system
 
-
-# ==============================================================================
+# =============================================================================
 # Utils
 
 
@@ -31,18 +34,27 @@ class AnimatedShow(wx.Timer):
     """
 
     def __init__(self, frame, show=True):
-        super(AnimatedShow, self).__init__()
+        super().__init__()
 
         if frame.CanSetTransparent():
             self.__frame = frame
             self.__step = 0
             self.__show = show
 
-            id_ = wx.NewIdRef()
+            id_ = wx.NewId()
+            # méthode dépréciée
+            # id_ = wx.NewIdRef().GetId()
+            # id_ = wx.NewIdRef()
+            # id_ = wx.ID_ANY
             self.SetOwner(self, id_)
-            wx.EVT_TIMER(self, id_, self.__OnTick)
+            # wx.EVT_TIMER(self, id_, self.__OnTick)
+            # wx.EVT_TIMER(self, id_, self.onEverySecond)
+            #  wxPyDeprecationWarning: Call to deprecated item __call__. Use :meth:`EvtHandler.Bind` instead.
+            # self.Bind(wx.EVT_TIMER, self.onEverySecond, self.__timer)
+            self.Bind(wx.EVT_TIMER, self.__OnTick, id=id_)
             self.Start(100)
-            wx.EVT_CLOSE(frame, self.__OnClose)
+            # wx.EVT_CLOSE(frame, self.__OnClose)
+            frame.Bind(wx.EVT_CLOSE, self.__OnClose)
 
             frame.SetTransparent(0)
 
@@ -55,9 +67,11 @@ class AnimatedShow(wx.Timer):
         self.__step += 1
 
         if self.__show:
-            alpha = int(255.0 * self.__step / 10)
+            # alpha = int(old_div(255.0 * self.__step, 10))
+            alpha = int(255.0 * self.__step // 10)
         else:
-            alpha = int(255.0 * (10 - (self.__step - 1)) / 10)
+            # alpha = int(old_div(255.0 * (10 - (self.__step - 1)), 10))
+            alpha = int(255.0 * (10 - (self.__step - 1)) // 10)
 
         self.__frame.SetTransparent(alpha)
 
@@ -78,26 +92,36 @@ class AnimatedMove(wx.Timer):
     """
 
     def __init__(self, frame, destination):
-        super(AnimatedMove, self).__init__()
+        super().__init__()
 
         self.__frame = frame
+        # self.__origin = frame.GetPositionTuple()
         self.__origin = frame.GetPosition()
         self.__destination = destination
         self.__step = 0
 
-        id_ = wx.NewIdRef()
+        id_ = wx.NewId()
+        # méthode dépréciée
+        # id_ = wx.NewIdRef()
+        # id_ = wx.ID_ANY
         self.SetOwner(self, id_)
-        wx.EVT_TIMER(self, id_, self.__OnTick)
+        # wx.EVT_TIMER(self, id_, self.__OnTick)
+        # wx.EVT_TIMER(self, id_, self.onEverySecond)
+        #  wxPyDeprecationWarning: Call to deprecated item __call__. Use :meth:`EvtHandler.Bind` instead.
+        # self.Bind(wx.EVT_TIMER, self.onEverySecond, self.__timer)
+        self.Bind(wx.EVT_TIMER, self.__OnTick, id=id_)
         self.Start(100)
-        wx.EVT_CLOSE(frame, self.__OnClose)
+        # wx.EVT_CLOSE(frame, self.__OnClose)
+        frame.Bind(wx.EVT_CLOSE, self.__OnClose)
 
     def __OnTick(self, event):  # pylint: disable=W0613
         x0, y0 = self.__origin
         x1, y1 = self.__destination
         self.__step += 1
 
-        curX = int(x0 + (x1 - x0) * 1.0 * self.__step / 10)
-        curY = int(y0 + (y1 - y0) * 1.0 * self.__step / 10)
+        # curX = int(x0 + old_div((x1 - x0) * 1.0 * self.__step, 10))
+        curX = int(x0 + (x1 - x0) * 1.0 * self.__step // 10)
+        curY = int(y0 + (y1 - y0) * 1.0 * self.__step // 10)
 
         self.__frame.SetPosition(wx.Point(curX, curY))
 
@@ -108,7 +132,7 @@ class AnimatedMove(wx.Timer):
         self.Stop()
         event.Skip()
 
-
+
 # ==============================================================================
 # Notifications
 
@@ -123,11 +147,11 @@ elif operating_system.isGTK():
         def __init__(
             self, parent, id_, title, style=0
         ):  # pylint: disable=W0613,E1003
-            super(_NotifyBase, self).__init__(parent, id_)  # No style
+            super().__init__(parent, id_)  # No style
 
         def Close(self):  # pylint: disable=W0221,E1003
             # Strange...
-            super(_NotifyBase, self).Close()
+            super().Close()
             self.Destroy()
 
 else:
@@ -152,9 +176,7 @@ class NotificationFrameBase(_NotifyBase):
         style = self.Style() | (
             wx.STAY_ON_TOP if parent is None else wx.FRAME_FLOAT_ON_PARENT
         )
-        super(NotificationFrameBase, self).__init__(
-            parent, wx.ID_ANY, "", style=style
-        )
+        super().__init__(parent, wx.ID_ANY, "", style=style)
         self.Populate()
 
     def Populate(self):
@@ -172,9 +194,8 @@ class NotificationFrameBase(_NotifyBase):
             )
 
         # Seems that font copy-on-write does not work sometimes...
-        font = wx.FontFromNativeInfoString(
-            wx.NORMAL_FONT.GetNativeFontInfoDesc()
-        )
+        # font = wx.font_from_native_info_string(wx.NORMAL_FONT.GetNativeFontInfoDesc())
+        font = wx.Font(wx.NORMAL_FONT.GetNativeFontInfoDesc())
         font.SetPointSize(8)
         font.SetWeight(wx.FONTWEIGHT_BOLD)
 
@@ -185,7 +206,8 @@ class NotificationFrameBase(_NotifyBase):
         btn = self.CloseButton(panel)
         if btn is not None:
             hsz.Add(btn, 0, wx.ALL, 2)
-            wx.EVT_BUTTON(btn, wx.ID_ANY, self.DoClose)
+            # wx.EVT_BUTTON(btn, wx.ID_ANY, self.DoClose)
+            btn.Bind(wx.EVT_BUTTON, self.DoClose)
 
         vsz.Add(hsz, 0, wx.ALL | wx.EXPAND, 2)
 
@@ -205,7 +227,7 @@ class NotificationFrameBase(_NotifyBase):
     def CloseButton(self, panel):
         """
         Override this to return a button instance if you want to
-        customize the close button. You may also return None but if
+        customize the Close button. You may also return None but if
         you do so, please provide another way for the user to dismiss
         the notification.
         """
@@ -227,6 +249,7 @@ class NotificationFrameBase(_NotifyBase):
         @param panel: Your parent panel.
         """
 
+    # @staticmethod
     def Style(self):
         """Return the frame's style"""
 
@@ -262,7 +285,7 @@ class NotificationFrame(NotificationFrameBase):
     def __init__(self, message, *args, **kwargs):
         self.message = message
 
-        super(NotificationFrame, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def AddInnerContent(self, sizer, panel):
         sizer.Add(
@@ -281,7 +304,7 @@ class _NotificationCenter(wx.EvtHandler):
     framePool = []
 
     def __init__(self):
-        super(_NotificationCenter, self).__init__()
+        super().__init__()
 
         self.displayedFrames = []
         self.waitingFrames = []
@@ -289,9 +312,20 @@ class _NotificationCenter(wx.EvtHandler):
         self.notificationMargin = 5
 
         self.__tmr = wx.Timer()
-        id_ = wx.NewIdRef()
+        id_ = wx.NewId()
+        # id_ = wx.NewIdRef()
+        # id_ = wx.ID_ANY
         self.__tmr.SetOwner(self, id_)
-        wx.EVT_TIMER(self, id_, self.__OnTick)
+        # wx.EVT_TIMER(self, id_, self.__OnTick)
+        #         self.__timer = wx.Timer(self, timerId)
+        #         # wx.EVT_TIMER(self, timerId, self.OnTimer)
+        #         #  wxPyDeprecationWarning: Call to deprecated item __call__. Use :meth:`EvtHandler.Bind` instead.
+        #         self.Bind(wx.EVT_TIMER, self.OnTimer, self.__timer)
+        # wx.EVT_TIMER(self, id_, self.onEverySecond)
+        # self.Bind(wx.EVT_TIMER, self.__OnTick, self.__tmr)
+        self.Bind(
+            wx.EVT_TIMER, self.__OnTick, id=id_
+        )  # TODO : Vérifier si cela fonctionne !
         self.__tmr.Start(1000)
 
     def NotifyFrame(self, frm, timeout=None):
@@ -305,10 +339,12 @@ class _NotificationCenter(wx.EvtHandler):
 
         if frm.GetParent():
             dx, dy = frm.GetParent().GetPosition()
+            # dw, dh = frm.GetParent().GetSizeTuple()
             dw, dh = frm.GetParent().GetSize()
         else:
             dx, dy, dw, dh = self.GetDisplayRect()
 
+        # w, h = frm.GetSizeTuple()
         w, h = frm.GetSize()
         w = w if w > self.notificationWidth else self.notificationWidth
 
@@ -328,7 +364,10 @@ class _NotificationCenter(wx.EvtHandler):
         else:
             x = dx + dw - w - self.notificationMargin
 
-        frm.SetDimensions(x, bottom - h - self.notificationMargin, w, h)
+        # frm.SetDimensions(x,
+        #                   bottom - h - self.notificationMargin,
+        #                   w, h)
+        frm.SetSize(x, bottom - h - self.notificationMargin, w, h)
         self.displayedFrames.append((frm, h, timeout))
 
         frm.Layout()
@@ -341,7 +380,9 @@ class _NotificationCenter(wx.EvtHandler):
         for frm, tmo in waiting:
             self.NotifyFrame(frm, timeout=tmo)
 
-    def Notify(self, title, msg, icon=None, timeout=None):
+    def Notify(
+        self, title, msg, icon=None, timeout=None
+    ):  # missing parameter icon in docstring
         """
         Present a new simple notification frame.
 
@@ -367,7 +408,7 @@ class _NotificationCenter(wx.EvtHandler):
 
     def HideAll(self):
         """
-        Hide all notification frames. Call this when you want to close
+        Hide all notification frames. Call this when you want to Close
         your main frame, or else the wx loop won't exit.
         """
 
@@ -377,6 +418,13 @@ class _NotificationCenter(wx.EvtHandler):
             frame.Close()
         self.waitingFrames = []
 
+    def cleanup(self):
+        """Stop the notification timer to prevent crashes during app shutdown."""
+        if self.__tmr and self.__tmr.IsRunning():
+            self.__tmr.Stop()
+        self.HideAll()
+
+    # @staticmethod
     def GetDisplayRect(self):
         """
         Returns the geometry of the main application frame's display
@@ -394,6 +442,7 @@ class _NotificationCenter(wx.EvtHandler):
         for frame, height, tmo in self.displayedFrames:
             if frame.GetParent():
                 dx, dy = frame.GetParent().GetPosition()
+                # dw, dh = frame.GetParent().GetSizeTuple()
                 dw, dh = frame.GetParent().GetSize()
             else:
                 dx, dy, dw, dh = self.GetDisplayRect()
@@ -417,6 +466,7 @@ class _NotificationCenter(wx.EvtHandler):
                     newList.append(
                         (frame, height, tmo - 1 if tmo is not None else None)
                     )
+                    # x, y = frame.GetPositionTuple()
                     x, y = frame.GetPosition()
                     AnimatedMove(
                         frame, (x, bottom - height - self.notificationMargin)
@@ -430,7 +480,7 @@ class _NotificationCenter(wx.EvtHandler):
 class NotificationCenter(object):
     _instance = None
 
-    def __new__(self):
+    def __new__(self):  # normally cls
         if NotificationCenter._instance is None:
             NotificationCenter._instance = _NotificationCenter()
         return NotificationCenter._instance
@@ -472,7 +522,7 @@ if __name__ == "__main__":
 
     class TestFrame(wx.Frame):
         def __init__(self):
-            super(TestFrame, self).__init__(None, wx.ID_ANY, "Test frame")
+            super().__init__(None, wx.ID_ANY, "Test frame")
             # pylint: disable=E1101
             NotificationCenter().Notify(
                 "Sample title", "Sample content", timeout=3
@@ -496,13 +546,16 @@ if __name__ == "__main__":
             )
             NotificationCenter().Notify("Last sample", "Foobar!")
 
-            wx.EVT_CLOSE(self, self.OnClose)
+            # wx.EVT_CLOSE(self, self.OnClose)
+            self.Bind(wx.EVT_CLOSE, self.OnClose)
 
+        # @staticmethod
         def OnClose(self, evt):
             NotificationCenter().HideAll()  # pylint: disable=E1101
             evt.Skip()
 
     class App(wx.App):
+        # @staticmethod
         def OnInit(self):
             from taskcoachlib.gui import artprovider
 

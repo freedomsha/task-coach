@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from builtins import object
 import wx  # For ArtProvider
 
 from taskcoachlib.changes import ChangeMonitor
@@ -30,20 +31,45 @@ from taskcoachlib.i18n import _
 
 
 class ChangeSynchronizer(object):
+    """
+    Synchronise les changements entre la mémoire et le disque.
+
+    Cette classe prend en charge la fusion des objets composites,
+    la gestion des objets possédés (notes et pièces jointes),
+    le reparentage des objets, la suppression des objets
+    et l'application des changements du disque à la mémoire.
+    """
+
     def __init__(self, monitor, allChanges):
         self._monitor = monitor
         self._allChanges = allChanges
 
     @staticmethod
     def allObjects(theList):
+        """
+        Retourne une liste de tous les objets dans la liste donnée, y compris les objets imbriqués.
+
+        Args:
+            theList: Liste d'objets à parcourir.
+
+        Returns:
+            list: Liste de tous les objets, y compris les objets imbriqués.
+        """
         result = list()
-        for obj in theList:
+        for a_obj in theList:
+            # Si c'est une weakref ou un callable, on extrait l'objet réel
+            obj = a_obj() if callable(a_obj) else a_obj
+            if obj is None:
+                continue
+
             result.append(obj)
             if isinstance(obj, CompositeObject):
                 result.extend(ChangeSynchronizer.allObjects(obj.children()))
-            if isinstance(obj, NoteOwner):
+            # if isinstance(obj, NoteOwner):
+            if isinstance(obj, NoteOwner) or hasattr(obj, "notes"):
                 result.extend(ChangeSynchronizer.allObjects(obj.notes()))
-            if isinstance(obj, AttachmentOwner):
+            # if isinstance(obj, AttachmentOwner):
+            if isinstance(obj, AttachmentOwner) or hasattr(obj, "attachments"):
                 result.extend(ChangeSynchronizer.allObjects(obj.attachments()))
             if isinstance(obj, Task):
                 result.extend(obj.efforts())
@@ -59,6 +85,7 @@ class ChangeSynchronizer(object):
         self.diskMap = dict()
         self.diskOwnerMap = dict()
 
+        # for devGUID, changes in self._allChanges.items():
         for devGUID, changes in list(self._allChanges.items()):
             if devGUID == self._monitor.guid():
                 self.diskChanges = changes
@@ -70,17 +97,23 @@ class ChangeSynchronizer(object):
 
         # Cleanup monitor
         self._monitor.empty()
-        for memList, diskList in lists:
+        for memList, diskList in list(lists):
             for obj in self.allObjects(memList.rootItems()):
                 self._monitor.resetChanges(obj)
 
         # Merge conflict changes
+        # for devGUID, changes in self._allChanges.items():  # list ?
+        # En Python 3, .items() renvoie une vue dynamique.
+        # Si le dictionnaire change pendant la boucle
+        # (ce qui arrive souvent dans les logiques de synchro),
+        # Python lève une erreur.
+        # list(...) crée un instantané sûr de la liste au moment du début de la boucle.
         for devGUID, changes in list(self._allChanges.items()):
             if devGUID != self._monitor.guid():
                 changes.merge(self.conflictChanges)
 
     def notify(self, message):
-        self.notifier.notify(
+        self.notifier.Notify(
             _("Task Coach"),
             message,
             wx.ArtProvider.GetBitmap("taskcoach", size=wx.Size(32, 32)),
@@ -163,6 +196,12 @@ class ChangeSynchronizer(object):
     def mergeOwnedObjectsFromDisk(self, diskList):
         # Second pass: 'owned' objects (notes and attachments
         # currently) new on disk, and efforts.
+        print(
+            "ChangeSynchronizer.mergOwnedObjectsFromDisk : SYNC OBJ diskList :",
+            diskList,
+            type(diskList),
+            isinstance(diskList, AttachmentOwner),
+        )
 
         for obj in diskList.allItemsSorted():
             if isinstance(obj, NoteOwner):
@@ -174,64 +213,123 @@ class ChangeSynchronizer(object):
 
     def _handleNewOwnedObjectsOnDisk(self, diskObjects):
         for diskObject in diskObjects:
-            className = diskObject.__class__.__name__
+            # Résolution de la weakref si c'est un callable
+            actualDiskObject = (
+                diskObject() if callable(diskObject) else diskObject
+            )
+            # className = diskObject.__class__.__name__
+            className = actualDiskObject.__class__.__name__
             if className.endswith("Attachment"):
                 className = "Attachment"
+            print(
+                "ChangeSynchronizer._handleNewOwnedObjectsOnDisk : SYNC OBJ",
+                actualDiskObject,
+                type(actualDiskObject),
+                isinstance(actualDiskObject, AttachmentOwner),
+            )
+            # if isinstance(diskObject, CompositeObject):
+            #     children = diskObject.children()[:]
+            if isinstance(actualDiskObject, CompositeObject):
+                children = actualDiskObject.children()[:]
 
-            if isinstance(diskObject, CompositeObject):
-                children = diskObject.children()[:]
-
-            memChanges = self._monitor.getChanges(diskObject)
+            # memChanges = self._monitor.getChanges(diskObject)
+            memChanges = self._monitor.getChanges(actualDiskObject)
             deleted = memChanges is not None and "__del__" in memChanges
 
-            if diskObject.id() not in self.memMap and not deleted:
+            # if diskObject.id() not in self.memMap and not deleted:
+            if actualDiskObject.id() not in self.memMap and not deleted:
                 addObject = True
 
-                if isinstance(diskObject, CompositeObject):
-                    for child in diskObject.children():
-                        diskObject.removeChild(child)
-                    parent = diskObject.parent()
+                # if isinstance(diskObject, CompositeObject):
+                if isinstance(actualDiskObject, CompositeObject):
+                    # for child in diskObject.children():
+                    for child in actualDiskObject.children():
+                        # diskObject.removeChild(child)
+                        actualDiskObject.removeChild(child)
+                    # parent = diskObject.parent()
+                    parent = actualDiskObject.parent()
                     if parent is not None and parent.id() in self.memMap:
                         parent = self.memMap[parent.id()]
-                        parent.addChild(diskObject)
-                        diskObject.setParent(parent)
+                        # parent.addChild(diskObject)
+                        parent.addChild(actualDiskObject)
+                        # diskObject.setParent(parent)
+                        actualDiskObject.setParent(parent)
                     elif parent is not None:
                         # Parent deleted from memory; the object
                         # becomes top-level but its owner stays
                         # the same.
-                        diskObject.setParent(None)
+                        # diskObject.setParent(None)
+                        actualDiskObject.setParent(None)
                         while parent.parent() is not None:
                             parent = parent.parent()
                         diskOwner = self.diskOwnerMap[parent.id()]
-                        if diskOwner.id() in self.memMap:
+                        # Protection identique : on résout l'owner
+                        actualOwner = (
+                            diskOwner() if callable(diskOwner) else diskOwner
+                        )
+                        # if diskOwner.id() in self.memMap:
+                        if actualDiskOwner.id() in self.memMap:
                             memOwner = self.memMap[diskOwner.id()]
-                            getattr(memOwner, "add%s" % className)(diskObject)
-                            self.conflictChanges.addChange(
-                                diskObject, "__owner__"
+                            # Protection identique : on résout l'owner
+                            actualMemOwner = (
+                                memOwner() if callable(memOwner) else memOwner
                             )
-                            self.memOwnerMap[diskObject.id()] = memOwner
+                            # getattr(memOwner, "add%s" % className)(diskObject)
+                            getattr(actualMemOwner, "add%s" % className)(
+                                actualDiskObject
+                            )
+                            self.conflictChanges.addChange(
+                                # diskObject, "__owner__"
+                                actualDiskObject,
+                                "__owner__",
+                            )
+                            # self.memOwnerMap[diskObject.id()] = memOwner
+                            self.memOwnerMap[actualDiskObject.id()] = (
+                                actualMemOwner
+                            )
                         self.notify(
                             _(
                                 '"%s" became top-level because its parent was locally deleted.'
                             )
-                            % diskObject.subject()
+                            # % diskObject.subject()
+                            % actualDiskObject.subject()
                         )
                     else:
-                        diskOwner = self.diskOwnerMap[diskObject.id()]
-                        if diskOwner.id() in self.memMap:
-                            memOwner = self.memMap[diskOwner.id()]
-                            getattr(memOwner, "add%s" % className)(diskObject)
-                            self.memOwnerMap[diskObject.id()] = memOwner
+                        # diskOwner = self.diskOwnerMap[diskObject.id()]
+                        diskOwner = self.diskOwnerMap[actualDiskObject.id()]
+                        # Protection identique : on résout l'owner
+                        actualDiskOwner = (
+                            diskOwner() if callable(diskOwner) else diskOwner
+                        )
+                        # if diskOwner.id() in self.memMap:
+                        if actualDiskOwner.id() in self.memMap:
+                            # memOwner = self.memMap[diskOwner.id()]
+                            memOwner = self.memMap[actualDiskOwner.id()]
+                            # getattr(memOwner, "add%s" % className)(diskObject)
+                            getattr(memOwner, "add%s" % className)(
+                                actualDiskObject
+                            )
+                            # self.memOwnerMap[diskObject.id()] = memOwner
+                            self.memOwnerMap[actualDiskObject.id()] = memOwner
                         else:
                             # Owner deleted. Just forget it.
                             self.conflictChanges.addChange(
-                                diskObject, "__del__"
+                                # diskObject, "__del__"
+                                actualDiskObject,
+                                "__del__",
                             )
                             addObject = False
                 else:
-                    diskOwner = self.diskOwnerMap[diskObject.id()]
-                    if diskOwner.id() in self.memMap:
-                        memOwner = self.memMap[diskOwner.id()]
+                    # diskOwner = self.diskOwnerMap[diskObject.id()]
+                    diskOwner = self.diskOwnerMap[actualDiskObject.id()]
+                    # Protection identique : on résout l'owner
+                    actualDiskOwner = (
+                        diskOwner() if callable(diskOwner) else diskOwner
+                    )
+                    # if diskOwner.id() in self.memMap:
+                    if actualDiskOwner.id() in self.memMap:
+                        # memOwner = self.memMap[diskOwner.id()]
+                        memOwner = self.memMap[actualDiskOwner.id()]
                         getattr(memOwner, "add%s" % className)(diskObject)
                         self.memOwnerMap[diskObject.id()] = memOwner
                     else:
@@ -242,27 +340,76 @@ class ChangeSynchronizer(object):
                 if addObject:
                     self.memMap[diskObject.id()] = diskObject
 
-            if diskObject.id() in self.memMap:
-                if isinstance(diskObject, CompositeObject):
+            # if diskObject.id() in self.memMap:
+            #     if isinstance(diskObject, CompositeObject):
+            #         self._handleNewOwnedObjectsOnDisk(children)
+            #     if isinstance(diskObject, NoteOwner):
+            #         self._handleNewOwnedObjectsOnDisk(diskObject.notes())
+            #     if isinstance(diskObject, AttachmentOwner):
+            #         self._handleNewOwnedObjectsOnDisk(diskObject.attachments())
+            if actualDiskObject.id() in self.memMap:
+                if isinstance(actualDiskObject, CompositeObject):
                     self._handleNewOwnedObjectsOnDisk(children)
-                if isinstance(diskObject, NoteOwner):
-                    self._handleNewOwnedObjectsOnDisk(diskObject.notes())
-                if isinstance(diskObject, AttachmentOwner):
-                    self._handleNewOwnedObjectsOnDisk(diskObject.attachments())
+                if isinstance(actualDiskObject, NoteOwner) or hasattr(
+                    actualDiskObject, "notes"
+                ):
+                    self._handleNewOwnedObjectsOnDisk(actualDiskObject.notes())
+                if isinstance(actualDiskObject, AttachmentOwner) or hasattr(
+                    actualDiskObject, "attachments"
+                ):
+                    print(
+                        "ChnageSynchronizer._handleNewOwnedObjectsOnDisk : SYNC ATTACHMENTS",
+                        actualDiskObject.attachments(),
+                    )
+                    self._handleNewOwnedObjectsOnDisk(
+                        actualDiskObject.attachments()
+                    )
 
     def _handleNewEffortsOnDisk(self, diskEfforts):
+        """
+
+        Args:
+            diskEfforts:
+
+        Returns:
+
+        """
+        # for diskEffort in diskEfforts:
+        #     memChanges = self._monitor.getChanges(diskEffort)
+        #     deleted = memChanges is not None and "__del__" in memChanges
+        #     if diskEffort.id() not in self.memMap and not deleted:
+        #         diskTask = diskEffort.parent()
+        #         # if diskTask.id() in self.memMap:
+        #         # En Python, pour obtenir l'objet pointé par une weakref,
+        #         # il faut l'appeler comme une fonction : diskTask().
+        #         # On récupère l'objet réel depuis la weakref avant d'appeler .id()
+        #         actualTask = diskTask()
+        #         if actualTask and actualTask.id() in self.memMap:
+        #             memTask = self.memMap[diskTask.id()]
+        #             diskEffort.setTask(memTask)
+        #             self.memMap[diskEffort.id()] = diskEffort
+        #         else:
+        #             # Task deleted; forget it.
+        #             self.conflictChanges.addChange(diskEffort, "__del__")
+
         for diskEffort in diskEfforts:
-            memChanges = self._monitor.getChanges(diskEffort)
-            deleted = memChanges is not None and "__del__" in memChanges
-            if diskEffort.id() not in self.memMap and not deleted:
-                diskTask = diskEffort.parent()
-                if diskTask.id() in self.memMap:
-                    memTask = self.memMap[diskTask.id()]
-                    diskEffort.setTask(memTask)
-                    self.memMap[diskEffort.id()] = diskEffort
-                else:
-                    # Task deleted; forget it.
-                    self.conflictChanges.addChange(diskEffort, "__del__")
+            diskTask = diskEffort.task()
+
+            # # AJOUT : Dé-référencement de la weakref si nécessaire
+            # if callable(diskTask):
+            #     actualTask = diskTask()
+            # else:
+            #     actualTask = diskTask
+            actualDiskTask = diskTask() if callable(diskTask) else diskTask
+
+            # On vérifie si la tâche existe toujours (actualTask n'est pas None)
+            if actualDiskTask and actualDiskTask.id() in self.memMap:
+                memTask = self.memMap[actualDiskTask.id()]
+                diskEffort.setTask(memTask)
+                self.memMap[diskEffort.id()] = diskEffort
+            else:
+                # Task deleted; forget it.
+                self.conflictChanges.addChange(diskEffort, "__del__")
 
     def reparentObjects(self, memList, diskList):
         # Third pass: objects reparented on disk.
@@ -336,6 +483,7 @@ class ChangeSynchronizer(object):
             memChanges = self._monitor.getChanges(memObject)
 
             if diskChanges is not None and "__del__" in diskChanges:
+                # if (memChanges is None or '__del__' in memChanges or len(memChanges) == 0):
                 if (
                     memChanges is None
                     or "__del__" in memChanges

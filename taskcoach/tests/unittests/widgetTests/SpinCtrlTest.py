@@ -16,11 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import widgets
 
 
-class SpinCtrlTest(test.wxTestCase):
+class SpinCtrlTest(tctest.wxTestCase):
     def testPositiveValue(self):
         spinCtrl = widgets.SpinCtrl(self.frame, value=5)
         self.assertEqual(5, spinCtrl.GetValue())
@@ -35,7 +35,7 @@ class SpinCtrlTest(test.wxTestCase):
 
     def testDefaultValueIsAtLeastMinRange(self):
         spinCtrl = widgets.SpinCtrl(self.frame, min=1)
-        self.assertEqual(1, spinCtrl.GetValue())
+        self.assertEqual(1, spinCtrl.GetValue())  # TypeError: 'int' object is not callable
 
     def testMaxRange(self):
         spinCtrl = widgets.SpinCtrl(self.frame, max=100)

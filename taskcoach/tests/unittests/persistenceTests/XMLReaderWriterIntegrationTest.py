@@ -16,24 +16,47 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Les erreurs dans XMLReaderWriterIntegrationTest sont liées à
+des problèmes de sérialisation/désérialisation de certains attributs.
+Pour les résoudre :
+
+    Vérifiez la sérialisation/désérialisation de chaque attribut.
+    Gérez les cas limites et les valeurs None.
+    Utilisez des méthodes de comparaison personnalisées pour les objets complexes.
+    Assurez-vous que les warnings sont correctement gérés.
 """
 
-import io, wx
-import test
+# from future import standard_library
+#
+# standard_library.install_aliases()
+import io
+import wx
+from ... import tctest
 from taskcoachlib import persistence
 from taskcoachlib import config
 from taskcoachlib.domain import task, category, effort, date, note, attachment
 from taskcoachlib.syncml.config import SyncMLConfigNode
 
 
-class IntegrationTestCase(test.TestCase):
+class IntegrationTestCase(tctest.TestCase):
     def setUp(self):
+        # Attributs :
         task.Task.settings = config.Settings(load=False)
+        # Sortie de tampon d'écriture
+        # Utiliser StringIO pour le test
         self.fd = io.StringIO()
+        # Use BytesIO for binary data
+        # self.fd = io.BytesIO()
+        # Nom du fichier (inutile pour StringIO)
         self.fd.name = "testfile.tsk"
-        self.fd.encoding = "utf-8"
+        # self.fd.encoding = "utf-8"
+        # Classe pour lire le fichier
         self.reader = persistence.XMLReader(self.fd)
+        # Classe pour écrire dans le fichier
         self.writer = persistence.XMLWriter(self.fd)
+
         self.taskList = task.TaskList()
         self.categories = category.CategoryList()
         self.notes = note.NoteContainer()
@@ -41,6 +64,7 @@ class IntegrationTestCase(test.TestCase):
         self.changes = dict()
         self.guid = "GUID"
         self.fillContainers()
+
         tasks, categories, notes, syncMLConfig, changes, guid = (
             self.readAndWrite()
         )
@@ -65,6 +89,11 @@ class IntegrationTestCase(test.TestCase):
         )
         self.fd.seek(0)
         return self.reader.read()
+        # # Encoder les données en bytes
+        # xml_data = self.fd.getvalue().encode('utf-8')
+        # # Utiliser BytesIO pour passer les données en bytes
+        # bytes_fd = io.BytesIO(xml_data)
+        # return self.reader.read(bytes_fd)
 
 
 class IntegrationTest_EmptyList(IntegrationTestCase):
@@ -77,6 +106,7 @@ class IntegrationTest_EmptyList(IntegrationTestCase):
 
 class IntegrationTest(IntegrationTestCase):
     def fillContainers(self):
+        """Fill the containers with test data."""
         # pylint: disable=W0201
         self.description = "Description\nLine 2"
         self.task = task.Task(
@@ -98,7 +128,7 @@ class IntegrationTest(IntegrationTestCase):
                 stop_datetime=date.Now(),
             ),
             reminder=date.DateTime(2004, 1, 1),
-            fgColor=wx.BLUE,
+            fgColor=wx.BLUE,  # TODO : à changer pour être compatible tkinter
             bgColor=wx.RED,
             font=wx.NORMAL_FONT,
             expandedContexts=["viewer1"],
@@ -179,7 +209,9 @@ class IntegrationTest(IntegrationTestCase):
         self.assertAttributeWrittenAndRead(self.task, "foregroundColor")
 
     def testBackgroundColor(self):
+        # self.task.setBackgroundColor(wx.Colour(255, 0, 0, 255))  # Rouge
         self.assertAttributeWrittenAndRead(self.task, "backgroundColor")
+        # self.assertAttributeWrittenAndRead(self.task, "bgColor")
 
     def testFont(self):
         self.assertAttributeWrittenAndRead(self.task, "font")
@@ -245,14 +277,15 @@ class IntegrationTest(IntegrationTestCase):
             0
         ].categorizables()
         categorizableIds = set([item.id() for item in categorizables])
-        self.assertEqual(
-            set([self.task.id(), self.note.id()]), categorizableIds
-        )
+        # self.assertEqual(set([self.task.id(), self.note.id()]), categorizableIds)
+        self.assertEqual({self.task.id(), self.note.id()}, categorizableIds)
 
     def testFilteredCategory(self):
+        # self.failUnless(list(self.categoriesWrittenAndRead)[0].isFiltered())
         self.assertTrue(list(self.categoriesWrittenAndRead)[0].isFiltered())
 
     def testExclusiveSubcategories(self):
+        # self.failUnless(
         self.assertTrue(
             list(self.categoriesWrittenAndRead)[0].hasExclusiveSubcategories()
         )
@@ -286,10 +319,15 @@ class IntegrationTest(IntegrationTestCase):
         )
 
     def testAttachment(self):
+        # # Initialisez une pièce jointe valide
+        # self.task.addAttachment("/home/frank/whatever.txt")
         self.assertAttributeWrittenAndRead(self.task, "attachments")
 
     def testRecurrence(self):
         self.assertAttributeWrittenAndRead(self.task, "recurrence")
+        # recurrence = Recurrence()
+        # self.task.setRecurrence(recurrence)
+        # self.assertAttributeWrittenAndRead(self.task, "recurrence", comparator=lambda a, b: a == b)
 
     def testNote(self):
         self.assertEqual(len(self.notes), len(self.notesWrittenAndRead))
@@ -301,10 +339,13 @@ class IntegrationTest(IntegrationTestCase):
         )
 
     def testChildNote(self):
+        """Test that child notes are written and read correctly."""
         self.assertEqual(
             self.notes.rootItems()[0].children()[0].subject(),
             self.notesWrittenAndRead.rootItems()[0].children()[0].subject(),
         )
+        # Il vérifie précisément une propriété essentielle de la sérialisation : la hiérarchie doit survivre au cycle XML → objets → XML.
+        # Le test nous donne donc une information précieuse : la hiérarchie est perdue pendant le round-trip.
 
     def testCategoryDescription(self):
         self.assertEqual(
@@ -324,6 +365,7 @@ class IntegrationTest(IntegrationTestCase):
         )
 
     def testNoteWithCategory(self):
+        # self.failUnless(
         self.assertTrue(
             self.notesWrittenAndRead.rootItems()[0]
             in list(self.categoriesWrittenAndRead)[0].categorizables()

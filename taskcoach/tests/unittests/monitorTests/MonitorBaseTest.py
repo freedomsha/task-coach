@@ -16,17 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, wx
+from ... import tctest
+import wx
 from taskcoachlib.changes import ChangeMonitor
 from taskcoachlib.domain.base import Object, CompositeObject
 from taskcoachlib.patterns import ObservableList
 
 
-class MonitorBaseTest(test.TestCase):
+class MonitorBaseTest(tctest.TestCase):
     klass = Object
     listClass = ObservableList
 
     def setUp(self):
+
         self.monitor = ChangeMonitor()
         self.monitor.monitorClass(self.klass)
 
@@ -53,7 +55,8 @@ class MonitorObjectTest(MonitorBaseTest):
         getattr(self.obj, "set" + methodName[:1].upper() + methodName[1:])(
             value
         )
-        self.assertEqual(self.monitor.getChanges(self.obj), set([name]))
+        # self.assertEqual(self.monitor.getChanges(self.obj), set([name]))
+        self.assertEqual(self.monitor.getChanges(self.obj), {name})
 
     def doTestAttributeDidNotChange(self, name, initialValue, methodName=None):
         if methodName is None:
@@ -120,6 +123,15 @@ class MonitorObjectTest(MonitorBaseTest):
         self.doTestAttributeDidNotChange("appearance", "foo", "selectedIcon")
 
     def testNewObject(self):
+        """
+        Comportement attendu
+
+        Lorsqu'un nouvel objet est ajouté à une collection surveillée,
+        getChanges(obj) doit retourner None
+        (indiquant qu'aucun changement n'a encore été enregistré
+        pour cet objet).
+
+        """
         obj = self.klass(subject="New")
         self.list.append(obj)
         self.assertEqual(self.monitor.getChanges(obj), None)
@@ -133,11 +145,13 @@ class MonitorObjectTest(MonitorBaseTest):
         self.monitor.resetChanges(self.obj)
         self.obj.setSubject("Foo")
         self.list.remove(self.obj)
+        # self.assertEqual(self.monitor.getChanges(self.obj), set(['subject', '__del__']))
         self.assertEqual(
-            self.monitor.getChanges(self.obj), set(["subject", "__del__"])
+            self.monitor.getChanges(self.obj), {"subject", "__del__"}
         )
         self.list.append(self.obj)
-        self.assertEqual(self.monitor.getChanges(self.obj), set(["subject"]))
+        # self.assertEqual(self.monitor.getChanges(self.obj), set(['subject']))
+        self.assertEqual(self.monitor.getChanges(self.obj), {"subject"})
         self.assertFalse(self.monitor.isRemoved(self.obj))
 
 
@@ -145,12 +159,19 @@ class MonitorCompositeObjectTest(MonitorObjectTest):
     klass = CompositeObject
 
     def setUp(self):
-        super(MonitorCompositeObjectTest, self).setUp()
+        super().setUp()
 
         self.child = self.klass(subject="Child")
         self.obj.addChild(self.child)
 
     def testNewChild(self):
+        """
+        Comportement attendu
+
+        Lorsqu'un nouvel enfant est ajouté à un objet composite,
+        getChanges(child) doit retourner None
+        indiquant qu'aucun changement n'a encore été enregistré pour cet objet).
+        """
         child = self.obj.newChild(subject="Child")
         self.assertEqual(self.monitor.getChanges(child), None)
 
@@ -162,13 +183,23 @@ class MonitorCompositeObjectTest(MonitorObjectTest):
     def testChangeChildSubject2(self):
         self.monitor.resetChanges(self.child)
         self.child.setSubject("Child subject")
-        self.assertEqual(self.monitor.getChanges(self.child), set(["subject"]))
+        # self.assertEqual(self.monitor.getChanges(self.child), set(['subject']))
+        self.assertEqual(self.monitor.getChanges(self.child), {"subject"})
 
     def testExpansionChanged(self):
         self.monitor.resetChanges(self.obj)
         self.obj.expand()
+        # self.assertEqual(self.monitor.getChanges(self.obj), set(['expandedContexts']))
+        # self.assertEqual(self.monitor.getChanges(self.obj), {"expandedContexts"})
         self.assertEqual(
-            self.monitor.getChanges(self.obj), set(["expandedContexts"])
+            self.monitor.getChanges(self.obj),
+            {
+                "expandedContexts",
+                # "ordering",
+                # "subject",
+                # "description",
+                # "appearance",
+            },
         )
 
     def testAddChild(self):
@@ -176,4 +207,5 @@ class MonitorCompositeObjectTest(MonitorObjectTest):
         self.list.append(child)
         self.monitor.resetChanges(child)
         self.obj.addChild(child)
-        self.assertEqual(self.monitor.getChanges(child), set(["__parent__"]))
+        # self.assertEqual(self.monitor.getChanges(child), set(['__parent__']))
+        self.assertEqual(self.monitor.getChanges(child), {"__parent__"})

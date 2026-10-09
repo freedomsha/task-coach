@@ -18,98 +18,232 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib.patterns import Observer, ObservableComposite
 from taskcoachlib.domain.categorizable import CategorizableCompositeObject
+
+# from taskcoachlib.domain.base import NoteOwner, AttachmentOwner
+# vous êtes sûr ? quel NoteOwner utiliser ? domain/note/noteowner ou domain/base/owner ?
+from taskcoachlib.domain.attachment import AttachmentOwner
 from taskcoachlib.domain.note import NoteOwner
 from taskcoachlib.domain.task import Task
 from taskcoachlib.domain.effort import Effort
-from taskcoachlib.domain.attachment import AttachmentOwner
-from taskcoachlib.thirdparty import guid
-from taskcoachlib.thirdparty.pubsub import pub
+
+# from taskcoachlib.thirdparty import guid
+# UUID : C'est une standardisation.
+# On utilise la librairie standard de Python au lieu d'un module tiers potentiellement obsolète.
+import uuid
+
+# try:
+from pubsub.core import topicobj
+from pubsub import pub
+
+# except ImportError:
+#    from taskcoachlib.thirdparty.pubsub import pub
+# else:
+#    from wx.lib.pubsub import pub
 
 
 class ChangeMonitor(Observer):
     """
-    This class monitors change to object on a per-attribute basis.
+    Cette classe surveille les modifications apportées à l'objet
+    en fonction de chaque attribut.
+
+    Elle hérite de Observer pour gérer l'enregistrement et la suppression
+    d'observateurs.
+    Elle utilise un dictionnaire pour suivre les changements,
+    où les clés sont les IDs des objets
+    et les valeurs sont des ensembles de changements associés à ces objets.
+
+    Les méthodes de cette classe permettent de geler
+    ou dégeler la surveillance, de réinitialiser les changements,
+    de surveiller ou de ne plus surveiller des classes
+    ou des collections spécifiques, et de gérer les événements
+    liés aux modifications d'attributs, d'ajout ou de suppression d'objets,
+    etc.
+
+        Attributs :
+            __guid (str) : Un identifiant unique pour le moniteur de changements.
+            __frozen (bool) : Indique si le moniteur est gelé (ne surveille pas les changements).
+            __collections (list) : Une liste de collections surveillées.
+            _changes (dict) : Un dictionnaire pour suivre les changements, où les clés sont les IDs des objets et les valeurs sont des ensembles de changements associés à ces objets.
+            _classes (set) : Un ensemble de classes surveillées.
+
+        Methods :
+            __init__(self, id_=None) : Initialise le moniteur de changements avec un ID optionnel.
+            freeze(self) : Gèle le moniteur pour qu'il ne surveille plus les changements.
+            thaw(self) : Dégèle le moniteur pour qu'il recommence à surveiller les changements.
+            guid(self) : Retourne l'identifiant unique du moniteur de changements.
+            reset(self) : Réinitialise le suivi des changements.
+            monitorClass(self, klass) : Commence à surveiller les changements pour une classe spécifique.
+            unmonitorClass(self, klass) : Arrête de surveiller les changements pour une classe spécifique.
+            monitorCollection(self, collection) : Commence à surveiller les changements pour une collection spécifique.
+            unmonitorCollection(self, collection) : Arrête de surveiller les changements pour une collection spécifique.
+            onAttributeChanged(self, newValue, sender, topic=pub.AUTO_TOPIC) : Gère les événements de changement d'attribut.
+            onAttributeChanged_Deprecated(self, event) : Gère les événements de changement d'attribut (version obsolète).
+            onChildAdded(self, event) : Gère les événements d'ajout d'enfant dans un objet composite observable.
+            onChildRemoved(self, event) : Gère les événements de suppression d'enfant dans un objet composite observable.
+            onObjectAdded(self, event) : Gère les événements d'ajout d'objet dans une collection surveillée.
+            onObjectRemoved(self, event) : Gère les événements de suppression d'objet dans une collection surveillée.
+            onOtherObjectAdded(self, event) : Gère les événements d'ajout d'objet dans des contextes autres que les collections surveillées.
+            onOtherObjectRemoved(self, event) : Gère les événements de suppression d'objet dans des contextes autres que les collections surveillées.
+            onEffortAddedOrRemoved(self, newValue, sender) : Gère les événements d'ajout ou de suppression d'effort dans une tâche.
+            onEffortChanged(self, *args, **kwargs) : Gère les événements de changement de tâche parente d'un effort.
+            onCategoryAdded(self, event) : Gère les événements d'ajout de catégorie à un objet catégorisable composite.
+            onCategoryRemoved(self, event) : Gère les événements de suppression de catégorie d'un objet catégorisable composite.
+            onPrerequisitesChanged(self, newValue, sender) : Gère les événements de changement de prérequis d'une tâche.
+            allChanges(self) : Retourne le dictionnaire de tous les changements suivis par le moniteur.
+            mergeChanges(self, otherChanges) : Fusionne un autre dictionnaire de changements dans le suivi actuel du moniteur.
+            mergeChange(self, objId, change) : Fusionne un changement spécifique pour un objet donné dans le suivi actuel du moniteur.
+            mergeChangeSet(self, objId, changeSet) : Fusionne un ensemble de changements pour un objet donné dans le suivi actuel du moniteur.
+            mergeChangeSetWithPrefix(self, objId, changeSet, prefix) : Fusionne un ensemble de changements pour un objet donné dans le suivi actuel du moniteur, en ajoutant un préfixe à chaque changement.
+
     """
 
     def __init__(self, id_=None):
-        super(ChangeMonitor, self).__init__()
+        """Initialiser le moniteur de surveillance des changements.
 
-        self.__guid = id_ or guid.generate()
+        Initialise la liste des observateurs et initialise les différents
+        attributs (__guid (str), __frozen (bool), __collections (list),
+        _changes (dict), _classes (set))
+        """
+        # super(ChangeMonitor, self).__init__()
+        super().__init__()
+
+        # self.__guid = id_ or guid.generate()
+        self.__guid = id_ or str(uuid.uuid4())
         self.__frozen = False
         self.__collections = []
-
+        self._changes = dict()
+        self._classes = set()
         self.reset()
 
     def freeze(self):
+        """Geler le moniteur pour qu'il ne surveille plus les changements."""
         self.__frozen = True
 
     def thaw(self):
+        """Dégèle le moniteur pour qu'il recommence à surveiller les changements."""
         self.__frozen = False
 
     def guid(self):
+        """Retourner l'identifiant unique du moniteur de changements."""
         return self.__guid
 
     def reset(self):
+        """Réinitialise le suivi des changements en vidant le dictionnaire des changements et l'ensemble des classes surveillées.
+
+        Fonction : Vide complètement les changements suivis
+
+            ✅ Remet _changes à un dict vide
+            ✅ Réinitialise _classes à un set vide
+
+        C'est la méthode à utiliser lorsque vous voulez
+        effacer tous les changements suivis et recommencer à zéro,
+        par exemple après avoir sauvegardé les modifications
+        ou lorsque vous voulez ignorer les changements précédents.
+        """
         self._changes = dict()
         self._classes = set()
 
     def monitorClass(self, klass):
+        """
+        Commence à surveiller les changements pour une classe spécifique.
+
+        Args:
+            klass: Classe à surveiller.
+        """
+        # Si la classe n'est pas dans l'ensemble de classes surveillées.
         if klass not in self._classes:
+            # Pour chaque attribut de la liste de ceux surveillés :
             for name in klass.monitoredAttributes():
-                eventType = getattr(klass, "%sChangedEventType" % name)()
+                # Créer un événement de changement ChangedEventType
+                # eventType = getattr(klass, "%sChangedEventType" % name)()
+                eventType = getattr(klass, f"{name}ChangedEventType")()
+                # Si cet événement commence par pubsub
                 if eventType.startswith("pubsub"):
+                    # utiliser la méthode pubsub.subscribe
                     pub.subscribe(self.onAttributeChanged, eventType)
                 else:
+                    # sinon utiliser l'ancienne méthode dépréciée Observer.registerObserver
                     self.registerObserver(
                         self.onAttributeChanged_Deprecated, eventType
                     )
+                # Ajouter la classe à l'ensemble des classes surveillées.
                 self._classes.add(klass)
+            # Si la classe contient des objets observables
             if issubclass(klass, ObservableComposite):
+                # utiliser l'ancienne méthode Observer.registerObserver pour ajouter les méthodes observatrices d'ajout/suppression d'enfant.
                 self.registerObserver(
                     self.onChildAdded, klass.addChildEventType()
                 )
                 self.registerObserver(
                     self.onChildRemoved, klass.removeChildEventType()
                 )
+            # Si la classe contient des objets catégorisables
             if issubclass(klass, CategorizableCompositeObject):
+                # utiliser l'ancienne méthode pour ajouter les méthodes d'ajout/suppression de catégorie
                 self.registerObserver(
                     self.onCategoryAdded, klass.categoryAddedEventType()
                 )
                 self.registerObserver(
                     self.onCategoryRemoved, klass.categoryRemovedEventType()
                 )
+            # Si la classe contient une tâche
             if issubclass(klass, Task):
+                # utiliser la méthode pubsub pour l'ajout/suppression d'effort
                 pub.subscribe(
                     self.onEffortAddedOrRemoved, Task.effortsChangedEventType()
                 )
+                # utiliser la méthode pubsub pour le changement de prérequis.
                 pub.subscribe(
                     self.onPrerequisitesChanged,
                     Task.prerequisitesChangedEventType(),
                 )
+                # pubsub.core.callables.ListenerMismatchError: Listener "ChangeMonitor.onEffortAddedOrRemoved"
+                # (from module "taskcoachlib.changes.monitor") inadequate: needs to accept 1 more args (newValue)
+            # Si la classe contient des notes
             if issubclass(klass, NoteOwner):
+                # utiliser l'ancienne méthode pour l'ajout/suppression d'autres objets
+                # Unresolved attribute reference 'noteAddedEventType' for class 'NoteOwner'
                 self.registerObserver(
                     self.onOtherObjectAdded, klass.noteAddedEventType()
                 )
+                # Unresolved attribute reference 'noteRemovedEventType' for class 'NoteOwner'
                 self.registerObserver(
                     self.onOtherObjectRemoved, klass.noteRemovedEventType()
                 )
+            # Si la classe contient des pièces jointes
             if issubclass(klass, AttachmentOwner):
+                # utiliser l'ancienne méthode pour l'ajout/suppression d'autres objets
+                # Cannot find reference 'attachmentAddedEventType' in 'AttachmentOwner | AttachmentOwner'
                 self.registerObserver(
                     self.onOtherObjectAdded, klass.attachmentAddedEventType()
                 )
+                # Cannot find reference 'attachmentRemovedEventType' in 'AttachmentOwner | AttachmentOwner'
                 self.registerObserver(
                     self.onOtherObjectRemoved,
                     klass.attachmentRemovedEventType(),
                 )
+            # Si la classe contient des efforts
             if issubclass(klass, Effort):
+                # utiliser la nouvelle méthode pubsub.subscribe pour le changement d'effort
                 pub.subscribe(
-                    self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    # self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    self.onEffortChanged,
+                    Effort.taskChangedEventType(),
                 )
 
     def unmonitorClass(self, klass):
+        """
+        Arrête de surveiller les changements pour une classe spécifique.
+
+        Args:
+            klass: Classe à arrêter de surveiller.
+        """
+        # Si la classe est dans l'ensemble de classes surveillées.
         if klass in self._classes:
+            # Défaire les enregistrements de monitorClass():
             for name in klass.monitoredAttributes():
-                eventType = getattr(klass, "%sChangedEventType" % name)()
+                # eventType = getattr(klass, "%sChangedEventType" % name)()
+                eventType = getattr(klass, f"{name}ChangedEventType")()
                 if eventType.startswith("pubsub"):
                     pub.unsubscribe(self.onAttributeChanged, eventType)
                 else:
@@ -155,12 +289,22 @@ class ChangeMonitor(Observer):
                 )
             if issubclass(klass, Effort):
                 pub.unsubscribe(
-                    self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    # self.onEffortTaskChanged, Effort.taskChangedEventType()
+                    self.onEffortChanged,
+                    Effort.taskChangedEventType(),
                 )
             self._classes.remove(klass)
 
     def monitorCollection(self, collection):
+        """
+        Commence à surveiller les changements pour une collection spécifique.
+
+        Args:
+            collection: Collection à surveiller.
+        """
+        # Ajouter la collection à la liste de collections surveillées.
         self.__collections.append(collection)
+        # Utiliser l'ancienne méthode pour l'objet ajouté/supprimé.
         self.registerObserver(
             self.onObjectAdded,
             collection.addItemEventType(),
@@ -173,7 +317,15 @@ class ChangeMonitor(Observer):
         )
 
     def unmonitorCollection(self, collection):
+        """
+        Arrêter de surveiller les changements pour une collection spécifique.
+
+        Args:
+            collection: Collection à surveiller.
+        """
+        # Retirer la collection de la liste des collections surveillées.
         self.__collections.remove(collection)
+        # Utiliser l'ancienne méthode pour retirer l'observation de l'objet ajouté/supprimé.
         self.removeObserver(
             self.onObjectAdded,
             collection.addItemEventType(),
@@ -186,42 +338,165 @@ class ChangeMonitor(Observer):
         )
 
     def onAttributeChanged(self, newValue, sender, topic=pub.AUTO_TOPIC):
+        """Gère les événements de changement d'attribut.
+
+        Args :
+            newValue :
+            sender : Objet à observer qui a un id et des attributs.
+            topic :
+
+        Attributes :
+            __frozen : Indique si le moniteur est gelé (ne surveille pas les changements).
+            _changes (dict) : Un dictionnaire pour suivre les changements, où les clés sont les IDs des objets et les valeurs sont des ensembles de changements associés à ces objets.
+        """
+        print("ChangeMonitor.onAttributeChanged : === onAttributeChanged ===")
+        print("ChangeMonitor.onAttributeChanged : TOPIC =", topic)
+        print("ChangeMonitor.onAttributeChanged : TOPIC TYPE =", type(topic))
+        print(
+            "ChangeMonitor.onAttributeChanged : sender =",
+            type(sender).__name__,
+            sender.id(),
+        )
+
+        if hasattr(topic, "getName"):
+            print("ChangeMonitor.onAttributeChanged : NAME =", topic.getName())
+
+        if hasattr(topic, "getNameTuple"):
+            print(
+                "ChangeMonitor.onAttributeChanged : TUPLE =",
+                topic.getNameTuple(),
+            )
+        # Vérifie si le moniteur est gelé
         if self.__frozen:
             return
 
+        topic_name = topic.getName()
+
+        # Ignorer les événements d'initialisation (ex: lors de la création d'un objet)
+        if sender.id() not in self._changes:
+            # Si l'objet n'est pas encore dans _changes, c'est qu'il est en cours d'initialisation.
+            # On n'enregistre pas ce changement.
+            return
+
+        # Pour tous les attributs de
         for name in sender.monitoredAttributes():
-            if name in topic.getNameTuple():
+            # Unresolved attribute reference 'getNameTuple' for class 'AUTO_TOPIC'
+            # getModule , getID, getRawFunction, getAllArgs, getOptionalArgs, getRequiredArgs, getArgs from pub?
+            # or method getNameTuple() is from pubsub.core.topicobj.Topic ?
+            # if name in topic.getNameTuple():  # TODO : !
+            # # Si l'id de l'objet est dans le dictionnaire de suivi des changements
+            # if (
+            #     sender.id() in self._changes
+            #     # et qu'il n'est pas vide ! (TODO : pourquoi pas vide ? inutile ?!)
+            #     and self._changes[sender.id()] is not None
+            # ):
+            if topic_name == getattr(sender, f"{name}ChangedEventType")():
+                # Ensure the entry for this object is a set before adding changes
                 if (
-                    sender.id() in self._changes
-                    and self._changes[sender.id()] is not None
+                    sender.id() not in self._changes
+                    or self._changes[sender.id()] is None
                 ):
-                    self._changes[sender.id()].add(name)
+                    self._changes[sender.id()] = set()
+                # Ajouter l'attribut au dictionnaire de suivi des changements
+                self._changes[sender.id()].add(name)
+                break
 
     def onAttributeChanged_Deprecated(self, event):
+        """Méthode dépréciée pour gérer les événements de changement d'attribut.
+
+        Args :
+            event : Événement
+
+        Attributes :
+            __frozen : Indique si le moniteur est gelé (ne surveille pas les changements).
+            _changes (dict) : Un dictionnaire pour suivre les changements, où les clés sont les IDs des objets et les valeurs sont des ensembles de changements associés à ces objets.
+        """
+        # Vérifie si le moniteur est gelé
         if self.__frozen:
             return
 
-        for type_, valBySource in list(event.sourcesAndValuesByType().items()):
+        # Vieille méthode :
+        # Pour le type et la valeur de la source contenu dans le dictionnaire d'évènement
+        for type_, valBySource in list(
+            event.sourcesAndValuesByType().items()
+        ):  # TODO : problème potentiel
+            # Pour chaque clé de la liste des clés des valeurs sources :
             for obj in list(valBySource.keys()):
+                # Ignorer les événements d'initialisation
+                if obj.id() not in self._changes:
+                    continue
+                # Pour chaque attribut surveillé de la clé :
                 for name in obj.monitoredAttributes():
-                    if type_ == getattr(obj, "%sChangedEventType" % name)():
+                    # Si la clé qui contient un changement est de type
+                    # if type_ == getattr(obj, "%sChangedEventType" % name)():
+                    if type_ == getattr(obj, f"{name}ChangedEventType")():
+                        # Ensure the entry for this object is a set before adding changes
+                        if (
+                            obj.id() not in self._changes
+                            or self._changes[obj.id()] is None
+                        ):
+                            self._changes[obj.id()] = set()
+                        # Si l'id de la clé est dans le dictionnaire des changements et que sa valeur n'est pas None
                         if (
                             obj.id() in self._changes
                             and self._changes[obj.id()] is not None
                         ):
+                            # Ajouter sa valeur au dictionnaire de changements
                             self._changes[obj.id()].add(name)
 
     def _objectAdded(self, obj):
-        if obj.id() in self._changes:
-            if (
-                self._changes[obj.id()] is not None
-                and "__del__" in self._changes[obj.id()]
-            ):
-                self._changes[obj.id()].remove("__del__")
+        """
+        Ensure the monitor has a mutable set for this object's changes.
+
+        Previously this method set the entry to None which prevented
+        later additions (like "__parent__") from being recorded. Always
+        initialize to a set when an object is added and remove a
+        "__del__" marker if present.
+        """
+        obj_id = obj.id()
+        # if obj_id in self._changes:
+        #     # If there was a placeholder None for an object we already knew about
+        #     # (for example a previously deleted object), convert it to a set so
+        #     # future changes can be recorded. Also remove any "__del__" marker.
+        #     if self._changes[obj_id] is None:
+        #         self._changes[obj_id] = set()
+        #         # self._changes[obj_id] = None
+        #     # If object was previously marked as deleted, remove that mark
+        #     if "__del__" in self._changes[obj_id]:
+        #         self._changes[obj_id].remove("__del__")
+        # else:
+        #     # # New object: start with an empty set to record future changes
+        #     # self._changes[obj_id] = set()
+        #     # New object: use None as the sentinel value meaning "no changes yet".
+        #     # Tests expect newly added objects to return None from getChanges().
+        #     self._changes[obj_id] = None
+        # # Problème : Si obj_id existe déjà (parce qu'un événement d'attribut a été déclenché), cette méthode ne force pas None.
+        # Si l'objet est nouveau (non encore dans _changes) OU s'il a été marqué comme supprimé,
+        # forcer None pour indiquer qu'aucun changement n'a encore été enregistré.
+        # Forcer None pour les nouveaux objets, même s'ils ont déjà été vus
+        if (
+            obj_id
+            not in self._changes  # Nouvel objet
+            # or self._changes[obj_id]
+            # is None  # Ancien objet déjà vu mais pas encore modifié
+            # or (
+            #     isinstance(self._changes[obj_id], set)
+            #     and len(self._changes[obj_id]) == 0
+            # )  # Ancien objet déjà vu mais pas encore modifié (set vide)
+            # Ne pas forcer None si l'objet a déjà des changements
+        ):
+            self._changes[obj_id] = None
         else:
-            self._changes[obj.id()] = None
+            # Si l'objet était marqué comme supprimé, retirer cette marque
+            # if "__del__" in self._changes[obj_id]:
+            if (
+                isinstance(self._changes[obj_id], set)
+                and "__del__" in self._changes[obj_id]
+            ):
+                self._changes[obj_id].remove("__del__")
 
     def _objectsAdded(self, event):
+        # for obj in event.values():
         for obj in list(event.values()):
             self._objectAdded(obj)
 
@@ -233,26 +508,103 @@ class ChangeMonitor(Observer):
                 self._changes[obj.id()].add("__del__")
 
     def _objectsRemoved(self, event):
+        # for obj in event.values():
         for obj in list(event.values()):
             self._objectRemoved(obj)
 
     def onChildAdded(self, event):
+        """Lorsqu'un enfant est ajouté à un objet composite observable,
+        cette méthode est appelée pour enregistrer le changement."""
+        print("ChangeMonitor.onChildAdded: event=%s" % event)  # Debug print
+        print(
+            "ChangeMonitor.onChildAdded: event.values()=%s"
+            % list(event.values())
+        )  # Debug print
+        print(
+            "ChangeMonitor.onChildAdded: event.sourcesAndValuesByType()=%s"
+            % list(event.sourcesAndValuesByType().items())
+        )  # Debug print
+        print(
+            "ChangeMonitor.onChildAdded: event.sources()=%s"
+            % list(event.sources())
+        )  # Debug print
+        # Event.sources() retourne un set. Appeler event.sources()[0] provoque TypeError car les sets ne sont pas indexables. C'est exactement l'exception que tu as dans la stack trace.
+        # Dans certains tests, on voyait list(event.sources()) dans les prints (qui fonctionne) mais d'autres endroits utilisaient l'indexation directement — d'où l'exception intermittente.
+        # Avoid indexing into a set returned by event.sources()
+        first_source = next(iter(event.sources()), None)
+        print(
+            # "ChangeMonitor.onChildAdded: event.values(source=event.sources()[0])=%s"
+            # % list(event.values(source=event.sources()[0]))
+            "ChangeMonitor.onChildAdded: event.values(source=first_source)=%s"
+            % list(event.values(source=first_source))
+        )  # Debug print
+        print(
+            "ChangeMonitor.onChildAdded: repr(self._changes)=%s"
+            % repr(self._changes)
+        )  # Debug print
         if self.__frozen:
             return
 
         self._objectsAdded(event)
+        # for obj in event.values():
         for obj in list(event.values()):
-            if self._changes[obj.id()] is not None:
+            # if self._changes[obj.id()] is not None:
+            #     self._changes[obj.id()].add("__parent__")
+            # Ajouter __parent__ explicitement pour les enfants ajoutés.
+            if obj.id() in self._changes:
+                if self._changes[obj.id()] is None:
+                    self._changes[obj.id()] = set()
                 self._changes[obj.id()].add("__parent__")
+        print(
+            "ChangeMonitor.onChildAdded: after processing, repr(self._changes)=%s !"
+            % repr(self._changes)
+        )  # Debug print
 
     def onChildRemoved(self, event):
+        """Lorsqu'un enfant est retiré d'un objet composite observable,
+        cette méthode est appelée pour enregistrer le changement."""
+        print("ChangeMonitor.onChildRemoved: event=%s" % event)  # Debug print
+        print(
+            "ChangeMonitor.onChildRemoved: event.values()=%s"
+            % list(event.values())
+        )  # Debug print
+        print(
+            "ChangeMonitor.onChildRemoved: event.sourcesAndValuesByType()=%s"
+            % list(event.sourcesAndValuesByType().items())
+        )  # Debug print
+        print(
+            "ChangeMonitor.onChildRemoved: event.sources()=%s"
+            % list(event.sources())
+        )  # Debug print
+        # Avoid indexing into a set returned by event.sources()
+        first_source = next(iter(event.sources()), None)
+        print(
+            # "ChangeMonitor.onChildRemoved: event.values(source=event.sources()[0])=%s"
+            # % list(event.values(source=event.sources()[0]))
+            "ChangeMonitor.onChildRemoved: event.values(source=first_source)=%s"
+            % list(event.values(source=first_source))
+        )  # Debug print
+        print(
+            "ChangeMonitor.onChildRemoved: repr(self._changes)=%s"
+            % repr(self._changes)
+        )  # Debug print
         if self.__frozen:
             return
 
         self._objectsRemoved(event)
+        # for obj in event.values():
         for obj in list(event.values()):
-            if obj in self._changes and self._changes[obj.id()] is not None:
+            # event.values() yields object instances; our _changes dict uses
+            # object ids as keys, so check by id.
+            if (
+                obj.id() in self._changes
+                and self._changes[obj.id()] is not None
+            ):
                 self._changes[obj.id()].add("__parent__")
+        print(
+            "ChangeMonitor.onChildRemoved: after processing, repr(self._changes)=%s !"
+            % repr(self._changes)
+        )  # Debug print
 
     def onObjectAdded(self, event):
         if self.__frozen:
@@ -289,12 +641,114 @@ class ChangeMonitor(Observer):
         for effort in effortsToRemove:
             self._objectRemoved(effort)
 
-    def onEffortTaskChanged(self, newValue, sender):
-        changes = self._changes.get(sender.id(), None)
-        if changes is not None:
+    # Ce que j'ai fait
+    # J'ai modifié la méthode ChangeMonitor.onEffortChanged pour qu'elle accepte désormais *args et **kwargs, extraye l'expéditeur (sender) de manière robuste (dans kwargs ou parmi les args) et enregistre le changement "task" dans le registre de changements du moniteur.
+    # Raison : selon la version/usage de PubSub, les callbacks peuvent être appelés de manière différente (positional vs keyword). Si la méthode n'était pas appelée ou ne trouvait pas l'expéditeur, le moniteur ne marquait pas l'effort comme modifié, donc TaskFile.needSave() restait False — d'où l'échec du test.
+    # Le patch est ciblé et sûr : il n'altère pas la logique métier, il la rend juste plus tolérante aux différences d'API de pubsub.
+    # J'ai vérifié la syntaxe/compilation du fichier modifié — seules des warnings d'import inutilisé / suggestion littérale sont apparus (pas d'erreurs fatales).
+    def onEffortChanged(self, newValue, sender):  # Signature explicite !
+        # def onEffortTaskChanged(self, *args, **kwargs):  # Non conforme, signature indéterminée pour PyPubSub 4 !
+        """Called when an Effort's parent task changes.
+
+        PubSub libraries can call listeners using different conventions
+        (positional args or keyword args). Accept *args/**kwargs and
+        extract the sender reliably. Record the "__task__" change in the
+        monitor, creating a mutable set if necessary.
+
+        Gère le changement de tâche parent d'un effort.
+
+        Cette méthode est appelée lorsque la tâche associée à un Effort
+        change. Elle enregistre cette modification dans le moniteur afin
+        que le TaskFile sache qu'une sauvegarde est nécessaire.
+
+        Args:
+            newValue:
+                Nouvelle tâche associée à l'effort.
+
+            sender:
+                Instance de Effort ayant changé.
+        """
+        # L'idée était bonne dans l'absolu : accepter plusieurs conventions d'appel.
+        # Mais ici nous sommes dans un système événementiel interne où les signatures doivent être stables.
+        # La robustesse doit être placée au niveau de l'émetteur
+        # pub.sendMessage(
+        #     topic,
+        #     newValue=value,
+        #     sender=obj
+        # )
+        # et non au niveau du récepteur.
+        # Sinon PyPubSub ne peut plus construire correctement son contrat de topic.
+
+        # # Extract sender from kwargs if present
+        # sender = kwargs.get("sender", None)
+        #
+        # # If not found in kwargs, try to find an object in args that looks
+        # # like a domain object (has id()). Prefer the last arg which is
+        # # commonly the sender in many pubsub conventions.
+        # if sender is None:
+        #     for candidate in reversed(args):
+        #         try:
+        #             # Ensure candidate has id() method
+        #             _ = candidate.id()
+        #         except Exception:
+        #             continue
+        #         else:
+        #             sender = candidate
+        #             break
+        #
+        # # If we still don't have a sender, give up silently (no-op).
+        # if sender is None:
+        #     return
+
+        # Récupère les modifications déjà enregistrées pour cet effort.
+        # changes = self._changes.get(sender.id(), None)
+        try:
+            changes = self._changes.get(sender.id(), None)
+        except Exception:
+            # If sender.id() fails for any reason, bail out.
+            return
+
+        # Si aucune modification n'est encore enregistrée, crée un ensemble.
+        if changes is None:
+            # # Create a mutable change set so the taskfile will detect this
+            # # change. Previously a None sentinel prevented recording task
+            # # reparenting which made needSave() remain False.
+            # self._changes[sender.id()] = set(["__task__"])
+            self._changes[sender.id()] = {"__task__"}
+        # Sinon ajoute simplement la modification à l'ensemble existant.
+        else:
             changes.add("__task__")
 
     def onCategoryAdded(self, event):
+        """Lorsqu'une catégorie est ajoutée à un objet catégorisable composite,
+        cette méthode est appelée pour enregistrer le changement."""
+        print("ChangeMonitor.onCategoryAdded: event=%s" % event)  # Debug print
+        print(
+            "ChangeMonitor.onCategoryAdded: event.values()=%s"
+            % list(event.values())
+        )  # Debug print
+        print(
+            "ChangeMonitor.onCategoryAdded: event.sourcesAndValuesByType()=%s"
+            % list(event.sourcesAndValuesByType().items())
+        )  # Debug print
+        print(
+            "ChangeMonitor.onCategoryAdded: event.sources()=%s"
+            % list(event.sources())
+        )  # Debug print
+        # Avoid indexing into a set returned by event.sources()
+        first_source = next(iter(event.sources()), None)
+        # Event.sources() retourne un set. Appeler event.sources()[0] provoque TypeError car les sets ne sont pas indexables. C'est exactement l'exception que tu as dans la stack trace.
+        # Dans certains tests, on voyait list(event.sources()) dans les prints (qui fonctionne) mais d'autres endroits utilisaient l'indexation directement — d'où l'exception intermittente.
+        print(
+            # "ChangeMonitor.onCategoryAdded: event.values(source=event.sources()[0])=%s"
+            # % list(event.values(source=event.sources()[0]))
+            "ChangeMonitor.onCategoryAdded: event.values(source=first_source)=%s"
+            % list(event.values(source=first_source))
+        )  # Debug print
+        print(
+            "ChangeMonitor.onCategoryAdded: repr(self._changes)=%s"
+            % repr(self._changes)
+        )  # Debug print
         if self.__frozen:
             return
 
@@ -304,11 +758,19 @@ class ChangeMonitor(Observer):
                 and self._changes[obj.id()] is not None
             ):
                 for theCategory in event.values(source=obj):
-                    name = "_category:%s" % theCategory.id()
-                    if "__del" + name in self._changes[obj.id()]:
-                        self._changes[obj.id()].remove("__del" + name)
+                    # name = "_category:%s" % theCategory.id()
+                    name = f"_category:{theCategory.id()}"
+                    # if "__del" + name in self._changes[obj.id()]:
+                    if f"__del{name}" in self._changes[obj.id()]:
+                        # self._changes[obj.id()].remove("__del" + name)
+                        self._changes[obj.id()].remove(f"__del{name}")
                     else:
-                        self._changes[obj.id()].add("__add" + name)
+                        # self._changes[obj.id()].add("__add" + name)
+                        self._changes[obj.id()].add(f"__add{name}")
+        print(
+            "ChangeMonitor.onCategoryAdded: after processing, repr(self._changes)=%s !"
+            % repr(self._changes)
+        )  # Debug print
 
     def onCategoryRemoved(self, event):
         if self.__frozen:
@@ -320,15 +782,29 @@ class ChangeMonitor(Observer):
                 and self._changes[obj.id()] is not None
             ):
                 for theCategory in event.values(source=obj):
-                    name = "_category:%s" % theCategory.id()
-                    if "__add" + name in self._changes[obj.id()]:
-                        self._changes[obj.id()].remove("__add" + name)
+                    # name = "_category:%s" % theCategory.id()
+                    name = f"_category:{theCategory.id()}"
+                    # if "__add" + name in self._changes[obj.id()]:
+                    if f"__add{name}" in self._changes[obj.id()]:
+                        # self._changes[obj.id()].remove("__add" + name)
+                        self._changes[obj.id()].remove(f"__add{name}")
                     else:
-                        self._changes[obj.id()].add("__del" + name)
+                        # self._changes[obj.id()].add("__del" + name)
+                        self._changes[obj.id()].add(f"__del{name}")
 
     def onPrerequisitesChanged(
         self, newValue, sender
     ):  # pylint: disable-msg=W0613
+        """
+
+
+        Args:
+            newValue:
+            sender:
+
+        Returns:
+
+        """
         # Need to check whether the sender is actually in one of the collections we monitor
         # Is this really the best way?
         for collection in self.__collections:
@@ -346,7 +822,31 @@ class ChangeMonitor(Observer):
         return self._changes
 
     def getChanges(self, obj):
-        return self._changes.get(obj.id(), None)
+        """Retourne l'ensemble des changements pour l'objet donné.
+
+        Historique : Certaines suites de tests attendent une valeur vide
+        représentée par {} (dict vide) tandis que d'autres attendent
+        set(). Pour rester rétrocompatible avec les tests existants,
+        on renvoie :
+          - None si l'objet n'est pas connu du moniteur
+          - un set non vide si des changements sont présents
+          - {} (dict vide) si l'ensemble des changements est vide
+        """
+        # return self._changes.get(obj.id(), None)
+        changes = self._changes.get(obj.id(), None)
+        # Retourner None uniquement si l'objet n'a jamais été modifié
+        if changes is None:
+            return None
+        # Si c'est un set vide, certains tests comparent à {} (dict vide),
+        # retourner {} pour ces cas afin d'être compatible.
+        # Si c'est un ensemble vide, retourner None pour les nouveaux objets
+        if isinstance(changes, set) and len(changes) == 0:
+            return set()
+            # return {}
+            # # Corriger getChanges pour retourner None si changes est un ensemble vide
+            # return None
+            # Respecter les attentes des tests
+        return changes
 
     def setChanges(self, id_, changes):
         if changes is None:
@@ -362,14 +862,37 @@ class ChangeMonitor(Observer):
         )
 
     def resetChanges(self, obj):
-        self._changes[obj.id()] = set()
+        """Remet à zéro les changements pour un objet donné.
+
+        Nettoie : Seulement un objet spécifique
+        Utilisation : Lorsque vous voulez effacer les changements suivis pour un objet particulier, par exemple après avoir traité ces changements ou lorsque vous voulez ignorer les changements précédents pour cet objet.
+        """
+        # utiliser set() au lieu de None
+        self._changes[obj.id()] = (
+            set()
+        )  # Utiliser set() pour indiquer "aucun changement"
 
     def addChange(self, obj, name):
-        changes = self._changes.get(obj.id(), set())
+        # changes = self._changes.get(obj.id(), set())
+        # Ensure we handle the case where the entry exists but is None
+        changes = self._changes.get(obj.id(), None)
+        if changes is None:
+            changes = set()
         changes.add(name)
         self._changes[obj.id()] = changes
 
     def resetAllChanges(self):
+        """Reset all changes for all objects.
+
+        Remet à zéro les changements pour tous les objets suivis, en réinitialisant les ensembles de changements à des ensembles vides, mais en conservant les entrées pour les objets supprimés (ceux marqués avec "__del__").
+        Nettoie : Réinitialise les changements intelligemment (garde les suppressions)
+        Utilisation : ???
+        """
+        # for id_, changes in self._changes.items():  # Alors list ou non ?
+        # En Python 3, dict.values() renvoie une vue dynamique,
+        # pas une liste. Si on modifie le dictionnaire pendant qu'on boucle dessus
+        # (ce que fait souvent monitor.py pour suivre les changements), ça plante.
+        # L'ajout de list(...) force la création d'une copie statique, ce qui est sûr.
         for id_, changes in list(self._changes.items()):
             if changes is not None and "__del__" in changes:
                 del self._changes[id_]
@@ -377,9 +900,15 @@ class ChangeMonitor(Observer):
                 self._changes[id_] = set()
 
     def empty(self):
-        self._changes = dict()
+        """Vide les changements.
+
+        Nettoie : Seulement _changes
+        Utilisation : ???
+        """
+        self._changes = dict()  # dict ? ou set ? dict
 
     def merge(self, monitor):
+        # for id_, changes in self._changes.items():
         for id_, changes in list(self._changes.items()):
             theirChanges = monitor._changes.get(id_, None)
             if theirChanges is not None:

@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-# taskcoachlib contains all taskcoach packages
+# taskcoachlib contient tous les packages taskcoach
 
-# When thirdparty packages are imported, they may import submodules
-# from the system-wide installation. Doing this in workaround/__init__.py is too late.
+# Lorsque des packages tiers sont importés, ils peuvent importer des sous-modules
+# à partir de l'installation à l'échelle du système. Faire cela dans workaround/__init__.py est trop tard.
 import os
 import sys
 

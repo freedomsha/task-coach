@@ -16,52 +16,51 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib.i18n import _
+from future import standard_library
+
+standard_library.install_aliases()
 from taskcoachlib import operating_system
-import wx, subprocess, threading, time
+from taskcoachlib.i18n import _
+import wx
+# from wx import *
+import subprocess
+import threading
+import time
 
 
 class MailAppInfoLoader(wx.ProgressDialog):
     def __init__(self, parent):
-        super(MailAppInfoLoader, self).__init__(
-            _("Reading mail info..."),
-            _("Reading mail information. Please wait."),
-            parent=parent,
-            style=wx.PD_SMOOTH | wx.PD_ELAPSED_TIME | wx.PD_CAN_SKIP,
-        )
+        super().__init__(_('Reading mail info...'),
+                         _('Reading mail information. Please wait.'), parent=parent,
+                         style=wx.PD_SMOOTH | wx.PD_ELAPSED_TIME | wx.PD_CAN_SKIP)
 
         self.__title = None
         thread = threading.Thread(target=self.__run)
         thread.start()
 
     def __run(self):
-        script = """
+        script = '''
 tell application "Mail"
     set theMessages to selection
     subject of beginning of theMessages
 end tell
-"""
+'''
         try:
-            sp = subprocess.Popen(
-                "osascript",
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
+            sp = subprocess.Popen('osascript', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out, err = sp.communicate(script)
             if not sp.returncode:
                 self.__title = operating_system.decodeSystemString(out.strip())
                 return
-        except:
+        finally:
             pass
 
-        self.__title = _("Mail.app message")
+        self.__title = _('Mail.app message')
 
     def title(self):
         return self.__title
 
 
-def getSubjectOfMail(messageId):  # pylint: disable=W0613
+def getSubjectOfMail(message_id):  # pylint: disable=W0613
     """This should return the subject of the mail having the specified
     message-id. Unfortunately, until I find an Applescript guru, it
     will only return the subject of the currently selected mail in
@@ -74,7 +73,7 @@ def getSubjectOfMail(messageId):  # pylint: disable=W0613
             time.sleep(0.2)
             unused, skip = dlg.Pulse()
             if skip:
-                return _("Mail.app message")
+                return _('Mail.app message')
         return dlg.title()
     finally:
         dlg.Destroy()

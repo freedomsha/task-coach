@@ -16,10 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from . import developer_message
-from . import entry
-from . import export
-from . import preferences
-from . import syncpreferences
-from . import templates
-from .backupmanager import BackupManagerDialog
+from taskcoachlib.gui.dialog import developer_message
+from taskcoachlib.gui.dialog import editor
+from taskcoachlib.gui.dialog import entry
+from taskcoachlib.gui.dialog import export
+from taskcoachlib.gui.dialog import preferences
+from taskcoachlib.gui.dialog import syncpreferences
+from taskcoachlib.gui.dialog import templates
+from taskcoachlib.gui.dialog.backupmanager import BackupManagerDialog
+
+# __all__ = ["attributesync", "backupmanager", "developer_message", "editor", "entry", "export", "iphone", "preferences", "reminder", "syncpreferences", "templates", "toolbar", "version", "xfce4warning"]

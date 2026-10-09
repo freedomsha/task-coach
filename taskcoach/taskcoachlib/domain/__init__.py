@@ -14,7 +14,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Il s'agit du package de domaine.
+Il contient des classes pour les objets de domaine, comme tasks, effort, etc.
 """
 
 # This is the domain package. It contains classes for domain objects,
 # such as tasks, effort, etc.
+from . import attachment, attribute, base, categorizable, category, date, effort, note, task
+# from . import base

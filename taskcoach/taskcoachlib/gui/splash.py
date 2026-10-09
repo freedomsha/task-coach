@@ -16,10 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import print_function
+import logging
 import wx
 import wx.adv
 from taskcoachlib import i18n
 from wx.lib.embeddedimage import PyEmbeddedImage
+
+log = logging.getLogger(__name__)
 
 try:
     from . import icons
@@ -28,25 +32,24 @@ except ImportError:  # pragma: no cover
     print("You need to generate the icons file.")
     print('Run "make prepare" in the Task Coach root folder.')
     import sys
-
     sys.exit(1)
 
 
 class SplashScreen(wx.adv.SplashScreen):
     def __init__(self):
+        # log.debug("SplashScreen.__init__ : Début")
         splash = icons.catalog["splash"]  # type: PyEmbeddedImage
         if i18n.currentLanguageIsRightToLeft():
             # RTL languages cause the bitmap to be mirrored too, but because
             # the splash image is not internationalized, we have to mirror it
             # (back). Unfortunately using SetLayoutDirection() on the
             # SplashWindow doesn't work.
+            # bitmap = wx.BitmapFromImage(splash.GetImage().Mirror())
             bitmap = wx.BitmapFromImage(splash.GetBitmap().Mirror())
         else:
             bitmap = splash.GetBitmap()
-        super(SplashScreen, self).__init__(
-            bitmap,
-            wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
-            4000,
-            None,
-            -1,
-        )
+        # super().__init__(bitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 4000, None, -1)
+        # super().__init__(bitmap,
+        #                  wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT, 4000, None, -1)
+        super().__init__(bitmap=bitmap, splashStyle=wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT, milliseconds=4000, parent=None, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize)
+        # log.debug("gui.splash.SplashScreen.__init__ : debug: Fin")

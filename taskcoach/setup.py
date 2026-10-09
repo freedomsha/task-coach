@@ -18,10 +18,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from setuptools import setup
+# from distutils.core import setup  # old python version 2.7
+from setuptools import setup  # new better import
 from taskcoachlib import meta
 import platform
-import distro
+# voir https://stackoverflow.com/questions/58758447/how-to-fix-module-platform-has-no-attribute-linux-distribution-when-instal/64106589#64106589
+# et setup.py de la branche python3 de task-coach-ex/taskcoach
+# import distro  # new import
 import os
 import sys
 
@@ -49,20 +52,20 @@ def majorAndMinorPythonVersion():
         return info[0], info[1]
 
 
-install_requires = [
-    "six>=1.16.0",
-    "desktop3",
-    "pypubsub",
-    "twisted",
-    "chardet>=5.2.0",
-    "python-dateutil>2.9.0",
-    "pyparsing>=3.1.2",
-    "lxml",
-]
-
-setup_requires = ["distro"]
-
-tests_requires = []
+# install_requires = [
+#     "six>=1.16.0",
+#     "desktop3",
+#     "pypubsub",
+#     "twisted",
+#     "chardet>=5.2.0",
+#     "python-dateutil>=2.9.0",
+#     "pyparsing>=3.1.2",
+#     "lxml",
+# ]
+#
+# setup_requires = ["distro"]
+#
+# tests_requires = []
 
 setupOptions = {
     "name": meta.filename,
@@ -72,11 +75,9 @@ setupOptions = {
     "long_description": meta.long_description,
     "version": meta.version,
     "url": meta.url,
+    "urlpo": meta.url,
     "license": meta.license,
     "download_url": meta.download,
-    "install_requires": install_requires,
-    "tests_require": tests_requires,
-    "setup_requires": setup_requires,
     "packages": findPackages("taskcoachlib") + findPackages("buildlib"),
     "scripts": ["taskcoach.py"],
     "classifiers": [
@@ -85,11 +86,15 @@ setupOptions = {
         "License :: OSI Approved :: GNU General Public License (GPL)",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Topic :: Office/Business",
-    ],
-}
+        # 'Programming Language :: Python :: 2.6',
+        # 'Programming Language :: Python :: 2.7',
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Topic :: Office/Business"]}
 
 # Add available translations:
 languages = sorted(
@@ -109,27 +114,22 @@ for language in languages:
 system = platform.system()
 if system == "Linux":
     # Add data files for Debian-based systems:
-    current_dist = [dist.lower() for dist in distro.id()]
+    try:  # if sys.version_info < (3, 8):
+        current_dist = [dist.lower() for dist in platform.dist()]
+    except AttributeError:
+        try:
+            current_dist = [dist.lower() for dist in platform.linux_distribution()]
+        except AttributeError:  # if sys.version_info >= (3, 8):
+            current_dist = [dist.lower() for dist in platform.libc_ver()]
     if "debian" in current_dist or "ubuntu" in current_dist:
-        setupOptions["data_files"] = [
-            (
-                "share/applications",
-                ["build.in/linux_common/taskcoach.desktop"],
-            ),
-            ("share/appdata", ["build.in/debian/taskcoach.appdata.xml"]),
-            ("share/pixmaps", ["icons.in/taskcoach.png"]),
-        ]
+        setupOptions["data_files"] = [("share/applications", ["build.in/linux_common/taskcoach.desktop"]),
+                                      ("share/appdata", ["build.in/debian/taskcoach.appdata.xml"]),
+                                      ("share/pixmaps", ["icons.in/taskcoach.png"])]
 elif system == "Windows":
     setupOptions["scripts"].append("taskcoach.pyw")
     major, minor = majorAndMinorPythonVersion()
-    sys.path.insert(
-        0,
-        os.path.join(
-            "taskcoachlib", "bin.in", "windows", "py%d%d" % (major, minor)
-        ),
-    )
+    sys.path.insert(0, os.path.join("taskcoachlib", "bin.in", "windows", "py%d%d" % (major, minor)))
     import _pysyncml
-
     # ...
     # ModuleFinder can't handle runtime changes to __path__, but win32com uses them
     try:
@@ -142,8 +142,8 @@ elif system == "Windows":
             import py2exe.mf as modulefinder
         except ImportError:
             import modulefinder
-        import win32com, sys
-
+        import win32com
+        import sys
         for p in win32com.__path__[1:]:
             modulefinder.AddPackagePath("win32com", p)
         for extra in ["win32com.shell"]:  # ,"win32com.mapi"

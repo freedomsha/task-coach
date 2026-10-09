@@ -1,6 +1,7 @@
 #! /usr/bin/env python
-# -*- coding: iso-8859-1 -*-
-# Originally written by Barry Warsaw <barry@zope.com>
+# # -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
+# Originally written by Barry Warsaw <barry@python.org>
 #
 # Minimally patched to make it even more xgettext compatible
 # by Peter Funk <pf@artcom-gmbh.de>
@@ -8,7 +9,7 @@
 # 2002-11-22 Jürgen Hermann <jh@web.de>
 # Added checks that _() only contains string literals, and
 # command line args are resolved to module lists, i.e. you
-# can now pass a filename, a module or package name, or a
+# can Now pass a filename, a module or package name, or a
 # directory (including globbing chars, important for Win32).
 # Made docstring fit in 80 chars wide displays using pydoc.
 #
@@ -16,7 +17,6 @@
 # for selftesting
 try:
     import fintl
-
     _ = fintl.gettext
 except ImportError:
     _ = lambda s: s
@@ -54,8 +54,8 @@ Python of course has no preprocessor so this doesn't work so well.  Thus,
 pygettext searches only for _() by default, but see the -k/--keyword flag
 below for how to augment this.
 
- [1] http://www.python.org/workshops/1997-10/proceedings/loewis.html
- [2] http://www.gnu.org/software/gettext/gettext.html
+ [1] https://www.python.org/workshops/1997-10/proceedings/loewis.html
+ [2] https://www.gnu.org/software/gettext/gettext.html
 
 NOTE: pygettext attempts to be option and feature compatible with GNU
 xgettext where ever possible. However some options are still missing or are
@@ -155,8 +155,7 @@ Options:
         conjunction with the -D option above.
 
 If `inputfile' is -, standard input is read.
-"""
-)
+""")
 
 import os
 # import imp
@@ -166,12 +165,13 @@ import sys
 import glob
 import time
 import getopt
+import ast
 import token
 import tokenize
 import operator
 from functools import reduce
 
-__version__ = "1.5"
+__version__ = "1.5"  # de pygettext
 
 default_keywords = ["_"]
 DEFAULTKEYWORDS = ", ".join(default_keywords)
@@ -309,28 +309,30 @@ def _get_modpkg_path(dotted_name, pathlist=None):
     if len(parts) > 1:
         # we have a dotted path, import top-level package
         try:
-            file, pathname, description = imp.find_module(parts[0], pathlist)
+            # file, pathname, description = imp.find_module(parts[0], pathlist)  # TODO : trouver de quoi remplacer
+            file, pathname, description = util.find_spec(parts[0], pathlist)
             if file:
                 file.close()
         except ImportError:
             return None
 
-        # check if it's indeed a package
-        if description[2] == imp.PKG_DIRECTORY:
-            # recursively handle the remaining name parts
-            pathname = _get_modpkg_path(parts[1], [pathname])
-        else:
-            pathname = None
+        # # check if it's indeed a package
+        # if description[2] == imp.PKG_DIRECTORY:  # PKG_DIRECTORY a été abandonné
+        #     # recursively handle the remaining name parts
+        #     pathname = _get_modpkg_path(parts[1], [pathname])
+        # else:
+        #     pathname = None
     else:
         # plain name
         try:
-            file, pathname, description = imp.find_module(
+            # file, pathname, description = imp.find_module(
+            file, pathname, description = util.find_spec(
                 dotted_name, pathlist
             )
             if file:
                 file.close()
-            if description[2] not in [imp.PY_SOURCE, imp.PKG_DIRECTORY]:
-                pathname = None
+            # if description[2] not in [imp.PY_SOURCE, imp.PKG_DIRECTORY]:  # les 2 sont obsolètes
+            #     pathname = None
         except ImportError:
             pathname = None
 
@@ -366,7 +368,7 @@ def getFilesForName(name):
 
     return []
 
- 
+
 class TokenEater:
     def __init__(self, options):
         self.__options = options
@@ -379,9 +381,9 @@ class TokenEater:
 
     def __call__(self, ttype, tstring, stup, etup, line):
         # dispatch
-        ##        import token
-        ##        print >> sys.stderr, 'ttype:', token.tok_name[ttype], \
-        ##              'tstring:', tstring
+        # #        import token
+        # #        print('ttype:', token.tok_name[ttype], 'tstring:', tstring,
+        # #              file=sys.stderr)
         self.__state(ttype, tstring, stup[0])
 
     def __waiting(self, ttype, tstring, lineno):

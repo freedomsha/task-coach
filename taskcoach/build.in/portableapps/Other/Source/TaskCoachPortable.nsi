@@ -162,7 +162,7 @@ Section "Main"
 			newadvsplash::show /NOUNLOAD 1200 0 0 -1 /L "$PLUGINSDIR\splash.jpg"
 
 	SkipSplashScreen:		
-		;=== Copy the default settings files
+		;=== copy the default settings files
 		StrCmp $DEFAULTLOCATION "true" "" UpdateLocations ;=== if not default location, user is on their own
 		IfFileExists "$SETTINGSDIRECTORY\TaskCoach.ini" UpdateLocations
 		CreateDirectory "$SETTINGSDIRECTORY"

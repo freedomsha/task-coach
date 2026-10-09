@@ -19,12 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from taskcoachlib.syncml.tasksource import TaskSource
 from taskcoachlib.syncml.notesource import NoteSource
 from taskcoachlib.syncml.config import SyncMLConfigNode
-from taskcoachlib.syncml.core import *
-
+# from taskcoachlib.syncml.core import *  # deprecied method la méthode suivante ne foncitonne pas !
+from taskcoachlib.syncml.core import ManagementNode, DMTree, SyncSourceConfig, SyncClient, DMTClientConfig
 from taskcoachlib.i18n import _
 from taskcoachlib.meta import data
-
-import sys, wx
+import sys
+import wx
 
 
 class AuthenticationFailure(Exception):
@@ -33,7 +33,7 @@ class AuthenticationFailure(Exception):
 
 class TaskCoachManagementNode(ManagementNode):
     def __init__(self, syncMLConfig, *args, **kwargs):
-        super(TaskCoachManagementNode, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.__cfg = self.__getConfig(syncMLConfig)
 
@@ -68,32 +68,25 @@ class TaskCoachManagementNode(ManagementNode):
 
 class TaskCoachDMTree(DMTree):
     def __init__(self, syncMLConfig, *args, **kwargs):
-        super(TaskCoachDMTree, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.__syncMLConfig = syncMLConfig
 
     def isLeaf(self, node):
-        return (
-            TaskCoachManagementNode(
-                self.__syncMLConfig, node
-            ).getMaxChildrenCount()
-            == 0
-        )
+        return TaskCoachManagementNode(self.__syncMLConfig, node).getMaxChildrenCount() == 0
 
     def readManagementNode(self, nodeName):
         node = TaskCoachManagementNode(self.__syncMLConfig, nodeName)
 
         for name in node.getChildrenNames():
-            node.addChild(
-                TaskCoachManagementNode(self.__syncMLConfig, nodeName, name)
-            )
+            node.addChild(TaskCoachManagementNode(self.__syncMLConfig, nodeName, name))
 
         return node
 
 
 class TaskCoachDMTClientConfig(DMTClientConfig):
     def __init__(self, syncMLConfig, *args, **kwargs):
-        super(TaskCoachDMTClientConfig, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.__syncMLConfig = syncMLConfig
 
@@ -106,26 +99,36 @@ class TaskCoachDMTClientConfig(DMTClientConfig):
 
 class Synchronizer(wx.ProgressDialog):
     def __init__(self, reportCallback, taskFile, password):
-        super(Synchronizer, self).__init__(
+        super().__init__(
             _("Synchronization"), _("Synchronizing. Please wait.\n\n\n")
         )
 
-        self.clientName = "TaskCoach-%s" % taskFile.guid().encode("UTF-8")
+        # self.clientName = "TaskCoach-%s" % taskFile.guid().encode("UTF-8")
+        self.clientName = "TaskCoach-%s" % taskFile.guid()
         self.reportCallback = reportCallback
         self.taskFile = taskFile
 
         cfg = taskFile.syncMLConfig()
 
+        # self.username = (
+        #     cfg[self.clientName]["spds"]["syncml"]["Auth"]
+        #     .get("username")
+        #     .encode("UTF-8")
+        # )  # Hum...
         self.username = (
             cfg[self.clientName]["spds"]["syncml"]["Auth"]
             .get("username")
-            .encode("UTF-8")
         )  # Hum...
-        self.password = password.encode("UTF-8")
+        # self.password = password.encode("UTF-8")
+        self.password = password
+        # self.url = (
+        #     cfg[self.clientName]["spds"]["syncml"]["Conn"]
+        #     .get("syncUrl")
+        #     .encode("UTF-8")
+        # )
         self.url = (
             cfg[self.clientName]["spds"]["syncml"]["Conn"]
             .get("syncUrl")
-            .encode("UTF-8")
         )
 
         self.synctasks = (
@@ -141,19 +144,31 @@ class Synchronizer(wx.ProgressDialog):
             == "True"
         )
 
+        # self.taskdbname = (
+        #     cfg[self.clientName]["spds"]["sources"][
+        #         "%s.Tasks" % self.clientName
+        #     ]
+        #     .get("uri")
+        #     .encode("UTF-8")
+        # )
         self.taskdbname = (
             cfg[self.clientName]["spds"]["sources"][
                 "%s.Tasks" % self.clientName
             ]
             .get("uri")
-            .encode("UTF-8")
         )
+        # self.notedbname = (
+        #     cfg[self.clientName]["spds"]["sources"][
+        #         "%s.Notes" % self.clientName
+        #     ]
+        #     .get("uri")
+        #     .encode("UTF-8")
+        # )
         self.notedbname = (
             cfg[self.clientName]["spds"]["sources"][
                 "%s.Notes" % self.clientName
             ]
             .get("uri")
-            .encode("UTF-8")
         )
 
         self.taskmode = cfg[self.clientName]["spds"]["sources"][
@@ -164,13 +179,10 @@ class Synchronizer(wx.ProgressDialog):
         ].get("preferredsyncmode")
 
     def init(self):
-        self.dmt = TaskCoachDMTClientConfig(
-            self.taskFile.syncMLConfig(), self.clientName
-        )
+        self.dmt = TaskCoachDMTClientConfig(self.taskFile.syncMLConfig(), self.clientName)
 
-        if not (
-            self.dmt.read() and self.dmt.deviceConfig.devID == self.clientName
-        ):
+        if not (self.dmt.read() and
+                self.dmt.deviceConfig.devID == self.clientName):
             self.dmt.setClientDefaults()
 
         ac = self.dmt.accessConfig

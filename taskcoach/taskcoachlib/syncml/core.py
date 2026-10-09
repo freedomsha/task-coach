@@ -16,7 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys, os, struct
+# from builtins import map
+import os
+import struct
+import sys
+
 
 _BINBASE = os.path.join(os.path.split(__file__)[0], "..", "bin.in")
 
@@ -25,7 +29,8 @@ if len(struct.pack("L", 0)) == 8:
 else:
     arch = "IA32"
 
-if sys.platform == "linux2":
+# if sys.platform == "linux2":
+if sys.platform.startswith("linux"):
     # The user should install the binary packages
     pass
 elif sys.platform == "darwin":
@@ -40,4 +45,5 @@ else:
         ),
     )
 
+# unresolved reference
 from _pysyncml import *

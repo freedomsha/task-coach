@@ -16,8 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from .base import PowerStateMixinBase
 from taskcoachlib.powermgt.base import PowerStateMixinBase
-
 # pylint: disable=F0401
 import win32api
 import win32gui
@@ -27,17 +27,17 @@ import wx
 
 class PowerStateMixin(PowerStateMixinBase):
     def __init__(self, *args, **kwargs):
-        super(PowerStateMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        self.__oldProc = win32gui.SetWindowLong(
-            self.GetHandle(), win32con.GWL_WNDPROC, self.__WndProc
-        )
+        self.__oldProc = win32gui.SetWindowLong(self.GetHandle(),
+                                                win32con.GWL_WNDPROC,
+                                                self.__WndProc)
 
     def __WndProc(self, hWnd, msg, wParam, lParam):
         if msg == win32con.WM_DESTROY:
-            win32api.SetWindowLong(
-                self.GetHandle(), win32con.GWL_WNDPROC, self.__oldProc
-            )
+            win32api.SetWindowLong(self.GetHandle(),
+                                   win32con.GWL_WNDPROC,
+                                   self.__oldProc)
 
         if msg == win32con.WM_POWERBROADCAST:
             if wParam == win32con.PBT_APMSUSPEND:
@@ -45,6 +45,5 @@ class PowerStateMixin(PowerStateMixinBase):
             elif wParam == win32con.PBT_APMRESUMESUSPEND:
                 wx.CallAfter(self.OnPowerState, self.POWERON)
 
-        return win32gui.CallWindowProc(
-            self.__oldProc, hWnd, msg, wParam, lParam
-        )
+        return win32gui.CallWindowProc(self.__oldProc,
+                                       hWnd, msg, wParam, lParam)

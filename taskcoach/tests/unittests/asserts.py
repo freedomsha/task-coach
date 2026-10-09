@@ -16,12 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import zip
+# from builtins import object
+
+from taskcoachlib import patterns
+
 
 class TaskListAssertsMixin(object):
-    """"""
-
     def assertTaskList(self, expected):
         self.assertEqualLists(expected, self.taskList)
+        # self.assertListEqual(expected, self.taskList)
         self.assertAllChildrenInTaskList()
 
     def assertAllChildrenInTaskList(self):
@@ -49,18 +55,28 @@ class NoteContainerAssertsMixin(object):
 class EffortAssertsMixin(object):
     def assertEqualEfforts(self, effort1, effort2):
         self.assertEqual(effort1.task(), effort2.task())
+        #                                ^^^^^^^^^^^^^^
+        # TypeError: 'Task' object is not callable in test_effort.py
         self.assertEqual(effort1.getStart(), effort2.getStart())
         self.assertEqual(effort1.getStop(), effort2.getStop())
         self.assertEqual(effort1.description(), effort2.description())
 
 
 class TaskAssertsMixin(object):
-    def failUnlessParentAndChild(self, parent, child):
+    def assertTrueParentAndChild(self, parent, child):
         self.assertTrue(child in parent.children())
         self.assertTrue(child.parent() == parent)
 
     def assertTaskCopy(self, orig, copy):
+        print(
+            f"asserts : DEBUG - Comparaison des objets : orig is copy -> {orig is copy}"
+        )
+        print(
+            f"asserts : DEBUG - Comparaison des objets : orig == copy -> {orig == copy}"
+        )
+
         self.assertFalse(orig == copy)
+        # mais avec Object.__eq__, cela signifie que le test considère explicitement qu'une copie doit avoir un id différent de l'original.
         self.assertEqual(orig.subject(), copy.subject())
         self.assertEqual(orig.description(), copy.description())
         self.assertEqual(
@@ -80,7 +96,15 @@ class TaskAssertsMixin(object):
         self.assertEqual(orig.priority(), copy.priority())
         self.assertEqual(orig.fixedFee(), copy.fixedFee())
         self.assertEqual(orig.hourlyFee(), copy.hourlyFee())
-        self.assertEqual(orig.attachments(), copy.attachments())
+        # # try:
+        self.assertEqual(
+            orig.attachments(), copy.attachments()
+        )  # Ne fonctionne plus !
+        # except AssertionError:
+        #     print(f"Comparaison de listes ne fonctionne plus !")
+        #     self.assertEqual(len(orig.attachments()), len(copy.attachments()))
+        #     self.assertEqual(set(orig.attachments()), set(copy.attachments()))
+        #     self.assertEqual(list(orig.attachments()), list(copy.attachments()))
         self.assertEqual(orig.reminder(), copy.reminder())
         self.assertEqual(
             orig.shouldMarkCompletedWhenAllChildrenCompleted(),
@@ -102,7 +126,7 @@ class TaskAssertsMixin(object):
 
 class CommandAssertsMixin(object):
     def assertHistoryAndFuture(self, expectedHistory, expectedFuture):
-        from taskcoachlib import patterns
+        # from taskcoachlib import patterns
 
         commands = patterns.CommandHistory()
         self.assertEqual(expectedHistory, commands.getHistory())
@@ -126,6 +150,4 @@ class Mixin(
     EffortListAssertsMixin,
     NoteContainerAssertsMixin,
 ):
-    """"""
-
     pass

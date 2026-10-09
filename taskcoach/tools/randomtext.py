@@ -1,3 +1,4 @@
+# from builtins import map
 leadins = """On the other hand,
     This suggests that
     This means that
@@ -5,8 +6,8 @@ leadins = """On the other hand,
     Furthermore,
     It follows that
     Analogously,
-    Also, 
-    Therefore, 
+    Also,
+    Therefore,
     Clearly,
     Note that
     Of course,
@@ -14,11 +15,11 @@ leadins = """On the other hand,
     Thus
     Conversely,
     Rather,
-    However, 
+    However,
     So far,
     Nevertheless,
     For one thing,
-    Summarizing, 
+    Summarizing,
     Presumably,
     It may be, then, that
     It must be emphasized that
@@ -81,7 +82,8 @@ objects = """ problems of scope and lead time.
     an important distinction in resource use.
     the strong generative capacity of the schedule."""
 
-import textwrap, random
+import textwrap
+import random
 from itertools import chain, islice
 
 

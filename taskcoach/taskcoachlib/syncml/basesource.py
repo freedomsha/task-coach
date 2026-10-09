@@ -16,32 +16,29 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import print_function
+
 import wx
-from taskcoachlib.syncml.core import *
+# from taskcoachlib.syncml.core import *
+from taskcoachlib.syncml.core import SyncSource, SyncItem
 from taskcoachlib.i18n import _
 
 
 class BaseSource(SyncSource):
     def __init__(self, callback, objectList, *args, **kwargs):
-        super(BaseSource, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.callback = callback
         self.objectList = objectList
 
         self.allObjectsList = [obj for obj in objectList]
         self.newObjectsList = [obj for obj in objectList if obj.isNew()]
-        self.changedObjectsList = [
-            obj for obj in objectList if obj.isModified()
-        ]
-        self.deletedObjectsList = [
-            obj for obj in objectList if obj.isDeleted()
-        ]
+        self.changedObjectsList = [obj for obj in objectList if obj.isModified()]
+        self.deletedObjectsList = [obj for obj in objectList if obj.isDeleted()]
 
     def beginSync(self):
-        if self.syncMode in [
-            REFRESH_FROM_SERVER,
-            REFRESH_FROM_SERVER_BY_SERVER,
-        ]:
+        if self.syncMode in [REFRESH_FROM_SERVER,
+                             REFRESH_FROM_SERVER_BY_SERVER]:
             if self.objectList:
                 if (
                     wx.MessageBox(
@@ -51,10 +48,7 @@ class BaseSource(SyncSource):
                             "be deleted. Do you wish to continue?"
                         ),
                         _("Refresh from server"),
-                        wx.YES_NO,
-                    )
-                    != wx.YES
-                ):
+                        wx.YES_NO) != wx.YES):
                     return 514  # Not sure of this
                 self.objectList.clear()
                 self.allObjectsList = []
@@ -128,9 +122,11 @@ class BaseSource(SyncSource):
 
     # These two methods seem to be obsolete.
 
+    # @staticmethod
     def getFirstItemKey(self):
         return None
 
+    # @staticmethod
     def getNextItemKey(self):
         return None
 

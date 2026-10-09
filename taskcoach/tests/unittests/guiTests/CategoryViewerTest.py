@@ -16,14 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, wx
+# from builtins import zip
+import wx
 from taskcoachlib import gui, config, persistence
 from taskcoachlib.domain import category
+from ... import tctest
 
 
-class CategoryViewerTest(test.wxTestCase):
+class CategoryViewerTest(tctest.wxTestCase):
     def setUp(self):
-        super(CategoryViewerTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.categories = self.taskFile.categories()
@@ -32,7 +34,7 @@ class CategoryViewerTest(test.wxTestCase):
         )
 
     def tearDown(self):
-        super(CategoryViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -56,9 +58,7 @@ class CategoryViewerTest(test.wxTestCase):
     def testSortInWidget(self):
         self.addTwoCategories()
         widget = self.viewer.widget
-        for item, cat in zip(
-            widget.GetItemChildren(), self.viewer.presentation()
-        ):
+        for item, cat in list(zip(widget.GetItemChildren(), self.viewer.presentation())):
             self.assertEqual(cat.subject(), widget.GetItemText(item))
 
     def testSelectAll(self):
@@ -69,12 +69,8 @@ class CategoryViewerTest(test.wxTestCase):
 
     def testFilterOnAllCheckedCategoriesSetsSetting(self):
         self.viewer.filterUICommand.doChoice(True)
-        self.assertTrue(
-            self.settings.getboolean("view", "categoryfiltermatchall")
-        )
+        self.assertTrue(self.settings.getboolean("view", "categoryfiltermatchall"))
 
     def testFilterOnAnyCheckedCategoriesSetsSetting(self):
         self.viewer.filterUICommand.doChoice(False)
-        self.assertFalse(
-            self.settings.getboolean("view", "categoryfiltermatchall")
-        )
+        self.assertFalse(self.settings.getboolean("view", "categoryfiltermatchall"))

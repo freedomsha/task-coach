@@ -16,13 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import gui, config, persistence
 
 
-class PreferencesTest(test.wxTestCase):
+class PreferencesTest(tctest.wxTestCase):
     def setUp(self):
-        super(PreferencesTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.preferences = gui.Preferences(
             parent=self.frame, title="Test", settings=self.settings
@@ -43,12 +43,11 @@ class PreferencesTest(test.wxTestCase):
         self.preferences[5]._colorSettings[4][2].SetColour(self.newColor)
         self.preferences.ok()
         self.assertEqual(
-            self.newColor,
-            eval(self.settings.get("fgcolor", "activetasks"))[:3],
+            self.newColor, eval(self.settings.get("fgcolor", "activetasks"))[:3]
         )
 
 
-class SyncMLPreferencesTest(test.TestCase):
+class SyncMLPreferencesTest(tctest.TestCase):
     def testCreate(self):
         taskFile = persistence.TaskFile()
         try:

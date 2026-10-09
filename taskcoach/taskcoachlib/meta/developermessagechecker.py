@@ -18,29 +18,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import data
 import threading
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
 
 
 class DeveloperMessageChecker(threading.Thread):
-    """Check for messages from the developers on the website."""
+    """ Check for messages from the developers on the website. """
 
-    def __init__(
-        self, settings, urlopen=urllib.request.urlopen, call_after=None
-    ):
+    def __init__(self, settings, urlopen=urllib.request.urlopen, call_after=None):
         self.__settings = settings
         self.__urlopen = urlopen
         self.__call_after = call_after or self.__wx_call_after
-        super(DeveloperMessageChecker, self).__init__()
+        super().__init__()
 
-    def _set_daemon(self):
+    @staticmethod  # TODO : vérifie s'il faut le commenter ou non
+    def _set_daemon():
         return True  # Don't block application exit
 
     def run(self, show=True):  # pylint: disable=W0221
+        # what do you want to do ?
         try:
-            message, url = self.__get_message()
-        except:  # pylint: disable=W0702
+            message, url = self.__get_message()  # urllib.error.URLError: <urlopen error [Errno -2] Nom ou service inconnu>
+        except Exception:  # pylint: disable=W0702
             return  # Whatever goes wrong, ignore it.
-        if self.__message_is_new(message):
+        if self.__message_is_new(message):  # this code is unreachable
             return self.__notify_user(message, url, show)
 
     def __message_is_new(self, message):
@@ -51,44 +51,41 @@ class DeveloperMessageChecker(threading.Thread):
         return message != last_message
 
     def __get_message(self):
-        """Retrieve and parse the message file."""
+        """ Retrieve and parse the message file. """
         return self.__parse_message_file(self.__retrieve_message_file())
 
     def __notify_user(self, message, url, show=True):
-        """Notify the user about the message."""
+        """ Notify the user about the message. """
         # Must use CallAfter because this is a non-GUI thread.
         return self.__call_after(self.__show_dialog, message, url, show)
 
     @staticmethod
     def __wx_call_after(function, *args, **kwargs):
-        """Use this method for calling GUI methods from a non-GUI thread."""
+        """ Use this method for calling GUI methods from a non-GUI thread. """
         # Import wx here so it isn't a build dependency.
         import wx
-
+        wx.LogDebug("DeveloperMessageChecker : Appel de CallAfter.")
         wx.CallAfter(function, *args, **kwargs)
+        wx.LogDebug("DeveloperMessageChecker : CallAfter passé avec succès.")
 
     def __show_dialog(self, message, url, show=True):
-        """Show the message dialog."""
+        """ Show the message dialog. """
         dialog = self.__create_dialog(message, url)
         dialog.Show(show)
         return dialog
 
     def __create_dialog(self, message, url):
-        """Create the message dialog."""
+        """ Create the message dialog. """
         import wx
         from taskcoachlib.gui.dialog import developer_message
-
-        return developer_message.MessageDialog(
-            wx.GetApp().GetTopWindow(),
-            message=message,
-            url=url,
-            settings=self.__settings,
-        )
+        return developer_message.MessageDialog(wx.GetApp().GetTopWindow(),
+                                               message=message, url=url,
+                                               settings=self.__settings)
 
     @staticmethod
     def __parse_message_file(message_file):
-        """Return a (message, url) tuple parsed from the message file.
-        Catching parsing exceptions is a caller responsibility."""
+        """ Return a (message, urlpo) tuple parsed from the message file.
+            Catching parsing exceptions is a caller responsibility. """
         lines = message_file.readlines()
         lines_without_comments = [
             line for line in lines if not line.startswith("#")
@@ -96,6 +93,6 @@ class DeveloperMessageChecker(threading.Thread):
         return lines_without_comments[0].strip().split("|")
 
     def __retrieve_message_file(self):
-        """Retrieve the message file from the website. Catching exceptions
-        is a caller responsibility."""
+        """ Retrieve the message file from the website. Catching exceptions
+            is a caller responsibility. """
         return self.__urlopen(data.message_url)

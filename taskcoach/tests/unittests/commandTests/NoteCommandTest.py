@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from unittests import asserts
+# from __future__ import absolute_import
+
+from tests.unittests import asserts
 from .CommandTestCase import CommandTestCase
 from taskcoachlib import command, patterns
 from taskcoachlib.domain import base, note, category, task
@@ -34,9 +36,8 @@ class NoteCommandTestCase(CommandTestCase, asserts.CommandAssertsMixin):
 
 class NewNoteCommandTest(NoteCommandTestCase):
     def new(self, categories=None):
-        newNoteCommand = command.NewNoteCommand(
-            self.notes, categories=categories or []
-        )
+        newNoteCommand = command.NewNoteCommand(self.notes,
+                                                categories=categories or [])
         newNote = newNoteCommand.items[0]
         newNoteCommand.do()
         return newNote
@@ -45,16 +46,15 @@ class NewNoteCommandTest(NoteCommandTestCase):
         newNote = self.new()
         self.assertDoUndoRedo(
             lambda: self.assertEqual([newNote], self.notes),
-            lambda: self.assertEqual([], self.notes),
-        )
+            lambda: self.assertEqual([], self.notes))
 
     def testNewNoteWithCategory(self):
         cat = category.Category("cat")
         newNote = self.new(categories=[cat])
         self.assertDoUndoRedo(
-            lambda: self.assertEqual(set([cat]), newNote.categories()),
-            lambda: self.assertEqual([], self.notes),
-        )
+            # lambda: self.assertEqual(set([cat]), newNote.categories()),
+            lambda: self.assertEqual({cat}, newNote.categories()),
+            lambda: self.assertEqual([], self.notes))
 
 
 class AddNoteCommandTest(NoteCommandTestCase):
@@ -78,17 +78,15 @@ class NewSubNoteCommandTest(NoteCommandTestCase):
 
     def testNewSubNote_WithoutSelection(self):
         self.newSubNote()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual([self.note], self.notes)
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual([self.note],
+                                                       self.notes))
 
     def testNewSubNote(self):
         self.newSubNote([self.note])
         newSubNote = self.note.children()[0]
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual([newSubNote], self.note.children()),
-            lambda: self.assertEqual([self.note], self.notes),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual([newSubNote],
+                                                       self.note.children()),
+                              lambda: self.assertEqual([self.note], self.notes))
 
 
 class DragAndDropNoteCommand(NoteCommandTestCase):
@@ -102,9 +100,8 @@ class DragAndDropNoteCommand(NoteCommandTestCase):
         self.notes.extend([self.parent])
 
     def dragAndDrop(self, dropTarget, notes=None):
-        command.DragAndDropNoteCommand(
-            self.notes, notes or [], drop=dropTarget
-        ).do()
+        command.DragAndDropNoteCommand(self.notes, notes or [],
+                                       drop=dropTarget).do()
 
     def testCannotDropOnParent(self):
         self.dragAndDrop([self.parent], [self.child])
@@ -120,7 +117,6 @@ class DragAndDropNoteCommand(NoteCommandTestCase):
 
     def testDropAsRootTask(self):
         self.dragAndDrop([], [self.grandchild])
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual(None, self.grandchild.parent()),
-            lambda: self.assertEqual(self.child, self.grandchild.parent()),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual(None,
+                              self.grandchild.parent()), lambda:
+                              self.assertEqual(self.child, self.grandchild.parent()))

@@ -19,6 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 # pylint: disable=F0401,E1101
+# +1 ligne futurize :
+from builtins import object
+# but this imports don't exist !!!
 from buildbot.steps.shell import Compile, ShellCommand, WithProperties
 from buildbot.steps.master import MasterShellCommand
 from buildbot.steps.transfer import FileUpload, DirectoryUpload
@@ -27,13 +30,18 @@ from buildbot.process.buildstep import SUCCESS, FAILURE
 
 from twisted.python import log
 
-from zope.interface import implements
-import re, os
+# from zope.interface import implements
+# from zope.interface import Interface, implementer
+from zope.interface import implementer  # Remplacement de implements.
+import re
+import os
 
 
+@implementer(interfaces.IEmailLookup)
 class TaskCoachEmailLookup(object):
-    implements(interfaces.IEmailLookup)
+    # implements(interfaces.IEmailLookup)
 
+    # @staticmethod
     def getAddress(self, name):
         try:
             return {
@@ -79,7 +87,6 @@ class Revision(Compile):
 
 # ==============================================================================
 # Tests and documentation
-
 
 class UnitTests(Compile):
     name = "unit tests"
@@ -128,6 +135,7 @@ class KillEXE(ShellCommand):
     description = ["Killing", "exe"]
     descriptionDone = ["Exe", "killed"]
 
+    # @staticmethod
     def evaluateCommand(self, cmd):
         return SUCCESS
 
@@ -186,7 +194,6 @@ class UploadDoc(DirectoryUpload):
 
 # ==============================================================================
 # Platform-specific packages
-
 
 class DistCompile(Compile):
     sep = "/"
@@ -276,7 +283,6 @@ class UploadChangelog(FileUpload):
 
 # Mac OS X
 
-
 class BuildDMG(DistCompile):
     filename_rx = re.compile(r"^created: (.*)")
 
@@ -288,9 +294,7 @@ class BuildDMG(DistCompile):
 class UploadDMG(UploadBase):
     pass
 
-
 # Windows
-
 
 class BuildEXE(DistCompile):
     filename_rx = re.compile(r"(dist\\.*-win32\.exe)")
@@ -332,9 +336,7 @@ class BuildPortableApps(DistCompile):
 class UploadPortableApps(UploadBase):
     pass
 
-
 # Source
-
 
 class BuildSourceTar(DistCompile):
     filename_rx = re.compile("^Created (.*)$")
@@ -374,9 +376,7 @@ class UploadSourceZip(UploadBase):
 class UploadSourceRaw(UploadBase):
     pass
 
-
 # Debian
-
 
 class BuildDEB(DistCompile):
     filename_rx = re.compile(r"^mv (dist/taskcoach.*)_all\.deb")
@@ -389,7 +389,8 @@ class BuildDEB(DistCompile):
     def __init__(self, **kwargs):
         # Avoid having the virtualenv bin directory in path, it messes up things
         kwargs["env"] = {"PATH": "/bin:/usr/bin:/usr/local/bin"}
-        super(DistCompile, self).__init__(**kwargs)
+        # super(DistCompile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class BuildUbuntu(BuildDEB):
@@ -415,7 +416,6 @@ class PPA(Compile):
 
 
 # Generic RPM
-
 
 class BuildRPM(DistCompile):
     filename_rx = re.compile(r"([^/]*.noarch.rpm) -> dist")
@@ -444,9 +444,7 @@ class UploadRPM(UploadBase):
 class UploadSRPM(UploadBase):
     pass
 
-
 # Fedora
-
 
 class BuildFedora14(DistCompile):
     filename_rx = re.compile(r"([^/]*.noarch.rpm) -> dist")
@@ -460,9 +458,7 @@ class BuildFedora14(DistCompile):
 class UploadFedora14(UploadBase):
     pass
 
-
 # OpenSuse
-
 
 class BuildOpenSuse(DistCompile):
     filename_rx = re.compile(r"([^/]*).noarch.rpm -> dist")
@@ -477,9 +473,7 @@ class BuildOpenSuse(DistCompile):
 class UploadOpenSuse(UploadBase):
     pass
 
-
 # Release
-
 
 class CleanupReleaseStep(MasterShellCommand):
     name = "Cleanup"
@@ -509,7 +503,6 @@ class ZipReleaseStep(MasterShellCommand):
 
 
 # Pylint
-
 
 class PylintStep(Compile):
     name = "pylint"

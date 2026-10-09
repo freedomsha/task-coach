@@ -16,11 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, datetime
+# from builtins import str
+from ... import tctest
+import datetime
 from taskcoachlib import meta
 
 
-class VersionNumberTest(test.TestCase):
+class VersionNumberTest(tctest.TestCase):
     def testVersionHasMajorMinorAndPatchLevel(self):
         expectedParts = 4 if meta.data.revision else 3
         self.assertEqual(expectedParts, len(meta.data.version.split(".")))
@@ -33,9 +35,7 @@ class VersionNumberTest(test.TestCase):
         self.assertEqual(int, type(meta.data.tskversion))
 
     def testReleaseStatus(self):
-        self.assertTrue(
-            meta.data.release_status in ["alpha", "beta", "stable"]
-        )
+        self.assertTrue(meta.data.release_status in ["alpha", "beta", "stable"])
 
     def testReleaseDate(self):
         datetime.date(

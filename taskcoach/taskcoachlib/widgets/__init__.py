@@ -26,11 +26,7 @@ from .treectrl import CheckTreeCtrl, TreeListCtrl
 from .squaremap import SquareMap
 from .timeline import Timeline
 from .datectrl import DateTimeCtrl, TimeEntry
-from .textctrl import (
-    SingleLineTextCtrl,
-    MultiLineTextCtrl,
-    StaticTextWithToolTip,
-)
+from .textctrl import SingleLineTextCtrl, MultiLineTextCtrl, StaticTextWithToolTip
 from .panel import PanelWithBoxSizer, BoxWithFlexGridSizer, BoxWithBoxSizer
 from .searchctrl import SearchCtrl
 from .spinctrl import SpinCtrl

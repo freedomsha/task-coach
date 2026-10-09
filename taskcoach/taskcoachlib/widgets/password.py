@@ -16,13 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from future import standard_library
+# standard_library.install_aliases()
 import wx
 from taskcoachlib.i18n import _
 
 
 class KeychainPasswordWidget(wx.Dialog):
     def __init__(self, domain, username, *args, **kwargs):
-        super(KeychainPasswordWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.domain = domain.encode("UTF-8")
         self.username = username.encode("UTF-8")
@@ -70,8 +72,8 @@ class KeychainPasswordWidget(wx.Dialog):
 
     def OnOK(self, event):
         self.password = self.passwordField.GetValue()
-        from taskcoachlib.thirdparty.keyring import set_password
-
+        # from taskcoachlib.thirdparty.keyring import set_password
+        from keyring import set_password
         if self.keepInKeychain.GetValue():
             set_password(
                 self.domain, self.username, self.password.encode("UTF-8")
@@ -91,8 +93,8 @@ def _GetCachedPassword(domain, username, reset):
     global _PASSWORDCACHE
 
     if _PASSWORDCACHE is None:
-        import io, traceback
-
+        import io
+        import traceback
         bf = io.StringIO()
         traceback.print_exc(file=bf)
         wx.MessageBox(
@@ -116,8 +118,10 @@ def _GetCachedPassword(domain, username, reset):
 
 def GetPassword(domain, username, reset=False):
     try:
-        from taskcoachlib.thirdparty.keyring import set_password, get_password
-    except:
+        # from taskcoachlib.thirdparty.keyring import set_password, get_password
+        # except ImportError:
+        from keyring import set_password, get_password
+    except ImportError:
         # Keychain unavailable.
         return _GetCachedPassword(domain, username, reset)
 
@@ -129,7 +133,7 @@ def GetPassword(domain, username, reset=False):
                 domain.encode("UTF-8"), username.encode("UTF-8")
             )
             if pwd:
-                return pwd.decode("UTF-8")
+                return pwd.decode("UTF-8")  # Unresolved attribute reference 'decode' for class 'str'
     except ImportError:
         # Bug seen on Ubuntu 13.10: secretstorage cannot import ._gi
         return _GetCachedPassword(domain, username, reset)

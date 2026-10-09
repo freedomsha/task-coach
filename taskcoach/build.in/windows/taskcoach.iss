@@ -39,7 +39,7 @@ PrivilegesRequired=none
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: associate; Description: "{cm:AssocFileExtension,{app},.tsk}"; GroupDescription: "Other tasks:"; Flags: unchecked
-Name: userstartup; Description: "Run %(name)s every time Windows is started"; GroupDescription: "Other tasks:"; Flags: unchecked
+Name: userstartup; Description: "Run %(name)s every time Windows is Started"; GroupDescription: "Other tasks:"; Flags: unchecked
 
 [Files]
 Source: "%(filename)s-%(version)s-win32exe\%(filename)s.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -73,7 +73,7 @@ Name: "{userstartup}\%(name)s"; Filename: "{app}\%(filename)s.exe"; Tasks: users
 
 [Run]
 Filename: "{app}\%(filename)s.exe"; Description: "{cm:LaunchProgram,%(name)s}"; Flags: nowait postinstall skipifsilent
-Filename: "%(url)s/changes.html"; Description: "Show recent changes (opens a webbrowser)"; Flags: shellexec nowait postinstall skipifsilent
+Filename: "%(url)schanges.html"; Description: "Show recent changes (opens a webbrowser)"; Flags: shellexec nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: files; Name: "{app}\%(filename)s.url"

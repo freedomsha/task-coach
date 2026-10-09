@@ -57,11 +57,11 @@ msgid "Edit attachment \"%s\" location"
 msgstr ""
 
 #: taskcoachlib\command\base.py:162
-msgid "Copy"
+msgid "copy"
 msgstr "نسخ"
 
 #: taskcoachlib\command\base.py:163
-msgid "Copy \"%s\""
+msgid "copy \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\base.py:177 taskcoachlib\gui\dialog\templates.py:51
@@ -271,19 +271,19 @@ msgid "Change task of \"%s\" effort"
 msgstr ""
 
 #: taskcoachlib\command\effortCommands.py:76
-msgid "Change effort start date and time"
+msgid "Change effort start Date and time"
 msgstr ""
 
 #: taskcoachlib\command\effortCommands.py:77
-msgid "Change effort start date and time of \"%s\""
+msgid "Change effort start Date and time of \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\effortCommands.py:104
-msgid "Change effort stop date and time"
+msgid "Change effort stop Date and time"
 msgstr ""
 
 #: taskcoachlib\command\effortCommands.py:105
-msgid "Change effort stop date and time of \"%s\""
+msgid "Change effort stop Date and time of \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\noteCommands.py:39
@@ -408,27 +408,27 @@ msgid "Add note to tasks"
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:395
-msgid "Change start date"
+msgid "Change start Date"
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:396
-msgid "Change start date of \"%s\""
+msgid "Change start Date of \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:424
-msgid "Change due date"
+msgid "Change due Date"
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:425
-msgid "Change due date of \"%s\""
+msgid "Change due Date of \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:437
-msgid "Change completion date"
+msgid "Change completion Date"
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:438
-msgid "Change completion date of \"%s\""
+msgid "Change completion Date of \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:453
@@ -436,7 +436,7 @@ msgid "Change reminder dates/times"
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:454
-msgid "Change reminder date/time of \"%s\""
+msgid "Change reminder Date/time of \"%s\""
 msgstr ""
 
 #: taskcoachlib\command\taskCommands.py:466
@@ -519,87 +519,87 @@ msgstr "فتح المرفق"
 msgid "Open the selected attachments"
 msgstr "فتح المرفقات المحددة"
 
-#: taskcoachlib\domain\date\snooze.py:22
+#: taskcoachlib\domain\Date\snooze.py:22
 msgid "5 minutes"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:22
+#: taskcoachlib\domain\Date\snooze.py:22
 msgid "Don't snooze"
 msgstr "لا تغفو"
 
-#: taskcoachlib\domain\date\snooze.py:23
+#: taskcoachlib\domain\Date\snooze.py:23
 msgid "10 minutes"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:23
+#: taskcoachlib\domain\Date\snooze.py:23
 msgid "15 minutes"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:24
+#: taskcoachlib\domain\Date\snooze.py:24
 msgid "20 minutes"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:24
+#: taskcoachlib\domain\Date\snooze.py:24
 msgid "30 minutes"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:25
+#: taskcoachlib\domain\Date\snooze.py:25
 msgid "1 hour"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:25
+#: taskcoachlib\domain\Date\snooze.py:25
 msgid "1.5 hour"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:25
+#: taskcoachlib\domain\Date\snooze.py:25
 msgid "45 minutes"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:26
+#: taskcoachlib\domain\Date\snooze.py:26
 msgid "2 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:26
+#: taskcoachlib\domain\Date\snooze.py:26
 msgid "3 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:26
+#: taskcoachlib\domain\Date\snooze.py:26
 msgid "4 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:27
+#: taskcoachlib\domain\Date\snooze.py:27
 msgid "12 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:27
+#: taskcoachlib\domain\Date\snooze.py:27
 msgid "6 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:27
+#: taskcoachlib\domain\Date\snooze.py:27
 msgid "8 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:28
+#: taskcoachlib\domain\Date\snooze.py:28
 msgid "18 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:28
+#: taskcoachlib\domain\Date\snooze.py:28
 msgid "24 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:29
+#: taskcoachlib\domain\Date\snooze.py:29
 msgid "48 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:29
+#: taskcoachlib\domain\Date\snooze.py:29
 msgid "72 hours"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:30
+#: taskcoachlib\domain\Date\snooze.py:30
 msgid "1 week"
 msgstr ""
 
-#: taskcoachlib\domain\date\snooze.py:30
+#: taskcoachlib\domain\Date\snooze.py:30
 msgid "2 weeks"
 msgstr ""
 
@@ -1047,7 +1047,7 @@ msgstr "التواريخ"
 #: taskcoachlib\persistence\csv\reader.py:96
 #: taskcoachlib\widgets\calendarconfig.py:79
 #: taskcoachlib\widgets\conflict.py:200
-msgid "Start date"
+msgid "Start Date"
 msgstr "تاريخ البداية"
 
 #: taskcoachlib\gui\dialog\editor.py:368 taskcoachlib\gui\viewer\task.py:756
@@ -1055,14 +1055,14 @@ msgstr "تاريخ البداية"
 #: taskcoachlib\persistence\csv\reader.py:103
 #: taskcoachlib\widgets\calendarconfig.py:80
 #: taskcoachlib\widgets\conflict.py:205
-msgid "Due date"
+msgid "Due Date"
 msgstr "تاريخ الإستحقاق"
 
 #: taskcoachlib\gui\dialog\editor.py:369 taskcoachlib\gui\viewer\task.py:757
 #: taskcoachlib\gui\wizard\csvimport.py:198
 #: taskcoachlib\persistence\csv\reader.py:110
 #: taskcoachlib\widgets\conflict.py:210
-msgid "Completion date"
+msgid "Completion Date"
 msgstr "تاريخ الإنجاز"
 
 #: taskcoachlib\gui\dialog\editor.py:393
@@ -1629,7 +1629,7 @@ msgid "Check spelling in editors"
 msgstr "فحص التهجئة عند التحرير"
 
 #: taskcoachlib\gui\dialog\reminder.py:63
-msgid "Reminder date/time"
+msgid "Reminder Date/time"
 msgstr "تذكير"
 
 #: taskcoachlib\gui\dialog\reminder.py:64
@@ -1732,11 +1732,11 @@ msgid "Version %(version)s of %(name)s is available from"
 msgstr ""
 
 #: taskcoachlib\gui\dialog\version.py:62
-msgid "%(name)s is up to date"
+msgid "%(name)s is up to Date"
 msgstr ""
 
 #: taskcoachlib\gui\dialog\version.py:65
-msgid "%(name)s is up to date at version %(version)s."
+msgid "%(name)s is up to Date at version %(version)s."
 msgstr ""
 
 #: taskcoachlib\gui\dialog\version.py:69
@@ -1774,7 +1774,7 @@ msgid "Stop it at %s"
 msgstr ""
 
 #: taskcoachlib\gui\idlecontroller.py:43
-msgid "Stop it at %s and resume now"
+msgid "Stop it at %s and resume Now"
 msgstr ""
 
 #: taskcoachlib\gui\idlecontroller.py:125
@@ -2234,7 +2234,7 @@ msgid "Every other year"
 msgstr ""
 
 #: taskcoachlib\gui\render.py:102
-msgid "now"
+msgid "Now"
 msgstr ""
 
 #: taskcoachlib\gui\taskbaricon.py:136
@@ -2437,7 +2437,7 @@ msgid "Cu&t\tCtrl+X"
 msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:844
-msgid "&Copy\tCtrl+C"
+msgid "&copy\tCtrl+C"
 msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:866
@@ -2551,7 +2551,7 @@ msgid "Hide &inactive tasks"
 msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:1202
-msgid "Show/hide inactive tasks (tasks with a start date in the future)"
+msgid "Show/hide inactive tasks (tasks with a start Date in the future)"
 msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:1219
@@ -2560,7 +2560,7 @@ msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:1220
 msgid ""
-"Show/hide active tasks (tasks with a start date in the past that are not "
+"Show/hide active tasks (tasks with a start Date in the past that are not "
 "completed)"
 msgstr ""
 
@@ -2951,7 +2951,7 @@ msgid "&Today"
 msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:2444
-msgid "Show today"
+msgid "Show Today"
 msgstr ""
 
 #: taskcoachlib\gui\uicommand.py:2452
@@ -3144,19 +3144,19 @@ msgid "Hide all due tasks"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:216
-msgid "Only show tasks due &today"
+msgid "Only show tasks due &Today"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:217
-msgid "Only show tasks due today and hide later ones"
+msgid "Only show tasks due Today and hide later ones"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:219
-msgid "Only show tasks due today or t&omorrow"
+msgid "Only show tasks due Today or t&omorrow"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:220
-msgid "Only show tasks due today or tomorrow and hide later ones"
+msgid "Only show tasks due Today or Tomorrow and hide later ones"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:222
@@ -3236,19 +3236,19 @@ msgid "Hide all completed tasks"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:248
-msgid "Only show tasks completed &today"
+msgid "Only show tasks completed &Today"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:249
-msgid "Only show tasks completed today and hide older ones"
+msgid "Only show tasks completed Today and hide older ones"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:251
-msgid "Only show tasks completed &yesterday and today"
+msgid "Only show tasks completed &Yesterday and Today"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:252
-msgid "Only show tasks completed yesterday and today and hide older ones"
+msgid "Only show tasks completed Yesterday and Today and hide older ones"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:254
@@ -3316,7 +3316,7 @@ msgid "&Show all inactive tasks"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:277
-msgid "Show all inactive tasks (tasks with a start date in the future)"
+msgid "Show all inactive tasks (tasks with a start Date in the future)"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:279
@@ -3324,23 +3324,23 @@ msgid "&Hide all inactive tasks"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:280
-msgid "Hide all inactive tasks (tasks with a start date in the future)"
+msgid "Hide all inactive tasks (tasks with a start Date in the future)"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:282
-msgid "Only show tasks starting &today"
+msgid "Only show tasks starting &Today"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:283
-msgid "Only show tasks starting today and hide later ones"
+msgid "Only show tasks starting Today and hide later ones"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:285
-msgid "Only show tasks starting today or t&omorrow"
+msgid "Only show tasks starting Today or t&omorrow"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:286
-msgid "Only show tasks starting today or tomorrow and hide later ones"
+msgid "Only show tasks starting Today or Tomorrow and hide later ones"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:288
@@ -3444,27 +3444,27 @@ msgid "Sort tasks by category"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:502
-msgid "Sort tasks by start date"
+msgid "Sort tasks by start Date"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:502 taskcoachlib\gui\viewer\task.py:789
-msgid "&Start date"
+msgid "&Start Date"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:503
-msgid "Sort tasks by due date"
+msgid "Sort tasks by due Date"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:503 taskcoachlib\gui\viewer\task.py:792
-msgid "&Due date"
+msgid "&Due Date"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:504
-msgid "Sort tasks by completion date"
+msgid "Sort tasks by completion Date"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:504 taskcoachlib\gui\viewer\task.py:795
-msgid "&Completion date"
+msgid "&Completion Date"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:505
@@ -3553,7 +3553,7 @@ msgid "Sort tasks by revenue"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:517
-msgid "Sort tasks by reminder date and time"
+msgid "Sort tasks by reminder Date and time"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\mixin.py:517 taskcoachlib\gui\viewer\task.py:865
@@ -3609,23 +3609,23 @@ msgid "&Dates"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\task.py:783
-msgid "&All date columns"
+msgid "&All Date columns"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\task.py:784
-msgid "Show/hide all date-related columns"
+msgid "Show/hide all Date-related columns"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\task.py:790
-msgid "Show/hide start date column"
+msgid "Show/hide start Date column"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\task.py:793
-msgid "Show/hide due date column"
+msgid "Show/hide due Date column"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\task.py:796
-msgid "Show/hide completion date column"
+msgid "Show/hide completion Date column"
 msgstr ""
 
 #: taskcoachlib\gui\viewer\task.py:799
@@ -3917,14 +3917,14 @@ msgstr ""
 
 #: taskcoachlib\help\__init__.py:143
 msgid ""
-"Due date: the date the task should be finished. \n"
-"This can be 'None' indicating that this task has no fixed due date."
+"Due Date: the Date the task should be Finished. \n"
+"This can be 'None' indicating that this task has no fixed due Date."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:145
 msgid ""
-"Start date: the first date on which the task can be started. \n"
-"The start date defaults to the date the task is created. It can also be "
+"Start Date: the first Date on which the task can be Started. \n"
+"The start Date defaults to the Date the task is created. It can also be "
 "'None' \n"
 "indicating that you don't really want to start this task. This can be "
 "convenient \n"
@@ -3933,19 +3933,19 @@ msgstr ""
 
 #: taskcoachlib\help\__init__.py:149
 msgid ""
-"Completion date: this date is 'None' as long as the task has \n"
-"not been completed. It is set to the current date when you mark the task "
+"Completion Date: this Date is 'None' as long as the task has \n"
+"not been completed. It is set to the current Date when you mark the task "
 "as \n"
-"completed. The completion date can also be entered manually."
+"completed. The completion Date can also be entered manually."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:152
 msgid ""
 "Prerequisites: other tasks that need to be completed before\n"
-"a task can be started. The task is inactive until the last prerequisite task "
+"a task can be Started. The task is inactive until the last prerequisite task "
 "is \n"
-"completed. Note that if the task has a specific start date set, that start\n"
-"date has to be in the past <em>and</em> all prerequisite tasks need to be\n"
+"completed. Note that if the task has a specific start Date set, that start\n"
+"Date has to be in the past <em>and</em> all prerequisite tasks need to be\n"
 "completed before the task becomes active."
 msgstr ""
 
@@ -3968,12 +3968,12 @@ msgid "The following properties are calculated from the properties above:"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:164
-msgid "Days left: the number of days left until the due date."
+msgid "Days left: the number of days left until the due Date."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:165
 msgid ""
-"Dependencies: other tasks that can be started when the \n"
+"Dependencies: other tasks that can be Started when the \n"
 "prerequisite task has been completed."
 msgstr ""
 
@@ -3994,12 +3994,12 @@ msgid "Tasks always have exactly one of the following states:"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:175
-msgid "Active: the start date is in the past and the due date in the future;"
+msgid "Active: the start Date is in the past and the due Date in the future;"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:176
 msgid ""
-"Inactive: the start date is in the future, and/or not all \n"
+"Inactive: the start Date is in the future, and/or not all \n"
 "prerequisite tasks have been completed;"
 msgstr ""
 
@@ -4012,12 +4012,12 @@ msgid "In addition, tasks can be referenced as:"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:182
-msgid "Over due: the due date is in the past;"
+msgid "Over due: the due Date is in the past;"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:183
 msgid ""
-"Due soon: the due date is soon (what 'soon' is, can be \n"
+"Due soon: the due Date is soon (what 'soon' is, can be \n"
 "changed in the preferences);"
 msgstr ""
 
@@ -4088,12 +4088,12 @@ msgid "Task: the task the effort belongs to."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:221
-msgid "Start date/time: start date and time of the effort."
+msgid "Start Date/time: start Date and time of the effort."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:222
 msgid ""
-"Stop date/time: stop date and time of the effort. This can be \n"
+"Stop Date/time: stop Date and time of the effort. This can be \n"
 "'None' as long as you are still working on the task."
 msgstr ""
 
@@ -4469,7 +4469,7 @@ msgstr ""
 
 #: taskcoachlib\help\__init__.py:477
 msgid ""
-"Show inactive: whether to show inactive tasks (start date \n"
+"Show inactive: whether to show inactive tasks (start Date \n"
 "in the future)."
 msgstr ""
 
@@ -4592,12 +4592,12 @@ msgstr ""
 
 #: taskcoachlib\help\__init__.py:548
 msgid ""
-"Templates are blueprints for new tasks. Right now, the only task \n"
+"Templates are blueprints for new tasks. Right Now, the only task \n"
 "properties that can be \"parameterized\" are the dates. When instantiating "
 "a \n"
 "template, the created task has its dates replaced with dates relative to "
 "the \n"
-"current date."
+"current Date."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:555
@@ -4624,13 +4624,13 @@ msgid ""
 "template\" menu in the Task menu, or the equivalent toolbar button. When "
 "the \n"
 "task is created, the due, start and completion dates, if applicable, are \n"
-"reevaluated relatively to the current date. That means that if you create "
+"reevaluated relatively to the current Date. That means that if you create "
 "a \n"
-"template from a task starting today and due tomorrow, every time the "
+"template from a task starting Today and due Tomorrow, every time the "
 "template \n"
-"is instantiated, the start date will be replaced by the current date and "
+"is instantiated, the start Date will be replaced by the current Date and "
 "the \n"
-"due date by the current date plus one day."
+"due Date by the current Date plus one day."
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:575
@@ -4802,7 +4802,7 @@ msgid "Ctrl-Z"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:627
-msgid "Edit the selected item(s) or close a dialog"
+msgid "Edit the selected item(s) or Close a dialog"
 msgstr ""
 
 #: taskcoachlib\help\__init__.py:627
@@ -4885,7 +4885,7 @@ msgstr ""
 #: taskcoachlib\help\__init__.py:647
 msgid ""
 "<h4>%(name)s - %(description)s</h4>\n"
-"<h5>Version %(version)s, Revision %(revision)s, %(date)s</h5>\n"
+"<h5>Version %(version)s, Revision %(revision)s, %(Date)s</h5>\n"
 "<p>By %(author)s &lt;%(author_email)s&gt;<p>\n"
 "<p><a href=\"%(url)s\" target=\"_blank\">%(url)s</a></p>\n"
 "<p>%(copyright)s</p>\n"
@@ -4895,7 +4895,7 @@ msgstr ""
 #: taskcoachlib\help\__init__.py:659
 msgid ""
 "\n"
-"Version %(version)s, Revision %(revision)s, %(date)s\n"
+"Version %(version)s, Revision %(revision)s, %(Date)s\n"
 "\n"
 "By %(author)s <%(author_email)s>\n"
 "\n"
@@ -4917,7 +4917,7 @@ msgstr ""
 msgid ""
 "%(name)s has a mailinglist where you can discuss usage of %(name)s with "
 "fellow users, discuss and request features and complain about bugs. Go to "
-"%(url)s and join today!"
+"%(url)s and join Today!"
 msgstr ""
 
 #: taskcoachlib\help\tips.py:27
@@ -5014,7 +5014,7 @@ msgid "Cut the selected item(s) to the clipboard"
 msgstr ""
 
 #: taskcoachlib\help\uicommand.py:30
-msgid "Copy the selected item(s) to the clipboard"
+msgid "copy the selected item(s) to the clipboard"
 msgstr ""
 
 #: taskcoachlib\help\uicommand.py:31
@@ -5318,11 +5318,11 @@ msgid "No subject"
 msgstr ""
 
 #: taskcoachlib\persistence\xml\templates.py:8
-msgid "New task due today"
+msgid "New task due Today"
 msgstr ""
 
 #: taskcoachlib\persistence\xml\templates.py:10
-msgid "New task due tomorrow"
+msgid "New task due Tomorrow"
 msgstr ""
 
 #: taskcoachlib\syncml\basesource.py:58 taskcoachlib\syncml\basesource.py:70
@@ -5469,7 +5469,7 @@ msgid "Vertical"
 msgstr ""
 
 #: taskcoachlib\widgets\calendarconfig.py:78
-msgid "Start and due date"
+msgid "Start and due Date"
 msgstr ""
 
 #: taskcoachlib\widgets\calendarconfig.py:81
@@ -5505,7 +5505,7 @@ msgid "Draw a line showing the current time"
 msgstr ""
 
 #: taskcoachlib\widgets\calendarconfig.py:108
-msgid "Show now"
+msgid "Show Now"
 msgstr ""
 
 #: taskcoachlib\widgets\calendarconfig.py:109

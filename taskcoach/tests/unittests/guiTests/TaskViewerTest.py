@@ -16,6 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import range
+# from builtins import object
+import io
+import locale
+import os
+import weakref
+import wx
 from taskcoachlib import (
     gui,
     config,
@@ -27,33 +34,29 @@ from taskcoachlib import (
 )
 from taskcoachlib.domain import task, date, effort, category, attachment
 from taskcoachlib.i18n import _
-import locale
-import os
-import test
-import wx
-import weakref
+from ... import tctest
 
 
 class TaskViewerUnderTest(gui.viewer.task.TaskViewer):  # pylint: disable=W0223
     def __init__(self, *args, **kwargs):
-        super(TaskViewerUnderTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.events = []
         self.events_deprecated = []
 
     def onAttributeChanged(self, newValue, sender):
-        super(TaskViewerUnderTest, self).onAttributeChanged(newValue, sender)
+        super().onAttributeChanged(newValue, sender)
         self.events.append((newValue, sender))
 
     def onAttributeChanged_Deprecated(self, event):
-        super(TaskViewerUnderTest, self).onAttributeChanged_Deprecated(event)
+        super().onAttributeChanged_Deprecated(event)
         self.events_deprecated.append(event)
 
 
-class TaskViewerTestCase(test.wxTestCase):
+class TaskViewerTestCase(tctest.wxTestCase):
     treeMode = "Subclass responsibility"
 
     def setUp(self):
-        super(TaskViewerTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.task = task.Task(subject="task", plannedStartDateTime=date.Now())
         self.child = task.Task(
@@ -84,7 +87,7 @@ class TaskViewerTestCase(test.wxTestCase):
             locale.setlocale(locale.LC_ALL, tmpLocale)
 
     def tearDown(self):
-        super(TaskViewerTestCase, self).tearDown()
+        super().tearDown()
         if not operating_system.isGTK():
             locale.setlocale(locale.LC_ALL, self.originalLocale)
         attachment.Attachment.attdir = None
@@ -112,9 +115,10 @@ class TaskViewerTestCase(test.wxTestCase):
             self.assertItem(index, eachTask)
 
     def assertItem(self, index, aTask):
-        if type(aTask) == type(
-            (),
-        ):
+        # if type(aTask) == type(
+        #     (),
+        # ):  # use isinstance?
+        if isinstance(aTask, list):
             aTask, nrChildren = aTask
         else:
             nrChildren = 0
@@ -349,19 +353,24 @@ class CommonTestsMixin(object):
             _("Subject"), self.viewer.widget.GetColumn(0).GetText()
         )
         self.assertEqual(
-            _("Planned start date"), self.viewer.widget.GetColumn(1).GetText()
+            _("Planned start Date"), self.viewer.widget.GetColumn(1).GetText()
         )
         self.assertEqual(
-            _("Due date"), self.viewer.widget.GetColumn(2).GetText()
+            _("Due Date"), self.viewer.widget.GetColumn(2).GetText()
         )
         self.assertEqual(3, self.viewer.widget.GetColumnCount())
+        # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # Quel(s) viewer(s) et quel(s) widget(s) ?
+        # self.assertEqual(3, len(self.viewer.widget._columns))
 
     def testTurnOffPlannedStartDateColumn(self):
         self.showColumn("plannedStartDateTime", False)
         self.assertEqual(
-            _("Due date"), self.viewer.widget.GetColumn(1).GetText()
+            _("Due Date"), self.viewer.widget.GetColumn(1).GetText()
         )
         self.assertEqual(2, self.viewer.widget.GetColumnCount())
+        # len(self.viewer.widget._columns) ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # self.assertEqual(2, len(self.viewer.widget._columns))
 
     def testShowSort_Subject(self):
         self.assertNotEqual(-1, self.viewer.widget.GetColumn(0).GetImage())
@@ -376,7 +385,7 @@ class CommonTestsMixin(object):
 
     def testTurnColumnsOnAndOff(self):
         columns = dict(
-            actualStartDateTime=(3, _("Actual start date")),
+            actualStartDateTime=(3, _("Actual start Date")),
             hourlyFee=(3, _("Hourly fee")),
             fixedFee=(3, _("Fixed fee")),
             revenue=(3, _("Revenue")),
@@ -396,6 +405,8 @@ class CommonTestsMixin(object):
             self.assertEqual(expectedHeader, actualHeader)
             self.showColumn(column, False)
             self.assertEqual(3, self.viewer.widget.GetColumnCount())
+            # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+            # self.assertEqual(3, len(self.viewer.widget._columns))
 
     def testRenderFixedFee(self):
         taskWithFixedFee = task.Task(fixedFee=100)
@@ -699,7 +710,8 @@ class CommonTestsMixin(object):
         )
 
     def testOnDropMail(self):
-        open("test.mail", "wb").write("Subject: foo\r\n\r\nBody\r\n")
+        # file('test.mail', 'wb').write('Subject: foo\r\n\r\nBody\r\n')
+        io.open("test.mail", "wb").write("Subject: foo\r\n\r\nBody\r\n")
         aTask = task.Task()
         self.taskList.append(aTask)
         self.viewer.onDropMail(aTask, "test.mail")
@@ -909,7 +921,7 @@ class CommonTestsMixin(object):
     def testStartTracking(self):
         self.taskList.append(self.task)
         self.task.addEffort(effort.Effort(self.task))
-        self.assertTrue((True, self.task) in self.viewer.events)
+        self.failUnless((True, self.task) in self.viewer.events)
 
     def testChangePlannedStartDateTimeWhileColumnNotShown(self):
         self.taskList.append(self.task)
@@ -1242,9 +1254,9 @@ class TaskViewerInListModeTest(CommonTestsMixin, TaskViewerTestCase):
     treeMode = False
 
 
-class TaskCalendarViewerTest(test.wxTestCase):
+class TaskCalendarViewerTest(tctest.wxTestCase):
     def setUp(self):
-        super(TaskCalendarViewerTest, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.frame.taskFile = self.taskFile
@@ -1257,7 +1269,7 @@ class TaskCalendarViewerTest(test.wxTestCase):
         )  # uiCommands use TopWindow to get the main window
 
     def tearDown(self):
-        super(TaskCalendarViewerTest, self).tearDown()
+        super().tearDown()
         wx.GetApp().TopWindow = self.originalTopWindow
         self.taskFile.close()
         self.taskFile.stop()
@@ -1285,19 +1297,19 @@ class TaskCalendarViewerTest(test.wxTestCase):
         )
 
 
-class TaskSquareMapViewerTest(test.wxTestCase):
+class TaskSquareMapViewerTest(tctest.wxTestCase):
     def testCreate(self):
         task.Task.settings = settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         gui.viewer.task.SquareTaskViewer(self.frame, self.taskFile, settings)
 
     def tearDown(self):
-        super(TaskSquareMapViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
 
-class TaskTimelineViewerTest(test.wxTestCase):
+class TaskTimelineViewerTest(tctest.wxTestCase):
     def testCreate(self):
         # pylint: disable-msg=W0201
         task.Task.settings = settings = config.Settings(load=False)
@@ -1305,18 +1317,18 @@ class TaskTimelineViewerTest(test.wxTestCase):
         gui.viewer.task.TimelineViewer(self.frame, self.taskFile, settings)
 
     def tearDown(self):
-        super(TaskTimelineViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
 
-class TaskStatisticsViewerTest(test.wxTestCase):
+class TaskStatisticsViewerTest(tctest.wxTestCase):
     def testCreate(self):
         task.Task.settings = settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         gui.viewer.task.TaskStatsViewer(self.frame, self.taskFile, settings)
 
     def tearDown(self):
-        super(TaskStatisticsViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()

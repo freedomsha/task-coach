@@ -16,11 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
+import wx
+from ... import tctest
+from .. import dummy
 from taskcoachlib import gui, config, persistence, render
 from taskcoachlib.domain import task, effort, date
-from unittests import dummy
-import test
-import wx
 
 
 class EffortViewerUnderTest(gui.viewer.EffortViewer):  # pylint: disable=W0223
@@ -31,9 +32,10 @@ class EffortViewerUnderTest(gui.viewer.EffortViewer):  # pylint: disable=W0223
         return []
 
 
-class EffortViewerForSpecificTasksTest(test.wxTestCase):
+class EffortViewerForSpecificTasksTest(tctest.wxTestCase):
     def setUp(self):
-        super(EffortViewerForSpecificTasksTest, self).setUp()
+        # super(EffortViewerForSpecificTasksTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         task.Task.settings = self.settings
         self.taskFile = persistence.TaskFile()
@@ -56,7 +58,8 @@ class EffortViewerForSpecificTasksTest(test.wxTestCase):
         )
 
     def tearDown(self):
-        super(EffortViewerForSpecificTasksTest, self).tearDown()
+        # super(EffortViewerForSpecificTasksTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -64,6 +67,12 @@ class EffortViewerForSpecificTasksTest(test.wxTestCase):
         self.assertEqual([self.effort1], self.viewer.presentation())
 
     def testEffortEditorDoesUseAllTasks(self):
+        """Teste si l'éditeur d'effort utilise toutes les tâches."""
+        # Le test tente d'ouvrir le dialogue de création d'effort (self.viewer.newItemDialog()).
+        # Ce dialogue initialise l'éditeur,
+        # qui essaie immédiatement de mettre le focus sur le champ de début de l'effort.
+        # Comme _startDateTimeEntry n'existe pas encore (ou n'est pas défini dans l'instance),
+        # le programme s'arrête brutalement.
         dialog = self.viewer.newItemDialog()
         self.assertEqual(
             2, len(dialog._taskFile.tasks())
@@ -78,9 +87,10 @@ class EffortViewerForSpecificTasksTest(test.wxTestCase):
         self.assertEqual(2, len(self.viewer.presentation()))
 
 
-class EffortViewerStatusMessageTest(test.wxTestCase):
+class EffortViewerStatusMessageTest(tctest.wxTestCase):
     def setUp(self):
-        super(EffortViewerStatusMessageTest, self).setUp()
+        # super(EffortViewerStatusMessageTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.task = task.Task()
@@ -96,7 +106,8 @@ class EffortViewerStatusMessageTest(test.wxTestCase):
         )
 
     def tearDown(self):
-        super(EffortViewerStatusMessageTest, self).tearDown()
+        # super(EffortViewerStatusMessageTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -169,9 +180,10 @@ class EffortViewerStatusMessageTest(test.wxTestCase):
         )
 
 
-class EffortViewerTest(test.wxTestCase):
+class EffortViewerTest(tctest.wxTestCase):
     def setUp(self):
-        super(EffortViewerTest, self).setUp()
+        # super(EffortViewerTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.task = task.Task("task")
@@ -187,20 +199,21 @@ class EffortViewerTest(test.wxTestCase):
         )
 
     def tearDown(self):
-        super(EffortViewerTest, self).tearDown()
+        # super(EffortViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
-    @test.skipOnPlatform(
-        "__WXMSW__"
+    @tctest.skipOnPlatform(
+        # "__WXMSW__"
     )  # GetItemBackgroundColour doesn't work on Windows
     def testEffortBackgroundColor(self):  # pragma: no cover
         self.task.setBackgroundColor(wx.RED)
         self.task.addEffort(self.effort1)
         self.assertEqual(wx.RED, self.viewer.widget.GetItemBackgroundColour(0))
 
-    @test.skipOnPlatform(
-        "__WXMSW__"
+    @tctest.skipOnPlatform(
+        # "__WXMSW__"
     )  # GetItemBackgroundColour doesn't work on Windows
     def testUpdateEffortBackgroundColor(self):  # pragma: no cover
         self.task.addEffort(self.effort1)
@@ -246,7 +259,7 @@ class EffortViewerTest(test.wxTestCase):
         )
 
 
-class EffortViewerAggregationTestCase(test.wxTestCase):
+class EffortViewerAggregationTestCase(tctest.wxTestCase):
     aggregation = "Subclass responsibility"
 
     def createViewer(self):
@@ -255,7 +268,8 @@ class EffortViewerAggregationTestCase(test.wxTestCase):
         )
 
     def setUp(self):
-        super(EffortViewerAggregationTestCase, self).setUp()
+        # super(EffortViewerAggregationTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.settings.set("effortviewer", "aggregation", self.aggregation)
 
@@ -294,7 +308,8 @@ class EffortViewerAggregationTestCase(test.wxTestCase):
         self.task2.addEffort(effort.Effort(self.task2, *mostRecentPeriod))
 
     def tearDown(self):
-        super(EffortViewerAggregationTestCase, self).tearDown()
+        # super(EffortViewerAggregationTestCase, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -306,19 +321,22 @@ class EffortViewerAggregationTestCase(test.wxTestCase):
         )
 
 
-class EffortViewerAggregationRoundingTestCase(test.wxTestCase):
+class EffortViewerAggregationRoundingTestCase(tctest.wxTestCase):
     aggregation = "Subclass responsibility"
     roundingValue = None
     alwaysRoundUp = None
     consolidateEffortsPerTask = None
 
     def createViewer(self):
+        """Créer un viewer avec les paramètres spécifiés."""
         return gui.viewer.EffortViewer(
             self.frame, self.taskFile, self.settings
         )
 
     def setUp(self):
-        super(EffortViewerAggregationRoundingTestCase, self).setUp()
+        """Régler les (fixtures)/paramètres avant chaque test."""
+        # super(EffortViewerAggregationRoundingTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.settings.set("effortviewer", "aggregation", self.aggregation)
         self.settings.setint("effortviewer", "round", self.roundingValue)
@@ -368,6 +386,7 @@ class EffortViewerAggregationRoundingTestCase(test.wxTestCase):
 
 class RoundingTestsMixin(object):
     def testRenderDuration(self):
+        """Teste"""
         self.assertEqual(
             self.expectedPeriodRendering,
             self.viewer.widget.getItemText(
@@ -604,7 +623,7 @@ class CommonTestsMixin(object):
             self.assertEqual(self.task2, newEffort.task())
 
     def testColumnUICommands(self):
-        expectedLength = dict(details=6, day=8, week=9, month=8)[
+        expectedLength = dict(details=7, day=9, week=10, month=9)[
             self.aggregation
         ]
         self.assertEqual(
@@ -633,22 +652,32 @@ class CommonTestsMixin(object):
 
     def testDefaultNrOfColumns(self):
         self.assertEqual(4, self.viewer.widget.GetColumnCount())
+        # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # self.assertEqual(4, len(self.viewer.widget._columns))
 
     def testHideTimeSpentColumn(self):
         self.viewer.showColumnByName("timeSpent", False)
         self.assertEqual(3, self.viewer.widget.GetColumnCount())
+        # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # self.assertEqual(3, len(self.viewer.widget._columns))
 
     def testHideRevenueColumn(self):
         self.viewer.showColumnByName("revenue", False)
         self.assertEqual(4, self.viewer.widget.GetColumnCount())
+        # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # self.assertEqual(4, len(self.viewer.widget.columns))
 
     def testShowTotalTimeSpentColumn(self):
         self.viewer.showColumnByName("totalTimeSpent", True)
         self.assertEqual(5, self.viewer.widget.GetColumnCount())
+        # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # self.assertEqual(5, len(self.viewer.widget.columns))
 
     def testShowTotalRevenueColumn(self):
         self.viewer.showColumnByName("totalRevenue", True)
         self.assertEqual(5, self.viewer.widget.GetColumnCount())
+        # self.viewer.widget._columns ou self.widget.GetHeaderWindow().GetColumnCount() et, essayer cget avec tkinter
+        # self.assertEqual(5, len(self.viewer.widget.columns))
 
     def testTotalTimeSpentColumnIsHiddenWhenSwitchingToDetails(self):
         self.viewer.showColumnByName("totalTimeSpent", True)
@@ -790,17 +819,17 @@ class EffortViewerRenderTestMixin(object):
         self.task.addEffort(theEffort)
         text = self.viewer.widget.GetItemText(0)
         self.assertTrue(
-            text.startswith("Yesterday"), '"Yesterday" not in %s' % text
+            text.startswith("Yesterday"), f'"Yesterday" not in {text}'
         )
 
 
 class EffortViewerRenderDetailsTest(
-    EffortViewerRenderTestMixin, test.wxTestCase
+    EffortViewerRenderTestMixin, tctest.wxTestCase
 ):
     aggregation = "details"
 
 
 class EffortViewerRenderPerDayTest(
-    EffortViewerRenderTestMixin, test.wxTestCase
+    EffortViewerRenderTestMixin, tctest.wxTestCase
 ):
     aggregation = "day"

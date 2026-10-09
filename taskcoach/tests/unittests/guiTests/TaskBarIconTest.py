@@ -14,19 +14,36 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Son code définit une série de tests unitaires pour une classe TaskBaricon.
+Les tests couvrent divers scénarios liés au comportement et de la baricon Taskbaricon,
+y compris:
+    1. ** Initialisation **: garantit que le baricon Task est correctement
+     initialisé avec les données simulées.
+    2. ** Changements de liste de tâches **: Teste comment l'icône répond
+     lorsque des tâches sont ajoutées, supprimées ou modifiées dans la liste des tâches.
+    3. ** Suivi des tâches **: vérifie le comportement de l'icône lors du suivi
+     et de l'arrêt des efforts de tâche.
+    4. ** Texte de l'info-bulle **: Vérifie que le texte de l'info
+     `MainWindowMock` est utilisé pour simuler le comportement du fichier de
+     TaskCoach de gestion et des composants de l'interface graphique
+     sans nécessiter d'implémentations réelles.
 """
 
+# from builtins import object
+from ... import tctest
 from taskcoachlib import meta, config, gui, operating_system
 from taskcoachlib.domain import task, effort, date
-import test
 
 
 class TaskFileMock(object):
+    """ Faux Fichier de tâche."""
     def filename(self):
         return "filename"
 
 
 class MainWindowMock(object):
+    """Fausse fenêtre principale."""
     taskFile = TaskFileMock()
 
     def __init__(self):
@@ -43,19 +60,26 @@ class MainWindowMock(object):
             self.__cb(None)
 
 
-class TaskBarIconTestCase(test.TestCase):
+class TaskBarIconTestCase(tctest.TestCase):
     def setUp(self):
+        """
+        Initialise la liste des tâches,
+        les paramètres et la fausse fenêtre principale.
+        """
         self.taskList = task.TaskList()
         self.settings = task.Task.settings = config.Settings(load=False)
         self.window = MainWindowMock()
         self.icon = gui.TaskBarIcon(self.window, self.taskList, self.settings)
 
     def tearDown(self):  # pragma: no cover
+        """
+        La méthode` Teardown` nettoie après chaque test.
+        """
         if operating_system.isWindows():
             self.icon.Destroy()
         else:
             self.icon.RemoveIcon()
-        super(TaskBarIconTestCase, self).tearDown()
+        super().tearDown()
 
 
 class TaskBarIconTest(TaskBarIconTestCase):
@@ -80,9 +104,11 @@ class TaskBarIconTest(TaskBarIconTestCase):
 
 class TaskBarIconTooltipTestCase(TaskBarIconTestCase):
     def assertTooltip(self, text):
-        expectedTooltip = "%s - %s" % (meta.name, TaskFileMock().filename())
+        # expectedTooltip = "%s - %s" % (meta.name, TaskFileMock().filename())
+        expectedTooltip = f"{meta.name} - {TaskFileMock().filename()}"
         if text:
-            expectedTooltip += "\n%s" % text
+            # expectedTooltip += "\n%s" % text
+            expectedTooltip += f"\n{text}"
         self.assertEqual(expectedTooltip, self.icon.tooltip())
 
 
@@ -137,7 +163,14 @@ class TaskBarIconTooltipTest(TaskBarIconTooltipTestCase):
 
 class TaskBarIconTooltipWithTrackedTaskTest(TaskBarIconTooltipTestCase):
     def setUp(self):
-        super(TaskBarIconTooltipWithTrackedTaskTest, self).setUp()
+        """
+        Initialise la liste des tâches,
+        les paramètres et la moquette de fenêtre.
+
+        Returns :
+
+        """
+        super().setUp()
         self.task = task.Task(subject="Subject")
         self.taskList.append(self.task)
         self.task.addEffort(effort.Effort(self.task))

@@ -18,7 +18,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, re, sys
+# from __future__ import print_function
+#
+# from builtins import map
+import os
+import re
+import sys
 
 
 def findLatest(path, valid):

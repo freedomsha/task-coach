@@ -16,31 +16,39 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import codecs, os
-from taskcoachlib.thirdparty.pubsub import pub
+# from builtins import object
+import codecs
+import os
+# try:
+from pubsub import pub
+# except ImportError:
+#    try:
+#        from taskocachlib.thirdparty.pubsub import pub
+#    except ImportError:
+#        from wx.lib.pubsub import pub
 from . import todotxt
 
 
-class AutoImporterExporter(object):
-    """AutoImporterExporter observes task files. If a task file is saved,
-    either by the user or automatically (when autosave is on) and auto
-    import and/or export is on, AutoImporterExporter imports and/or exports
-    the task file."""
+class AutoImporterExporter(object):  # nouvelle classe
+    """ AutoImporterExporter observes task files. If a task file is saved,
+        either by the user or automatically (when autosave is on) and auto
+        import and/or export is on, AutoImporterExporter imports and/or exports
+        the task file. """
 
     def __init__(self, settings):
-        super(AutoImporterExporter, self).__init__()
+        super().__init__()
         self.__settings = settings
         pub.subscribe(self.onTaskFileAboutToBeSaved, "taskfile.aboutToSave")
         pub.subscribe(self.onTaskFileJustRead, "taskfile.justRead")
 
     def onTaskFileJustRead(self, taskFile):
-        """After a task file has been read and if auto import is on,
-        import it."""
+        """ After a task file has been read and if auto import is on,
+            import it. """
         self.importFiles(taskFile)
 
     def onTaskFileAboutToBeSaved(self, taskFile):
-        """When a task file is about to be saved and auto import and/or
-        export is on, import and/or export it."""
+        """ When a task file is about to be saved and auto import and/or
+            export is on, import and/or export it. """
         self.importFiles(taskFile)
         self.exportFiles(taskFile)
 
@@ -60,17 +68,13 @@ class AutoImporterExporter(object):
     def importTodoTxt(cls, taskFile):
         filename = cls.todoTxtFilename(taskFile)
         if os.path.exists(filename):
-            todotxt.TodoTxtReader(
-                taskFile.tasks(), taskFile.categories()
-            ).read(filename)
+            todotxt.TodoTxtReader(taskFile.tasks(), taskFile.categories()).read(filename)
 
     @classmethod
     def exportTodoTxt(cls, taskFile):
         filename = cls.todoTxtFilename(taskFile)
         with codecs.open(filename, "w", "utf-8") as todoFile:
-            todotxt.TodoTxtWriter(todoFile, filename).writeTasks(
-                taskFile.tasks()
-            )
+            todotxt.TodoTxtWriter(todoFile, filename).writeTasks(taskFile.tasks())
 
     @staticmethod
     def todoTxtFilename(taskFile):

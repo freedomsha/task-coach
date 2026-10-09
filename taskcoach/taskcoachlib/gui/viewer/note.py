@@ -23,11 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from taskcoachlib import command, widgets, domain
 from taskcoachlib.domain import note
 from taskcoachlib.gui import uicommand, dialog
+
+# from taskcoachlib.gui.menu import *
 import taskcoachlib.gui.menu
 from taskcoachlib.i18n import _
-from . import base
-from . import mixin
-from . import inplace_editor
+from taskcoachlib.gui.viewer import base
+from taskcoachlib.gui.viewer import mixin
+from taskcoachlib.gui.viewer import inplace_editor
 import wx
 
 
@@ -44,11 +46,12 @@ class BaseNoteViewer(
     SorterClass = note.NoteSorter
     defaultTitle = _("Notes")
     defaultBitmap = "note_icon"
+    coreObjectType = "notes"
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("settingsSection", "noteviewer")
         self.notesToShow = kwargs.get("notesToShow", None)
-        super(BaseNoteViewer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for eventType in (
             note.Note.appearanceChangedEventType(),
             note.Note.subjectChangedEventType(),
@@ -67,12 +70,17 @@ class BaseNoteViewer(
     def curselectionIsInstanceOf(self, class_):
         return class_ == note.Note
 
+    def getSupportedPasteTypes(self):
+        return (note.Note,)
+
     def createWidget(self):
         imageList = self.createImageList()  # Has side-effects
         self._columns = self._createColumns()
+        # itemPopupMenu = taskcoachlib.gui.menu.NotePopupMenu(self.parent, self.settings,
         itemPopupMenu = taskcoachlib.gui.menu.NotePopupMenu(
             self.parent, self.settings, self.taskFile.categories(), self
         )
+        # columnPopupMenu = taskcoachlib.gui.menu.ColumnPopupMenu(self)
         columnPopupMenu = taskcoachlib.gui.menu.ColumnPopupMenu(self)
         self._popupMenus.extend([itemPopupMenu, columnPopupMenu])
         widget = widgets.TreeListCtrl(
@@ -93,7 +101,7 @@ class BaseNoteViewer(
         return widget
 
     def createFilter(self, notes):
-        notes = super(BaseNoteViewer, self).createFilter(notes)
+        notes = super().createFilter(notes)
         return domain.base.DeletedFilter(notes)
 
     def createCreationToolBarUICommands(self):
@@ -102,7 +110,7 @@ class BaseNoteViewer(
                 notes=self.presentation(), settings=self.settings, viewer=self
             ),
             uicommand.NewSubItem(viewer=self),
-        ) + super(BaseNoteViewer, self).createCreationToolBarUICommands()
+        ) + super().createCreationToolBarUICommands()
 
     def createColumnUICommands(self):
         return [
@@ -144,6 +152,12 @@ class BaseNoteViewer(
                 menuText=_("&Modification date"),
                 helpText=_("Show/hide last modification date column"),
                 setting="modificationDateTime",
+                viewer=self,
+            ),
+            uicommand.ViewColumn(
+                menuText=_("&ID"),
+                helpText=_("Show/hide ID column"),
+                setting="id",
                 viewer=self,
             ),
         ]
@@ -198,7 +212,7 @@ class BaseNoteViewer(
         )
         attachmentsColumn = widgets.Column(
             "attachments",
-            "",
+            _("Attachments"),
             note.Note.attachmentsChangedEventType(),  # pylint: disable=E1101
             width=self.getColumnWidth("attachments"),
             alignment=wx.LIST_FORMAT_LEFT,
@@ -250,6 +264,19 @@ class BaseNoteViewer(
             ),
             *note.Note.modificationEventTypes()
         )
+        idColumn = widgets.Column(
+            "id",
+            _("ID"),
+            width=self.getColumnWidth("id"),
+            resizeCallback=self.onResizeColumn,
+            renderCallback=lambda note: note.id(),
+            sortCallback=uicommand.ViewerSortByCommand(
+                viewer=self,
+                value="id",
+                menuText=_("&ID"),
+                helpText=_("Sort notes by ID"),
+            ),
+        )
         return [
             orderingColumn,
             subjectColumn,
@@ -258,12 +285,19 @@ class BaseNoteViewer(
             categoriesColumn,
             creationDateTimeColumn,
             modificationDateTimeColumn,
+            idColumn,
         ]
 
     def isShowingNotes(self):
         return True
 
     def statusMessages(self):
+        """
+        Retourne les messages d'état.
+
+        Returns:
+            Les messages d'état.
+        """
         status1 = _("Notes: %d selected, %d total") % (
             len(self.curselection()),
             len(self.presentation()),
@@ -273,7 +307,7 @@ class BaseNoteViewer(
 
     def newItemDialog(self, *args, **kwargs):
         kwargs["categories"] = self.taskFile.categories().filteredCategories()
-        return super(BaseNoteViewer, self).newItemDialog(*args, **kwargs)
+        return super().newItemDialog(*args, **kwargs)
 
     def deleteItemCommand(self):
         return command.DeleteNoteCommand(

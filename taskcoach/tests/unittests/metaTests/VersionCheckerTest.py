@@ -16,8 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from future import standard_library
+
+# from builtins import object
+from ... import tctest
 from taskcoachlib import config, meta
+
+# standard_library.install_aliases()
 
 
 class VersionCheckerUnderTest(meta.VersionChecker):
@@ -26,7 +31,7 @@ class VersionCheckerUnderTest(meta.VersionChecker):
         self.retrievalException = kwargs.pop("retrievalException", None)
         self.parseException = kwargs.pop("parseException", None)
         self.userNotified = False
-        super(VersionCheckerUnderTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def retrieveVersionFile(self):  # pylint: disable=W0221
         if self.retrievalException:
@@ -34,27 +39,24 @@ class VersionCheckerUnderTest(meta.VersionChecker):
         else:
             import io
 
-            return io.StringIO("%s\n" % self.version)
+            # return io.StringIO("%s\n" % self.version)
+            return io.StringIO(f"{self.version}\n")
 
     def parseVersionFile(self, versionFile):  # pylint: disable=W0221
         if self.parseException:
             raise self.parseException
         else:
-            return super(VersionCheckerUnderTest, self).parseVersionFile(
-                versionFile
-            )
+            return super().parseVersionFile(versionFile)
 
     def notifyUser(self, *args, **kwargs):  # pylint: disable=W0221,W0613
         self.userNotified = True
 
 
-class VersionCheckerTest(test.TestCase):
+class VersionCheckerTest(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
 
-    def checkVersion(
-        self, version, retrievalException=None, parseException=None
-    ):
+    def checkVersion(self, version, retrievalException=None, parseException=None):
         checker = VersionCheckerUnderTest(
             self.settings,
             version=version,
@@ -77,20 +79,20 @@ class VersionCheckerTest(test.TestCase):
         self.assertLastVersionNotified(meta.data.version)
 
     def testErrorWhileGettingPadFile(self):
-        import urllib.request, urllib.error, urllib.parse
+        # import urllib2
+        # from urllib import error as urllib2
+        import urllib.request
+        import urllib.error
+        import urllib.parse
 
-        retrievalException = urllib.error.HTTPError(
-            None, None, None, None, None
-        )
+        retrievalException = urllib.error.HTTPError(None, None, None, None, None)
         self.assertLastVersionNotified(meta.data.version, retrievalException)
 
     def testExpatParsingError(self):
         import xml.parsers.expat as expat
 
         exception = expat.error
-        self.assertLastVersionNotified(
-            meta.data.version, parseException=exception
-        )
+        self.assertLastVersionNotified(meta.data.version, parseException=exception)
 
     def testDontNotifyWhenCurrentVersionIsNewerThanLastVersionNotified(self):
         self.settings.set("version", "notified", "0.0")

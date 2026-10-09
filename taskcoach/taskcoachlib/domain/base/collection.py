@@ -20,7 +20,31 @@ from taskcoachlib import patterns
 
 
 class Collection(patterns.CompositeSet):
+    """
+    Une classe de collection qui étend CompositeSet de taskcoachlib.patterns
+    qui représente un ensemble d'objets composites observables.
+
+    Hérite de CompositeCollection et de ObservableSet
+    pour gérer les composites et leurs relations parent/enfant
+    et avertir les observateurs quand un élément est ajouté ou supprimé.
+
+    Cette classe représente une collection d'objets de domaine et
+    fournit la méthode getObjectById pour récupérer un objet par son ID.
+    """
+
     def getObjectById(self, domainObjectId):
+        """
+        Récupère un objet de la collection par son ID.
+
+        Args :
+            domainObjectId (str) : L'ID de l'objet de domaine à récupérer.
+
+        Returns :
+            L'objet de domaine avec l'ID spécifié.
+
+        Raises :
+            IndexError : Relève unr erreur si aucun objet avec l'ID spécifié n'est trouvé dans la collection.
+        """
         for domainObject in self:
             if domainObjectId == domainObject.id():
                 return domainObject

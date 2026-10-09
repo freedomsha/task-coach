@@ -19,15 +19,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, sys, glob, shutil, wx
+# from builtins import range
+# from past.utils import old_div
+import os
+import sys
+import glob
+import shutil
+import wx
 
 sys.path.insert(0, "..")
 from taskcoachlib import meta
 import style
-
 try:
     import md5digests
-
     md5digests = md5digests.md5digests
 except ImportError:
     md5digests = dict()
@@ -78,35 +82,35 @@ pages["index"] = (
                     </div>
                     <div class="row">
                         <div class="span5">
-                            <h3>What is %(name)s?</h3>  
+                            <h3>What is %(name)s?</h3>
                             <p>%(name)s is a simple open source todo manager to keep track of
                             personal tasks and todo lists. It is designed for composite tasks,
                             and also offers effort tracking, categories, notes and more.</p>
                             <p><a class="btn" href="features.html">Read more &raquo;</a></p>
                             <h3>What platforms are supported?</h3>
-                            <p>%(name)s is available for 
+                            <p>%(name)s is available for
                             <a href="download_for_windows.html">Windows</a>,
-                            <a href="download_for_mac.html">Mac OS X</a>, <a href="download_for_linux.html">Linux</a>, 
+                            <a href="download_for_mac.html">Mac OS X</a>, <a href="download_for_linux.html">Linux</a>,
                             <a href="download_for_bsd.html">BSD</a>.</p>
                             <h3>What does it cost?</h3>
                             %(name)s is completely free.
                             <p><a class="btn" href="license.html">Read license &raquo;</a></p>
                         </div>
-                        <div class="span5">  
+                        <div class="span5">
                             <h3>What support is available?</h3>
-                            <p>We offer support for free. You can contact us by e-mail, 
+                            <p>We offer support for free. You can contact us by e-mail,
                             via our support request tracker, and via our bug tracker.</p>
                             <p><a class="btn" href="getsupport.html">Get support &raquo;</a></p>
                             <h3>How can I help?</h3>
-                            <p>Glad you asked! The easiest way is to help spread the word. Improving 
-                            a translation is also an easy way to help. Patches are very welcome. 
+                            <p>Glad you asked! The easiest way is to help spread the word. Improving
+                            a translation is also an easy way to help. Patches are very welcome.
                             And we'll gladly accept donations.</p>
                             <p><a class="btn" href="givesupport.html">Give support &raquo;</a></p>
                             <h3>Who is behind this?</h3>
-                            <p>%(name)s is developed by <a href="mailto:%(author_email)s">%(author_unicode)s</a>, 
-                            with help of different people providing <a href="i18n.html">translations</a>. 
+                            <p>%(name)s is developed by <a href="mailto:%(author_email)s">%(author_unicode)s</a>,
+                            with help of different people providing <a href="i18n.html">translations</a>.
                             <p><a href="https://twitter.com/taskcoach" class="twitter-follow-button">Follow Task Coach on Twitter</a>
-                            <script src="https://platform.twitter.com/widgets.js" type="text/javascript"></script></p> 
+                            <script src="https://platform.twitter.com/widgets.js" type="text/javascript"></script></p>
                             <!-- AppStoreHQ:claim_code:258f8973d401112a215d79afdb82fef934ee56c9 -->
                             <!-- AppStoreHQ:developer_claim_code:d28c5a79965194fd06870ec80ab83114356b664d -->
                         </div>
@@ -129,7 +133,7 @@ pages[
             <div class="row">
              <div class="span4">
                     <h2>Browse FAQ</h2>
-                    <p>Browse the frequently asked questions to see whether your 
+                    <p>Browse the frequently asked questions to see whether your
                     question has been answered before.</p>
                     <p>Please do not ask questions on the mailinglist or submit
                     support requests before you have browsed the FAQ. Thanks!</p>
@@ -154,7 +158,7 @@ pages[
                     <p>You can browse the <a
                     href="https://groups.yahoo.com/group/taskcoach/messages">archive
                     of messages</a> without subscribing to the mailing list.</p>
-                    <p>The mailing list is also available as  
+                    <p>The mailing list is also available as
                     <a href="https://dir.gmane.org/gmane.comp.sysutils.pim.taskcoach">newsgroup</a>
                     on <a href="https://gmane.org">Gmane</a>.</p>
                     <p><a class="btn"
@@ -163,9 +167,9 @@ pages[
                 <div class="span4">
                     <h2>User manual</h2>
                     <p>A user manual is under development in a Wiki. Unfortunately,
-                    the manual is far from being completed. However, since this is a 
+                    the manual is far from being completed. However, since this is a
                     community effort, you can help too.</p>
-                    <p><a class="btn" 
+                    <p><a class="btn"
                           href="https://sourceforge.net/p/taskcoach/wiki/manual/">Browse manual</a></p>
                 </div>
             </div>
@@ -173,29 +177,29 @@ pages[
             <div class="row">
                 <div class="span4">
                     <h2>Request support</h2>
-                    <p>Submit a support request on Sourceforge. Be sure to 
-                    explain your issue with as much detail as you can. Mention 
-                    the version of %(name)s you are using, the operating system 
+                    <p>Submit a support request on Sourceforge. Be sure to
+                    explain your issue with as much detail as you can. Mention
+                    the version of %(name)s you are using, the operating system
                     you are using and what exactly your issue is.</p>
-                    <p><a class="btn" href="%(support_request_url)s" 
+                    <p><a class="btn" href="%(support_request_url)s"
                           title="Request support from the developers">Request support</a></p>
                 </div>
                 <div class="span4">
                     <h2>Report a bug</h2>
-                    <p>Submit a bug report on Sourceforge. Be sure to explain 
-                    the bug with as much detail as you can. Mention the 
-                    version of %(name)s you are using, the operating system 
+                    <p>Submit a bug report on Sourceforge. Be sure to explain
+                    the bug with as much detail as you can. Mention the
+                    version of %(name)s you are using, the operating system
                     you are using and how to trigger the bug.
-                    <p><a class="btn" href="%(known_bugs_url)s" 
+                    <p><a class="btn" href="%(known_bugs_url)s"
                           title="Browse known bugs and report new bugs">Report a bug</a></p>
                 </div>
                 <div class="span4">
                     <h2>Request a feature</h2>
                     <p>Submit a request for a new feature on UserVoice or vote on
                     existing feature requests. Please note that we have many open
-                    feature requests and we can't make any promises on when new 
+                    feature requests and we can't make any promises on when new
                     features are delivered.</p>
-                    <p><a class="btn" href="%(feature_request_url)s" 
+                    <p><a class="btn" href="%(feature_request_url)s"
                           title="Browse requested features, vote for your favorite features and request new features">Request a feature</a></p>
                 </div>
             </div>"""
@@ -209,8 +213,8 @@ pages[
            <div class="row">
                 <div class="span4">
                     <h2>Help translate</h2>
-                    <p>If you speak a language different than English, you can help 
-                    translate the user interface of %(name)s in your language. 
+                    <p>If you speak a language different than English, you can help
+                    translate the user interface of %(name)s in your language.
                     Even if you have limited time available you can help by
                     translating a few strings.</p>
                     <p><a class="btn" href="i18n.html">Help translate</a></p>
@@ -218,17 +222,17 @@ pages[
                 <div class="span4">
                     <h2>Help write the manual</h2>
                     <p>A user manual is under development in a Wiki. Unfortunately,
-                    the manual is far from being completed. However, since this is a 
+                    the manual is far from being completed. However, since this is a
                     community effort, you can help too.</p>
-                    <p><a class="btn" 
+                    <p><a class="btn"
                           href="https://snowdrift.coop/p/taskcoach/w/en/main">Browse manual</a></p>
                 </div>
                 <div class="span4">
                     <h2>Help develop</h2>
-                    <p>If you know how to program, you can learn 
+                    <p>If you know how to program, you can learn
                     <a href="https://www.python.org">Python</a>. If you know Python,
                     you can help develop! And we are looking for developers, so
-                    don't hesitate to jump in.</p>  
+                    don't hesitate to jump in.</p>
                     <p><a class="btn" href="devinfo.html">Developer info</a></p>
                 </div>
             </div>
@@ -236,8 +240,8 @@ pages[
             <div class="row">
                 <div class="span4">
                     <h2>Donate</h2>
-                    <p>Donations for the development of %(name)s are very much 
-                    appreciated. Please donate what you feel %(name)s is worth 
+                    <p>Donations for the development of %(name)s are very much
+                    appreciated. Please donate what you feel %(name)s is worth
                     to you, but any amount is fine.</p>
                     <p>
                         <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
@@ -252,7 +256,7 @@ pages[
                     <h2>Flattr us</h2>
                     <p><a href="https://flattr.com">Flattr</a> is a mechanism for
                     making social micropayments. In plain English, you can donate
-                    us (and other people that create stuff you like for free) 
+                    us (and other people that create stuff you like for free)
                     a small amount of money really easy.</p>
                     <p>
                         <a class="FlattrButton" style="display:none;" href="https://taskcoach.org"></a>
@@ -269,9 +273,9 @@ pages[
                     family, friends and colleagues. Tweet about %(name)s, +1 us,
                     you know the drill.</p>
                     <p><a href="https://twitter.com/share" class="twitter-share-button" data-url="https://taskcoach.org" data-text="Check out Task Coach: a free and open source todo app for Windows, Mac, and Linux." data-count="horizontal" data-via="taskcoach">Tweet</a><script type="text/javascript" src="https://platform.twitter.com/widgets.js"></script></p>
-                    <p><iframe src="https://www.facebook.com/plugins/like.php?href=http%%3A%%2F%%2Ftaskcoach.org&amp;layout=button_count&amp;show_faces=true&amp;width=190&amp;action=like&amp;colorscheme=light&amp;height=21" 
-                            scrolling="no" frameborder="0" 
-                            style="border:none; overflow:hidden; width:190px; height:21px;" 
+                    <p><iframe src="https://www.facebook.com/plugins/like.php?href=http%%3A%%2F%%2Ftaskcoach.org&amp;layout=button_count&amp;show_faces=true&amp;width=190&amp;action=like&amp;colorscheme=light&amp;height=21"
+                            scrolling="no" frameborder="0"
+                            style="border:none; overflow:hidden; width:190px; height:21px;"
                             allowTransparency="true">
                     </iframe></p>
                     <p><g:plusone size="medium"></g:plusone></p>
@@ -881,7 +885,7 @@ pages["download"] = (
                                     <a href="download_for_bsd.html"><img alt="BSD" src="images/freebsd.png"></a>
                                 </td>
                             </tr>
-                            <tr> 
+                            <tr>
                                 <td>
                                     <h3>Android</h3>
                                     <a href="download_for_android.html"><img alt="Android" src="images/logoandroid.png"></a>
@@ -922,39 +926,39 @@ pages["features"] = (
                     has the following features:</p>
                     <ul>
                         <li>Creating, editing, and deleting tasks and subtasks.</li>
-                        <li>Tasks have a subject, description, priority, start date, 
-                        due date, a completion date and an optional reminder. Tasks can
+                        <li>Tasks have a subject, description, priority, start Date,
+                        due Date, a completion Date and an optional reminder. Tasks can
                         recur on a daily, weekly or monthly basis.</li>
                         <li>Tasks can be viewed as a list or as a tree.</li>
                         <li>Tasks can be sorted by all task attributes, e.g. subject,
-                        budget, budget left, due date, etc.</li>
+                        budget, budget left, due Date, etc.</li>
                         <li>Several filters to e.g. hide completed tasks or view
-                        only tasks that are due today.</li>
-                        <li>Tasks can be created by dragging an e-mail message from 
+                        only tasks that are due Today.</li>
+                        <li>Tasks can be created by dragging an e-mail message from
                         a mail user agent (Outlook, Thunderbird, Claws Mail, Apple Mail)
                         onto a task viewer.</li>
-                        <li>Attachments can be added to tasks, notes, and categories by 
-                        dragging and dropping files, e-mail messages, or URL's onto a 
+                        <li>Attachments can be added to tasks, notes, and categories by
+                        dragging and dropping files, e-mail messages, or URL's onto a
                         task, note or category.</li>
-                        <li>Task status depends on its subtask and vice versa. E.g. if 
-                        you mark the last uncompleted subtask as completed, the parent 
+                        <li>Task status depends on its subtask and vice versa. E.g. if
+                        you mark the last uncompleted subtask as completed, the parent
                         task is automatically marked as completed too.</li>
                         <li>Tasks and notes can be assigned to user-defined categories.</li>
                         <li>Settings are persistent and saved automatically. The
                         last opened file is loaded automatically when starting
                         %(name)s.</li>
-                        <li>Tracking time spent on tasks. Tasks can have a budget. 
-                        Time spent can be viewed by individual effort period, by day, 
+                        <li>Tracking time spent on tasks. Tasks can have a budget.
+                        Time spent can be viewed by individual effort period, by day,
                         by week, and by month.</li>
                         <li>The %(name)s file format (.tsk) is XML.</li>
                         <li>Tasks, notes, effort, and categories can be exported to HTML
-                        and CSV (comma separated format). Effort can be exported to 
+                        and CSV (comma separated format). Effort can be exported to
                         iCalendar/ICS format as well.</li>
-                        <li>Tasks, effort, notes, and categories can be printed. When printing, 
+                        <li>Tasks, effort, notes, and categories can be printed. When printing,
                         %(name)s prints the information that is visible in the current
                         view, including any filters and sort order.</li>
                         <li>%(name)s can be run from a removable medium.</li>
-                        <li>Tasks and notes can be synchronized via a 
+                        <li>Tasks and notes can be synchronized via a
                         <a href="https://www.funambol.com/">Funambol</a> server such
                         as <a href="https://my.funambol.com">My Funambol</a>.</li>
                     </ul>
@@ -1085,10 +1089,10 @@ pages["i18n"] = (
             <div class="row">
                 <div class="span10">
                     <h2>Information for users</h2>
-                    <p>You can select languages via 'Edit' -> 'Preferences'. 
-                    Click the 'Language' icon, select the language of your 
+                    <p>You can select languages via 'Edit' -> 'Preferences'.
+                    Click the 'Language' icon, select the language of your
                     choice and restart %(name)s.</p>
-                    <p>Currently, %(name)s is available in these languages 
+                    <p>Currently, %(name)s is available in these languages
                     (though some translations are incomplete):</p>
                     <table class="table table-bordered">
                         <tbody>
@@ -1102,49 +1106,49 @@ pages["i18n"] = (
                     <h2>Instructions for translators</h2>
                     <p>We would welcome translations in additional languages.
                     Please be aware that, next to providing the initial translation,
-                    you will be expected to keep your translation up to date as new
+                    you will be expected to keep your translation up to Date as new
                     versions of %(name)s are released.</p>
-                    <p>A Yahoo!Groups mailing list is available for discussing the 
-                    development and translation of %(name)s. You can join by 
+                    <p>A Yahoo!Groups mailing list is available for discussing the
+                    development and translation of %(name)s. You can join by
                     sending mail to <tt><a href="mailto:taskcoach-dev-subscribe@yahoogroups.com">taskcoach-dev-subscribe@yahoogroups.com</a></tt>
-                    or alternatively, if you have a Yahoo id (or don't mind creating one), 
+                    or alternatively, if you have a Yahoo id (or don't mind creating one),
                     join via the <a href="https://groups.yahoo.com/group/taskcoach-dev/join">webinterface</a>.</p>
 
-                    <p>To create a new translation or update an existing translation, 
+                    <p>To create a new translation or update an existing translation,
                     please follow these steps and guidelines:
                     <ol>
                         <li>Register at <a href="https://launchpad.net">Launchpad</a> and
                         don't forget to set your preferred languages, i.e. the language(s)
                         you want to translate to.</li>
-                        <li>Learn more about <a href="https://translations.launchpad.net/+about">translation 
+                        <li>Learn more about <a href="https://translations.launchpad.net/+about">translation
                         support by Launchpad</a>.</li>
-                        <li>Go to <a href="https://launchpad.net/taskcoach">%(name)s at 
+                        <li>Go to <a href="https://launchpad.net/taskcoach">%(name)s at
                         Launchpad</a> and click "Help translate".</li>
                         <li>Start contributing to an existing translation or create a new
                         one.</li>
-                        <li><span class="label label-info">Note</span> Please make sure you 
+                        <li><span class="label label-info">Note</span> Please make sure you
                         understand how <a href="https://docs.python.org/lib/typesseq-strings.html">Python
                         string formatting</a> works since %(name)s uses both the regular
-                        <code>%%s</code> type of string formatting as well as the 
-                        mapping key form <code>%%(mapping_key)s</code> (note the trailing <code>s</code>; 
+                        <code>%%s</code> type of string formatting as well as the
+                        mapping key form <code>%%(mapping_key)s</code> (note the trailing <code>s</code>;
                         it shouldn't be removed). If string formatting is used in the English
-                        version of a string, the same formatting should occur in the 
-                        translated string. In addition, formatting of the form <code>%%s</code> 
-                        needs to be in the same order in the translated string as it is 
+                        version of a string, the same formatting should occur in the
+                        translated string. In addition, formatting of the form <code>%%s</code>
+                        needs to be in the same order in the translated string as it is
                         in the English version. Formatting in the form <code>%%(mapping_key)s</code>
-                        can be ordered differently in the translated string than in the 
+                        can be ordered differently in the translated string than in the
                         English version.</li>
-                        <li><span class="label label-warning">Warning</span> Don't translate 
+                        <li><span class="label label-warning">Warning</span> Don't translate
                         the string formatting keys: e.g. when you see
                         <code>%%(name)s</code>, don't translate the word <code>name</code>.</li>
-                        <li>Don't translate keyboard shortcuts: e.g. when you see 
+                        <li>Don't translate keyboard shortcuts: e.g. when you see
                         <code>Shift+Ctrl+V</code>, don't translate the words <code>Shift</code>
-                        and <code>Ctrl</code>, even if your keyboard uses 
-                        different labels for those keys. Picking a different letter is 
+                        and <code>Ctrl</code>, even if your keyboard uses
+                        different labels for those keys. Picking a different letter is
                         possible, but please make sure each letter is used only once.</li>
-                        <li>To test your translation, download it as .po file from 
-                        Launchpad and start %(name)s with the <code>--po &lt;po file&gt;</code> 
-                        command line option.</li> 
+                        <li>To test your translation, download it as .po file from
+                        Launchpad and start %(name)s with the <code>--po &lt;po file&gt;</code>
+                        command line option.</li>
                     </ol>
                 </div>
                 <div class="span2">"""
@@ -1164,36 +1168,36 @@ pages["devinfo"] = (
                 <div class="span10">
                     <p>Here's some information for developers that either want to hack
                     on %(name)s or reuse code.</p>
-            
+
                     <h2>Project hosting</h2>
-                    <p>%(name)s source code, file downloads and bug/patch/support trackers are hosted at 
-                    <a href="https://sourceforge.net/projects/taskcoach/" 
+                    <p>%(name)s source code, file downloads and bug/patch/support trackers are hosted at
+                    <a href="https://sourceforge.net/projects/taskcoach/"
                     title="%(name)s @ Sourceforge">Sourceforge</a>. Translations are hosted
                     at <a href="https://launchpad.net/taskcoach/"
                     title="%(name)s @Launchpad">Launchpad</a>. Feature requests are hosted at
                     <a href="https://taskcoach.uservoice.com/">Uservoice</a>.
                     </p>
-            
+
                     <h2>Mailing list</h2>
                     <p>A Yahoo!Groups mailing list is available for discussing the development
-                    of %(name)s. You can join by sending mail to <tt><a 
+                    of %(name)s. You can join by sending mail to <tt><a
                     href="mailto:taskcoach-dev-subscribe@yahoogroups.com">taskcoach-dev-subscribe@yahoogroups.com</a></tt>
-                    or alternatively, if you have a Yahoo id (or don't mind creating one), 
+                    or alternatively, if you have a Yahoo id (or don't mind creating one),
                     join via the <a href="https://groups.yahoo.com/group/taskcoach-dev/join">webinterface</a>.</p>
                     <p>You can browse the <a href="https://groups.yahoo.com/group/taskcoach-dev/messages">archive
                     of messages</a> without subscribing to the mailing list.</p>
-                    <p>The mailing list is also available as the newsgroup 
+                    <p>The mailing list is also available as the newsgroup
                     <a href="https://dir.gmane.org/gmane.comp.sysutils.pim.taskcoach.devel">gmane.comp.sysutils.pim.taskcoach.devel</a>
                     on <a href="https://gmane.org">Gmane</a>.</p>
                     <p>A Sourceforge mailing list is available for receiving commit messages.
-                    If you are a %(name)s developer you can <a href="https://lists.sourceforge.net/lists/listinfo/taskcoach-commits">join 
+                    If you are a %(name)s developer you can <a href="https://lists.sourceforge.net/lists/listinfo/taskcoach-commits">join
                     this mailing list</a>.
-            
+
                     <h2>Dependencies</h2>
                     <p>%(name)s is developed in <a href="https://www.python.org">Python</a>,
                     using <a href="https://www.wxpython.org">wxPython</A> for the
-                    graphical user interface and <a href="https://twistedmatrix.com/">Twisted</a>. On Windows, 
-                    <a href="https://sourceforge.net/projects/pywin32/">Pywin32</a> 
+                    graphical user interface and <a href="https://twistedmatrix.com/">Twisted</a>. On Windows,
+                    <a href="https://sourceforge.net/projects/pywin32/">Pywin32</a>
                     is used as well. For generating the API documentation you need to have
                     <a href="https://epydoc.sourceforge.net/">Epydoc</a> installed. For
                     generating inheritance diagrams you need to have <a
@@ -1202,41 +1206,41 @@ pages["devinfo"] = (
                     provided by Python, wxPython and Pywin32) that are used are put into the
                     taskcoachlib/thirdparty package and included in the source code
                     repository.</p>
-                    
+
                     <h2>Development environment</h2>
                     <p>
                     You are free to use whatever IDE you want. To make use of the Makefile you
-                    need to have <tt>make</tt> installed. It is installed on Linux and Mac OS X 
+                    need to have <tt>make</tt> installed. It is installed on Linux and Mac OS X
                     by default. On Windows we recommend you to install
-                    <a href="https://www.cygwin.com">Cygwin</a> 
-                    which provides a shell (bash) and a whole range of useful utilities. 
-                    Make sure to explicitly include <tt>make</tt> in the Cygwin setup program 
+                    <a href="https://www.cygwin.com">Cygwin</a>
+                    which provides a shell (bash) and a whole range of useful utilities.
+                    Make sure to explicitly include <tt>make</tt> in the Cygwin setup program
                     because the standard install doesn't contain <tt>make</tt>.</p>
-                    
+
                     <h2>Getting the source</h2>
                     <p>%(name)s source code is hosted in a <a
-                    href="https://hg.code.sf.net/p/taskcoach/repo taskcoach-repo">Mercurial repository 
-                    at SourceForge</a>. You can check out the code from the repository 
+                    href="https://hg.code.sf.net/p/taskcoach/repo taskcoach-repo">Mercurial repository
+                    at SourceForge</a>. You can check out the code from the repository
                     directly or <a href="https://sourceforge.net/p/taskcoach/repo/ci/default/tree/">browse the
                     repository</A>. Please read the file <tt>HACKING.txt</tt> after checking
                     out the sources. You can generate documentation with Epydoc and Graphviz
                     from the Makefile: <code>make dot epydoc</code>.</p>
-                    
+
                     <h2>Tests</h2>
                     <p>Tests can be run from the Makefile. There are targets for
                     <tt>unittests</tt>, <tt>integrationtests</tt>,
                     <tt>releasetests</tt>, and <tt>alltests</tt>. These targets all
-                    invoke the tests/test.py script. Run <code>tests/test.py --help</code> for 
-                    many more test options (including profiling, timing, measuring test 
+                    invoke the tests/test.py script. Run <code>tests/test.py --help</code> for
+                    many more test options (including profiling, timing, measuring test
                     coverage, etc.).</p>
-                    
+
                     <h2>Building the distributions</h2>
                     <p>The Makefile is used to build the different distributions of
                     %(name)s. Currently, a Windows installer is built, a Mac OS X dmg
-                    file, RPM and Debian packages are created and the sources are packaged 
-                    as compressed archives (.zip and .tar.gz). The Makefile contains targets 
-                    for each of the distributions. Most of the code for the actual building 
-                    of the distributions, using the python distutils package, is located in 
+                    file, RPM and Debian packages are created and the sources are packaged
+                    as compressed archives (.zip and .tar.gz). The Makefile contains targets
+                    for each of the distributions. Most of the code for the actual building
+                    of the distributions, using the python distutils package, is located in
                     make.py. In turn, make.py imports setup.py. These two files were
                     split so that setup.py only contains distutils information related
                     to <i>installing</i>, while make.py contains all information related
@@ -1245,38 +1249,38 @@ pages["devinfo"] = (
                     <h5>Windows</h5>
                     <p>On Windows, py2exe is used to bundle the application with the python
                     interpreter and wxPython libraries. Innosetup is used to create an
-                    executable installer. 
+                    executable installer.
                     All the necessary packaging code is in make.py
                     and driven from the Makefile (<tt>windist</tt> target).</p>
                     <h5>Mac OS X</h5>
                     <p>On Mac OS X, py2app is used to bundle the application. The resulting
                     application is packaged into a dmg file using the <tt>hdiutil</tt>
-                    utility, which is part of Mac OS X. 
+                    utility, which is part of Mac OS X.
                     All the necessary packaging code is in make.py
                     and driven from the Makefile (<tt>dmg</tt> target).</p>
                     <h5>Linux</h5>
                     <p>We create RPM and Debian packages on Ubuntu (<tt>rpm</tt> and <tt>deb</tt>
-                    targets) and a Fedora RPM package on Fedora (<tt>fedora</tt> target). 
+                    targets) and a Fedora RPM package on Fedora (<tt>fedora</tt> target).
                     Alternatively, Linux users that have installed python and wxPython
                     themselves (if not installed by default) can also use the source
                     distribution. The source distributions are created by the
                     <tt>sdist</tt> Makefile target.</p>
-                    
+
                     <h2>Coding style</h2>
                     <p>Class names are StudlyCaps. Method names are camelCase, except
                     for wxPython methods that are called or overridden because those are
                     StudlyCaps. At first this looked ugly, a mixture of two
                     styles. But it turned out to be quite handy, since you can easily
                     see whether some method is a wxPython method or not.</p>
-                    
+
                     <h2>Mercurial usage conventions</h2>
-                    <p>Releases are tagged ReleaseX_Y_Z and for each ReleaseX_Y_0 a 
-                    branch (ReleaseX_Y_Branch) is created to facilitate bug fix releases. 
-                    The release tagging and branching is part of 
+                    <p>Releases are tagged ReleaseX_Y_Z and for each ReleaseX_Y_0 a
+                    branch (ReleaseX_Y_Branch) is created to facilitate bug fix releases.
+                    The release tagging and branching is part of
                     the release process as documented in release.py.</p>
-                    <p>For new big features, feature-specific branches may be created to 
-                    facilitate parallel development, checking in changes while developing, 
-                    and keep the code on the main trunk releaseable. The process is as 
+                    <p>For new big features, feature-specific branches may be created to
+                    facilitate parallel development, checking in changes while developing,
+                    and keep the code on the main trunk releaseable. The process is as
                     follows:</p>
                     <ul>
                     <li>The feature is discussed on taskcoach-dev.</li>
@@ -1291,9 +1295,9 @@ pages["devinfo"] = (
                     For small new features, development is done on the trunk, but all unittests
                     should succeed before committing.
                     </p>
-                    
+
                     <h2>Blog</h2>
-                    <p>Frank keeps a not very frequent 
+                    <p>Frank keeps a not very frequent
                     <a href="https://taskcoach.blogspot.com">blog</a> about
                     lessons learned from developing %(name)s.</p>
                 </div>
@@ -1315,7 +1319,8 @@ def writeFile(folder, filename, contents):
     filename = os.path.join(folder, filename)
     print("Creating %s" % filename)
     fd = open(filename, "w")
-    fd.write(contents.encode("UTF-8"))
+    # fd.write(contents.encode("UTF-8"))
+    fd.write(contents)  # TODO : A vérifier
     fd.close()
 
 

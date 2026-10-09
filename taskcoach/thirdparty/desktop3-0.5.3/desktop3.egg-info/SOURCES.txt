@@ -1,0 +1,15 @@
+MANIFEST.in
+README.rst
+setup.cfg
+setup.py
+desktop/__init__.py
+desktop/dialog.py
+desktop/windows.py
+desktop3.egg-info/PKG-INFO
+desktop3.egg-info/SOURCES.txt
+desktop3.egg-info/dependency_links.txt
+desktop3.egg-info/top_level.txt
+desktop3.egg-info/zip-safe
+docs/COPYING.txt
+docs/gpl-3.0.txt
+docs/lgpl-3.0.txt

@@ -1,0 +1,124 @@
+'''
+Task Coach - Your friendly task manager
+Copyright (C) 2004-2021 Task Coach developers <developers@taskcoach.org>
+
+Task Coach is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Task Coach is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
+import time
+import datetime
+
+import tctest
+from taskcoachlib.domain import Date
+
+
+class DateTest(tctest.TestCase):
+    def testCreateNormalDate(self):
+        adate = Date.Date(2003, 1, 1)
+        self.assertEqual(2003, adate.year)
+        self.assertEqual(1, adate.month)
+        self.assertEqual(1, adate.day)
+        self.assertEqual('2003-01-01', str(adate))
+
+    def testCreateInvalidDate(self):
+        self.assertRaises(ValueError, Date.Date, 2003, 2, 31)
+        self.assertRaises(ValueError, Date.Date, 2003, 12, 32)
+        self.assertRaises(ValueError, Date.Date, 2003, 13, 1)
+        self.assertRaises(ValueError, Date.Date, 2003, 2, -1)
+        self.assertRaises(ValueError, Date.Date, 2003, 2, 0)
+
+    def testCreateInfiniteDate(self):
+        adate = Date.Date()
+        self.assertEqual(None, adate.year)
+        self.assertEqual(None, adate.month)
+        self.assertEqual(None, adate.day)
+        self.assertEqual('', str(adate))
+
+    def testCreateInfiniteDateWithMaxValues(self):
+        maxDate = datetime.Date.max
+        infinite = Date.Date(maxDate.year, maxDate.month, maxDate.day)
+        self.assertTrue(infinite is Date.Date())
+
+    def testInfiniteDateIsSingleton(self):
+        self.assertTrue(Date.Date() is Date.Date())
+
+    def testAddTimeDeltaToInfiniteDate(self):
+        self.assertEqual(Date.Date(), Date.Date() + Date.TimeDelta(days=2))
+
+    def testCompare_TwoInfiniteDates(self):
+        date1 = Date.Date()
+        date2 = Date.Date()
+        self.assertEqual(date1, date2)
+
+    def testCompare_TwoNormalDates(self):
+        date1 = Date.Date(2003,1,1)
+        date2 = Date.Date(2003,4,5)
+        self.assertTrue(date1 < date2)
+        self.assertTrue(date2 > date1)
+        self.assertFalse(date1 == date2)
+
+    def testCompare_OneNormalDate(self):
+        date1 = Date.Date(2003,1,1)
+        date2 = Date.Date(2003,1,1)
+        self.assertEqual(date1, date2)
+
+    def testCompare_NormalDateWithInfiniteDate(self):
+        date1 = Date.Date()
+        date2 = Date.Date(2003,1,1)
+        self.assertTrue(date2 < date1)
+        self.assertTrue(date1 > date2)
+
+    def testAddManyDays(self):
+        self.assertEqual(Date.Date(2003,1,1),
+            Date.Date(2002,1,1) + Date.ONE_YEAR)
+
+    def testSubstractTwoDates_ZeroDifference(self):
+        self.assertEqual(Date.TimeDelta(),
+                         Date.Date(2004, 2, 29) - Date.Date(2004, 2, 29))
+
+    def testSubstractTwoDates_YearDifference(self):
+        self.assertEqual(Date.TimeDelta(days=365),
+            Date.Date(2004, 2, 29) + Date.ONE_YEAR - Date.Date(2004, 2, 29))
+
+    def testSubstractTwoDates_Infinite(self):
+        self.assertEqual(Date.TimeDelta.max,
+                         Date.Date() - Date.Date(2004, 2, 29))
+
+    def testSubstractTwoDates_BothInfinite(self):
+        self.assertEqual(Date.TimeDelta(), Date.Date() - Date.Date())
+
+    def testFormat1900(self):
+        self.assertEqual(Date.DateTime(2, 5, 19, 0, 0, 0).strftime('%Y%m%d'), '20519')
+
+
+class FactoriesTest(tctest.TestCase):
+    def testParseDate(self):
+        parsed = Date.parseDate("2004-1-1")
+        self.assertEqual(Date.Date(2004, 1, 1), parsed)
+
+    def testParseDate_WithNone(self):
+        parsed = Date.parseDate("None")
+        self.assertEqual(Date.Date(), parsed)
+
+    def testParseDate_WithNonsense(self):
+        parsed = Date.parseDate("Yoyo-Yo")
+        self.assertEqual(Date.Date(), parsed)
+
+    def testParseDate_WithDifferentDefaultDate(self):
+        parsed = Date.parseDate("Yoyo-Yo", Date.Date(2004, 2, 29))
+        self.assertEqual(Date.Date(2004, 2, 29), parsed)
+
+
+if __name__ == '__main__':
+    tctest.main()

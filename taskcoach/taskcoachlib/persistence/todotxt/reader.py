@@ -16,12 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re, os, codecs
+# from builtins import object
+import re
+import os
+import codecs
 from taskcoachlib.domain import task, category, date
 from taskcoachlib import patterns
 
 
-class TodoTxtReader(object):
+class TodoTxtReader(object):  # nouvelle classe
     def __init__(self, taskList, categoryList):
         self.__taskList = taskList
         self.__tasksBySubject = self.__createSubjectCache(taskList)
@@ -59,7 +62,7 @@ class TodoTxtReader(object):
                             line, todoTxtRE, keyValueRE, date.Now, None
                         )
                         self.__deletedTasks.add(taskId)
-                    except:
+                    except:  # else ?
                         pass  # Err
                     metaLines[
                         "->".join(subjects) if self.__version == 0 else taskId
@@ -74,9 +77,7 @@ class TodoTxtReader(object):
         for line in fp:
             line = line.strip()
             if line:
-                self.processLine(
-                    line, todoTxtRE, keyValueRE, now, event, metaLines
-                )
+                self.processLine(line, todoTxtRE, keyValueRE, now, event, metaLines)
         if self.__version >= 1:
             for deletedTaskId in self.__deletedTasks:
                 self.__taskList.remove(self.__tasksById[deletedTaskId])
@@ -150,13 +151,9 @@ class TodoTxtReader(object):
         if self.__version == 0:
             newTask = None
             for subject in subjects:
-                newTask = self.findOrCreateTask(
-                    subject.strip(), newTask, event
-                )
+                newTask = self.findOrCreateTask(subject.strip(), newTask, event)
         else:
-            newTask = (
-                None if taskId is None else self.__tasksById.get(taskId, None)
-            )
+            newTask = None if taskId is None else self.__tasksById.get(taskId, None)
             if newTask is None:
                 newTask = task.Task(subject=subjects[-1])
                 self.__taskList.append(newTask)
@@ -180,20 +177,14 @@ class TodoTxtReader(object):
     def completionDateTime(cls, match, now):
         if match.group("completed"):
             completionDateText = match.group("completionDate")
-            return (
-                cls.dateTime(completionDateText)
-                if completionDateText
-                else now()
-            )
+            return cls.dateTime(completionDateText) if completionDateText else now()
         else:
             return date.DateTime()
 
     @classmethod
     def plannedStartDateTime(cls, match):
         startDateText = match.group("startDate")
-        return (
-            cls.dateTime(startDateText) if startDateText else date.DateTime()
-        )
+        return cls.dateTime(startDateText) if startDateText else date.DateTime()
 
     @staticmethod
     def dateTime(dateText):
@@ -206,9 +197,9 @@ class TodoTxtReader(object):
         for tasks to have more than one parent task, we cannot transform
         projects into parent tasks."""
         categories = []
-        contextsAndProjects = match.group(
-            "contexts_and_projects_pre"
-        ) + match.group("contexts_and_projects_post")
+        contextsAndProjects = match.group("contexts_and_projects_pre") + match.group(
+            "contexts_and_projects_post"
+        )
         contextsAndProjects = contextsAndProjects.strip()
         if contextsAndProjects:
             for contextOrProject in contextsAndProjects.split(" "):
@@ -233,16 +224,12 @@ class TodoTxtReader(object):
 
     def findOrCreateTask(self, subject, parent, event):
         return self.findOrCreateCompositeItem(
-            subject,
-            parent,
-            self.__tasksBySubject,
-            self.__taskList,
-            task.Task,
-            event,
+            subject, parent, self.__tasksBySubject, self.__taskList, task.Task, event
         )
 
+    @staticmethod
     def findOrCreateCompositeItem(
-        self, subject, parent, subjectCache, itemContainer, itemClass, event
+        subject, parent, subjectCache, itemContainer, itemClass, event
     ):
         if (subject, parent) in subjectCache:
             return subjectCache[(subject, parent)]
@@ -258,17 +245,11 @@ class TodoTxtReader(object):
     def compileTodoTxtRE():
         priorityRE = r"(?:\((?P<priority>[A-Z])\) )?"
         completedRe = r"(?P<completed>[Xx] )?"
-        completionDateRE = (
-            r"(?:(?<=[xX] )(?P<completionDate>\d{4}-\d{1,2}-\d{1,2}) )?"
-        )
+        completionDateRE = r"(?:(?<=[xX] )(?P<completionDate>\d{4}-\d{1,2}-\d{1,2}) )?"
         startDateRE = r"(?:(?P<startDate>\d{4}-\d{1,2}-\d{1,2}) )?"
-        contextsAndProjectsPreRE = (
-            r"(?P<contexts_and_projects_pre>(?: ?[@+][^\s]+)*)"
-        )
+        contextsAndProjectsPreRE = r"(?P<contexts_and_projects_pre>(?: ?[@+][^\s]+)*)"
         subjectRE = r"(?P<subject>.*?)"
-        contextsAndProjectsPostRE = (
-            r"(?P<contexts_and_projects_post>(?: [@+][^\s]+)*)"
-        )
+        contextsAndProjectsPostRE = r"(?P<contexts_and_projects_post>(?: [@+][^\s]+)*)"
         return re.compile(
             "^"
             + priorityRE
@@ -284,18 +265,20 @@ class TodoTxtReader(object):
     @staticmethod
     def compileKeyValueRE():
         # The key is non-greedy because IDs may contain ':'
-        return re.compile(" (?P<key>\S+?):(?P<value>\S+)")
+        # return re.compile(' (?P<key>\S+?):(?P<value>\S+)')
+        # https://stackoverflow.com/questions/50504500/deprecationwarning-invalid-escape-sequence-what-to-use-instead-of-d
+        return re.compile(r" (?P<key>\S+?):(?P<value>\S+)")
 
     @staticmethod
-    def __createSubjectCache(itemContainer):
+    def __createSubjectCache(item_container):
         cache = dict()
-        for item in itemContainer:
+        for item in item_container:
             cache[(item.subject(), item.parent())] = item
         return cache
 
     @staticmethod
-    def __createIdCache(itemContainer):
+    def __createIdCache(item_container):
         cache = dict()
-        for item in itemContainer:
+        for item in item_container:
             cache[item.id()] = item
         return cache

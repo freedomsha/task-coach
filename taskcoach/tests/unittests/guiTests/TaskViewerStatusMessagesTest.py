@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+# from builtins import object
+from ... import tctest
 from taskcoachlib import gui, config
 from taskcoachlib.domain import task, date
 
@@ -36,30 +37,21 @@ class DummyViewer(object):
         return len(self._presentation)
 
 
-class TaskViewerStatusMessagesTest(test.TestCase):
+class TaskViewerStatusMessagesTest(tctest.TestCase):
     def setUp(self):
-        super(TaskViewerStatusMessagesTest, self).setUp()
+        super().setUp()
         task.Task.settings = config.Settings(load=False)
         self.taskList = task.filter.ViewFilter(task.TaskList())
         self.task = task.Task("Task")
         self.viewer = DummyViewer(self.taskList)
         self.status = gui.viewer.task.TaskViewerStatusMessages(self.viewer)
         self.template1 = "Tasks: %d selected, %d visible, %d total"
-        self.template2 = (
-            "Status: %d overdue, %d late, %d inactive, %d completed"
-        )
+        self.template2 = "Status: %d overdue, %d late, %d inactive, %d completed"
 
     # Helper methods
 
     def assertMessages(
-        self,
-        selected=0,
-        visible=0,
-        total=0,
-        overdue=0,
-        late=0,
-        inactive=0,
-        completed=0,
+        self, selected=0, visible=0, total=0, overdue=0, late=0, inactive=0, completed=0
     ):
         message1 = self.template1 % (selected, visible, total)
         message2 = self.template2 % (overdue, late, inactive, completed)
@@ -227,6 +219,5 @@ class TaskViewerStatusMessagesTest(test.TestCase):
     def testSelectedOverdueTask(self):
         self.addOverdueTask()
         self.selectTask()
-        self.assertMessages(
-            selected=1, visible=1, total=1, overdue=1, inactive=0
-        )
+        self.assertMessages(selected=1, visible=1, total=1, overdue=1, 
+                            inactive=0)

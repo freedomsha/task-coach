@@ -16,7 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, stat, codecs
+# from builtins import range
+import os
+import stat
+import codecs
 from taskcoachlib import persistence
 
 
@@ -24,9 +27,7 @@ if os.name == "nt":
     from win32com.client import GetActiveObject  # pylint: disable=F0401
 
     def getCurrentSelection():
-        selection = (
-            GetActiveObject("Outlook.Application").ActiveExplorer().Selection
-        )
+        selection = GetActiveObject("Outlook.Application").ActiveExplorer().Selection
         filenames = []
         for n in range(1, selection.Count + 1):
             filename = persistence.get_temp_file(suffix=".eml")

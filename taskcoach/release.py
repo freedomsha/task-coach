@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-'''
+"""
 Task Coach - Your friendly task manager
 Copyright (C) 2004-2016 Task Coach developers <developers@taskcoach.org>
 
@@ -16,9 +16,17 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
-
-# Sanity check
+"""
+# from __future__ import print_function
+#
+# # Sanity check
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import map
+# from builtins import str
+# from builtins import range
+# from builtins import object
+from future.utils import raise_
 import sys
 PYTHONEXE = sys.executable
 
@@ -34,16 +42,16 @@ Release steps:
   - Get latest translations from Launchpad:
     * Go to https://translations.launchpad.net/taskcoach/<major.minor>/+export
     * Wait for the confirmation email from Launchpad and copy the URL
-    * Run 'cd i18n.in && python make.py <url>' to update the translations
+    * Run 'cd i18n.in && python make.py <urlpo>' to update the translations
     * Run 'make languagetests' to test the translations
-    * When all tests pass, run 'hg commit -m "Updated translations"' 
+    * When all tests pass, run 'hg commit -m "Updated translations"'
   - Run 'make reallyclean' to remove old packages.
   - Run 'make alltests'.
   - Run 'python release.py release' to build the distributions, upload and download them
-    to/from Sourceforge, generate MD5 digests, generate the website, upload the 
-    website to the Dreamhost and Hostland websites, announce the release on 
+    to/from Sourceforge, generate MD5 digests, generate the website, upload the
+    website to the Dreamhost and Hostland websites, announce the release on
     Twitter, and PyPI (Python Package Index), mark the bug reports
-    on SourceForge fixed-and-released, send the 
+    on SourceForge fixed-and-released, send the
     announcement email, mark .dmg and .exe files as default downloads for their
     platforms, and to tag the release in Mercurial.
   - Create branch if feature release.
@@ -56,9 +64,11 @@ Release steps:
 import ftplib
 import smtplib
 import http.client
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.parse
+import urllib.error
 import http.cookiejar
+from io import open as file
 import os
 import glob
 import sys
@@ -68,7 +78,8 @@ import base64
 import configparser
 import codecs
 import optparse
-import taskcoachlib.meta
+from .taskcoachlib import meta
+# oauth2 pose un problème !
 import oauth2 as oauth
 import time
 import shutil
@@ -84,8 +95,8 @@ except ImportError:
 
 
 def progress(func):
-    ''' Decorator to print out a message when a release step starts and print
-        a message when the release step is finished. '''
+    """ Decorator to print out a message when a release step starts and print
+        a message when the release step is Finished. """
     def inner(*args, **kwargs):
         step = func.__name__.replace('_', ' ')
         print(step[0].upper() + step[1:] + '...')
@@ -94,9 +105,9 @@ def progress(func):
     return inner
 
 
-class Settings(configparser.SafeConfigParser, object):
+class Settings(configparser.SafeConfigParser):
     def __init__(self):
-        super(Settings, self).__init__()
+        super().__init__()
         self.set_defaults()
         self.filename = os.path.expanduser('~/.tcreleaserc')
         self.read(self.filename)
@@ -118,17 +129,19 @@ class Settings(configparser.SafeConfigParser, object):
                 self.set(section, option, 'ask')
 
     def get(self, section, option):  # pylint: disable=W0221
-        value = super(Settings, self).get(section, option)
+        value = super().get(section, option)
         if value == 'ask':
-            get_input = getpass.getpass if option == 'password' else raw_input
+            # get_input = getpass.getpass if option == 'password' else raw_input
+            get_input = getpass.getpass if option == 'password' else input
             value = get_input('%s %s: ' % (section, option)).strip()
             self.set(section, option, value)
-            self.write(open(self.filename, 'w'))
+            self.write(file(self.filename, 'w'))
+            # self.write(io.open(self.filename, 'w'))
         return value
 
 
 class HelpFormatter(optparse.IndentedHelpFormatter):
-    ''' Don't mess up the help text formatting. '''
+    """ Don't mess up the help text formatting. """
     def format_epilog(self, epilog):
         return epilog
 
@@ -172,11 +185,11 @@ class SourceforgeAPI(object):
             for name, value in list(ticketData.get('custom_fields', dict()).items()):
                 if name == '_priority':
                     value = '1'
-		if name == '_milestone': # WTF?
-		    data.append(('ticket_form._milestone', value))
-		else:
-		    data.append(('ticket_form.custom_fields.%s' % name, value))
-            self.__apply('bugs/%s/save' % id_, data=data)
+                if name == '_milestone':  # WTF?
+                    data.append(('ticket_form._milestone', value))
+                else:
+                    data.append(('ticket_form.custom_fields.%s' % name, value))
+                    self.__apply('bugs/%s/save' % id_, data=data)
 
             # Canned response
             self.__apply('bugs/_discuss/thread/%s/new' % ticketData['discussion_thread']['_id'],
@@ -205,7 +218,7 @@ Thanks, Task Coach development team''')])
                 print('Warning: could not marking fix #%s released.' % id_)
 
 
-class FOSSHubAPI:
+class FOSSHubAPI(object):
     def __init__(self, api_key):
         self.api_key = api_key
         self.baseuri = 'https://api.fosshub.com/rest/'
@@ -236,15 +249,15 @@ class FOSSHubAPI:
 
 
 def sourceforge_location(settings):
-    metadata = taskcoachlib.meta.data.metaDict
+    metadata = meta.data.metaDict
     project = metadata['filename_lower']
     project_first_two_letters = project[:2]
     project_first_letter = project[0]
     username = '%s,%s' % (settings.get('sourceforge', 'username'), project)
     folder = '/home/frs/project/%(p)s/%(pr)s/%(project)s/%(project)s/' \
-             'Release-%(version)s/' % dict(project=project, 
-                                           pr=project_first_two_letters, 
-                                           p=project_first_letter, 
+             'Release-%(version)s/' % dict(project=project,
+                                           pr=project_first_two_letters,
+                                           p=project_first_letter,
                                            version=metadata['version'])
     return '%s@frs.sourceforge.net:%s' % (username, folder)
 
@@ -261,7 +274,7 @@ def rsync(settings, options, rsync_command):
 @progress
 def building_packages(settings, options):
     host = settings.get('buildbot', 'host')
-    metadata = taskcoachlib.meta.data.metaDict
+    metadata = meta.data.metaDict
     branch = 'Release%s_Branch' % '_'.join(metadata['version'].split('.')[:2])
     if options.dry_run:
         print('Skipping force build on branch "%s"' % branch)
@@ -272,11 +285,11 @@ def building_packages(settings, options):
 
         cj = http.cookiejar.CookieJar()
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
-        for i in range(3): # Retry in case of 500
+        for i in range(3):  # Retry in case of 500
             try:
                 opener.open('http://%s:8010/login' % host,
                             urllib.parse.urlencode([('username', settings.get('buildbot', 'username')),
-                                              ('passwd', settings.get('buildbot', 'password'))]))
+                                                    ('passwd', settings.get('buildbot', 'password'))]))
                 opener.open('http://%s:8010/builders/Release/force' % host,
                             urllib.parse.urlencode([('forcescheduler', 'Force'),
                                               ('branch', branch),
@@ -303,7 +316,7 @@ def building_packages(settings, options):
             break
 
     if options.verbose:
-        print('Build finished.')
+        print('Build Finished.')
         print('Downloading release.zip')
 
     buildno = status['cachedBuilds'][-1]
@@ -317,7 +330,7 @@ def building_packages(settings, options):
         shutil.rmtree('dist')
     os.mkdir('dist')
 
-    shutil.copyfileobj(urllib.request.urlopen(zipurl), open(os.path.join('dist', 'release.zip'), 'wb'))
+    shutil.copyfileobj(urllib.request.urlopen(zipurl), file(os.path.join('dist', 'release.zip'), 'wb'))
 
     try:
         zipFile = zipfile.ZipFile(os.path.join('dist', 'release.zip'), 'r')
@@ -326,7 +339,7 @@ def building_packages(settings, options):
                 if options.verbose:
                     print('Extracting "%s"' % info.filename)
                 shutil.copyfileobj(zipFile.open(info, 'r'),
-                                   open(os.path.join('dist', info.filename), 'wb'))
+                                   file(os.path.join('dist', info.filename), 'wb'))
         finally:
             zipFile.close()
     finally:
@@ -357,23 +370,23 @@ def uploading_distributions_to_fosshub(settings, options):
         raise RuntimeError('Cannot find Task Coach project on FOSSHub')
 
     for release in api.get('projects/%s/releases' % project_id):
-        if release['version'] == taskcoachlib.meta.data.version:
+        if release['version'] == meta.data.version:
             print('Version %s already published' % release['version'])
             import pprint
             pprint.pprint(release)
             return
 
-    metadata = taskcoachlib.meta.data.metaDict
+    metadata = meta.data.metaDict
     changelog = latest_release(metadata)
 
-    data = {'version': taskcoachlib.meta.data.version, 'changeLog': changelog, 'publish': True, 'files': []}
+    data = {'version': meta.data.version, 'changeLog': changelog, 'publish': True, 'files': []}
     for filetmpl, type_ in [
         ('TaskCoach-%s-win32.exe', '32-bit Windows Installer'),
         ('TaskCoach-%s.dmg', 'OS X'),
         ('X-TaskCoach_%s_rev1.zip', 'Portable (WinPenPack Format)'),
         ('TaskCoachPortable_%s.paf.exe', 'Portable (PortableApps Format)'),
         ]:
-        filedata = {'fileUrl': '%s%s' % (settings.get('webhost', 'disturl'), filetmpl % taskcoachlib.meta.data.version), 'type': type_, 'version': taskcoachlib.meta.data.version}
+        filedata = {'fileUrl': '%s%s' % (settings.get('webhost', 'disturl'), filetmpl % meta.data.version), 'type': type_, 'version': meta.data.version}
         data['files'].append(filedata)
     api.post('projects/%s/releases' % project_id, data)
 
@@ -400,9 +413,10 @@ def marking_default_downloads(settings, options):
             # httplib does not seem to handle PUT very well
             # See http://stackoverflow.com/questions/111945/is-there-any-way-to-do-http-put-in-python
             opener = urllib.request.build_opener(urllib.request.HTTPSHandler)
-            url = 'https://sourceforge.net/projects/taskcoach/files/taskcoach/Release-%s/%s' % (taskcoachlib.meta.version, name)
+            url = 'https://sourceforge.net/projects/taskcoach/files/taskcoach/Release-%s/%s' % (meta.version, name)
             req = urllib.request.Request(url,
-                                  data=urllib.parse.urlencode(dict(default=platform, api_key=settings.get('sourceforge', 'api_key'))))
+                                         data=urllib.parse.urlencode(dict(default=platform, api_key=settings.get(
+                                             'sourceforge', 'api_key'))))
             req.add_header('Content-Type', 'application/x-www-form-urlencoded')
             req.get_method = lambda: 'PUT'
             try:
@@ -437,16 +451,16 @@ def downloading_distributions_from_SourceForge(settings, options):
 def generating_MD5_digests(settings, options):
     contents = '''md5digests = {\n'''
     for filename in glob.glob(os.path.join('dist', '*')):
-        
-        md5digest = hashlib.md5(open(filename, 'rb').read())  # pylint: disable=E1101
+
+        md5digest = hashlib.md5(file(filename, 'rb').read())  # pylint: disable=E1101
         filename = os.path.basename(filename)
         hexdigest = md5digest.hexdigest()
         contents += '''    "%s": "%s",\n''' % (filename, hexdigest)
         if options.verbose:
             print('%40s -> %s' % (filename, hexdigest))
     contents += '}\n'
-    
-    md5digests_file = open(os.path.join('website.in', 'md5digests.py'), 'w')
+
+    md5digests_file = file(os.path.join('website.in', 'md5digests.py'), 'w')
     md5digests_file.write(contents)
     md5digests_file.close()
 
@@ -459,19 +473,19 @@ def generating_website(settings, options):
     os.chdir('..')
 
 
-class SimpleFTP(ftplib.FTP, object):
+class SimpleFTP(ftplib.FTP):
     def __init__(self, hostname, username, password, folder='.'):
-        super(SimpleFTP, self).__init__(hostname, username, password)
+        super().__init__(hostname, username, password)
         self.ensure_folder(folder)
         self.remote_root = folder
-            
+
     def ensure_folder(self, folder):
         try:
             self.cwd(folder)
         except ftplib.error_perm:
             self.mkd(folder)
-            self.cwd(folder)    
-            
+            self.cwd(folder)
+
     def put(self, folder, *filename_whitelist):
         for root, subfolders, filenames in os.walk(folder):
             if root != folder:
@@ -490,13 +504,13 @@ class SimpleFTP(ftplib.FTP, object):
                     continue
                 print('Store %s' % os.path.join(root, filename))
                 try:
-                    self.storbinary('STOR %s' % filename, 
-                                    open(os.path.join(root, filename), 'rb'))
+                    self.storbinary('STOR %s' % filename,
+                                    file(os.path.join(root, filename), 'rb'))
                 except ftplib.error_perm as info:
                     if str(info).endswith('Overwrite permission denied'):
                         self.delete(filename)
-                        self.storbinary('STOR %s' % filename, 
-                                        open(os.path.join(root, filename), 
+                        self.storbinary('STOR %s' % filename,
+                                        file(os.path.join(root, filename),
                                              'rb'))
                     else:
                         raise
@@ -522,14 +536,16 @@ def registering_with_PyPI(settings, options):
         pypirc.write('[pypi]\n')
         pypirc.write('repository=https://upload.pypi.org/legacy/\n')
         pypirc.write('username=%s\n' % username)
-        pypirc.write('password=%s\n' % password)
+        # For security reasons, the password is no longer written to .pypirc.
+        # Please use a secure authentication mechanism for PyPI uploads (e.g. environment variables, keyring, or API token).
+        # See: https://packaging.python.org/specifications/pypirc/#authentication or https://twine.readthedocs.io/en/latest/
     # pylint: disable=W0404
     from setup import setupOptions
-    languages_pypi_does_not_know = ['Basque', 'Belarusian', 'Breton', 
-        'Estonian', 'Galician', 'Lithuanian', 'Norwegian (Bokmal)', 
-        'Norwegian (Nynorsk)', 'Occitan', 'Papiamento', 'Slovene', 
-        'German (Low)', 'Mongolian', 'English (AU)', 'English (CA)',
-        'English (GB)', 'English (US)']
+    languages_pypi_does_not_know = ['Basque', 'Belarusian', 'Breton',
+                                    'Estonian', 'Galician', 'Lithuanian', 'Norwegian (Bokmal)',
+                                    'Norwegian (Nynorsk)', 'Occitan', 'Papiamento', 'Slovene',
+                                    'German (Low)', 'Mongolian', 'English (AU)', 'English (CA)',
+                                    'English (GB)', 'English (US)']
     for language in languages_pypi_does_not_know:
         try:
             setupOptions['classifiers'].remove('Natural Language :: %s' % language)
@@ -548,8 +564,8 @@ def registering_with_PyPI(settings, options):
 
 
 def status_message():
-    ''' Return a brief status message for e.g. Twitter. '''
-    metadata = taskcoachlib.meta.data.metaDict
+    """ Return a brief status message for e.g. Twitter. """
+    metadata = meta.data.metaDict
     return "Release %(version)s of %(name)s is available from %(url)s. " \
            "See what's new at %(url)schanges.html." % metadata
 
@@ -566,8 +582,8 @@ def announcing_via_OAuth_Api(settings, options, section, host):
     if options.dry_run:
         print('Skipping announcing "%s" on %s.' % (status, host))
     else:
-        response, content = client.request( \
-            'https://api.%s/1.1/statuses/update.json' % host, method='POST', 
+        response, content = client.request(
+            'https://api.%s/1.1/statuses/update.json' % host, method='POST',
             body='status=%s' % status, headers=None)
         if response.status != 200:
             print('Request failed: %d %s' % (response.status, response.reason))
@@ -580,7 +596,7 @@ def announcing_on_Twitter(settings, options):
 
 
 def uploading_website(settings, options):
-    ''' Upload the website contents to the website(s). '''
+    """ Upload the website contents to the website(s). """
     host = settings.get('webhost', 'hostname')
     user = settings.get('webhost', 'username')
     path = settings.get('webhost', 'path')
@@ -588,20 +604,21 @@ def uploading_website(settings, options):
 
 
 def announcing(settings, options):
-    #registering_with_PyPI(settings, options)
+    # registering_with_PyPI(settings, options)
     announcing_on_Twitter(settings, options)
     mailing_announcement(settings, options)
 
 
 def updating_Sourceforge_trackers(settings, options):
-    sys.path.insert(0, 'changes.in')
-    import changes, changetypes
+    sys.path.insert(0, "changes.in")
+    import changes  # from /changes.in ?
+    import changetypes
 
     for release in changes.releases:
-        if release.number == taskcoachlib.meta.version:
+        if release.number == meta.version:
             break
     else:
-        raise RuntimeError('Could not find version "%s" in changelog' % taskcoachlib.meta.version)
+        raise RuntimeError('Could not find version "%s" in changelog' % meta.version)
 
     alreadyDone = set()
     for bugFixed in release.bugsFixed:
@@ -632,12 +649,12 @@ def releasing(settings, options):
 def latest_release(metadata, summary_only=False):
     sys.path.insert(0, 'changes.in')
     # pylint: disable=F0401
-    import changes 
-    import converter  
+    import changes
+    import converter
     del sys.path[0]
     greeting = 'release %(version)s of %(name)s.' % metadata
     if summary_only:
-        greeting = greeting[0].upper() + greeting[1:] 
+        greeting = greeting[0].upper() + greeting[1:]
     else:
         greeting = "We're happy to announce " + greeting
     text_converter = converter.ReleaseToTextConverter()
@@ -647,7 +664,7 @@ def latest_release(metadata, summary_only=False):
 
 @progress
 def mailing_announcement(settings, options):
-    metadata = taskcoachlib.meta.data.metaDict
+    metadata = meta.data.metaDict
     for sender_info in 'sender_name', 'sender_email_address':
         metadata[sender_info] = settings.get('smtp', sender_info)
     metadata['release'] = latest_release(metadata)
@@ -663,20 +680,20 @@ Hi,
 
 What is %(name)s?
 
-%(name)s is a simple task manager that allows for hierarchical tasks, 
-i.e. tasks in tasks. %(name)s is open source (%(license_abbrev)s) and is developed 
+%(name)s is a simple task manager that allows for hierarchical tasks,
+i.e. tasks in tasks. %(name)s is open source (%(license_abbrev)s) and is developed
 using Python and wxPython. You can download %(name)s from:
 
 %(url)s
 
-In addition to the source distribution, packaged distributions are available 
+In addition to the source distribution, packaged distributions are available
 for Windows, Mac OS X, Linux, and BSD.
 
 Note that although we consider %(name)s to be %(release_status)s software,
-and we do our best to prevent bugs, it is always wise to back up your task 
+and we do our best to prevent bugs, it is always wise to back up your task
 file regularly, and especially when upgrading to a new release.
 
-Regards, 
+Regards,
 
 %(author)s
 Task Coach development team
@@ -707,16 +724,16 @@ Task Coach development team
     if smtpresult:
         errstr = ""
         for recip in list(smtpresult.keys()):
-            errstr = """Could not deliver mail to: %s 
+            errstr = """Could not deliver mail to: %s
 Server said: %s
 %s
 %s""" % (recip, smtpresult[recip][0], smtpresult[recip][1], errstr)
-        raise smtplib.SMTPException(errstr)
+        raise_(smtplib.SMTPException, errstr)
 
 
 @progress
 def tagging_release_in_mercurial(settings, options):
-    metadata = taskcoachlib.meta.data.metaDict
+    metadata = meta.data.metaDict
     version = metadata['version']
     release_tag = 'Release' + version.replace('.', '_')
     hg_tag = 'hg tag %s' % release_tag
@@ -734,12 +751,12 @@ COMMANDS = dict(release=releasing,
                 uploadsf=uploading_distributions_to_SourceForge,
                 uploadfoss=uploading_distributions_to_fosshub,
                 upload=uploading_distributions,
-                download=downloading_distributions_from_SourceForge, 
+                download=downloading_distributions_from_SourceForge,
                 md5=generating_MD5_digests,
                 websitegen=generating_website,
                 website=uploading_website,
                 twitter=announcing_on_Twitter,
-                pypi=registering_with_PyPI, 
+                pypi=registering_with_PyPI,
                 mail=mailing_announcement,
                 announce=announcing,
                 update=updating_Sourceforge_trackers,
@@ -752,9 +769,9 @@ USAGE = 'Usage: %%prog [options] [%s]' % '|'.join(sorted(COMMANDS.keys()))
 
 SETTINGS = Settings()
 
-parser = optparse.OptionParser(usage=USAGE, epilog=HELP_TEXT, 
+parser = optparse.OptionParser(usage=USAGE, epilog=HELP_TEXT,
                                formatter=HelpFormatter())
-parser.add_option('-n', '--dry-run', action='store_true', dest='dry_run', 
+parser.add_option('-n', '--dry-run', action='store_true', dest='dry_run',
                   help="don't make permanent changes")
 parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
                   help='provide more detailed progress information')

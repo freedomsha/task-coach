@@ -18,9 +18,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, io, time
+# from future import standard_library
+# from builtins import object
+from ... import tctest
+import io
+import time
 from taskcoachlib import persistence, gui, config, meta
 from taskcoachlib.domain import task, effort, date
+
+# standard_library.install_aliases()
 
 
 class UTF8StringIO(io.StringIO):
@@ -32,18 +38,18 @@ class UTF8StringIO(io.StringIO):
         io.StringIO.write(self, u.encode("UTF-8"))
 
 
-class VCalTestCase(test.wxTestCase):
+class VCalTestCase(tctest.wxTestCase):
     selectionOnly = "Subclass responsibility"
 
     def setUp(self):
-        super(VCalTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.fd = UTF8StringIO()
         self.writer = persistence.iCalendarWriter(self.fd)
         self.taskFile = persistence.TaskFile()
 
     def tearDown(self):
-        super(VCalTestCase, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -71,8 +77,7 @@ class VCalendarCommonTestsMixin(object):
     def testProdId(self):
         domain = meta.url[len("http://") : -1]
         self.assertEqual(
-            "PRODID:-//%s//NONSGML %s V%s//EN"
-            % (domain, meta.name, meta.version),
+            "PRODID:-//%s//NONSGML %s V%s//EN" % (domain, meta.name, meta.version),
             self.vcalFile.split("\r\n")[2],
         )
 
@@ -94,9 +99,7 @@ class VCalEffortWriterTestCase(VCalTestCase):
         self.task1.addEffort(self.effort1)
         self.task1.addEffort(self.effort2)
         self.taskFile.tasks().extend([self.task1])
-        self.viewer = gui.viewer.EffortViewer(
-            self.frame, self.taskFile, self.settings
-        )
+        self.viewer = gui.viewer.EffortViewer(self.frame, self.taskFile, self.settings)
         self.viewer.widget.select([self.effort1])
         self.viewer.updateSelection()
         self.vcalFile = self.writeAndRead()
@@ -121,9 +124,7 @@ class VCalEffortCommonTestsMixin(VCalendarCommonTestsMixin):
 
     def testEffortStart(self):
         startLocal = date.DateTime(2000, 1, 1, 1, 1, 1)
-        startUTC = startLocal.utcfromtimestamp(
-            time.mktime(startLocal.timetuple())
-        )
+        startUTC = startLocal.utcfromtimestamp(time.mktime(startLocal.timetuple()))
         self.assertTrue(
             "DTSTART:%04d%02d%02dT%02d%02d%02dZ"
             % (
@@ -155,9 +156,7 @@ class VCalEffortCommonTestsMixin(VCalendarCommonTestsMixin):
         self.assertTrue("UID:%s" % self.effort1.id() in self.vcalFile)
 
 
-class VCalEffortWriterTest(
-    VCalEffortWriterTestCase, VCalEffortCommonTestsMixin
-):
+class VCalEffortWriterTest(VCalEffortWriterTestCase, VCalEffortCommonTestsMixin):
     selectionOnly = False
 
     def expectedNumberOfItems(self):
@@ -191,9 +190,7 @@ class VCalTaskWriterTestCase(VCalTestCase):
         )
         self.taskFile.tasks().extend([self.task1, self.task2])
         self.settings.set("taskviewer", "treemode", self.treeMode)
-        self.viewer = gui.viewer.TaskViewer(
-            self.frame, self.taskFile, self.settings
-        )
+        self.viewer = gui.viewer.TaskViewer(self.frame, self.taskFile, self.settings)
         self.selectItems([self.task2])
         self.vcalFile = self.writeAndRead()
 
@@ -230,9 +227,7 @@ class VCalTaskCommonTestsMixin(VCalendarCommonTestsMixin):
         modification_datetime = persistence.icalendar.ical.fmtDateTime(
             date.DateTime(2012, 1, 1)
         )
-        self.assertTrue(
-            "LAST-MODIFIED:%s" % modification_datetime in self.vcalFile
-        )
+        self.assertTrue("LAST-MODIFIED:%s" % modification_datetime in self.vcalFile)
 
     def testMissingModificationDateTime(self):
         self.assertEqual(1, self.vcalFile.count("LAST-MODIFIED"))
@@ -271,9 +266,9 @@ class TestNotSelectionTree(TestNotSelectionOnlyMixin, VCalTaskWriterTestCase):
     treeMode = "True"
 
 
-class FoldTest(test.TestCase):
+class FoldTest(tctest.TestCase):
     def setUp(self):
-        super(FoldTest, self).setUp()
+        super().setUp()
         self.fold = persistence.icalendar.ical.fold
 
     def testEmptyText(self):
@@ -283,9 +278,7 @@ class FoldTest(test.TestCase):
         self.assertEqual("Short line\r\n", self.fold(["Short line"]))
 
     def testFoldALongLine(self):
-        self.assertEqual(
-            "Long \r\n line\r\n", self.fold(["Long line"], linewidth=5)
-        )
+        self.assertEqual("Long \r\n line\r\n", self.fold(["Long line"], linewidth=5))
 
     def testFoldAReallyLongLine(self):
         self.assertEqual(
@@ -301,6 +294,4 @@ class FoldTest(test.TestCase):
         )
 
     def testFoldALineWithNewLines(self):
-        self.assertEqual(
-            "Line 1\r\n Line 2\r\n", self.fold(["Line 1\nLine 2"])
-        )
+        self.assertEqual("Line 1\r\n Line 2\r\n", self.fold(["Line 1\nLine 2"]))

@@ -16,24 +16,52 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 from taskcoachlib import patterns
 from taskcoachlib.i18n import _
 from taskcoachlib import help
-from taskcoachlib.thirdparty.pubsub import pub
-from pubsub.core import Publisher
+
+# try:
+#    from ...thirdparty.pubsub import pub
+# except ImportError:
+#    from wx.lib.pubsub import pub
+# except ModuleNotFoundError:
+from pubsub import pub
+
+# try:
+#    from ...thirdparty.pubsub.core import Publisher
+# except ImportError:
+#    from wx.lib.pubsub.core.publisherbase import PublisherBase as Publisher
+from pubsub.core.publisher import Publisher
 from taskcoachlib.domain import task
 from . import effort
 
 
 class MaxDateTimeMixin(object):
+    """Classe Mixin qui ajoute la méthode maxDateTime"""
+
     def maxDateTime(self):
+        """
+        Calcule et retourne la dernière date/heure d'arrêt de la liste d'effort
+        contenu dans l'objet.
+
+        Pour tous les efforts de self, si l'effort a une date/heure d'arrêt,
+        celle-ci est enregistré dans la liste stopTimes.
+
+        Returns:
+            La date/heure maximum contenu dans la liste des efforts sinon None.
+        """
+        # Pour tous les effort de self, si l'effort a une date/heure d'arrêt, celle-ci est enregistré dans la liste stopTimes
         stopTimes = [
             effort.getStop() for effort in self if effort.getStop() is not None
         ]
+        # Retourne la date/heure maximum contenu dans stopTimes sinon None
         return max(stopTimes) if stopTimes else None
 
 
 class EffortUICommandNamesMixin(object):
+    """Classe mixin qui définit l'affichage et la commande help de Nouvel effort."""
+
     newItemMenuText = _("&New effort...\tCtrl+E")
     newItemHelpText = help.effortNew
 
@@ -41,11 +69,23 @@ class EffortUICommandNamesMixin(object):
 class EffortList(
     patterns.SetDecorator, MaxDateTimeMixin, EffortUICommandNamesMixin
 ):
-    """EffortList observes a TaskList and contains all effort records of
-    all tasks in the underlying TaskList."""
+    """
+    EffortList observe une liste de tâches et contient
+    tous les enregistrements d'effort de toutes les tâches
+    de la liste de tâche sous-jacente.
+
+    Hérite de SetDecorator, MaxDateTimeMixin et EffortUICommandNamesMixin.
+    SetDecorator permettant de décorer un ensemble observable
+    et d'ajouter des comportements supplémentaires
+    tout en notifiant les observateurs des changements dans l'ensemble.
+    MaxDateTimeMixin ajoute la méthode maxDateTime qui calcule
+    et retourne la dernière date/heure d'arrêt de la liste d'effort
+    contenu dans l'objet.
+    EffortUICommandNamesMixin
+    """
 
     def __init__(self, *args, **kwargs):
-        super(EffortList, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         pub.subscribe(
             self.onAddEffortToOrRemoveEffortFromTask,
             task.Task.effortsChangedEventType(),
@@ -60,7 +100,7 @@ class EffortList(
         effortsToAdd = []
         for task in tasks:
             effortsToAdd.extend(task.efforts())
-        super(EffortList, self).extendSelf(effortsToAdd, event)
+        super().extendSelf(effortsToAdd, event)
         for effort in effortsToAdd:
             if effort.getStop() is None:
                 pub.sendMessage(
@@ -86,7 +126,7 @@ class EffortList(
                     newValue=False,
                     sender=effort,
                 )
-        super(EffortList, self).removeItemsFromSelf(effortsToRemove, event)
+        super().removeItemsFromSelf(effortsToRemove, event)
 
     def onAddEffortToOrRemoveEffortFromTask(self, newValue, sender):
         if sender not in self.observable():
@@ -98,8 +138,8 @@ class EffortList(
         effortsToRemove = [
             effort for effort in oldValue if not effort in newValue
         ]
-        super(EffortList, self).extendSelf(effortsToAdd)
-        super(EffortList, self).removeItemsFromSelf(effortsToRemove)
+        super().extendSelf(effortsToAdd)
+        super().removeItemsFromSelf(effortsToRemove)
         for effort in effortsToAdd + effortsToRemove:
             if effort.getStop() is None:
                 pub.sendMessage(
@@ -137,15 +177,21 @@ class EffortList(
         return "this event type is not used"
 
 
-class EffortListTracker(patterns.Observer, Publisher):
+class EffortListTracker(
+    patterns.Observer, Publisher
+):  # classe enfant de Publisher
     """EffortListTracker observes an EffortList and keeps track of
-    currently tracked efforts."""
+    currently tracked efforts.
+
+    EffortListTracker observe une EffortList et assure le suivi
+    des efforts actuellement suivis.
+    """
 
     def __init__(self, effortList, includeComposites=False):
-        """@param effortList: The effort list to observe.
-        @param includeComposites: if False, composite efforts will be
-            ignored."""
-        super(EffortListTracker, self).__init__()
+        """@param effortList: La liste des efforts à observer.
+        @param includeComposites: si False, les efforts composites seront
+         ignorés."""
+        super().__init__()
         Publisher.__init__(self)
 
         self.__effortList = effortList

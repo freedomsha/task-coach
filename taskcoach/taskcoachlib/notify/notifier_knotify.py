@@ -23,7 +23,7 @@ from .notifier import AbstractNotifier
 
 class KNotifyNotifier(AbstractNotifier):
     def __init__(self):
-        super(KNotifyNotifier, self).__init__()
+        super().__init__()
 
         self.__factory = None
         try:
@@ -44,10 +44,10 @@ class KNotifyNotifier(AbstractNotifier):
     def notify(self, title, summary, bitmap, **kwargs):
         # KNotify does not support icons
 
-        coding = wx.Locale_GetSystemEncodingName()
+        coding = wx.Locale.GetSystemEncodingName()
 
         kn = self.__factory("knotify")
-        kn.default.notify(
+        kn.default.Notify(
             "reminder",
             title.encode(coding),
             summary.encode(coding),

@@ -16,14 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import next
+# from builtins import map
+# from builtins import object
+# from future import standard_library
+# standard_library.install_aliases()
+# TODO: plein d'utilisation de (de)codage str/bytes
 from taskcoachlib.domain.category import Category
 from taskcoachlib.domain.date import DateTime, TimeDelta
 from taskcoachlib.domain.task import Task
 from taskcoachlib.i18n import _
+# from taskcoachlib.thirdparty.dateutil import parser as dparser
 from dateutil import parser as dparser
 import csv
 import tempfile
-import io
+from io import open as file
+from io import StringIO
 import re
 import math
 
@@ -36,17 +44,17 @@ class CSVReader(object):
     def createReader(self, fp, dialect, hasHeaders):
         reader = csv.reader(fp, dialect=dialect)
         if hasHeaders:
-            next(reader)
+            reader.next()  # TODO : how ?
+            # next(reader)
         return reader
 
     def read(self, **kwargs):
+        # TODO : vérifier si besoin d'encodage
         fp = tempfile.TemporaryFile()
-        fp.write(
-            open(kwargs["filename"], "r")
-            .read()
-            .decode(kwargs["encoding"])
-            .encode("UTF-8")
-        )
+        # fp.write(file(kwargs["filename"], "r").read().decode(kwargs["encoding"]).encode("UTF-8"))
+        # fp.write(io.open(kwargs['filename'], 'rU').read().decode(kwargs['encoding']).encode('UTF-8'))
+        # fp.write(file(kwargs['filename'], 'rU').read().encode(kwargs['encoding']).decode('UTF-8'))
+        fp.write(file(kwargs["filename"], "r").read())
         fp.seek(0)
 
         rx1 = re.compile(r"^(\d+):(\d+)$")
@@ -58,14 +66,11 @@ class CSVReader(object):
         tasks = []
 
         for index, line in enumerate(reader):
-            if (
-                kwargs["importSelectedRowsOnly"]
-                and index not in kwargs["selectedRows"]
-            ):
+            if kwargs["importSelectedRowsOnly"] and index not in kwargs["selectedRows"]:
                 continue
             subject = _("No subject")
             id_ = None
-            description = io.StringIO()
+            description = StringIO()
             categories = []
             priority = 0
             actualStartDateTime = None
@@ -78,16 +83,22 @@ class CSVReader(object):
             hourlyFee = 0.0
             percentComplete = 0
 
-            for idx, fieldValue in enumerate(line):
+            for idx, fieldValue in enumerate(line):  # TODO :
                 if kwargs["mappings"][idx] == _("ID"):
-                    id_ = fieldValue.decode("UTF-8")
+                    # id_ = fieldValue.decode("UTF-8")  # unresolved attribute reference decode for class str
+                    # id_ = fieldValue.encode('UTF-8')
+                    id_ = fieldValue
                 elif kwargs["mappings"][idx] == _("Subject"):
-                    subject = fieldValue.decode("UTF-8")
+                    # subject = fieldValue.decode("UTF-8")  # unresolved attribute reference decode for class str
+                    subject = fieldValue
                 elif kwargs["mappings"][idx] == _("Description"):
-                    description.write(fieldValue.decode("UTF-8"))
+                    # description.write(fieldValue.decode("UTF-8"))  # unresolved attribute reference decode for class str
+                    # description.write(fieldValue.encode('UTF-8'))  # Expected type 'str', got 'bytes' instead
+                    description.write(fieldValue)
                     description.write("\n")
                 elif kwargs["mappings"][idx] == _("Category") and fieldValue:
-                    name = fieldValue.decode("UTF-8")
+                    # name = fieldValue.decode("UTF-8")
+                    name = fieldValue
                     if name.startswith("(") and name.endswith(")"):
                         continue  # Skip categories of subitems
                     cat = self.categoryList.findCategoryByName(name)
@@ -124,25 +135,16 @@ class CSVReader(object):
                         value = float(fieldValue)
                         hours = int(math.floor(value))
                         minutes = int(60 * (value - hours))
-                        budget = TimeDelta(
-                            hours=hours, minutes=minutes, seconds=0
-                        )
+                        budget = TimeDelta(hours=hours, minutes=minutes, seconds=0)
                     except ValueError:
                         mt = rx1.search(fieldValue)
                         if mt:
-                            budget = TimeDelta(
-                                hours=int(mt.group(1)),
-                                minutes=int(mt.group(2)),
-                                seconds=0,
-                            )
+                            budget = TimeDelta(hours=int(mt.group(1)), minutes=int(mt.group(2)), seconds=0)
                         else:
                             mt = rx2.search(fieldValue)
                             if mt:
-                                budget = TimeDelta(
-                                    hours=int(mt.group(1)),
-                                    minutes=int(mt.group(2)),
-                                    seconds=int(mt.group(3)),
-                                )
+                                budget = TimeDelta(hours=int(mt.group(1)), minutes=int(mt.group(2)),
+                                                   seconds=int(mt.group(3)))
                 elif kwargs["mappings"][idx] == _("Fixed fee"):
                     try:
                         fixedFee = float(fieldValue)
@@ -159,20 +161,18 @@ class CSVReader(object):
                     except ValueError:
                         pass
 
-            task = Task(
-                subject=subject,
-                description=description.getvalue(),
-                priority=priority,
-                actualStartDateTime=actualStartDateTime,
-                plannedStartDateTime=plannedStartDateTime,
-                dueDateTime=dueDateTime,
-                completionDateTime=completionDateTime,
-                reminder=reminderDateTime,
-                budget=budget,
-                fixedFee=fixedFee,
-                hourlyFee=hourlyFee,
-                percentageComplete=percentComplete,
-            )
+            task = Task(subject=subject,
+                        description=description.getvalue(),
+                        priority=priority,
+                        actualStartDateTime=actualStartDateTime,
+                        plannedStartDateTime=plannedStartDateTime,
+                        dueDateTime=dueDateTime,
+                        completionDateTime=completionDateTime,
+                        reminder=reminderDateTime,
+                        budget=budget,
+                        fixedFee=fixedFee,
+                        hourlyFee=hourlyFee,
+                        percentageComplete=percentComplete)
 
             if id_ is not None:
                 tasksById[id_] = task
@@ -221,36 +221,19 @@ class CSVReader(object):
         self.categoryList.append(newCategory)
         return newCategory
 
-    def parseDateTime(
-        self,
-        fieldValue,
-        defaultHour=0,
-        defaultMinute=0,
-        defaultSecond=0,
-        dayfirst=False,
-    ):
+    def parseDateTime(self, fieldValue, defaultHour=0, defaultMinute=0,
+                      defaultSecond=0, dayfirst=False):
         if not fieldValue:
             return None
         try:
-            dateTime = dparser.parse(
-                fieldValue.decode("UTF-8"), dayfirst=dayfirst, fuzzy=True
-            ).replace(tzinfo=None)
-            hour, minute, second = (
-                dateTime.hour,
-                dateTime.minute,
-                dateTime.second,
-            )
+            dateTime = dparser.parse(fieldValue.decode("UTF-8"),
+                                     dayfirst=dayfirst, fuzzy=True).replace(tzinfo=None)
+            hour, minute, second = dateTime.hour, dateTime.minute, dateTime.second
             if 0 == hour == minute == second:
                 hour = defaultHour
                 minute = defaultMinute
                 second = defaultSecond
-            return DateTime(
-                dateTime.year,
-                dateTime.month,
-                dateTime.day,
-                hour,
-                minute,
-                second,
-            )
-        except:  # pylint: disable=W0702
+            return DateTime(dateTime.year, dateTime.month, dateTime.day,
+                            hour, minute, second)
+        except Exception:  # pylint: disable=W0702
             return None

@@ -16,8 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx, operator
-from taskcoachlib.thirdparty.squaremap import squaremap
+# from builtins import map
+import wx
+import operator
+# try:
+#    from taskcoachlib.thirdparty.squaremap import squaremap
+# except ImportError:
+from squaremap import squaremap
 from . import tooltip
 from functools import reduce
 
@@ -26,9 +31,8 @@ class SquareMap(tooltip.ToolTipMixin, squaremap.SquareMap):
     def __init__(self, parent, rootNode, onSelect, onEdit, popupMenu):
         self.__selection = []
         self.getItemTooltipData = parent.getItemTooltipData
-        super(SquareMap, self).__init__(
-            parent, model=rootNode, adapter=parent, highlight=False
-        )
+        super().__init__(parent, model=rootNode, adapter=parent,
+                         highlight=False)
 
         self.__tip = tooltip.SimpleToolTip(self)
         self.selectCommand = onSelect
@@ -60,17 +64,14 @@ class SquareMap(tooltip.ToolTipMixin, squaremap.SquareMap):
         event.Skip()
 
     def OnBeforeShowToolTip(self, x, y):
-        item = squaremap.HotMapNavigator.findNodeAtPosition(
-            self.hot_map, (x, y)
-        )
+        item = squaremap.HotMapNavigator.findNodeAtPosition(self.hot_map, (x, y))
         if item is None or item == self.model:
             return None
         tooltipData = self.getItemTooltipData(item)
-        doShow = reduce(
-            operator.__or__,
-            list(map(bool, [data[1] for data in tooltipData])),
-            False,
-        )
+        doShow = reduce(operator.__or__,
+                        # map(bool, [data[1] for data in tooltipData]),
+                        list(map(bool, [data[1] for data in tooltipData])),
+                        False)
         if doShow:
             self.__tip.SetData(tooltipData)
             return self.__tip

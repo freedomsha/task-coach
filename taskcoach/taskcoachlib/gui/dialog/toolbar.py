@@ -16,19 +16,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
+import wx
+
+# from taskcoachlib.thirdparty.agw import hypertreelist as htl
+from wx.lib.agw import hypertreelist as htl
+
 from taskcoachlib import widgets
+
+from taskcoachlib.widgets import (
+    autowidth,
+    dialog,
+)  # Dialog est nécessaire pour la dernière classe ToolBarEditor.
 from taskcoachlib.help.balloontips import BalloonTipManager
 from taskcoachlib.gui import uicommand
 from taskcoachlib.i18n import _
-from wx.lib.agw import hypertreelist as htl
-import wx
+
+log = logging.getLogger(__name__)
 
 
-class _AutoWidthTree(
-    widgets.autowidth.AutoColumnWidthMixin, htl.HyperTreeList
-):
+class _AutoWidthTree(autowidth.AutoColumnWidthMixin, htl.HyperTreeList):
     def __init__(self, *args, **kwargs):
-        super(_AutoWidthTree, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.ToggleAutoResizing(True)
 
     def _get_MainWindow(self):
@@ -42,7 +51,7 @@ class _ToolBarEditorInterior(wx.Panel):
         self.__toolbar = toolbar
         self.__visible = toolbar.visibleUICommands()
 
-        super(_ToolBarEditorInterior, self).__init__(parent)
+        super().__init__(parent)
 
         vsizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -62,6 +71,7 @@ class _ToolBarEditorInterior(wx.Panel):
 
         self.__imgList = wx.ImageList(16, 16)
         self.__imgListIndex = dict()
+        # empty = wx.EmptyImage(16, 16)  # Deprecated
         empty = wx.Image(16, 16)
         empty.Replace(0, 0, 0, 255, 255, 255)
         self.__imgListIndex["nobitmap"] = self.__imgList.Add(
@@ -174,23 +184,29 @@ class _ToolBarEditorInterior(wx.Panel):
         self.__visibleSelection = None
         self.__draggedItem = None
         self.__draggingFromAvailable = False
-        self.__remainingCommands.Bind(
-            wx.EVT_TREE_SEL_CHANGED, self.__OnRemainingSelectionChanged
+        wx.EVT_TREE_SEL_CHANGED(
+            self.__remainingCommands,
+            wx.ID_ANY,
+            self.__OnRemainingSelectionChanged,
         )
-        self.__visibleCommands.Bind(
-            wx.EVT_TREE_SEL_CHANGED, self.__OnVisibleSelectionChanged
+        wx.EVT_TREE_SEL_CHANGED(
+            self.__visibleCommands, wx.ID_ANY, self.__OnVisibleSelectionChanged
+        )
+        wx.EVT_BUTTON(self.__hideButton, wx.ID_ANY, self.__onHide)
+        wx.EVT_BUTTON(self.__showButton, wx.ID_ANY, self.__onShow)
+        wx.EVT_BUTTON(self.__moveUpButton, wx.ID_ANY, self.__onMoveUp)
+        wx.EVT_BUTTON(self.__moveDownButton, wx.ID_ANY, self.__onMoveDown)
+        wx.EVT_TREE_BEGIN_DRAG(
+            self.__visibleCommands, wx.ID_ANY, self.__onBeginDrag
+        )
+        wx.EVT_TREE_END_DRAG(
+            self.__visibleCommands, wx.ID_ANY, self.__onEndDrag
+        )
+        wx.EVT_TREE_BEGIN_DRAG(
+            self.__remainingCommands, wx.ID_ANY, self.__OnBeginDrag2
         )
 
-        self.__hideButton.Bind(wx.EVT_BUTTON, self.__OnHide)
-        self.__showButton.Bind(wx.EVT_BUTTON, self.__OnShow)
-        self.__moveUpButton.Bind(wx.EVT_BUTTON, self.__OnMoveUp)
-        self.__moveDownButton.Bind(wx.EVT_BUTTON, self.__OnMoveDown)
-        self.__visibleCommands.Bind(wx.EVT_TREE_BEGIN_DRAG, self.__OnBeginDrag)
-        self.__visibleCommands.Bind(wx.EVT_TREE_END_DRAG, self.__OnEndDrag)
-        self.__remainingCommands.Bind(
-            wx.EVT_TREE_BEGIN_DRAG, self.__OnBeginDrag2
-        )
-
+        wx.LogDebug("_ToolBarEditorInterior : Appel de CallAfter.")
         wx.CallAfter(
             wx.GetTopLevelParent(self).AddBalloonTip,
             settings,
@@ -201,6 +217,7 @@ class _ToolBarEditorInterior(wx.Panel):
                 """Reorder toolbar buttons by drag and dropping them in this list."""
             ),
         )
+        wx.LogDebug("_ToolBarEditorInterior : CallAfter passé avec succès.")
 
     def __OnRemainingSelectionChanged(self, event):
         self.__remainingSelection = event.GetItem()
@@ -216,15 +233,14 @@ class _ToolBarEditorInterior(wx.Panel):
         self.__moveDownButton.Enable(idx != len(items) - 1)
         event.Skip()
 
-    def __OnHide(self, event):
+    def __onHide(self, event):
         idx = (
             self.__visibleCommands.GetRootItem()
             .GetChildren()
             .index(self.__visibleSelection)
         )
-        uiCommand = self.__visibleCommands.GetItemPyData(
-            self.__visibleSelection
-        )
+        # uiCommand = self.__visibleCommands.GetItemPyData(self.__visibleSelection)
+        uiCommand = self.__visibleCommands.GetItemData(self.__visibleSelection)
         self.__visibleCommands.Delete(self.__visibleSelection)
         self.__visibleSelection = None
         self.__hideButton.Enable(False)
@@ -233,30 +249,36 @@ class _ToolBarEditorInterior(wx.Panel):
             for child in self.__remainingCommands.GetRootItem().GetChildren()[
                 2:
             ]:
-                if self.__remainingCommands.GetItemPyData(child) == uiCommand:
+                # if self.__remainingCommands.GetItemPyData(child) == uiCommand:
+                if self.__remainingCommands.GetItemData(child) == uiCommand:
                     self.__remainingCommands.EnableItem(child, True)
                     break
         self.__HackPreview()
 
-    def __OnShow(self, event):
-        uiCommand = self.__remainingCommands.GetItemPyData(
+    def __onShow(self, event):
+        # uiCommand = self.__remainingCommands.GetItemPyData(self.__remainingSelection)
+        uiCommand = self.__remainingCommands.GetItemData(
             self.__remainingSelection
         )
         if uiCommand is None:
+            # item = self.__visibleCommands.AppendItem(self.__visibleCommands.GetRootItem(), _('Separator'))
             item = self.__visibleCommands.Append(
                 self.__visibleCommands.GetRootItem(), _("Separator")
             )
         elif isinstance(uiCommand, int):
+            # item = self.__visibleCommands.AppendItem(self.__visibleCommands.GetRootItem(), _('Spacer'))
             item = self.__visibleCommands.Append(
                 self.__visibleCommands.GetRootItem(), _("Spacer")
             )
         else:
+            # item = self.__visibleCommands.AppendItem(self.__visibleCommands.GetRootItem(), uiCommand.getHelpText())
             item = self.__visibleCommands.Append(
                 self.__visibleCommands.GetRootItem(), uiCommand.getHelpText()
             )
             self.__visibleCommands.SetItemImage(
                 item, self.__imgListIndex.get(uiCommand.bitmap, -1)
             )
+        # self.__visibleCommands.SetItemPyData(item, uiCommand)
         self.__visibleCommands.SetItemData(item, uiCommand)
         self.__visible.append(uiCommand)
         if isinstance(uiCommand, uicommand.UICommand):
@@ -267,6 +289,40 @@ class _ToolBarEditorInterior(wx.Panel):
             self.__showButton.Enable(False)
         self.__HackPreview()
 
+    def __GetItemTextAndImage(self, uiCommand):
+        """Get display text and image index for a uiCommand."""
+        if uiCommand is None:
+            return _("Separator"), self.__imgListIndex.get("nobitmap", -1)
+        elif isinstance(uiCommand, int):
+            return _("Spacer"), self.__imgListIndex.get("nobitmap", -1)
+        else:
+            return uiCommand.getHelpText(), self.__imgListIndex.get(
+                uiCommand.bitmap, -1
+            )
+
+    def __UpdateRemainingItemState(self, uiCommand, enabled):
+        """Update the visual state of an item in the remaining list."""
+        if not isinstance(uiCommand, uicommand.UICommand):
+            return
+        targetName = uiCommand.uniqueName()
+        for i, cmd in enumerate(self.__remainingData):
+            if (
+                isinstance(cmd, uicommand.UICommand)
+                and cmd.uniqueName() == targetName
+            ):
+                if enabled:
+                    # Use system default text color
+                    self.__remainingCommands.SetItemTextColour(
+                        i,
+                        wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT),
+                    )
+                else:
+                    self.__remainingCommands.SetItemTextColour(
+                        i, wx.Colour(150, 150, 150)
+                    )
+                self.__remainingCommands.RefreshItem(i)
+                break
+
     def __Swap(self, delta):
         items = self.__visibleCommands.GetRootItem().GetChildren()
         index = items.index(self.__visibleSelection)
@@ -276,6 +332,7 @@ class _ToolBarEditorInterior(wx.Panel):
         item = self.__visibleCommands.InsertItem(
             self.__visibleCommands.GetRootItem(), index + delta, text
         )
+        # self.__visibleCommands.SetItemPyData(item, data)
         self.__visibleCommands.SetItemData(item, data)
         if isinstance(data, uicommand.UICommand):
             self.__visibleCommands.SetItemImage(
@@ -288,17 +345,17 @@ class _ToolBarEditorInterior(wx.Panel):
         )
         self.__HackPreview()
 
-    def __OnMoveUp(self, event):
+    def __onMoveUp(self, event):
         self.__Swap(-1)
 
-    def __OnMoveDown(self, event):
+    def __onMoveDown(self, event):
         self.__Swap(1)
 
     def __OnBeginDrag2(self, event):
         self.__draggingFromAvailable = True
         event.Veto()
 
-    def __OnBeginDrag(self, event):
+    def __onBeginDrag(self, event):
         if (
             self.__draggingFromAvailable
             or event.GetItem() == self.__visibleCommands.GetRootItem()
@@ -309,7 +366,7 @@ class _ToolBarEditorInterior(wx.Panel):
             event.Allow()
         self.__draggingFromAvailable = False
 
-    def __OnEndDrag(self, event):
+    def __onEndDrag(self, event):
         if (
             event.GetItem() is not None
             and event.GetItem() != self.__draggedItem
@@ -347,6 +404,7 @@ class _ToolBarEditorInterior(wx.Panel):
             item = self.__visibleCommands.InsertItem(
                 self.__visibleCommands.GetRootItem(), targetIndex, text
             )
+            # self.__visibleCommands.SetItemPyData(item, uiCommand)
             self.__visibleCommands.SetItemData(item, uiCommand)
             self.__visibleCommands.SetItemImage(item, img)
             self.__HackPreview()
@@ -375,13 +433,19 @@ class _ToolBarEditorInterior(wx.Panel):
                 else:
                     text = uiCommand.getHelpText()
 
-                item = tree.AppendItem(root, text)
+                item = tree.AppendItem(
+                    root, text
+                )  # HyperTreeList utilise AppendItem()
+                # item = tree.Append(root, text)
                 if uiCommand is not None and not isinstance(uiCommand, int):
                     tree.SetItemImage(
                         item, self.__imgListIndex.get(uiCommand.bitmap, -1)
                     )
                     tree.EnableItem(item, enableCallback(uiCommand))
-                tree.SetItemData(item, uiCommand)
+                tree.SetItemPyData(
+                    item, uiCommand
+                )  # HyperTreeList utilise plutôt SetPyData
+                # tree.SetPyData(item, uiCommand)
         finally:
             tree.Thaw()
 
@@ -420,11 +484,41 @@ class _ToolBarEditorInterior(wx.Panel):
         return self.__toolbar.uiCommands(cache=False)
 
 
-class ToolBarEditor(BalloonTipManager, widgets.Dialog):
+class _ListDropTarget(wx.DropTarget):
+    """Drop target for the command lists."""
+
+    def __init__(self, interior, isVisible=True):
+        super().__init__()
+        self.__interior = interior
+        self.__isVisible = isVisible
+        self.__data = wx.TextDataObject()
+        self.SetDataObject(self.__data)
+
+    def OnDragOver(self, x, y, defResult):
+        if self.__isVisible:
+            self.__interior.HandleDragOver(x, y)
+        return wx.DragMove
+
+    def OnDrop(self, x, y):
+        return True
+
+    def OnData(self, x, y, defResult):
+        if self.GetData():
+            if self.__isVisible:
+                self.__interior.HandleDrop(x, y)
+            else:
+                self.__interior.HandleDropOnRemaining(x, y)
+        return defResult
+
+    def OnLeave(self):
+        self.__interior.ClearDropLine()
+
+
+class ToolBarEditor(BalloonTipManager, dialog.Dialog):
     def __init__(self, toolbar, settings, *args, **kwargs):
         self.__toolbar = toolbar
         self.__settings = settings
-        super(ToolBarEditor, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.SetClientSize(wx.Size(900, 700))
         self.CentreOnParent()
 
@@ -433,6 +527,38 @@ class ToolBarEditor(BalloonTipManager, widgets.Dialog):
             self.__toolbar, self.__settings, self._panel
         )
 
+    def createButtons(self):
+        # Create buttons with dialog as parent
+        resetButton = wx.Button(self, wx.ID_ANY, _("Reset to Default"))
+        resetButton.SetToolTip(
+            wx.ToolTip(_("Restore the toolbar to its default configuration"))
+        )
+        resetButton.Bind(wx.EVT_BUTTON, self.__OnReset)
+
+        cancelButton = wx.Button(self, wx.ID_CANCEL, _("Cancel"))
+        cancelButton.Bind(wx.EVT_BUTTON, self.cancel)
+
+        okButton = wx.Button(self, wx.ID_OK, _("OK"))
+        okButton.Bind(wx.EVT_BUTTON, self.ok)
+
+        # Layout: --- stretch --- [Reset] [50px gap] [Cancel] [OK]
+        # All buttons right-aligned, with extra space before Cancel/OK
+        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
+        buttonSizer.AddStretchSpacer(1)
+        buttonSizer.Add(
+            resetButton, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 50
+        )
+        buttonSizer.Add(
+            cancelButton, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8
+        )
+        buttonSizer.Add(okButton, 0, wx.ALIGN_CENTER_VERTICAL)
+
+        self.SetButtonSizer(buttonSizer)
+        return buttonSizer
+
+    def __OnReset(self, event):
+        self._interior.resetToDefault()
+
     def ok(self, event=None):
         self.__toolbar.savePerspective(self._interior.getToolBarPerspective())
-        super(ToolBarEditor, self).ok(event=event)
+        super().ok(event=event)

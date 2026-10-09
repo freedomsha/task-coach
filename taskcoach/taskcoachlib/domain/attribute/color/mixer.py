@@ -16,8 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import range
+# from builtins import object
 
-class ColorMixer(object):
+
+class ColorMixer(object):  # nouvelle classe mélange de couleur
     @staticmethod
     def mix(colors):
         colorSums, colorCount = [0, 0, 0, 0], 0
@@ -31,7 +34,7 @@ class ColorMixer(object):
                     colorSums[colorIndex] += color[colorIndex]
                 colorCount += 1
         return (
-            tuple(colorSum / colorCount for colorSum in colorSums)
+            tuple(colorSum // colorCount for colorSum in colorSums)
             if colorCount
             else None
         )

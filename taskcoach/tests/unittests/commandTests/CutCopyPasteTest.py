@@ -16,13 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from unittests import asserts
+# from __future__ import absolute_import
+
+from tests.unittests import asserts
 from .CommandTestCase import CommandTestCase
-from .TaskCommandsTest import (
-    TaskCommandTestCase,
-    CommandWithChildrenTestCase,
-    CommandWithEffortTestCase,
-)
+from .TaskCommandsTest import TaskCommandTestCase, CommandWithChildrenTestCase, \
+    CommandWithEffortTestCase
 from taskcoachlib import command
 from taskcoachlib.domain import note
 
@@ -68,45 +67,32 @@ class CutCommandWithTasksTest(TaskCommandTestCase):
 class CutCommandWithTasksWithChildrenTest(CommandWithChildrenTestCase):
     def testCutParent(self):
         self.cut([self.parent])
-        self.assertDoUndoRedo(
-            lambda: self.assertTaskList([self.task1]),
-            lambda: self.assertTaskList(self.originalList),
-        )
+        self.assertDoUndoRedo(lambda: self.assertTaskList([self.task1]),
+                              lambda: self.assertTaskList(self.originalList))
 
     def testCutChild(self):
         self.cut([self.child])
         self.assertDoUndoRedo(
-            lambda: (
-                self.assertTaskList([self.task1, self.child2, self.parent]),
-                self.assertEqual([self.child2], self.parent.children()),
-            ),
-            lambda: (
-                self.assertTaskList(self.originalList),
-                self.failUnlessParentAndChild(self.parent, self.child),
-            ),
-        )
+            lambda: (self.assertTaskList([self.task1, self.child2, self.parent]),
+                     self.assertEqual([self.child2], self.parent.children())),
+            lambda: (self.assertTaskList(self.originalList),
+                     self.failUnlessParentAndChild(self.parent, self.child)))
 
     def testCutParentAndChild(self):
         self.cut([self.child, self.parent])
-        self.assertDoUndoRedo(
-            lambda: self.assertTaskList([self.task1]),
-            lambda: self.assertTaskList(self.originalList),
-        )
+        self.assertDoUndoRedo(lambda: self.assertTaskList([self.task1]),
+                              lambda: self.assertTaskList(self.originalList))
 
 
 class CutCommandWithEffortTest(CommandWithEffortTestCase):
     def testCutEfforts_WithoutSelection(self):
         self.cut()
-        self.assertDoUndoRedo(
-            lambda: self.assertEffortList(self.originalEffortList)
-        )
+        self.assertDoUndoRedo(lambda: self.assertEffortList(self.originalEffortList))
 
     def testCutEfforts_Selection(self):
         self.cut([self.effort1])
-        self.assertDoUndoRedo(
-            lambda: self.assertEffortList([self.effort2]),
-            lambda: self.assertEffortList(self.originalEffortList),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEffortList([self.effort2]),
+                              lambda: self.assertEffortList(self.originalEffortList))
 
     def testCutEfforts_All(self):
         self.cut("all")
@@ -121,9 +107,7 @@ class NoteCommandTestCase(CommandTestCase, asserts.Mixin):
         super(NoteCommandTestCase, self).setUp()
         self.note1 = note.Note()
         self.note2 = note.Note()
-        self.list = self.noteContainer = note.NoteContainer(
-            [self.note1, self.note2]
-        )
+        self.list = self.noteContainer = note.NoteContainer([self.note1, self.note2])
         self.original = note.NoteContainer([self.note1, self.note2])
 
 
@@ -134,10 +118,8 @@ class CutCommandWithNotes(NoteCommandTestCase):
 
     def testCutNotes_Selection(self):
         self.cut([self.note1])
-        self.assertDoUndoRedo(
-            lambda: self.assertNoteContainer(note.NoteContainer([self.note2])),
-            lambda: self.assertNoteContainer(self.original),
-        )
+        self.assertDoUndoRedo(lambda: self.assertNoteContainer(note.NoteContainer([self.note2])),
+                              lambda: self.assertNoteContainer(self.original))
 
     def testCutNotes_All(self):
         self.cut("all")
@@ -155,18 +137,15 @@ class PasteCommandWithTasksTest(TaskCommandTestCase):
     def testPaste(self):
         self.cut([self.task1])
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual(1, len(self.taskList)),
-            self.assertEmptyTaskList,
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual(1, len(self.taskList)),
+                              self.assertEmptyTaskList)
 
     def testClipboardIsNotEmptyAfterPaste(self):
         self.cut([self.task1])
         self.paste()
         # pylint: disable=W0212
         self.assertDoUndoRedo(
-            lambda: self.assertEqual(1, len(command.Clipboard()._contents))
-        )
+            lambda: self.assertEqual(1, len(command.Clipboard()._contents)))
 
 
 class PasteCommandWithNotesTest(NoteCommandTestCase):
@@ -177,67 +156,48 @@ class PasteCommandWithNotesTest(NoteCommandTestCase):
     def testPaste(self):
         self.cut([self.note1])
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual(2, len(self.original)),
-            lambda: self.assertNoteContainer([self.note2]),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual(2, len(self.original)),
+                              lambda: self.assertNoteContainer([self.note2]))
 
 
 class PasteCommandWithEffortTest(CommandWithEffortTestCase):
     def testPasteWithoutPreviousCut(self):
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: self.assertEffortList(self.originalEffortList)
-        )
+        self.assertDoUndoRedo(lambda: self.assertEffortList(self.originalEffortList))
 
     def testPaste(self):
         self.cut([self.effort1])
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual(2, len(self.originalEffortList)),
-            lambda: self.assertEqualLists([self.effort2], self.effortList),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual(2, len(self.originalEffortList)),
+                              lambda: self.assertEqualLists([self.effort2], self.effortList))  # a remplacer par assertListEqual
 
     def testClipboardIsNotEmptyAfterPaste(self):
         self.cut([self.effort1])
         self.paste()
         # pylint: disable=W0212
         self.assertDoUndoRedo(
-            lambda: self.assertEqual(
-                [self.effort1], command.Clipboard()._contents
-            )
-        )
+            lambda: self.assertEqual([self.effort1], command.Clipboard()._contents))
 
 
 class PasteCommandWithTasksWithChildrenTest(CommandWithChildrenTestCase):
     def testCutAndPasteChild(self):
         self.cut([self.child])
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual(5, len(self.taskList)),
-            lambda: self.assertTaskList(
-                [self.task1, self.parent, self.child2]
-            ),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual(5, len(self.taskList)),
+                              lambda: self.assertTaskList([self.task1, self.parent, self.child2]))
 
     def testCutAndPasteParentAndChild(self):
         self.cut([self.parent, self.child])
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual(5, len(self.taskList)),
-            lambda: self.assertTaskList([self.task1]),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual(5, len(self.taskList)),
+                              lambda: self.assertTaskList([self.task1]))
 
     def testCutAndPasteParentAndGrandChild(self):
         self.cut([self.parent, self.grandchild])
         self.paste()
-        self.assertDoUndoRedo(
-            lambda: (
-                self.assertEqual(5, len(self.taskList)),
-                self.failUnlessParentAndChild(self.parent, self.child),
-            ),
-            lambda: self.assertTaskList([self.task1]),
-        )
+        self.assertDoUndoRedo(lambda: (self.assertEqual(5, len(self.taskList)),
+                                       self.failUnlessParentAndChild(self.parent, self.child)),
+                              lambda: self.assertTaskList([self.task1]))
 
 
 class PasteIntoTaskCommandTest(CommandWithChildrenTestCase):
@@ -245,29 +205,20 @@ class PasteIntoTaskCommandTest(CommandWithChildrenTestCase):
         self.cut([self.child])
         self.paste([self.task1])
         self.assertDoUndoRedo(
-            lambda: (
-                self.assertEqual(5, len(self.taskList)),
-                self.assertEqual(1, len(self.task1.children())),
-                self.failUnlessParentAndChild(self.child, self.grandchild),
-            ),
-            lambda: (
-                self.assertEqual(1, len(self.parent.children())),
-                self.assertEqual([], self.task1.children()),
-            ),
-        )
+            lambda: (self.assertEqual(5, len(self.taskList)),
+                     self.assertEqual(1, len(self.task1.children())),
+                     self.failUnlessParentAndChild(self.child, self.grandchild)),
+            lambda: (self.assertEqual(1, len(self.parent.children())),
+                     self.assertEqual([], self.task1.children())))
 
     def testPasteExtraChild(self):
         self.cut([self.task1])
         self.paste([self.parent])
         self.assertDoUndoRedo(
             lambda: self.assertEqual(3, len(self.parent.children())),
-            lambda: (
-                self.assertEqual(2, len(self.parent.children())),
-                self.assertTaskList(
-                    [self.parent, self.child, self.child2, self.grandchild]
-                ),
-            ),
-        )
+            lambda: (self.assertEqual(2, len(self.parent.children())),
+                     self.assertTaskList([self.parent, self.child, self.child2,
+                                          self.grandchild])))
 
     def testPasteChild_MarksNewParentAsNotCompleted(self):
         self.settings.setboolean(
@@ -297,8 +248,7 @@ class PasteIntoTaskCommandWithEffortTest(CommandWithEffortTestCase):
         self.paste([self.task2])
         self.assertDoUndoRedo(
             lambda: self.assertEqual(2, len(self.task2.efforts())),
-            lambda: self.assertEqual(1, len(self.task1.efforts())),
-        )
+            lambda: self.assertEqual(1, len(self.task1.efforts())))
 
 
 class CutAndPasteTasksIntegrationTest(TaskCommandTestCase):
@@ -353,8 +303,7 @@ class CopyCommandWithTasksTest(TaskCommandTestCase):
         self.copy([])
         self.assertDoUndoRedo(
             lambda: self.assertEqual([], command.Clipboard().get()[0]),
-            self.assertTaskList(self.originalList),
-        )
+            self.assertTaskList(self.originalList))
 
     def testCopyTask(self):
         self.copy([self.task1])
@@ -389,8 +338,7 @@ class CopyCommandWithEffortTest(CommandWithEffortTestCase):
         self.copy([])
         self.assertDoUndoRedo(
             lambda: self.assertEqual([], command.Clipboard().get()[0]),
-            self.assertEffortList(self.originalEffortList),
-        )
+            self.assertEffortList(self.originalEffortList))
 
     def testCopyEffort(self):
         self.copy([self.effort1])
@@ -419,10 +367,8 @@ class CopyCommandWithEffortTest(CommandWithEffortTestCase):
 
 
 class DragAndDropWithTasksTest(CommandWithChildrenTestCase):
-    def dragAndDrop(self, draggedItems, dropItem):  # pylint: disable=W0222
-        command.DragAndDropTaskCommand(
-            self.taskList, draggedItems, drop=[dropItem]
-        ).do()
+    def dragAndDrop(self, draggedItems, dropItem):  # pylint: disable=W0222 (dropTarget, tasks) or (draggedItems, dropItem) ?
+        command.DragAndDropTaskCommand(self.taskList, draggedItems, drop=[dropItem]).do()
 
     def testDragAndDropRootTask(self):
         self.taskList.append(self.task2)

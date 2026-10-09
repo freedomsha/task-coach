@@ -16,21 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
-from unittests import asserts
+from tests import tctest
+from tests.unittests import asserts
 from taskcoachlib import patterns, command, config
 from taskcoachlib.domain import task
 
 
-class CommandTestCase(test.wxTestCase, asserts.CommandAssertsMixin):
+class CommandTestCase(tctest.wxTestCase, asserts.CommandAssertsMixin):
     list = []
 
     def setUp(self):
-        super(CommandTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = config.Settings(load=False)
 
     def tearDown(self):
-        super(CommandTestCase, self).tearDown()
+        super().tearDown()
         patterns.CommandHistory().clear()
 
     def undo(self):

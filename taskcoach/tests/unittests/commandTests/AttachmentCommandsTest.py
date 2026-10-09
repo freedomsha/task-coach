@@ -16,16 +16,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import absolute_import
+#
+# from builtins import object
 from taskcoachlib import command
 from taskcoachlib.domain import attachment, task, note, category
 from .CommandTestCase import CommandTestCase
 
 
 class AddAttachmentTestsMixin(object):
+    # def __init__(self):
+    #     self.attachment = None
+
     def addAttachment(self, selectedItems=None):
         self.attachment = attachment.FileAttachment(
             "attachment"
         )  # pylint: disable=W0201
+        # print(f"AttachmentCommandsTest.AddAttachmentTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec attachements: {self.attachments}, attachment={self.attachment}")
+        print(
+            f"AttachmentCommandsTest.AddAttachmentTestsMixin.addAttachment : 🛠️ DEBUG - Création d'une tâche self={self} avec attachment={self.attachment}"
+        )
+
         addAttachmentCommand = command.AddAttachmentCommand(
             self.container, selectedItems or [], attachments=[self.attachment]
         )
@@ -55,10 +66,17 @@ class AddAttachmentTestsMixin(object):
 
 
 class AddAttachmentTestCase(CommandTestCase):
-    ItemClass = ContainerClass = lambda subject: "Subclass responsibility"
+    # ItemClass = ContainerClass = lambda subject: "Subclass responsibility"
+    # @staticmethod
+    def ItemClass(subject):
+        return "Subclass responsibility"
+
+    # @staticmethod
+    def ContainerClass(subject):
+        return "Subclass responsibility"
 
     def setUp(self):
-        super(AddAttachmentTestCase, self).setUp()
+        super().setUp()
         self.item1 = self.ItemClass(subject="item1")
         self.item2 = self.ItemClass(subject="item2")
         self.container = self.ContainerClass([self.item1, self.item2])

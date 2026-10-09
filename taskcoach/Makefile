@@ -26,14 +26,17 @@ DOT="dot"       # dot should be on the path
 # make it the default does not seem to work on Lion).
 
 ifeq "$(shell uname -s)" "Darwin"
-BITS=$(shell python -c "import struct; print len(struct.pack('L', 0))")
+BITS=$(shell python -c "import struct; print(len(struct.pack('L', 0)))")
 ifeq "$(BITS)" "8"
-    PYTHON?="python-32"
+    # PYTHON?="python-32"
+    PYTHON?="python3-32"
 else
-    PYTHON?="python"
+    # PYTHON?="python"
+    PYTHON?="python3"
 endif
 else
-    PYTHON?="python"
+    # PYTHON?="python"
+    PYTHON?="python3"
 endif
 
 ifeq (CYGWIN_NT,$(findstring CYGWIN_NT,$(shell uname)))
@@ -193,35 +196,47 @@ portableapps: py2exe
 	$(PORTABLEAPPSINSTALLER) $(TCPORTABLE)
 	mv build/TaskCoachPortable_$(TCVERSION).paf.exe dist
 
-icons: icons.in/iconmap.py icons.in/nuvola.zip icons.in/splash.png
-	cd icons.in; $(PYTHON) make.py
+icons: taskcoachlib/gui/icons.py
 
-templates: 
-	cd templates.in; $(PYTHON) make.py
+templates: taskcoachlib/persistence/xml/templates.py
 
 thirdpartymodules:
 	# cd thirdparty; tar xzf python-dateutil-1.5.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty python-dateutil-1.5/dateutil
-	# cd thirdparty; tar xzf desktop-0.4.2.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty desktop-0.4.2/desktop
-	cd thirdparty; tar xzf keyring-3.7.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty keyring-3.7/keyring
-	cd thirdparty; tar xzf lockfile-0.12.2.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty lockfile-0.12.2/lockfile
-	cd thirdparty; tar xzf PyPubSub-3.3.0.tar.gz --strip-components=2 -C ../taskcoachlib/thirdparty PyPubSub-3.3.0/src/pubsub
-	cd thirdparty; tar xzf SquareMap-1.0.3.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty SquareMap-1.0.3/squaremap
-	# cd thirdparty; tar xzf python-ntlm-40080cff37ab32570f9bb50bad0a46b957409c18.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty python-ntlm/ntlm
+	# python-dateutil-2.8.2 is Now used as a venv package
+	# cd thirdparty; tar xzf keyring-3.7.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty keyring-3.7/keyring
+	# keyring-24.3 is Now used as a venv package
+	# cd thirdparty; tar xzf SquareMap-1.0.3.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty SquareMap-1.0.3/squaremap
+	# SquareMap3-1.0.8 is Now used as a venv package
+	cd thirdparty; tar xzf python-ntlm-40080cff37ab32570f9bb50bad0a46b957409c18.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty python-ntlm/ntlm
+	# python-ntlm3 1.0.2 don't have IMAPNtlmAuthHandler
 	# cd thirdparty; tar xzf wxScheduler-r151.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty wxScheduler/wxScheduler
+	# TODO: trouver une alternative à wxScheduler
 	# cd thirdparty; tar xzf aui-r72315.tar.gz -C ../taskcoachlib/thirdparty
-	cd thirdparty; tar xzf WMI-1.4.9.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty WMI-1.4.9/wmi.py
+	# aui2-0.1.0 is Now used in venv
+	# cd thirdparty; tar xzf WMI-1.4.9.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty WMI-1.4.9/wmi.py
+	# WMI-1.5.1 is Now used in venv
 	# cd thirdparty; tar xzf pyparsing-1.5.5.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pyparsing-1.5.5/pyparsing_py2.py
+	# pyparsing-3.1.1 is Now used in venv
 	# mv taskcoachlib/thirdparty/pyparsing_py2.py taskcoachlib/thirdparty/pyparsing.py
-	cd thirdparty; tar xzf pybonjour-1.1.1.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pybonjour-1.1.1/pybonjour.py
+	# cd thirdparty; tar xzf pybonjour-1.1.1.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pybonjour-1.1.1/pybonjour.py
 	# cd thirdparty; tar xzf agw-r70845.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty agw/customtreectrl.py
+	# agw-0.4.4 is Now used in venv
 	# cd thirdparty; tar xzf agw-r70819.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty agw/hypertreelist.py
-	cd thirdparty; tar xzf gntp-d639fa2e981fe41196a5115ad64320b5061f004b.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty gntp/gntp
-	cd thirdparty; tar xzf pyxdg-0.25.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pyxdg-0.25/xdg
+	# TODO: vérifier si agw customtreectrl et hypertreelist fonctionnent sans patches
+	# cd thirdparty; tar xzf gntp-d639fa2e981fe41196a5115ad64320b5061f004b.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty gntp/gntp
+	# gntp-1.0.3 is Now used in venv
+	# cd thirdparty; tar xzf pyxdg-0.25.tar.gz --strip-components=1 -C ../taskcoachlib/thirdparty pyxdg-0.25/xdg
+	# pyxdg-0.28 is Now used in venv
 	# cd taskcoachlib/thirdparty; patch -p1 < ../../thirdparty/patches/customtreectrl.diff
 	# cd taskcoachlib/thirdparty; patch -p1 < ../../thirdparty/patches/hypertreelist-headers.diff
 	# cd taskcoachlib/thirdparty; patch -p1 < ../../thirdparty/patches/hypertreelist.diff
-	cd taskcoachlib/thirdparty; patch -p2 < ../../thirdparty/patches/pypubsub.diff
 	$(PYTHON) fixinit.py
+
+taskcoachlib/gui/icons.py: icons.in/iconmap.py icons.in/nuvola.zip icons.in/splash.png
+	cd icons.in; $(PYTHON) make.py
+
+taskcoachlib/persistence/xml/templates.py:
+	cd templates.in; $(PYTHON) make.py
 
 website: changes
 	cd website.in; $(PYTHON) make.py; cd ..
@@ -236,12 +251,27 @@ dot:
 	$(DOT) -Tpng -Kdot -O doc/*.dot
 
 i18n: templates taskcoachlib/i18n/nl.py
+	msgfmt -o taskcoachlib/i18n/locales/en_GB/LC_MESSAGES/lokalise.mo i18n.in/en_GB.po
+	# ToDo: Les fichiers .po sont à refaire après
+	# msgfmt -o taskcoachlib/i18n/locales/fr/LC_MESSAGES/lokalise.mo i18n.in/fr.po
+	# i18n.in/fr.po:7176:7: erreur de syntaxe
+	# msgfmt -o taskcoachlib/i18n/locales/nl/LC_MESSAGES/lokalise.mo i18n.in/nl.po
 
 taskcoachlib/i18n/nl.py: i18n.in/messages.pot $(shell find i18n.in -name '*.po')
+# Error 1
+# ModuleNotFoundError: No module named 'taskcoachlib'
 	cd i18n.in; $(PYTHON) make.py
 
 i18n.in/messages.pot: $(shell find taskcoachlib -name '*.py' | grep -v i18n)
+# Error 1
+# SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 139-140: truncated \uXXXX escape
 	$(PYTHON) tools/pygettext.py --output-dir i18n.in taskcoachlib
+
+AppImageBuilder.yml: AppImageBuilder.yml.in
+	sed -e "s/@VERSION@/$(TCVERSION)/g" AppImageBuilder.yml.in > AppImageBuilder.yml
+
+appimage: prepare AppImageBuilder.yml
+	appimage-builder --recipe AppImageBuilder.yml
 
 changes:
 	$(PYTHON) changes.in/make.py text > CHANGES.txt
@@ -250,7 +280,7 @@ changes:
 	$(PYTHON) changes.in/make.py html > website.in/all_changes.html
 
 unittests: thirdpartymodules icons templates
-	cd tests; $(PYTHON) test.py --unittests --verbose
+	cd tests; $(PYTHON) test.py --unittests
 
 integrationtests: thirdpartymodules icons templates
 	cd tests; $(PYTHON) test.py --integrationtests

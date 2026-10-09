@@ -1,19 +1,37 @@
 # deltaTime.py
 #
-# Parser to convert a conversational time reference such as "in a minute" or
-# "noon tomorrow" and convert it to a Python datetime.  The returned
-# ParseResults object contains the results name "timeOffset" containing
-# the timedelta, and "calculatedTime" containing the computed time relative
-# to datetime.now().
+# Analyseur pour convertir une référence temporelle conversationnelle telle que "dans une minute" ou
+# "midi demain" et la convertir en date/heure Python.  L'objet ParseResults renvoyé
+# contient le nom des résultats "timeOffset" contenant
+# le timedelta et "calculatedTime" contenant le temps calculé relatif
+# à datetime.Now().
 #
 # Copyright 2010, by Paul McGuire
 #
 
+# TODO : recopier la dernière car la source est
+# https://github.com/pyparsing/pyparsing/blob/master/examples/delta_time.py
+
+# from __future__ import print_function
+# from builtins import map
+# from past.builtins import basestring
 from datetime import datetime, timedelta
-from pyparsing import *
+
+# from pyparsing import *
+from pyparsing import (
+    CaselessLiteral,
+    Combine,
+    Group,
+    nums,
+    oneOf,
+    Optional,
+    replaceWith,
+    Suppress,
+    Word,
+)
 import calendar
 
-__all__ = ["nlTimeExpression"]
+__all__ = ["time_expression", "nlTimeExpression"]
 
 daynames = [
     "monday",
@@ -74,6 +92,7 @@ def convertToAbsTime(toks):
     else:
         day = datetime(now.year, now.month, now.day)
     if "timeOfDay" in toks:
+        # if isinstance(toks.timeOfDay, basestring):
         if isinstance(toks.timeOfDay, str):
             timeOfDay = {
                 "now": timedelta(
@@ -117,10 +136,17 @@ def calculateTime(toks):
 
 # grammar definitions
 CL = CaselessLiteral
+# ajout de list
 today, tomorrow, yesterday, noon, midnight, now = list(
     map(CL, "today tomorrow yesterday noon midnight now".split())
 )
-plural = lambda s: Combine(CL(s) + Optional(CL("s")))
+
+
+# plural = lambda s: Combine(CL(s) + Optional(CL("s")))
+def plural(s):
+    return Combine(CL(s) + Optional(CL("s")))
+
+
 week, day, hour, minute, second = list(
     map(plural, "week day hour minute second".split())
 )
@@ -240,7 +266,8 @@ if __name__ == "__main__":
     next Sunday at 2pm""".splitlines()
 
     for t in tests:
-        print(t, "(relative to %s)" % datetime.now())
+        # print(t, "(relative to %s)" % datetime.now())
+        print(t, f"(relative to {datetime.now()})")
         res = nlTimeExpression.parseString(t)
         if "calculatedTime" in res:
             print(res.calculatedTime)

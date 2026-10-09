@@ -70,10 +70,10 @@ the default locations of Netscape and the NCSA HTTP daemon.
 - We follow links indicated by <A>, <FRAME> and <IMG> tags.  We also
 honor the <BASE> tag.
 
-- We now check internal NAME anchor links, as well as toplevel links.
+- We Now check internal NAME anchor links, as well as toplevel links.
 
-- Checking external links is now done by default; use -x to *disable*
-this feature.  External links are now checked during normal
+- Checking external links is Now done by default; use -x to *disable*
+this feature.  External links are Now checked during normal
 processing.  (XXX The status of a checked link could be categorized
 better.  Later...)
 
@@ -102,7 +102,14 @@ rooturl   -- URL to start checking
 
 """
 
-
+# from __future__ import print_function
+#
+#
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import str
+# from builtins import object
+# from future.utils import raise_
 __version__ = "$Revision: 1.3 $"
 
 
@@ -113,9 +120,10 @@ import io
 import getopt
 import pickle
 
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.error
 import urllib.parse
-import sgmllib
+import sgmllib  # ?
 import cgi
 
 import mimetypes
@@ -193,13 +201,10 @@ def main():
     else:
         c = Checker()
 
-    c.setflags(
-        checkext=checkext,
-        verbose=verbose,
-        maxpage=maxpage,
-        roundsize=roundsize,
-        nonames=nonames,
-    )
+    c.setflags(checkext=checkext, verbose=verbose,
+               maxpage=maxpage, roundsize=roundsize,
+               nonames=nonames
+               )
 
     if not restart and not args:
         args.append(DEFROOT)
@@ -238,9 +243,8 @@ def main():
             if dumpfile == DUMPFILE:
                 print("Use ``%s -R'' to restart." % sys.argv[0])
             else:
-                print(
-                    "Use ``%s -R -d %s'' to restart." % (sys.argv[0], dumpfile)
-                )
+                print("Use ``%s -R -d %s'' to restart." % (sys.argv[0],
+                                                           dumpfile))
 
 
 def load_pickle(dumpfile=DUMPFILE, verbose=VERBOSE):
@@ -255,6 +259,7 @@ def load_pickle(dumpfile=DUMPFILE, verbose=VERBOSE):
     return c
 
 
+# class Checker(object):
 class Checker:
 
     checkext = CHECKEXT
@@ -317,15 +322,13 @@ class Checker:
     def addroot(self, root, add_to_do=1):
         if root not in self.roots:
             troot = root
-            scheme, netloc, path, params, query, fragment = (
+            scheme, netloc, path, params, query, fragment = \
                 urllib.parse.urlparse(root)
-            )
             i = path.rfind("/") + 1
             if 0 < i < len(path):
                 path = path[:i]
-                troot = urllib.parse.urlunparse(
-                    (scheme, netloc, path, params, query, fragment)
-                )
+                troot = urllib.parse.urlunparse((scheme, netloc, path,
+                                                 params, query, fragment))
             self.roots.append(troot)
             self.addrobot(root)
             if add_to_do:
@@ -351,17 +354,15 @@ class Checker:
             self.note(0, "\nRound %d (%s)\n", self.round, self.status())
             urls = list(self.todo.keys())
             urls.sort()
-            del urls[self.roundsize :]
+            del urls[self.roundsize:]
             for url in urls:
                 self.dopage(url)
 
     def status(self):
         return "%d total, %d to do, %d done, %d bad" % (
-            len(self.todo) + len(self.done),
-            len(self.todo),
-            len(self.done),
-            len(self.bad),
-        )
+            len(self.todo)+len(self.done),
+            len(self.todo), len(self.done),
+            len(self.bad))
 
     def report(self):
         self.message("")
@@ -388,17 +389,14 @@ class Checker:
                 self.message("Error in %s", source)
             # Call self.format_url() instead of referring
             # to the URL directly, since the URLs in these
-            # triples is now a (URL, fragment) pair. The value
+            # triples is Now a (URL, fragment) pair. The value
             # of the "source" variable comes from the list of
             # origins, and is a URL, not a pair.
             for url, rawlink, msg in triples:
-                if rawlink != self.format_url(url):
-                    s = " (%s)" % rawlink
-                else:
-                    s = ""
-                self.message(
-                    "  HREF %s%s\n    msg %s", self.format_url(url), s, msg
-                )
+                if rawlink != self.format_url(url): s = " (%s)" % rawlink
+                else: s = ""
+                self.message("  HREF %s%s\n    msg %s",
+                             self.format_url(url), s, msg)
 
     def dopage(self, url_pair):
 
@@ -406,12 +404,8 @@ class Checker:
         # url_pair for clarity.
         if self.verbose > 1:
             if self.verbose > 2:
-                self.show(
-                    "Check ",
-                    self.format_url(url_pair),
-                    "  from",
-                    self.todo[url_pair],
-                )
+                self.show("Check ", self.format_url(url_pair),
+                          "  from", self.todo[url_pair])
             else:
                 self.message("Check %s", self.format_url(url_pair))
         url, local_fragment = url_pair
@@ -422,9 +416,8 @@ class Checker:
             page = self.getpage(url_pair)
         except sgmllib.SGMLParseError as msg:
             msg = self.sanitize(msg)
-            self.note(
-                0, "Error parsing %s: %s", self.format_url(url_pair), msg
-            )
+            self.note(0, "Error parsing %s: %s",
+                      self.format_url(url_pair), msg)
             # Dont actually mark the URL as bad - it exists, just
             # we can't parse it!
             page = None
@@ -435,11 +428,9 @@ class Checker:
             # in the list of names for the page, call setbad(), since
             # it's a missing anchor.
             if local_fragment and local_fragment not in page.getnames():
-                self.setbad(
-                    url_pair, ("Missing name anchor `%s'" % local_fragment)
-                )
+                self.setbad(url_pair, ("Missing name anchor `%s'" % local_fragment))
             for info in page.getlinkinfos():
-                # getlinkinfos() now returns the fragment as well,
+                # getlinkinfos() Now returns the fragment as well,
                 # and we store that fragment here in the "todo" dictionary.
                 link, rawlink, fragment = info
                 # However, we don't want the fragment as the origin, since
@@ -463,7 +454,7 @@ class Checker:
             self.done[url].append(origin)
 
         # Call self.format_url(), since the URL here
-        # is now a (URL, fragment) pair.
+        # is Now a (URL, fragment) pair.
         self.note(3, "  Done link %s", self.format_url(url))
 
         # Make sure that if it's bad, that the origin gets added.
@@ -474,7 +465,7 @@ class Checker:
 
     def newtodolink(self, url, origin):
         # Call self.format_url(), since the URL here
-        # is now a (URL, fragment) pair.
+        # is Now a (URL, fragment) pair.
         if url in self.todo:
             if origin not in self.todo[url]:
                 self.todo[url].append(origin)
@@ -512,7 +503,8 @@ class Checker:
         if url in self.name_table:
             return self.name_table[url]
 
-        scheme, path = urllib.parse.splittype(url)
+        # scheme, path = urllib.parse.splittype(url)
+        scheme, path = urllib.parse.urlsplit(url)
         if scheme in ("mailto", "news", "javascript", "telnet"):
             self.note(1, " Not checking %s URL" % scheme)
             return None
@@ -613,7 +605,7 @@ class Checker:
 
     def seterror(self, url, triple):
         try:
-            # Because of the way the URLs are now processed, I need to
+            # Because of the way the URLs are Now processed, I need to
             # check to make sure the URL hasn't been entered in the
             # error list.  The first element of the triple here is a
             # (URL, fragment) pair, but the URL key is not, since it's
@@ -627,7 +619,8 @@ class Checker:
     # changed into methods so they can be overridden in subclasses.
 
     def show(self, p1, link, p2, origins):
-        self.message("%s %s", p1, link)
+        # self.message("%s %s", p1, link)
+        self.message(f"{p1} {link}")
         i = 0
         for source, rawlink in origins:
             i = i + 1
@@ -640,15 +633,17 @@ class Checker:
             self.message("%s %s%s", p2, source, s)
 
     def sanitize(self, msg):
-        if isinstance(IOError, ClassType) and isinstance(msg, IOError):
+        # if isinstance(IOError, ClassType) and isinstance(msg, IOError):
+        if isinstance(IOError, type) and isinstance(msg, IOError):
             # Do the other branch recursively
             msg.args = self.sanitize(msg.args)
-        elif isinstance(msg, TupleType):
-            if (
-                len(msg) >= 4
-                and msg[0] == "http error"
-                and isinstance(msg[3], InstanceType)
-            ):
+        # elif isinstance(msg, TupleType):
+        elif isinstance(msg, tuple):
+            # https://copyprogramming.com/howto/how-to-determine-the-type-of-class-instance?utm_content=cmp-true
+            # InstanceType n'existe plus sur python 3, InstanceType n'est plus nécessaire et a été éliminé.
+            # if (len(msg) >= 4 and msg[0] == "http error" and
+            #         isinstance(msg[3], InstanceType)):
+            if len(msg) >= 4 and msg[0] == "http error":
                 # Remove the Message instance -- it may contain
                 # a file object which prevents pickling.
                 msg = msg[:3] + msg[4:]
@@ -686,11 +681,10 @@ class Checker:
             return 1
 
 
+# class Page(object):
 class Page:
 
-    def __init__(
-        self, text, url, verbose=VERBOSE, maxpage=MAXPAGE, checker=None
-    ):
+    def __init__(self, text, url, verbose=VERBOSE, maxpage=MAXPAGE, checker=None):
         self.text = text
         self.url = url
         self.verbose = verbose
@@ -709,9 +703,8 @@ class Page:
             self.parser = None
             return
         self.checker.note(2, "  Parsing %s (%d bytes)", self.url, size)
-        self.parser = MyHTMLParser(
-            url, verbose=self.verbose, checker=self.checker
-        )
+        self.parser = MyHTMLParser(url, verbose=self.verbose,
+                                   checker=self.checker)
         self.parser.feed(self.text)
         self.parser.close()
 
@@ -780,8 +773,19 @@ class MyURLopener(urllib.request.FancyURLopener):
             ("User-agent", "Python-webchecker/%s" % __version__),
         ]
 
-    def http_error_401(self, url, fp, errcode, errmsg, headers):
+    def http_error_401(self, url, fp, errcode, errmsg, headers, data=None, retry=False):
         return None
+    # def http_error_401(
+    #     self,
+    #     url: str,
+    #     fp,
+    #     errcode: int,
+    #     errmsg: str,
+    #     headers,
+    #     data=None,
+    #     retry: bool = False,
+    # ):
+    #     return None
 
     def open_file(self, url):
         path = urllib.request.url2pathname(urllib.parse.unquote(url))
@@ -830,15 +834,14 @@ class MyHTMLParser(sgmllib.SGMLParser):
         for name, value in attributes:
             if name == "name" or name == "id":
                 if value in self.names:
-                    self.checker.message(
-                        "WARNING: duplicate ID name %s in %s", value, self.url
-                    )
-                else:
-                    self.names.append(value)
+                    self.checker.message("WARNING: duplicate ID name %s in %s",
+                                         value, self.url)
+                else: self.names.append(value)
                 break
 
     def unknown_starttag(self, tag, attributes):
-        """In XHTML, you can have id attributes on any element."""
+        """ In XHTML, you can have id attributes on any element.
+        """
         self.check_name_id(attributes)
 
     def start_a(self, attributes):

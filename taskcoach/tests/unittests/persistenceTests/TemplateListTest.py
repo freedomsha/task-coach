@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, xml
+# from builtins import object
+from ... import tctest
+import xml
 from taskcoachlib import persistence
 
 
@@ -55,7 +57,7 @@ class TemplateListUnderTest(persistence.TemplateList):
         return ["dummy.tsktmpl"]
 
 
-class TemplateListTestCase(test.TestCase):
+class TemplateListTestCase(tctest.TestCase):
     def testPathWithoutTemplates(self):
         templateList = persistence.TemplateList(".")
         self.assertEqual([], templateList.tasks())
@@ -67,9 +69,7 @@ class TemplateListTestCase(test.TestCase):
         self.assertEqual([], templateList.tasks())
 
     def testHandleIOErrorWhileOpeningFile(self):
-        templateList = TemplateListUnderTest(
-            ".", openFile=FileClassThatRaisesIOError
-        )
+        templateList = TemplateListUnderTest(".", openFile=FileClassThatRaisesIOError)
         self.assertEqual([], templateList.tasks())
 
     def testHandleIOErrorWhileReadingTemplate(self):

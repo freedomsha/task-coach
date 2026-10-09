@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+pypubsub = "*"
+desktop3 = "*"
+wxpython = "*"
+chardet = "*"
+twisted = "*"
+lockfile = "*"
+appmap = "*"
+
+[requires]
+python_version = "3.13"

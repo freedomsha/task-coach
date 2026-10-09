@@ -14,24 +14,94 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Voici une répartition de chaque classe et fonction avec leurs docstrings correspondants :
+
+Déclarations d'importation :
+
+Ces lignes importent les bibliothèques nécessaires à la manipulation de fichiers, au hachage, à la gestion de la date et de l'heure et à la fonctionnalité pub/sub.
+
+La suite définit une classe appelée AutoBackup. Cette classe est conçue pour créer automatiquement des sauvegardes des fichiers de tâches avant qu'ils ne soient écrasés. Voici une description du code et de ses fonctionnalités :
+
+Class AutoBackup :
+
+    Objectif : crée des sauvegardes des fichiers de tâches et les gère.
+    Fonctionnalité :
+        Conserve un nombre minimum de sauvegardes (défini par minNrOfBackupFiles).
+        Supprime les anciennes sauvegardes dépassant le nombre maximum autorisé (défini par maxNrOfBackupFilesToRemoveAtOnce).
+        Utilise une fonction de hachage (SHA) pour identifier des fichiers de tâches uniques.
+        Stocke les sauvegardes dans une structure de répertoires spécifique en fonction du hachage et de l'horodatage.
+        S'intègre à un système de gestion des tâches (mécanisme pub/sub ) pour réagir aux modifications du fichier de tâches.
+
+Méthodes clés :
+
+    onTaskFileRead :
+        Copie les sauvegardes existantes du répertoire de fichiers de tâches vers un répertoire de sauvegarde dédié.
+        Crée un fichier manifeste de sauvegarde (backups.xml) pour suivre les noms de fichiers associés au hachage.
+    onTaskFileAboutToSave :
+        Crée une nouvelle sauvegarde avant l'enregistrement du fichier de tâches.
+        Supprime les fichiers de sauvegarde inutiles si le nombre dépasse la limite.
+    createBackup :
+        Génère un nom de fichier unique pour la sauvegarde en fonction du nom du fichier de tâche et de l'horodatage.
+        Copie le contenu du fichier de tâche dans le fichier de sauvegarde.
+    removeExtraneousBackupFiles :
+        Identifie et supprime les fichiers de sauvegarde supplémentaires en fonction de l'âge et des limites configurées.
+    backupFiles :
+        Récupère une liste des fichiers de sauvegarde existants associés à un fichier de tâche spécifique basé sur le hachage.
+    backupFilename :
+        Génère un nom de fichier de sauvegarde avec l'horodatage actuel ajouté au nom du fichier de tâche haché.
+
+Remarques supplémentaires :
+
+    Le code utilise bibliothèques externes comme glob et date (supposées basées sur les instructions d'importation).
+    Les commentaires sont fournis en français, expliquant le but des sections de code.
+    Le code utilise un format de date/heure spécifique pour les horodatages dans les noms de fichiers.
 """
 
-# For xml...
-
-import os, shutil, glob, math, re
+# from __future__ import absolute_import  # For xml...
+#
+# from builtins import map
+# from builtins import range
+# from builtins import object
+import os
+import shutil
+import glob
+import math
+import re
 from taskcoachlib.domain import date
-from taskcoachlib.thirdparty.pubsub import pub
-import bz2, hashlib
+
+# try:
+from pubsub import pub
+
+# except ImportError:
+#    try:
+#        from taskcoachlib.thirdparty.pubsub import pub
+#    except ImportError:
+#        from wx.lib.pubsub import pub
+import bz2
+import hashlib
 
 # Hack: indirect
-from xml.etree import ElementTree as ET
+# from xml.etree import ElementTree as ET
+from xml.etree import ElementTree as eTree
 
 
 def SHA(filename):
+    # def hasha(filename):
+    """
+    Calculates the SHA-1 hash of the given filename.
+
+    Args:
+        filename (str): The path to the file.
+
+    Returns:
+        str: The SHA-1 hash of the filename.
+    """
     return hashlib.sha1(filename.encode("UTF-8")).hexdigest()
 
 
 def compressFile(srcName, dstName):
+    # with file(srcName, 'rb') as src:
     with open(srcName, "rb") as src:
         dst = bz2.BZ2File(dstName, "w")
         try:
@@ -46,8 +116,9 @@ class BackupManifest(object):
 
         xmlName = os.path.join(settings.pathToBackupsDir(), "backups.xml")
         if os.path.exists(xmlName):
+            # with file(xmlName, 'rb') as fp:
             with open(xmlName, "rb") as fp:
-                root = ET.parse(fp).getroot()
+                root = eTree.parse(fp).getroot()
                 self.__files = dict(
                     [
                         (node.attrib["sha"], node.text)
@@ -58,16 +129,18 @@ class BackupManifest(object):
             self.__files = dict()
 
     def save(self):
-        root = ET.Element("backupfiles")
-        for sha, filename in list(self.__files.items()):
-            node = ET.SubElement(root, "file")
+        root = eTree.Element("backupfiles")
+        for sha, filename in self.__files.items():
+            # for sha, filename in list(self.__files.items()):
+            node = eTree.SubElement(root, "file")
             node.attrib["sha"] = sha
             node.text = filename
+        # with file(os.path.join(self.__settings.pathToBackupsDir(), 'backups.xml'), 'wb') as fp:
         with open(
             os.path.join(self.__settings.pathToBackupsDir(), "backups.xml"),
             "wb",
         ) as fp:
-            ET.ElementTree(root).write(fp)
+            eTree.ElementTree(root).write(fp)
 
     def listFiles(self):
         return sorted(self.__files.values())
@@ -76,20 +149,19 @@ class BackupManifest(object):
         backups = list()
         for name in os.listdir(self.backupPath(filename)):
             try:
-                comp = list(
-                    map(
-                        int,
-                        [
-                            name[0:4],
-                            name[4:6],
-                            name[6:8],
-                            name[8:10],
-                            name[10:12],
-                            name[12:14],
-                        ],
-                    )
+                comp = map(
+                    int,
+                    [
+                        name[0:4],
+                        name[4:6],
+                        name[6:8],
+                        name[8:10],
+                        name[10:12],
+                        name[12:14],
+                    ],
                 )
-            except:
+                # comp = list(map(int, [name[0:4], name[4:6], name[6:8], name[8:10], name[10:12], name[12:14]]))
+            except Exception:  # else ? ValueError
                 continue
             backups.append(date.DateTime(*tuple(comp)))
         return list(reversed(sorted(backups)))
@@ -124,6 +196,7 @@ class BackupManifest(object):
             "r",
         )
         try:
+            # with file(dstName, 'wb') as dst:
             with open(dstName, "wb") as dst:
                 shutil.copyfileobj(src, dst)
         finally:
@@ -131,15 +204,15 @@ class BackupManifest(object):
 
 
 class AutoBackup(object):
-    """AutoBackup creates a backup copy of the task
-    file before it is overwritten. To prevent the number of backups growing
-    indefinitely, AutoBackup removes older backups."""
+    """AutoBackup crée une copie de sauvegarde du fichier de tâche
+    avant qu'il ne soit écrasé. Pour éviter que le nombre de sauvegardes n'augmente indéfiniment,
+    AutoBackup supprime les anciennes sauvegardes."""
 
     minNrOfBackupFiles = 3  # Keep at least three backup files.
     maxNrOfBackupFilesToRemoveAtOnce = 3  # Slowly reduce the number of backups
 
     def __init__(self, settings, copyfile=compressFile):
-        super(AutoBackup, self).__init__()
+        super().__init__()
         self.__settings = settings
         self.__copyfile = copyfile
         pub.subscribe(self.onTaskFileAboutToSave, "taskfile.aboutToSave")
@@ -150,7 +223,7 @@ class AutoBackup(object):
         user-specific backup directory. The backup directory layout is as follows:
 
           <backupdir>/backups.xml          List of backups
-          <backupdir>/<sha>/<datetime>.bak Backup for <datetime>. <sha> is the SHA-1
+          <backupdir>/<SHA>/<datetime>.bak Backup for <datetime>. <SHA> is the SHA-1
                                            hash of the task file name.
 
         backups.xml maps the SHA to actual file names, for enumeration in the
@@ -183,6 +256,7 @@ class AutoBackup(object):
                 )
                 if os.path.exists(dstName):
                     os.remove(dstName)
+                # with file(srcName, 'rb') as src:
                 with open(srcName, "rb") as src:
                     dst = bz2.BZ2File(dstName, "w")
                     try:
@@ -224,9 +298,9 @@ class AutoBackup(object):
         return max(0, len(backupFiles) - self.maxNrOfBackupFiles(backupFiles))
 
     def maxNrOfBackupFiles(self, backupFiles):
-        """The maximum number of backup files we keep depends on the age of
-        the oldest backup file. The older the oldest backup file (that is
-        never removed), the more backup files we keep."""
+        """Le nombre maximum de fichiers de sauvegarde que nous conservons dépend de l'âge
+        du fichier de sauvegarde le plus ancien. Plus le fichier de sauvegarde est ancien (c'est-à-dire
+        jamais supprimé), plus nous conservons de fichiers de sauvegarde."""
         if not backupFiles:
             return 0
         age = date.DateTime.now() - self.backupDateTime(backupFiles[0])
@@ -237,9 +311,9 @@ class AutoBackup(object):
         )
 
     def leastUniqueBackupFile(self, backupFiles):
-        """Find the backupFile that is closest (in time) to its neighbors,
-        i.e. that is the least unique. Ignore the oldest and newest
-        backups."""
+        """Recherchez le fichier de sauvegarde le plus proche (dans le temps) de ses voisins,
+        c'est-à-dire le moins unique. Ignorez les sauvegardes les plus anciennes et les plus récentes.
+        """
         assert len(backupFiles) > self.minNrOfBackupFiles
         deltas = []
         for index in range(1, len(backupFiles) - 1):
@@ -256,7 +330,7 @@ class AutoBackup(object):
         return sorted(glob("%s.bak" % os.path.join(root, "[0-9]" * 14)))
 
     def backupFilename(self, taskFile, now=date.DateTime.now):
-        """Generate a backup filename for the specified date/time."""
+        """Générez un nom de fichier de sauvegarde pour la date/heure spécifiée."""
         sha = SHA(taskFile.filename())
         return os.path.join(
             self.__settings.pathToBackupsDir(),
@@ -266,8 +340,7 @@ class AutoBackup(object):
 
     @staticmethod
     def backupDateTime(backupFilename):
-        """Parse the date and time from the filename and return a DateTime
-        instance."""
+        """Analysez la date et l'heure du nom de fichier et renvoyez une instance DateTime."""
         dt = os.path.split(backupFilename)[-1][:-4]
         parts = (
             int(part)

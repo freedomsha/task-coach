@@ -8,19 +8,19 @@ digraph task_states {
     Overdue [style = filled, fillcolor = red];
     Completed [shape = doublecircle, style = filled, fillcolor = green];
 
-    Inactive -> Late [ label = "past planned start date" ];
-    Inactive -> Active [ label = "past actual start date" ];
-    Inactive -> "Due soon" [ label = "soon due date" ];
-    Inactive -> Overdue [ label = "past due date" ];
-    Inactive -> Completed [ label = "completion date" ];
-    Late -> Active [ label = "past actual start date" ];
-    Late -> "Due soon" [ label = "soon due date" ];
-    Late -> Overdue [ label = "past due date" ];
-    Late -> Completed [ label = "completion date" ];
-    Active -> "Due soon" [ label = "soon due date" ];
-    Active -> Overdue [ label = "past due date" ];
-    Active -> Completed [ label = "completion date" ];
-    "Due soon" -> Overdue [ label = "past due date" ];
-    "Due soon" -> Completed [ label = "completion date" ];
-    Overdue -> Completed [ label = "completion date" ];
+    Inactive -> Late [ label = "past planned start Date" ];
+    Inactive -> Active [ label = "past actual start Date" ];
+    Inactive -> "Due soon" [ label = "soon due Date" ];
+    Inactive -> Overdue [ label = "past due Date" ];
+    Inactive -> Completed [ label = "completion Date" ];
+    Late -> Active [ label = "past actual start Date" ];
+    Late -> "Due soon" [ label = "soon due Date" ];
+    Late -> Overdue [ label = "past due Date" ];
+    Late -> Completed [ label = "completion Date" ];
+    Active -> "Due soon" [ label = "soon due Date" ];
+    Active -> Overdue [ label = "past due Date" ];
+    Active -> Completed [ label = "completion Date" ];
+    "Due soon" -> Overdue [ label = "past due Date" ];
+    "Due soon" -> Completed [ label = "completion Date" ];
+    Overdue -> Completed [ label = "completion Date" ];
 }

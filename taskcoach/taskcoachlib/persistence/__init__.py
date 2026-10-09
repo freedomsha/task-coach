@@ -14,6 +14,10 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Le package de persistance contient des modules
+permettant d'enregistrer les données Task Coach dans son format de fichier .tsk,
+qui est fait en XML et d'exporter les données dans différents formats.
 """
 
 # This is the persistence package. It contains classes for reading and
@@ -36,3 +40,30 @@ from .autoimporterexporter import AutoImporterExporter
 from .autobackup import AutoBackup, BackupManifest
 from .sessiontempfile import get_temp_file
 from .templatelist import TemplateList
+
+__all__ = [
+    "XMLWriter",
+    "TemplateXMLWriter",
+    "ChangesXMLWriter",
+    "XMLReader",
+    "TemplateXMLReader",
+    "ChangesXMLReader",
+    "getDefaultTemplates",
+    "HTMLWriter",
+    "viewer2html",
+    "viewer2csv",
+    "CSVWriter",
+    "CSVReader",
+    "TodoTxtReader",
+    "TodoTxtWriter",
+    "iCalendarWriter",
+    "VCalendarParser",
+    "TaskFile",
+    "LockedTaskFile",
+    "AutoSaver",
+    "AutoImporterExporter",
+    "AutoBackup",
+    "BackupManifest",
+    "get_temp_file",
+    "TemplateList"
+]

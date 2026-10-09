@@ -16,19 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import gui, config, persistence
 from taskcoachlib.domain import task
 
 
-class TreeViewerTest(test.wxTestCase):
+class TreeViewerTest(tctest.wxTestCase):
     def setUp(self):
-        super(TreeViewerTest, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
-        self.viewer = gui.viewer.TaskViewer(
-            self.frame, self.taskFile, self.settings
-        )
+        self.viewer = gui.viewer.TaskViewer(self.frame, self.taskFile, self.settings)
         self.expansionContext = self.viewer.settingsSection()
         self.parent = task.Task("parent")
         self.child = task.Task("child")
@@ -39,7 +37,7 @@ class TreeViewerTest(test.wxTestCase):
         self.widget = self.viewer.widget
 
     def tearDown(self):
-        super(TreeViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 

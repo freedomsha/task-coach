@@ -119,7 +119,7 @@ Modifications between 1.1 and 1.3 releases:
   programs, this parameter did not work correctly.
 
 - (BugFix) IsClosing bug: restart of an application was inhibited if the
-  previous instance was still performing close operations (for obsolete or 
+  previous instance was still performing Close operations (for obsolete or
   very slow operative systems).
 
 - (BugFix) Network address bug: the launcher was not able to resolve

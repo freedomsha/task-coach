@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import persistence
+from taskcoachlib.persistence.icalendar import ical
 from taskcoachlib.domain import date
 
 
-class VCalendarParserTest(test.TestCase):
+class VCalendarParserTest(tctest.TestCase):
     # pylint: disable=W0511
 
     def setUp(self):
@@ -34,16 +35,13 @@ class VCalendarParserTest(test.TestCase):
     def testEmptyVTodo(self):
         self.parser.parse(["BEGIN:VTODO", "END:VTODO"])
         self.assertEqual(
-            dict(status=0, plannedStartDateTime=date.DateTime()),
-            self.parser.tasks[0],
+            dict(status=0, plannedStartDateTime=date.DateTime()), self.parser.tasks[0]
         )
 
     def testSubject(self):
         self.parser.parse(["BEGIN:VTODO", "SUBJECT:Test", "END:VTODO"])
         self.assertEqual(
-            dict(
-                status=0, subject="Test", plannedStartDateTime=date.DateTime()
-            ),
+            dict(status=0, subject="Test", plannedStartDateTime=date.DateTime()),
             self.parser.tasks[0],
         )
 
@@ -61,18 +59,12 @@ class VCalendarParserTest(test.TestCase):
     def testPercentageComplete(self):
         self.parser.parse(["BEGIN:VTODO", "PERCENT-COMPLETE:56", "END:VTODO"])
         self.assertEqual(
-            dict(
-                status=0,
-                percentageComplete=56,
-                plannedStartDateTime=date.DateTime(),
-            ),
+            dict(status=0, percentageComplete=56, plannedStartDateTime=date.DateTime()),
             self.parser.tasks[0],
         )
 
     def testCreationDateTime(self):
-        self.parser.parse(
-            ["BEGIN:VTODO", "CREATED:20100101T120000", "END:VTODO"]
-        )
+        self.parser.parse(["BEGIN:VTODO", "CREATED:20100101T120000", "END:VTODO"])
         self.assertEqual(
             dict(
                 status=0,
@@ -83,9 +75,7 @@ class VCalendarParserTest(test.TestCase):
         )
 
     def testModificationDateTime(self):
-        self.parser.parse(
-            ["BEGIN:VTODO", "LAST-MODIFIED:20100101T120000", "END:VTODO"]
-        )
+        self.parser.parse(["BEGIN:VTODO", "LAST-MODIFIED:20100101T120000", "END:VTODO"])
         self.assertEqual(
             dict(
                 status=0,
@@ -96,7 +86,7 @@ class VCalendarParserTest(test.TestCase):
         )
 
 
-class VNoteParserTest(test.TestCase):
+class VNoteParserTest(tctest.TestCase):
     def setUp(self):
         self.parser = persistence.icalendar.ical.VNoteParser()
 
@@ -110,14 +100,10 @@ class VNoteParserTest(test.TestCase):
 
     def testSubject(self):
         self.parser.parse(["BEGIN:VNOTE", "SUMMARY:Subject", "END:VNOTE"])
-        self.assertEqual(
-            dict(status=0, subject="Subject"), self.parser.notes[0]
-        )
+        self.assertEqual(dict(status=0, subject="Subject"), self.parser.notes[0])
 
     def testCreationDateTime(self):
-        self.parser.parse(
-            ["BEGIN:VNOTE", "CREATED:20100101T120000", "END:VNOTE"]
-        )
+        self.parser.parse(["BEGIN:VNOTE", "CREATED:20100101T120000", "END:VNOTE"])
         self.assertEqual(
             dict(
                 status=0,
@@ -128,9 +114,7 @@ class VNoteParserTest(test.TestCase):
         )
 
     def testModificationDateTime(self):
-        self.parser.parse(
-            ["BEGIN:VNOTE", "LAST-MODIFIED:20100101T120000", "END:VNOTE"]
-        )
+        self.parser.parse(["BEGIN:VNOTE", "LAST-MODIFIED:20100101T120000", "END:VNOTE"])
         self.assertEqual(
             dict(
                 status=0,

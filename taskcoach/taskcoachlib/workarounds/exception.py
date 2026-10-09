@@ -16,23 +16,43 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 # No way to monkey-patch this unfortunately...
 
-
 def ExceptionAsUnicode(e):
+    """
+    Convertit une exception en une chaîne de caractères Unicode.
+
+    Cette fonction essaie de convertir les arguments de l'exception en Unicode.
+    Si un argument ne peut pas être converti en Unicode, il est alors converti
+    en chaîne de caractères standard et ajouté à la sortie.
+
+    Args :
+        e (Exception) : L'exception à convertir en chaîne de caractères Unicode.
+
+    Returns :
+        str : Une représentation Unicode de l'exception.
+    """
     try:
+        #     return unicode(e)
+        # except NameError:
         return str(e)
     except UnicodeDecodeError:
         components = list()
         for arg in e.args:
             if isinstance(arg, str):
                 try:
-                    components.append(arg.decode("utf-8"))
+                    # components.append(arg.decode("utf-8"))
+                    # Unresolved attribute reference 'decode' for class 'str'
+                    components.append(arg.encode("utf-8"))
                 except UnicodeDecodeError:
                     try:
-                        components.append(arg.decode("iso-8859-15"))
+                        # components.append(arg.decode("iso-8859-15"))
+                        # Unresolved attribute reference 'decode' for class 'str'
+                        components.append(arg.encode("iso-8859-15"))
                     except UnicodeDecodeError:
                         components.append(repr(arg))
             else:
                 components.append(str(arg))
-        return "%s: %s" % (e.__class__.__name__, " - ".join(components))
+        # return "%s: %s" % (e.__class__.__name__, " - ".join(components))
+        return f"{e.__class__.__name__}: {' - '.join(components)}"

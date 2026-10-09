@@ -17,13 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib.widgets import masked
 
 
 class LocalConv(dict):
     def __init__(self, decimal_point=".", thousands_sep=",", grouping=None):
-        super(LocalConv, self).__init__()
+        super().__init__()
         self.update(
             dict(
                 decimal_point=decimal_point,
@@ -33,9 +33,9 @@ class LocalConv(dict):
         )
 
 
-class AmountCtrlTest(test.wxTestCase):
+class AmountCtrlTest(tctest.wxTestCase):
     def setUp(self):
-        super(AmountCtrlTest, self).setUp()
+        super().setUp()
         self.amountCtrl = masked.AmountCtrl(self.frame)
 
     def testCreate(self):
@@ -49,16 +49,12 @@ class AmountCtrlTest(test.wxTestCase):
         masked.AmountCtrl(self.frame, locale_conventions=LocalConv())
 
     def testCommaAsDecimalSepAndNoGrouping(self):
-        masked.AmountCtrl(
-            self.frame, locale_conventions=LocalConv(decimal_point=",")
-        )
+        masked.AmountCtrl(self.frame, locale_conventions=LocalConv(decimal_point=","))
 
     def testCommaAsDecimalSepAndGrouping(self):
         masked.AmountCtrl(
             self.frame,
-            locale_conventions=LocalConv(
-                decimal_point=",", grouping=[3, 3, 3]
-            ),
+            locale_conventions=LocalConv(decimal_point=",", grouping=[3, 3, 3]),
         )
 
     def testCommaAsBothDecimalSepAndThousandsSepButNoGrouping(self):
@@ -85,19 +81,13 @@ class AmountCtrlTest(test.wxTestCase):
             pass
 
     def testNonAsciiDecimalPoint(self):
-        masked.AmountCtrl(
-            self.frame, locale_conventions=LocalConv(decimal_point="�")
-        )
+        masked.AmountCtrl(self.frame, locale_conventions=LocalConv(decimal_point="�"))
 
     def testNonAsciiThousandsSeparator(self):
         masked.AmountCtrl(
             self.frame,
-            locale_conventions=LocalConv(
-                thousands_sep="�", grouping=[3, 3, 3]
-            ),
+            locale_conventions=LocalConv(thousands_sep="�", grouping=[3, 3, 3]),
         )
 
     def testMultiCharThousandsSeparator(self):
-        masked.AmountCtrl(
-            self.frame, locale_conventions=LocalConv(thousands_sep="..")
-        )
+        masked.AmountCtrl(self.frame, locale_conventions=LocalConv(thousands_sep=".."))

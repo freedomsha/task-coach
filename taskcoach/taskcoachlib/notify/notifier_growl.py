@@ -21,20 +21,19 @@ import struct
 import sys
 import tempfile
 import wx
-
-import taskcoachlib.thirdparty.gntp.notifier as Growl
+from io import open as file
+# from taskcoachlib.thirdparty.gntp import notifier as growl
+from gntp import notifier as growl
 from taskcoachlib import meta
 from .notifier import AbstractNotifier
 
 
 class GrowlNotifier(AbstractNotifier):
     def __init__(self):
-        super(GrowlNotifier, self).__init__()
+        super().__init__()
         try:
             # pylint: disable=E1101
-            self._notifier = Growl.GrowlNotifier(
-                applicationName=meta.name, notifications=["Reminder"]
-            )
+            self._notifier = growl.GrowlNotifier(applicationName=meta.name, notifications=["Reminder"])
             self._notifier.register()
         except:
             self._available = False  # pylint: disable=W0702

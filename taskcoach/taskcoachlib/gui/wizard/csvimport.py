@@ -16,14 +16,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from builtins import zip
+from builtins import next
+from builtins import range
 from taskcoachlib import meta
 from taskcoachlib.i18n import _
+
+# from taskcoachlib.thirdparty import chardet
 import chardet
+from io import open as file
 import wx
 import csv
 import tempfile
 import wx.grid as gridlib
-import wx.adv as wiz
+
+try:
+    import wx.wizard as wiz  # ModuleNotFoundError: No module named in Python3
+except ModuleNotFoundError:
+    import wx.adv as wiz
 
 
 class CSVDialect(csv.Dialect):
@@ -42,7 +52,7 @@ class CSVDialect(csv.Dialect):
 
 class CSVImportOptionsPage(wiz.WizardPageSimple):
     def __init__(self, filename, *args, **kwargs):
-        super(CSVImportOptionsPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.delimiter = wx.Choice(self, wx.ID_ANY)
         self.delimiter.Append(_("Comma"))
@@ -151,18 +161,25 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
         self.headers = None
 
         self.filename = filename
-        self.encoding = chardet.detect(open(filename, "rb").read())["encoding"]
+        # file -> open ?
+        self.encoding = chardet.detect(file(filename, "rb").read())["encoding"]
         self.OnOptionChanged(None)
 
-        wx.EVT_CHOICE(self.delimiter, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_CHOICE(self.quoteChar, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_CHECKBOX(
-            self.importSelectedRowsOnly, wx.ID_ANY, self.OnOptionChanged
-        )
-        wx.EVT_CHECKBOX(self.hasHeaders, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_RADIOBUTTON(self.doubleQuote, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_RADIOBUTTON(self.escapeQuote, wx.ID_ANY, self.OnOptionChanged)
-        wx.EVT_TEXT(self.escapeChar, wx.ID_ANY, self.OnOptionChanged)
+        # Remettre des Bind ! Ce sont des gestionnaires d'événements.
+        # wx.EVT_CHOICE(self.delimiter, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_CHOICE(self.quoteChar, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_CHECKBOX(self.importSelectedRowsOnly, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_CHECKBOX(self.hasHeaders, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_RADIOBUTTON(self.doubleQuote, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_RADIOBUTTON(self.escapeQuote, wx.ID_ANY, self.OnOptionChanged)
+        # wx.EVT_TEXT(self.escapeChar, wx.ID_ANY, self.OnOptionChanged)
+        self.delimiter.Bind(wx.EVT_CHOICE, self.OnOptionChanged)
+        self.quoteChar.Bind(wx.EVT_CHOICE, self.OnOptionChanged)
+        self.importSelectedRowsOnly.Bind(wx.EVT_CHECKBOX, self.OnOptionChanged)
+        self.hasHeaders.Bind(wx.EVT_CHECKBOX, self.OnOptionChanged)
+        self.doubleQuote.Bind(wx.EVT_RADIOBUTTON, self.OnOptionChanged)
+        self.escapeQuote.Bind(wx.EVT_RADIOBUTTON, self.OnOptionChanged)
+        self.escapeChar.Bind(wx.EVT_TEXT, self.OnOptionChanged)
 
     def OnOptionChanged(self, event):  # pylint: disable=W0613
         self.escapeChar.Enable(self.escapeQuote.GetValue())
@@ -192,6 +209,10 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
             fp = tempfile.TemporaryFile()
             # TODO : a revoir unicode/byte lecture/écriture.
             try:
+                # file -> open ?
+                # # unresolved attribute reference decode for class str or encode for class bytes
+                # # TODO : éclaircir cette ligne !
+                # fp.write(file(self.filename, 'rU').read().encode(self.encoding).decode('UTF-8'))
                 fp.write(
                     open(self.filename, "r")
                     .read()
@@ -203,6 +224,8 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
                 reader = csv.reader(fp, dialect=self.dialect)
 
                 if self.hasHeaders.GetValue():
+                    # # unresolved attribute reference decode for class str
+                    # self.headers = [header.encode('UTF-8') for header in next(reader)]
                     self.headers = [
                         header.decode("UTF-8") for header in next(reader)
                     ]
@@ -231,6 +254,9 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
                     self.grid.InsertRows(lineno, 1)
                     for idx, value in enumerate(line):
                         if idx < self.grid.GetNumberCols():
+                            # # unresolved attribute reference decode for class str
+                            # # self.grid.SetCellValue(lineno, idx, value.decode('UTF-8'))
+                            # self.grid.SetCellValue(lineno, idx, value.encode('UTF-8'))
                             self.grid.SetCellValue(
                                 lineno, idx, value.decode("UTF-8")
                             )
@@ -272,7 +298,7 @@ class CSVImportOptionsPage(wiz.WizardPageSimple):
 
 class CSVImportMappingPage(wiz.WizardPageSimple):
     def __init__(self, *args, **kwargs):
-        super(CSVImportMappingPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # (field name, multiple values allowed)
 
@@ -345,6 +371,7 @@ class CSVImportMappingPage(wiz.WizardPageSimple):
         self.interior.SetSizer(gsz)
         gsz.Layout()
 
+    # @staticmethod
     def findFieldName(self, fieldName, fieldNames):
         def fieldNameIndex(fieldName, fieldNames):
             return (
@@ -402,7 +429,7 @@ class CSVImportMappingPage(wiz.WizardPageSimple):
 class CSVImportWizard(wiz.Wizard):
     def __init__(self, filename, *args, **kwargs):
         kwargs["style"] = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE
-        super(CSVImportWizard, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.optionsPage = CSVImportOptionsPage(filename, self)
         self.mappingPage = CSVImportMappingPage(self)
@@ -416,6 +443,7 @@ class CSVImportWizard(wiz.Wizard):
         wiz.EVT_WIZARD_PAGE_CHANGING(self, wx.ID_ANY, self.OnPageChanging)
         wiz.EVT_WIZARD_PAGE_CHANGED(self, wx.ID_ANY, self.OnPageChanged)
 
+    # @staticmethod
     def OnPageChanging(self, event):
         if event.GetDirection():
             can, msg = event.GetPage().CanGoNext()
@@ -428,7 +456,7 @@ class CSVImportWizard(wiz.Wizard):
             pass  # XXXTODO
 
     def RunWizard(self):
-        return super(CSVImportWizard, self).RunWizard(self.optionsPage)
+        return super().RunWizard(self.optionsPage)
 
     def GetOptions(self):
         return self.mappingPage.GetOptions()

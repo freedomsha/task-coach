@@ -16,12 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import division
+
+# from builtins import object
+# from past.utils import old_div
 import wx
 
 
-class FontMixer(object):
+class FontMixer(object):  # nouvelle classe mère mélange de caractères
     @classmethod
-    def mix(class_, *fonts):
+    def mix(class_, *fonts):  # better use cls not cls
         fonts = [font for font in fonts if font]
         if not fonts:
             return None
@@ -32,7 +36,9 @@ class FontMixer(object):
         weight = class_.mixFontWeights(*fonts)
         style = class_.mixFontStyles(*fonts)
         underlined = class_.mixFontUnderlining(*fonts)
-        return wx.Font(pointSize, family, style, weight, underline=underlined)
+        return wx.Font(
+            int(pointSize), family, style, weight, underline=underlined
+        )
 
     @staticmethod
     def mixFontSizes(*fonts):
@@ -40,6 +46,8 @@ class FontMixer(object):
         for font in fonts:
             size += font.GetPointSize()
         return size / len(fonts)
+        # return old_div(size, len(fonts))
+        return size // len(fonts)
 
     allFamilies = (
         wx.FONTFAMILY_SWISS,

@@ -18,17 +18,26 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import range
+import datetime
+import wx
+from wx import adv
+
+# from taskcoachlib.thirdparty import combotreebox
+# à remplacer par
+from wx.lib import combotreebox
+from wx.lib import newevent
 from taskcoachlib import widgets, operating_system
 from taskcoachlib.domain import date
 from taskcoachlib.gui import artprovider
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty import combotreebox
-import datetime
-from wx.lib import newevent
-import wx
 
+# try:
+#     from wx import combo as adv
+# except ImportError:
+#     from wx import adv
 
-DateTimeEntryEvent, EVT_DATETIMEENTRY = newevent.NewEvent()
+DateTimeEntryEvent, EVT_DATETIMEENTRY = wx.lib.newevent.NewEvent()
 
 
 class DateTimeEntry(widgets.DateTimeCtrl):
@@ -52,7 +61,7 @@ class DateTimeEntry(widgets.DateTimeCtrl):
         starthour = settings.getint("view", "efforthourstart")
         endhour = settings.getint("view", "efforthourend")
         interval = settings.getint("view", "effortminuteinterval")
-        super(DateTimeEntry, self).__init__(
+        super().__init__(
             parent,
             noneAllowed=noneAllowed,
             starthour=starthour,
@@ -74,11 +83,11 @@ class DateTimeEntry(widgets.DateTimeCtrl):
         self.setCallback(self.onDateTimeCtrlEdited)
 
     def SetValue(self, newValue=None):
-        super(DateTimeEntry, self).SetValue(newValue or self.defaultDateTime)
+        super().SetValue(newValue or self.defaultDateTime)
 
     def setSuggested(self, suggestedDateTime):
-        super(DateTimeEntry, self).SetValue(suggestedDateTime)
-        super(DateTimeEntry, self).SetNone()
+        super().SetValue(suggestedDateTime)
+        super().SetNone()
 
     def onDateTimeCtrlEdited(self, *args, **kwargs):  # pylint: disable=W0613
         wx.PostEvent(self, DateTimeEntryEvent())
@@ -98,7 +107,7 @@ class TimeDeltaEntry(widgets.PanelWithBoxSizer):
         *args,
         **kwargs
     ):
-        super(TimeDeltaEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         hours, minutes, seconds = timeDelta.hoursMinutesSeconds()
         self._entry = widgets.masked.TimeDeltaCtrl(
             self,
@@ -131,10 +140,14 @@ class TimeDeltaEntry(widgets.PanelWithBoxSizer):
 
 class AmountEntry(widgets.PanelWithBoxSizer):
     def __init__(self, parent, amount=0.0, readonly=False, *args, **kwargs):
-        super(AmountEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self._entry = self.createEntry(amount)
         if readonly:
             self._entry.Disable()
+            # Set grey background to clearly indicate non-editable
+            self._entry.SetBackgroundColour(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE)
+            )
         self.add(self._entry)
         self.fit()
 
@@ -161,11 +174,14 @@ PercentageEntryEvent, EVT_PERCENTAGEENTRY = newevent.NewEvent()
 class PercentageEntry(widgets.PanelWithBoxSizer):
     def __init__(self, parent, percentage=0, *args, **kwargs):
         kwargs["orientation"] = wx.HORIZONTAL
-        super(PercentageEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self._entry = self._createSpinCtrl(percentage)
         self._slider = self._createSlider(percentage)
+        # self.add(self._entry, flag=wx.ALL, proportion=0)
         self.add(self._entry, flag=wx.ALIGN_LEFT, proportion=0)
+        # self.add((5, -1), flag=wx.ALL, proportion=0)
         self.add((5, -1), flag=wx.ALIGN_LEFT, proportion=0)
+        # self.add(self._slider, flag=wx.ALL, proportion=1)
         self.add(self._slider, flag=wx.ALL | wx.EXPAND, proportion=1)
         self.fit()
 
@@ -220,11 +236,21 @@ FontEntryEvent, EVT_FONTENTRY = newevent.NewEvent()
 
 
 class FontEntry(widgets.PanelWithBoxSizer):
-    def __init__(self, parent, currentFont, currentColor, *args, **kwargs):
+    def __init__(
+        self,
+        parent,
+        currentFont,
+        currentColor,
+        currentBgColor=None,
+        *args,
+        **kwargs
+    ):
         kwargs["orientation"] = wx.HORIZONTAL
-        super(FontEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self._fontCheckBox = self._createCheckBox(currentFont)
-        self._fontPicker = self._createFontPicker(currentFont, currentColor)
+        self._fontPicker = self._createFontPicker(
+            currentFont, currentColor, currentBgColor
+        )
         self.add(
             self._fontCheckBox,
             flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL,
@@ -235,7 +261,8 @@ class FontEntry(widgets.PanelWithBoxSizer):
             flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL,
             proportion=1,
         )
-        self.fit()
+        # self.fit()
+        self.fitNoMinSize()
 
     def _createCheckBox(self, currentFont):
         checkBox = wx.CheckBox(self, label=_("Use font:"))
@@ -243,16 +270,34 @@ class FontEntry(widgets.PanelWithBoxSizer):
         checkBox.Bind(wx.EVT_CHECKBOX, self.onChecked)
         return checkBox
 
-    def _createFontPicker(self, currentFont, currentColor):
+    def _createFontPicker(self, currentFont, currentColor, currentBgColor):
         defaultFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         picker = widgets.FontPickerCtrl(
-            self, font=currentFont or defaultFont, colour=currentColor
+            self,
+            font=currentFont or defaultFont,
+            colour=currentColor,
+            bgColour=currentBgColor,
         )
         picker.Bind(wx.EVT_FONTPICKER_CHANGED, self.onFontPicked)
         return picker
 
+    def setEffectiveFont(self, font):
+        """Set the effective font to display when unchecked."""
+        if font is None:
+            return
+        self._effectiveFont = font
+        if not self._fontCheckBox.IsChecked():
+            self._fontPicker.SetSelectedFont(self._effectiveFont)
+
     def onChecked(self, event):
         event.Skip()
+        checked = self._fontCheckBox.IsChecked()
+        if (
+            not checked
+            and hasattr(self, "_effectiveFont")
+            and self._effectiveFont
+        ):
+            self._fontPicker.SetSelectedFont(self._effectiveFont)
         wx.PostEvent(self, FontEntryEvent())
 
     def onFontPicked(self, event):
@@ -279,14 +324,31 @@ class FontEntry(widgets.PanelWithBoxSizer):
     def SetColor(self, newColor):
         self._fontPicker.SetSelectedColour(newColor)
 
+    def GetBgColor(self):
+        return self._fontPicker.GetSelectedBgColour()
+
+    def SetBgColor(self, newColor):
+        self._fontPicker.SetSelectedBgColour(newColor)
+
 
 ColorEntryEvent, EVT_COLORENTRY = newevent.NewEvent()
 
 
 class ColorEntry(widgets.PanelWithBoxSizer):
+    """Color entry with checkbox for override colors.
+
+    When unchecked: shows effective color (set via setEffectiveColor).
+    When checked: user can pick a custom color.
+    Editor provides derived color (inherited value or system theme fallback).
+    """
+
     def __init__(self, parent, currentColor, defaultColor, *args, **kwargs):
         kwargs["orientation"] = wx.HORIZONTAL
-        super(ColorEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
+        self._defaultColor = defaultColor
+        self._effectiveColor = (
+            None  # Set via setEffectiveColor() after construction
+        )
         self._colorCheckBox = self._createCheckBox(currentColor)
         self._colorPicker = self._createColorPicker(currentColor, defaultColor)
         self.add(
@@ -344,21 +406,53 @@ IconEntryEvent, EVT_ICONENTRY = newevent.NewEvent()
 
 
 class IconEntry(wx.adv.BitmapComboBox):
-    def __init__(self, parent, currentIcon, *args, **kwargs):
+    """Icon entry with checkbox. When unchecked, returns empty string (no icon)."""
+
+    def __init__(
+        self, parent, currentIcon, excluded_icons=None, *args, **kwargs
+    ):
         kwargs["style"] = wx.CB_READONLY
-        super(IconEntry, self).__init__(parent, *args, **kwargs)
+        # kwargs["orientation"] = wx.HORIZONTAL
+        super().__init__(parent, *args, **kwargs)
         imageNames = sorted(artprovider.chooseableItemImages.keys())
+        self._iconCheckBox = self._createCheckBox(currentIcon)
+        self._iconPicker = self._createIconPicker(
+            parent, currentIcon, excluded_icons
+        )
         size = (16, 16)
         for imageName in imageNames:
             label = artprovider.chooseableItemImages[imageName]
+            # try:
+            #    bitmap = wx.ArtProvider_GetBitmap(imageName, wx.ART_MENU, size)
+            # except :
             bitmap = wx.ArtProvider.GetBitmap(imageName, wx.ART_MENU, size)
             item = self.Append(label, bitmap)
             self.SetClientData(item, imageName)
         self.SetSelection(imageNames.index(currentIcon))
         self.Bind(wx.EVT_COMBOBOX, self.onIconPicked)
 
+    def _createCheckBox(self, currentIcon):
+        checkBox = wx.CheckBox(self, label="")
+        checkBox.SetValue(currentIcon != "")
+        checkBox.Bind(wx.EVT_CHECKBOX, self.onChecked)
+        return checkBox
+
+    def _createIconPicker(self, parent, currentIcon, excluded_icons):
+        picker = widgets.IconPicker(self, currentIcon or "", excluded_icons)
+        picker.Bind(wx.EVT_COMBOBOX, self.onIconPicked)
+        return picker
+
+    def onChecked(self, event):
+        event.Skip()
+        if not self._iconCheckBox.IsChecked():
+            self._iconPicker.SetValue("")
+        wx.PostEvent(self, IconEntryEvent())
+
     def onIconPicked(self, event):
         event.Skip()
+        selected = self._iconPicker.GetValue()
+        # Auto-uncheck if "No icon" selected, auto-check otherwise
+        self._iconCheckBox.SetValue(selected != "")
         wx.PostEvent(self, IconEntryEvent())
 
     def GetValue(self):
@@ -376,7 +470,7 @@ ChoiceEntryEvent, EVT_CHOICEENTRY = newevent.NewEvent()
 
 class ChoiceEntry(wx.Choice):
     def __init__(self, parent, choices, currentChoiceValue, *args, **kwargs):
-        super(ChoiceEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         for choiceValue, choiceText in choices:
             self.Append(choiceText, choiceValue)
             if choiceValue == currentChoiceValue:
@@ -411,16 +505,25 @@ class TaskEntry(wx.Panel):
     def __init__(self, parent, rootTasks, selectedTask):
         """Initialize the ComboTreeBox, add the root tasks recursively and
         set the selection."""
-        super(TaskEntry, self).__init__(parent)
+        super().__init__(parent)
         self._createInterior()
         self._addTasksRecursively(rootTasks)
         self.SetValue(selectedTask)
+        # Bind to window close to properly clean up the popup
+        self.Bind(wx.EVT_WINDOW_DESTROY, self._onDestroy)
 
     def __getattr__(self, attr):
         """Delegate unknown attributes to the ComboTreeBox. This is needed
         since we cannot inherit from ComboTreeBox, but have to use
         delegation."""
-        return getattr(self._comboTreeBox, attr)
+        # return getattr(self._comboTreeBox, attr)
+        # Phoenix: check for dynamic attributes in the C++ dict
+        combo = self._comboTreeBox
+        if hasattr(combo, "_getAttrDict"):
+            d = combo._getAttrDict()
+            if attr in d:
+                return d[attr]
+        return getattr(combo, attr)
 
     def _createInterior(self):
         """Create the ComboTreebox widget."""
@@ -459,6 +562,33 @@ class TaskEntry(wx.Panel):
         selection = self._comboTreeBox.GetSelection()
         return self._comboTreeBox.GetClientData(selection)
 
+    def _onDestroy(self, event):
+        """Clean up the popup frame before destruction to avoid RuntimeErrors.
+
+        The wx.lib.combotreebox has issues where focus events fire during
+        destruction, causing RuntimeErrors when C++ objects are already deleted.
+        """
+        event.Skip()
+        # Only handle destruction of this specific window
+        if event.GetEventObject() is not self:
+            return
+        try:
+            # Try to unbind the kill focus handler before destruction
+            popupFrame = self._comboTreeBox._popupFrame
+            if popupFrame:
+                try:
+                    popupFrame._unbindKillFocus()
+                except (RuntimeError, AttributeError):
+                    pass  # Already destroyed or doesn't have the method
+                # Hide the popup if it's showing
+                if popupFrame.IsShown():
+                    try:
+                        popupFrame.Hide()
+                    except RuntimeError:
+                        pass  # Already destroyed
+        except (RuntimeError, AttributeError):
+            pass  # ComboTreeBox already destroyed
+
 
 RecurrenceEntryEvent, EVT_RECURRENCEENTRY = newevent.NewEvent()
 
@@ -468,7 +598,8 @@ class RecurrenceEntry(wx.Panel):
     verticalSpace = (-1, 3)
 
     def __init__(self, parent, recurrence, settings, *args, **kwargs):
-        super(RecurrenceEntry, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
+        self._settings = settings  # Store for later use
         recurrenceFrequencyPanel = wx.Panel(self)
         self._recurrencePeriodEntry = wx.Choice(
             recurrenceFrequencyPanel,
@@ -520,10 +651,88 @@ class RecurrenceEntry(wx.Panel):
         panelSizer.Add(
             self._recurrenceSameWeekdayCheckBox,
             proportion=1,
+            # flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
             flag=wx.EXPAND,
         )
         recurrenceFrequencyPanel.SetSizerAndFit(panelSizer)
         self._recurrenceSizer = panelSizer
+
+        # maxPanel = wx.Panel(self)
+        # panelSizer = wx.BoxSizer(wx.HORIZONTAL)
+        #
+        # self._maxRecurrenceCheckBox = wx.CheckBox(maxPanel)
+        # self._maxRecurrenceCheckBox.Bind(wx.EVT_CHECKBOX,
+        #                                  self.onMaxRecurrenceChecked)
+        # self._maxRecurrenceCountEntry = widgets.SpinCtrl(maxPanel,
+        #                                                  size=(120, -1),
+        #                                                  value=1, min=1)
+        # self._maxRecurrenceCountEntry.Bind(wx.EVT_SPINCTRL,
+        #                                    self.onRecurrenceEdited)
+        # panelSizer.Add(self._maxRecurrenceCheckBox,
+        #                flag=wx.ALIGN_CENTER_VERTICAL)
+        # panelSizer.Add(self.horizontalSpace)
+        # panelSizer.Add(wx.StaticText(maxPanel, label=_("Stop after")),
+        #                flag=wx.ALIGN_CENTER_VERTICAL)
+        # panelSizer.Add(self.horizontalSpace)
+        # panelSizer.Add(self._maxRecurrenceCountEntry,
+        #                flag=wx.ALIGN_CENTER_VERTICAL)
+        # panelSizer.Add(self.horizontalSpace)
+        # panelSizer.Add(wx.StaticText(maxPanel, label=_("recurrences")),
+        #                flag=wx.ALIGN_CENTER_VERTICAL)
+        # maxPanel.SetSizerAndFit(panelSizer)
+        # Weekday selector panel for weekly recurrence
+        weekdayPanel = wx.Panel(self)
+        weekdayPanelSizer = wx.BoxSizer(wx.HORIZONTAL)
+        weekdayPanelSizer.Add(
+            wx.StaticText(weekdayPanel, label=_("On days:")),
+            flag=wx.ALIGN_CENTER_VERTICAL,
+        )
+        weekdayPanelSizer.Add((6, -1))
+        # Weekday names starting from Monday (0) to Sunday (6)
+        weekdayNames = [
+            _("Mon"),
+            _("Tue"),
+            _("Wed"),
+            _("Thu"),
+            _("Fri"),
+            _("Sat"),
+            _("Sun"),
+        ]
+        self._weekdayCheckBoxes = []
+        for i, dayName in enumerate(weekdayNames):
+            cb = wx.CheckBox(weekdayPanel, label=dayName)
+            cb.Bind(wx.EVT_CHECKBOX, self.onRecurrenceEdited)
+            self._weekdayCheckBoxes.append(cb)
+            weekdayPanelSizer.Add(cb, flag=wx.ALIGN_CENTER_VERTICAL)
+            if i < len(weekdayNames) - 1:
+                weekdayPanelSizer.Add((6, -1))
+        weekdayPanel.SetSizerAndFit(weekdayPanelSizer)
+        self._weekdayPanel = weekdayPanel
+
+        # schedulePanel created before maxPanel for correct tab order (top-to-bottom)
+        schedulePanel = wx.Panel(self)
+        panelSizer = wx.BoxSizer(wx.HORIZONTAL)
+        label = wx.StaticText(
+            schedulePanel, label=_("Schedule each next recurrence based on")
+        )
+        panelSizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
+        panelSizer.Add((3, -1))
+        self._scheduleChoice = wx.Choice(
+            schedulePanel,
+            choices=[
+                _("previous planned start and/or due date"),
+                _("last completion date"),
+            ],
+        )
+        self._scheduleChoice.Bind(wx.EVT_CHOICE, self.onRecurrenceEdited)
+        if operating_system.isMac():
+            # On Mac OS X, the wx.Choice gets too little vertical space by
+            # default
+            # size = self._scheduleChoice.GetSizeTuple()
+            size = self._scheduleChoice.GetSize()
+            self._scheduleChoice.SetMinSize((size[0], size[1] + 1))
+        panelSizer.Add(self._scheduleChoice, flag=wx.ALIGN_CENTER_VERTICAL)
+        schedulePanel.SetSizerAndFit(panelSizer)
 
         maxPanel = wx.Panel(self)
         panelSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -557,29 +766,7 @@ class RecurrenceEntry(wx.Panel):
         )
         maxPanel.SetSizerAndFit(panelSizer)
 
-        schedulePanel = wx.Panel(self)
-        panelSizer = wx.BoxSizer(wx.HORIZONTAL)
-        label = wx.StaticText(
-            schedulePanel, label=_("Schedule each next recurrence based on")
-        )
-        panelSizer.Add(label, flag=wx.ALIGN_CENTER_VERTICAL)
-        panelSizer.Add((3, -1))
-        self._scheduleChoice = wx.Choice(
-            schedulePanel,
-            choices=[
-                _("previous planned start and/or due date"),
-                _("last completion date"),
-            ],
-        )
-        self._scheduleChoice.Bind(wx.EVT_CHOICE, self.onRecurrenceEdited)
-        if operating_system.isMac():
-            # On Mac OS X, the wx.Choice gets too little vertical space by
-            # default
-            size = self._scheduleChoice.GetSize()
-            self._scheduleChoice.SetMinSize((size[0], size[1] + 1))
-        panelSizer.Add(self._scheduleChoice, flag=wx.ALIGN_CENTER_VERTICAL)
-        schedulePanel.SetSizerAndFit(panelSizer)
-
+        # Stop after date using DateTimeComboCtrl
         stopPanel = wx.Panel(self)
         panelSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -612,6 +799,10 @@ class RecurrenceEntry(wx.Panel):
             self._recurrenceStopDateTimeEntry, flag=wx.ALIGN_CENTER_VERTICAL
         )
         panelSizer.Add(self.horizontalSpace)
+        panelSizer.Add(
+            self._recurrenceStopDateTimeEntry,
+            flag=wx.ALIGN_CENTER_VERTICAL,
+        )
         stopPanel.SetSizerAndFit(panelSizer)
 
         panelSizer = wx.BoxSizer(wx.VERTICAL)
@@ -623,6 +814,10 @@ class RecurrenceEntry(wx.Panel):
         panelSizer.Add(stopPanel)
         self.SetSizerAndFit(panelSizer)
         self.SetValue(recurrence)
+
+    def getSubPanels(self):
+        """Return the list of sub-panels for external layout."""
+        return list(self._subPanels)
 
     def updateRecurrenceLabel(self):
         recurrenceDict = {
@@ -637,6 +832,10 @@ class RecurrenceEntry(wx.Panel):
         self._recurrenceSameWeekdayCheckBox.Enable(
             self._recurrencePeriodEntry.Selection in (3, 4)
         )
+        # Enable weekday checkboxes only when weekly is selected (index 2)
+        weeklySelected = self._recurrencePeriodEntry.Selection == 2
+        for cb in self._weekdayCheckBoxes:
+            cb.Enable(weeklySelected)
         self._recurrenceSizer.Layout()
 
     def onRecurrencePeriodEdited(self, event):

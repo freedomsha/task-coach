@@ -16,73 +16,54 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from buildlib import (
-    clean,
-    bdist_rpm_fedora,
-    bdist_rpm_opensuse,
-    bdist_deb,
-    bdist_winpenpack,
-    bdist_portableapps,
-)
+from buildlib import clean, bdist_rpm_fedora, bdist_rpm_opensuse, BdistDeb, bdist_winpenpack, bdist_portableapps
 from setup import setupOptions
 from taskcoachlib import meta
+from io import open as file  # re  afin de remplacer file par io.open
 import sys
 import os
 import glob
 import wx
 
+setupOptions['cmdclass'] = dict(clean=clean,
+                                bdist_rpm_fedora=bdist_rpm_fedora,
+                                bdist_rpm_opensuse=bdist_rpm_opensuse,
+                                bdist_deb=BdistDeb,
+                                bdist_winpenpack=bdist_winpenpack,
+                                bdist_portableapps=bdist_portableapps)
 
-setupOptions["cmdclass"] = dict(
-    clean=clean,
-    bdist_rpm_fedora=bdist_rpm_fedora,
-    bdist_rpm_opensuse=bdist_rpm_opensuse,
-    bdist_deb=bdist_deb,
-    bdist_winpenpack=bdist_winpenpack,
-    bdist_portableapps=bdist_portableapps,
-)
+distdir = 'dist'
+builddir = 'build'
 
-distdir = "dist"
-builddir = "build"
-
-
-manifest = (
-    """
+manifest = """
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-    <assemblyIdentity version="0.64.1.0" processorArchitecture="x86" 
+    <assemblyIdentity version="0.64.1.0" processorArchitecture="x86"
     name="Controls" type="win32"/>
     <description>%s</description>
     <dependency>
         <dependentAssembly>
-            <assemblyIdentity type="win32" 
-            name="Microsoft.Windows.Common-Controls" version="6.0.0.0" 
+            <assemblyIdentity type="win32"
+            name="Microsoft.Windows.Common-Controls" version="6.0.0.0"
             processorArchitecture="X86" publicKeyToken="6595b64144ccf1df"
             language="*"/>
         </dependentAssembly>
     </dependency>
     <dependency>
         <dependentAssembly>
-            <assemblyIdentity type="win32" 
+            <assemblyIdentity type="win32"
             name="Microsoft.VC90.CRT" version="9.0.21022.8"
             processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b" />
         </dependentAssembly>
     </dependency>
 </assembly>
-"""
-    % meta.name
-)
+""" % meta.name
 
-doubleline = (
-    "================================================================\n"
-)
+doubleline = '================================================================\n'
 
-header = (
-    doubleline + "%(name)s - %(description)s\n" % meta.metaDict + doubleline
-)
+header = doubleline + '%(name)s - %(description)s\n' % meta.metaDict + doubleline
 
-aboutText = (
-    header
-    + """
+aboutText = header + """
 Version %(version)s, %(date)s
 
 By %(author)s <%(author_email)s>
@@ -92,18 +73,13 @@ By %(author)s <%(author_email)s>
 %(copyright)s
 %(license)s
 
-"""
-    % meta.metaDict
-    + doubleline
-)
+""" % meta.metaDict + doubleline
 
-installText = (
-    header
-    + """
+installText = header + """
 
 --- Prerequisites ----------------------------------------------
 
-You need Python version %(pythonversion)s or higher, wxPython 
+You need Python version %(pythonversion)s or higher, wxPython
 version %(wxpythonversion)s or higher, and Twisted version
 %(twistedversionnumber)s or higher.
 
@@ -128,10 +104,10 @@ Please mail me the errors.txt file and your platform information
 
 --- Installation -----------------------------------------------
 
-There are two options to install %(name)s: 
+There are two options to install %(name)s:
 
-First, you can simply move this directory to some suitable 
-location and run taskcoach.py (or taskcoach.pyw if you are on 
+First, you can simply move this directory to some suitable
+location and run taskcoach.py (or taskcoach.pyw if you are on
 the Windows platform) from there.
 
 Alternatively, you can use the Python distutils setup script
@@ -145,277 +121,188 @@ need to force old files to be overwritten, like this:
 
   python setup.py install --force
 
-"""
-    % meta.metaDict
-    + doubleline
-)
+""" % meta.metaDict + doubleline
 
-buildText = (
-    header
-    + """
+buildText = header + """
 
 --- Building ---------------------------------------------------
 
 To be done.
 
-"""
-    % meta.metaDict
-    + doubleline
-)
+""" % meta.metaDict + doubleline
 
 
-def writeFile(filename, text, directory="."):  # pylint: disable=W0621
+def write_file(filename, text, directory='.'):  # pylint: disable=W0621 "Shadows name 'directory' from outer scope"
     if not os.path.exists(directory):
         os.mkdir(directory)
-    with open(os.path.join(directory, filename), "w") as textFile:
+    with file(os.path.join(directory, filename), 'w') as textFile:  # fichier binaire ou non ?
         textFile.write(text)
 
 
-def createDocumentation():
-    writeFile("README.txt", aboutText)
-    writeFile("INSTALL.txt", installText)
-    writeFile("LICENSE.txt", meta.licenseText)
+def create_documentation():
+    write_file('README.txt', aboutText)
+    write_file('INSTALL.txt', installText)
+    write_file('LICENSE.txt', meta.licenseText)
 
 
-def createInnoSetupScript():
-    script = open("build.in/windows/taskcoach.iss").read()
-    writeFile("taskcoach.iss", script % meta.metaDict, builddir)
+def create_inno_setup_script():
+    script = file('build.in/windows/taskcoach.iss').read()
+    write_file('taskcoach.iss', script % meta.metaDict, builddir)
 
 
-def createDebianChangelog():
-    changelog = open("build.in/debian/changelog").read()
-    writeFile(
-        "changelog",
-        changelog % meta.metaDict,
-        os.path.join(builddir, "debian"),
-    )
+def create_debian_changelog():
+    changelog = file('build.in/debian/changelog').read()
+    write_file('changelog', changelog % meta.metaDict,
+               os.path.join(builddir, 'debian'))
 
 
-if sys.argv[1] == "py2exe":
-    from distutils.core import setup
-    import py2exe  # pylint: disable=F0401
+if sys.argv[1] == 'py2exe':
+    from distutils.core import setup  # Python version 3.13 does not have module distutils.core
+    import py2exe  # pylint: disable=F0401 (windows)
     import shutil
 
-    shutil.copyfile("taskcoach.pyw", "taskcoach_console.py")
-    py2exeDistdir = "%s-%s-win32exe" % (meta.filename, meta.version)
+    shutil.copyfile('taskcoach.pyw', 'taskcoach_console.py')
+    py2exeDistdir = '%s-%s-win32exe' % (meta.filename, meta.version)
     # Get .mo files for wxWidgets:
-    locale_dir = os.path.join(os.path.dirname(wx.__file__), "locale")
-    mo_path = os.path.join("LC_MESSAGES", "wxstd.mo")
+    locale_dir = os.path.join(os.path.dirname(wx.__file__), 'locale')
+    mo_path = os.path.join('LC_MESSAGES', 'wxstd.mo')
     mo_files = []
     for language_dir in os.listdir(locale_dir):
         mo_abs_filename = os.path.join(locale_dir, language_dir, mo_path)
-        mo_rel_dir = os.path.join("locale", language_dir, "LC_MESSAGES")
+        mo_rel_dir = os.path.join('locale', language_dir, 'LC_MESSAGES')
         mo_files.append((mo_rel_dir, [mo_abs_filename]))
     # DLL's we redistribute so people don't have to download them:
-    dll_files = [
-        ("", ["dist.in/gdiplus.dll"]),
-        (
-            "Microsoft.VC90.CRT",
-            [
-                "dist.in/msvcp90.dll",
-                "dist.in/msvcr90.dll",
-                "dist.in/Microsoft.VC90.CRT.manifest",
-            ],
-        ),
-    ]
-    setupOptions.update(
-        {
-            "windows": [
-                {
-                    "script": "taskcoach.pyw",
-                    "other_resources": [(24, 1, manifest)],
-                    "icon_resources": [(1, "icons.in/taskcoach.ico")],
-                }
-            ],
-            "console": [
-                {
-                    "script": "taskcoach_console.py",
-                    "other_resources": [(24, 1, manifest)],
-                }
-            ],
-            "options": {
-                "py2exe": {
-                    "compressed": 1,
-                    "optimize": 2,
-                    # We need to explicitly include these packages because they
-                    # are imported implicitly:
-                    "packages": [
-                        "taskcoachlib.i18n",
-                        "taskcoachlib.thirdparty.keyring",
-                        "taskcoachlib.thirdparty._weakrefset",
-                        "igraph.vendor.texttable",
-                        "cairo",
-                    ],
-                    "dist_dir": os.path.join(builddir, py2exeDistdir),
-                    "dll_excludes": ["MSVCR80.dll", "UxTheme.dll"],
-                }
-            },
-            "data_files": dll_files + mo_files,
-        }
-    )
-    os.environ["PATH"] = "dist.in;" + os.environ["PATH"]
+    dll_files = [('', ['dist.in/gdiplus.dll']), ('Microsoft.VC90.CRT',
+                                                 ['dist.in/msvcp90.dll',
+                                                  'dist.in/msvcr90.dll',
+                                                  'dist.in/Microsoft.VC90.CRT.manifest'])]
+    setupOptions.update({
+        'windows': [{'script': 'taskcoach.pyw',
+                     'other_resources': [(24, 1, manifest)],
+                     'icon_resources': [(1, 'icons.in/taskcoach.ico')]}],
+        'console': [{'script': 'taskcoach_console.py',
+                     'other_resources': [(24, 1, manifest)]}],
+        'options': {'py2exe': {
+            'compressed': 1,
+            'optimize': 2,
+            # We need to explicitly include these packages because they
+            # are imported implicitly:
+            'packages': ['taskcoachlib.i18n',
+                         # 'taskcoachlib.thirdparty.keyring',
+                         # 'taskcoachlib.thirdparty.pubsub',
+                         # 'taskcoachlib.thirdparty.pubsub.core',
+                         # 'taskcoachlib.thirdparty.pubsub.core.kwargs',
+                         'taskcoachlib.thirdparty._weakrefset',
+                         'igraph.vendor.texttable', 'cairo'],
+            'dist_dir': os.path.join(builddir, py2exeDistdir),
+            'dll_excludes': ['MSVCR80.dll', 'UxTheme.dll']}},
+        'data_files': dll_files + mo_files})
+    os.environ['PATH'] = 'dist.in;' + os.environ['PATH']
 
-elif sys.argv[1] == "py2app":
+elif sys.argv[1] == 'py2app':
     from setuptools import setup  # pylint: disable=W0404
 
-    setupOptions.update(
-        dict(
-            app=["taskcoach.py"],
-            setup_requires=["py2app"],
-            options=dict(
-                py2app=dict(
-                    argv_emulation=True,
-                    compressed=True,
-                    dist_dir=os.path.join(builddir, "Task Coach"),
-                    optimize=2,
-                    iconfile="icons.in/taskcoach.icns",
-                    # We need to explicitly include i18n modules because they
-                    # are imported implicitly via __import__:
-                    includes=[
-                        filename[:-3].replace("/", ".")
-                        for filename in glob.glob("taskcoachlib/i18n/*.py")
-                        + glob.glob("taskcoachlib/thirdparty/pubsub/*.py")
-                        + glob.glob("taskcoachlib/thirdparty/pubsub/core/*.py")
-                        + glob.glob(
-                            "taskcoachlib/thirdparty/pubsub/core/kwargs/*.py"
-                        )
-                    ],
-                    plist=dict(
-                        CFBundleIconFile="taskcoach.icns",
-                        CFBundleDocumentTypes=[
-                            dict(
-                                CFBundleTypeExtensions=["tsk"],
-                                CFBundleTypeIconFile="taskcoach.icns",
-                                CFBundleTypeName="%s task file" % meta.name,
-                                CFBundleTypeRole="Editor",
-                            )
-                        ],
-                    ),
-                )
-            ),
-        )
-    )
+    setupOptions.update(dict(app=['taskcoach.py'],
+                             setup_requires=['py2app'],
+                             options=dict(py2app=dict(argv_emulation=True, compressed=True,
+                                                      dist_dir=os.path.join(builddir, 'Task Coach'),
+                                                      optimize=2, iconfile='icons.in/taskcoach.icns',
+                                                      # We need to explicitly include i18n modules because they
+                                                      # are imported implicitly via __import__:
+                                                      includes=[filename[:-3].replace('/', '.') for filename
+                                                                in glob.glob('taskcoachlib/i18n/*.py')],
+                                                      # + \
+                                                      # glob.glob('taskcoachlib/thirdparty/pubsub/*.py') + \
+                                                      # glob.glob('taskcoachlib/thirdparty/pubsub/core/*.py') + \
+                                                      # glob.glob('taskcoachlib/thirdparty/pubsub/core/kwargs/*.py')],
+                                                      plist=dict(CFBundleIconFile='taskcoach.icns',
+                                                                 CFBundleDocumentTypes=[
+                                                                     dict(CFBundleTypeExtensions=['tsk'],
+                                                                          CFBundleTypeIconFile='taskcoach.icns',
+                                                                          CFBundleTypeName='%s task file' % meta.name,
+                                                                          CFBundleTypeRole='Editor')])))))
 
-elif sys.argv[1] == "bdist_rpm_fedora":
+elif sys.argv[1] == 'bdist_rpm_fedora':
     from distutils.core import setup
 
-    spec_file = open("build.in/fedora/taskcoach.spec").read() % meta.metaDict
-    spec_file = spec_file.split("\n")
-    setupOptions.update(
-        dict(
-            options=dict(
-                bdist_rpm_fedora=dict(
-                    spec_file=spec_file,
-                    icon="icons.in/taskcoach.png",
-                    desktop_file="build.in/linux_common/taskcoach.desktop",
-                )
-            )
-        )
-    )
+    spec_file = file('build.in/fedora/taskcoach.spec').read() % meta.metaDict
+    spec_file = spec_file.split('\n')
+    setupOptions.update(dict(options=dict(bdist_rpm_fedora=dict(
+        spec_file=spec_file, icon='icons.in/taskcoach.png',
+        desktop_file='build.in/linux_common/taskcoach.desktop'))))
     # On Fedora, to keep the rpm build process going when it finds
     # unpackaged files you need to create a ~/.rpmmacros file
     # containing the line '%_unpackaged_files_terminate_build 0'.
 
-elif sys.argv[1] == "bdist_rpm_opensuse":
+elif sys.argv[1] == 'bdist_rpm_opensuse':
     from distutils.core import setup
 
-    spec_file = open("build.in/opensuse/taskcoach.spec").read() % meta.metaDict
-    spec_file = spec_file.split("\n")
-    setupOptions.update(
-        dict(
-            options=dict(
-                bdist_rpm_opensuse=dict(
-                    spec_file=spec_file,
-                    icon="icons.in/taskcoach.png",
-                    desktop_file="build.in/linux_common/taskcoach.desktop",
-                )
-            )
-        )
-    )
+    spec_file = file('build.in/opensuse/taskcoach.spec').read() % meta.metaDict
+    spec_file = spec_file.split('\n')
+    setupOptions.update(dict(options=dict(bdist_rpm_opensuse=dict(
+        spec_file=spec_file, icon='icons.in/taskcoach.png',
+        desktop_file='build.in/linux_common/taskcoach.desktop'))))
 
-elif sys.argv[1] in ["bdist_deb", "bdist_ubuntu"]:
+elif sys.argv[1] in ['bdist_deb', 'bdist_ubuntu']:
     from distutils.core import setup
 
     bdist_deb = dict(
-        package=meta.data.filename_lower,
-        title=meta.data.name,
+        package=meta.data.filename_lower, title=meta.data.name,
         description=meta.data.description,
         long_description=meta.data.long_description,
         version=meta.data.version,
-        author=meta.data.author,
-        author_email=meta.data.author_email,
+        author=meta.data.author, author_email=meta.data.author_email,
         copyright=meta.data.copyright,
         license=meta.data.license_title_and_version,
         license_abbrev=meta.data.license_title_and_version_abbrev,
-        license_path="/usr/share/common-licenses/GPL-3",
+        license_path='/usr/share/common-licenses/GPL-3',
         license_summary=meta.data.license_notice,
         wxpythonversion=meta.data.wxpythonversionnumber,
         twistedversion=meta.data.twistedversionnumber,
-        subsection="Office",
-        url=meta.data.url,
-        command="/usr/bin/taskcoach.py",
-        changelog_content=open("changelog_content", "rb").read().rstrip(),
-        sdist_exclude="buildlib",
-    )
+        subsection='Office', url=meta.data.url,
+        command='/usr/bin/taskcoach.py',
+        changelog_content=file('changelog_content', 'rb').read().rstrip(),
+        sdist_exclude='buildlib')
 
-    if sys.argv[1] == "bdist_ubuntu":
-        bdist_deb["distribution"] = sys.argv[2]
-        bdist_deb["version"] = "%s-0ubuntu%s~%s" % (
-            meta.version,
-            sys.argv[3],
-            sys.argv[2],
-        )
-        bdist_deb["section"] = "editors"
-        sys.argv[1] = "bdist_deb"
+    if sys.argv[1] == 'bdist_ubuntu':
+        bdist_deb['distribution'] = sys.argv[2]
+        bdist_deb['version'] = '%s-0ubuntu%s~%s' % (meta.version, sys.argv[3], sys.argv[2])
+        bdist_deb['section'] = 'editors'
+        sys.argv[1] = 'bdist_deb'
         del sys.argv[2]
         del sys.argv[2]
 
     setupOptions.update(dict(options=dict(bdist_deb=bdist_deb)))
 
-elif sys.argv[1] == "bdist_winpenpack":
+elif sys.argv[1] == 'bdist_winpenpack':
     from distutils.core import setup
 
-    setupOptions.update(
-        dict(
-            options=dict(
-                bdist_winpenpack=dict(
-                    version=meta.data.version,
-                    license=meta.data.license_title,
-                    url=meta.data.url,
-                    filename=meta.data.filename,
-                    date=meta.data.date,
-                )
-            )
-        )
-    )
+    setupOptions.update(dict(options=dict(bdist_winpenpack=dict(
+        version=meta.data.version,
+        license=meta.data.license_title,
+        url=meta.data.url,
+        filename=meta.data.filename,
+        date=meta.data.date))))
 
-elif sys.argv[1] == "bdist_portableapps":
+elif sys.argv[1] == 'bdist_portableapps':
     from distutils.core import setup
 
-    setupOptions.update(
-        dict(
-            options=dict(
-                bdist_portableapps=dict(
-                    name=meta.data.name,
-                    version=meta.data.version,
-                    license=meta.data.license_title,
-                    url=meta.data.url,
-                    filename=meta.data.filename,
-                    date=meta.data.date,
-                )
-            )
-        )
-    )
+    setupOptions.update(dict(options=dict(bdist_portableapps=dict(
+        name=meta.data.name,
+        version=meta.data.version,
+        license=meta.data.license_title,
+        url=meta.data.url,
+        filename=meta.data.filename,
+        date=meta.data.date))))
 
 else:
     from distutils.core import setup
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     for directory in builddir, distdir:
         if not os.path.exists(directory):
             os.mkdir(directory)
-    createDocumentation()
+    create_documentation()
     setup(**setupOptions)  # pylint: disable=W0142
-    if sys.argv[1] == "py2exe":
-        createInnoSetupScript()
+    if sys.argv[1] == 'py2exe':
+        create_inno_setup_script()

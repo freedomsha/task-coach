@@ -16,9 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, os, shutil, bz2
+# from builtins import object
+import os
+import shutil
+import bz2
+import io
 from taskcoachlib import persistence, config
 from taskcoachlib.domain import date, task
+from ... import tctest
 
 
 class DummyFile(object):
@@ -31,6 +36,12 @@ class DummyFile(object):
     def write(self, *args, **kwargs):  # pylint: disable=W0613
         pass
 
+    def __enter__(self):
+        return self  # Retourne l'instance de DummyFile
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass  # Ne fait rien à la sortie du contexte
+
 
 class DummyTaskFile(persistence.TaskFile):
     def _openForRead(self, *args, **kwargs):  # pylint: disable=W0613
@@ -40,13 +51,21 @@ class DummyTaskFile(persistence.TaskFile):
         return DummyFile()
 
     def _read(self, *args, **kwargs):  # pylint: disable=W0613
-        return [task.Task()], [], [], None, dict(), None
+        duplicate_ids = []
+        return (
+            [task.Task()],
+            [],
+            [],
+            None,
+            dict(),
+            None,
+        ), duplicate_ids  # Trop de valeurs de retour pour la méthode _read s'il n'y a pas duplicate_ids !
 
     def exists(self):
         return True
 
     def filename(self):
-        return super(DummyTaskFile, self).filename() or "whatever.tsk"
+        return super().filename() or "whatever.tsk"
 
 
 class LocalSettings(config.Settings):
@@ -55,16 +74,16 @@ class LocalSettings(config.Settings):
         if os.path.exists(self.__path):
             shutil.rmtree(self.__path)
         os.mkdir(self.__path)
-        super(LocalSettings, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _pathToDataDir(self, *args, **kwargs):
         return self.__path, False
 
 
-class AutoBackupTest(test.TestCase):
+class AutoBackupTest(tctest.TestCase):
     # pylint: disable=E1101,E1002,W0232
     def setUp(self):
-        super(AutoBackupTest, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = LocalSettings(load=False)
         self.taskFile = DummyTaskFile()
         self.backup = persistence.AutoBackup(
@@ -73,7 +92,7 @@ class AutoBackupTest(test.TestCase):
         self.copyCalled = False
 
     def tearDown(self):
-        super(AutoBackupTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
         if os.path.exists("test.tsk"):
@@ -135,10 +154,12 @@ class AutoBackupTest(test.TestCase):
     def testBackupMigrationManifest(self):
         self.taskFile.setFilename("test.tsk")
         self.backup.onTaskFileRead(self.taskFile)
-        with open(
-            os.path.join(self.settings.pathToBackupsDir(), "backups.xml"), "rb"
+        # with file(os.path.join(self.settings.pathToBackupsDir(), 'backups.xml'), 'rb') as fp:
+        with io.open(
+            os.path.join(self.settings.pathToBackupsDir(), "backups.xml"), "r"
         ) as fp:
             content = fp.read()
+        # self.assertEqual(content, '<backupfiles><file hasha="13cf6835565aaf4ab1f78e922b9917f9a4c7a856">test.tsk</file></backupfiles>')
         self.assertEqual(
             content,
             '<backupfiles><file sha="13cf6835565aaf4ab1f78e922b9917f9a4c7a856">test.tsk</file></backupfiles>',
@@ -146,7 +167,8 @@ class AutoBackupTest(test.TestCase):
 
     def testBackupMigration(self):
         self.taskFile.setFilename("test.tsk")
-        with open("test.20140715-010203.tsk.bak", "wb") as fp:
+        # with file('test.20140715-010203.tsk.bak', 'wb') as fp:
+        with io.open("test.20140715-010203.tsk.bak", "w") as fp:
             fp.write("Hello, world")
         self.backup.onTaskFileRead(self.taskFile)
         self.assertFalse(os.path.exists("test.20140715-010203.tsk.bak"))
@@ -157,7 +179,7 @@ class AutoBackupTest(test.TestCase):
             "20140715010203.bak",
         )
         self.assertTrue(os.path.exists(backupName))
-        self.assertEqual(bz2.BZ2File(backupName).read(), "Hello, world")
+        self.assertEqual(bz2.BZ2File(backupName).read(), b"Hello, world")
 
     def testNoBackupFiles(self):
         self.assertEqual(
@@ -176,6 +198,7 @@ class AutoBackupTest(test.TestCase):
         )
 
     def testTooManyBackupFiles_(self):
+        # self.assertEqual(86, self.backup.numberOfExtraneousBackupFiles(self.manyBackupFiles()))
         self.assertEqual(
             85,
             self.backup.numberOfExtraneousBackupFiles(self.manyBackupFiles()),
@@ -191,6 +214,7 @@ class AutoBackupTest(test.TestCase):
         self.backup.removeExtraneousBackupFiles(
             self.taskFile, remove=remove, glob=self.globMany
         )
+        # self.assertEqual(86, len(removedFiles))
         self.assertEqual(85, len(removedFiles))
 
     def testRemoveExtraneousBackFiles_OSError(self):
@@ -213,11 +237,18 @@ class AutoBackupTest(test.TestCase):
         )  # pylint: disable=W0212
 
     def testCreateBackupOnSave(self):
-        self.taskFile.save()
+        # Définir un nom de fichier pour le TaskFile
+        self.taskFile.setFilename(
+            "test.tsk"
+        )  # <-- AJOUTEZ CECI  # TODO : peut-être que c'est taskcoach qui doit créer le fichier !
+        self.taskFile.save()  # Premier save (pas de backup attendu, car le fichier n'existe pas encore)
         self.copyCalled = False
-        self.taskFile.tasks().append(task.Task())
-        self.taskFile.save()
-        self.assertTrue(self.copyCalled)
+        self.taskFile.tasks().append(task.Task())  # Modification du modèle
+        self.taskFile.save()  # Deuxième save -> doit déclencher le backup
+        self.assertTrue(self.copyCalled)  # Vérifie que onCopyFile a été appelé
+        # # Vérifie que le backup existe (optionnel)
+        # backup_files = self.backup.backupFiles(self.taskFile)
+        # self.assertEqual(len(backup_files), 1)  # 1 backup créé
 
     def testDontCreateBackupOnOpen(self):
         self.taskFile.load()

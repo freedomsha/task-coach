@@ -1,0 +1,1441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="ANALYZE_INJECTED_CODE" value="false" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackgroundAgentGlobalSettings">
+    <option name="selectedModelId" value="auto" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5dfc5557-eb63-4670-85c4-09b187663bdf" name="Changes" comment="docs: add initial README with project overview and installation instructions">
+      <change beforePath="$PROJECT_DIR$/.idea/claudeCodeTabState.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/claudeCodeTabState.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/task-coach-git.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/task-coach-git.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/appmap.log" beforeDir="false" afterPath="$PROJECT_DIR$/appmap.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/TODO.tsk" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/TODO.tsk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/appmap.log" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/appmap.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoach.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoach.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoach_202603030650.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoach_202603030650.log.1.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoach_202603030652.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoach_202603030652.log.1.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/application/tkapplication.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/application/tkapplication.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/config/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/domain/task/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/domain/task/task.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/dialog/exporttk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/dialog/exporttk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/mainwindowtk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/mainwindowtk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/menutk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/menutk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/toolbarttk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/toolbarttk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/base_uicommandtk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/base_uicommandtk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/mixin_uicommandtk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/mixin_uicommandtk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/uicommandtk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/uicommandtk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/basetk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/basetk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/containertk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/containertk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/factorytk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/factorytk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/mixintk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/mixintk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/tasktk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/tasktk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/frametk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/frametk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/itemctrltk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/itemctrltk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/treectrltk.py" beforeDir="false" afterPath="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/treectrltk.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="bfd1ea6a-39dd-4925-b390-b80668ae6d20" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="19c2ba07-8892-4ca9-8ce1-de347a9446e6" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="gpt-5-mini" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="bfd1ea6a-39dd-4925-b390-b80668ae6d20" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="gpt-5-mini" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/home/sylvain/Téléchargements/src/task-coach-git" value="2iXpPXCLEX1KUGtS4kQQnXKaYah" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+    <option name="inlineChatModeId" value="Ask" />
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="edit-panel" value="GPT-5 mini" />
+      <entry key="chat-panel" value="GPT-5 mini" />
+      <entry key="agent-panel" value="GPT-5 mini" />
+    </selectedModels>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Unit Test" />
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Sylvain SZYDLOWSKI &lt;154604793+freedomsha@users.noreply.github.com&gt;" />
+      </list>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="SWAP_SIDES_IN_COMPARE_BRANCHES" value="true" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {}
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/freedomsha/task-coach&quot;,
+    &quot;accountId&quot;: &quot;f1a11195-7d33-4782-955b-25b9b0a9054d&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/.local/lib/python3.11/site-packages/wx/lib/agw/customtreectrl.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$USER_HOME$/.local/lib/python3.11/site-packages/wx/lib/agw/hypertreelist.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/.tenv/lib/python3.13/site-packages/PIL/ImageFont.py" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2iXpPXCLEX1KUGtS4kQQnXKaYah" />
+  <component name="ProjectSessionTemplates">
+    <option name="inlineTemplate">
+      <template>
+        <option name="modeId" value="Ask" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_id" />
+            <option name="modelValue" value="auto" />
+          </model>
+        </option>
+        <option name="targetType" value="LOCAL" />
+      </template>
+    </option>
+    <option name="panelTemplate">
+      <template>
+        <option name="modeId" value="Agent" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_id" />
+            <option name="modelValue" value="auto" />
+          </model>
+        </option>
+        <option name="targetType" value="BACKGROUND" />
+        <option name="worktreeMode" value="WORKSPACE" />
+      </template>
+    </option>
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_attachment.FileAttachmentTest.testCopy.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_base.CompositeObjectTest.testRecursiveSubject.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_task.DefaultTaskStateTest.testSetActualStartDateTimeUnchangedCausesNoNotification.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_task.TaskWithAttachmentAddedFixture.testCopy.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_task.TaskWithAttachmentFixture.testAttachments.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_task.TaskWithAttachmentFixture.testCopy.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.domainTests.test_task.TaskWithTwoChildrenTest.testCopy.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.guiTests.MainWindowTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.guiTests.MenuTest.ViewMenuTestCase.testSortByDescription.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.DirtyTaskFileTest.testDoesNotNeedSave_AfterLoad.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.DirtyTaskFileTest.testDoesNotNeedSave_AfterSave.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.DirtyTaskFileTest.testLastFilename_EqualsPreviousFilenameAfterClosingTwice.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.DirtyTaskFileTest.testNeedSave_AfterAddChild.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.DirtyTaskFileTest.testNeedSave_AfterEditEffortTask.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.LockedTaskFileLockTest.testFileCanBeLoadedAfterClose.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileDirtyWhenChangingCategoryAttachmentsTestCase.testNeedSave_AfterFileAttachmentNoteAdded.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileDirtyWhenChangingTaskAttachmentsTestCase.testNeedSave_AfterAttachmentAdded.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileMergeTest.testMerge_CategoryWithTask.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileMergeTest.testMerge_DifferentCategories.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileMonitorTestBase.testCategoryExistsAfterLoad.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileMonitorTestBase.testChangeOtherSetsChanges.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.TaskFileTest.TaskFileMonitorTestBase.testNewObject.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLReaderTest.XMLReaderVersion20Test.testCategoryId.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLReaderTest.XMLReaderVersion22Test.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLReaderTest.XMLReaderVersion22Test.testStatus.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLReaderTest.XMLReaderVersion30Test.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLReaderTest.XMLReaderVersion38Test.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLWriterTest.XMLWriterTest.testActiveEffort.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLWriterTest.XMLWriterTest.testAttachmentFont.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLWriterTest.XMLWriterTest.testGUID.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLWriterTest.XMLWriterTest.testMultiplePrerequisites.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLWriterTest.XMLWriterTest.testTaskId.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.persistenceTests.XMLWriterTest.XMLWriterTest.testTaskWithNestedNotes.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.widgetTests.TreeCtrlTest.CheckTreeCtrlTest.testAddOneChild.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.widgetTests.TreeCtrlTest.CheckTreeCtrlTest.testRefreshItem.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests for tests.unittests.widgetTests.TreeCtrlTest.TreeCtrlTestCase.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in AttachmentCommandsTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in AttachmentEditorTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in AttachmentViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in AutoBackupTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in AutoImporterExporterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in AutoSaverTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in BaseCommandsTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in CSVReaderTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in CategorizableCommandsTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in CategoryCommandsTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in CategoryEditorTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in CategoryViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in DateTimeCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in DateTimeEntryTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in DeveloperMessageCheckerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in DeveloperMessageDialogTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in DragAndDropTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in EditorTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in EffortEditorTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in EffortViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ExportDialogTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in HTMLWriterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in IOControllerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in IPhoneDialogTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ItemCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ItemCtrlTkTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ListCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in MainWindowTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in MaskedCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in MenuTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in MetaDataTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in MonitorBaseTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in MonitorCategorizableTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in NoteViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in PreferencesTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in PrinterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ReminderControllerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ReminderDialogTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in SpinCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in SyncMLTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TaskBarIconTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TaskEditorTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TaskFileTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TaskViewerStatusMessagesTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TaskViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TemplateListTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TemplateXMLReaderTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TemplateXMLWriterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TemplatesDialogTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TextCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TodoTxtReaderTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TodoTxtWriterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ToolBarTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ToolTipTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TreeCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TreeListCtrlTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in TreeViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in UICommandTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in UpdatePerSecondViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in VCalendarReaderTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in VCalendarWriterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in VersionCheckerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in VersionDialogTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ViewerContainerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in ViewerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in WindowDimensionsTrackerTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in XMLReaderTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in XMLReaderWriterIntegrationTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in XMLWriterTest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in commandTests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in domainTests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in tctest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in tctktest.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_app.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_apptk.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_attachment.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_base.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_categorizable.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_category.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_categorycontainer.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_categoryfilter.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_command.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_composite.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_config.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_date.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_datetime.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_desktop.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_domainobjectownermetaclass.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_effort.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_effortaggregator.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_effortcomposite.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_effortcompositeperperiod.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_effortlist.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_filter.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_font.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_lockfile.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_mailer.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_metaclass.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_note.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_notecontainer.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_observable.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_owner.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_pubsub.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_recurrence.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_render.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_scheduler.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_singleton.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_sorter.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_task.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_taskfilter.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_tasklist.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_taskrecurrence.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_taskrelations.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_taskstatus.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_timedelta.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in test_wxpython.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in unittests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Unittests in widgetTests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.CartoUML (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.CartoUML (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.CartoUML.executor&quot;: &quot;Run&quot;,
+    &quot;Python.HTMLWriterTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.SyncMLTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.TodoTxtReaderTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.TodoTxtWriterTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.VCalendarReaderTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.XMLReaderWriterIntegrationTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python.appindicator.executor&quot;: &quot;Run&quot;,
+    &quot;Python.artprovidertk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.attachmenttk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.attributesync.executor&quot;: &quot;Run&quot;,
+    &quot;Python.autowidth.executor&quot;: &quot;Run&quot;,
+    &quot;Python.autowidthtk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.backupmanager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.balloontip.executor&quot;: &quot;Run&quot;,
+    &quot;Python.balloontiptk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.basetk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.category.executor&quot;: &quot;Run&quot;,
+    &quot;Python.categorytk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.checklistbox.executor&quot;: &quot;Run&quot;,
+    &quot;Python.checklistboxtk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.container.executor&quot;: &quot;Run&quot;,
+    &quot;Python.containertk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cvsimporttk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.datectrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.datectrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dialog.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dirchooser.executor&quot;: &quot;Run&quot;,
+    &quot;Python.draganddrop.executor&quot;: &quot;Run&quot;,
+    &quot;Python.draganddroptk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.effort.executor&quot;: &quot;Run&quot;,
+    &quot;Python.exporttk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.factory.executor&quot;: &quot;Run&quot;,
+    &quot;Python.factorytk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fontpicker.executor&quot;: &quot;Run&quot;,
+    &quot;Python.frame.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hcalendar.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hcalendarconfig.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hcalendarconfigtk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.hcalendartk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inplace_editor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.itemctrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.itemctrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.listctrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mainwindowtk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.masked.executor&quot;: &quot;Run&quot;,
+    &quot;Python.menu.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mixin.executor&quot;: &quot;Run&quot;,
+    &quot;Python.note.executor&quot;: &quot;Run&quot;,
+    &quot;Python.notebook.executor&quot;: &quot;Run&quot;,
+    &quot;Python.notebooktk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.notetk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.panel.executor&quot;: &quot;Run&quot;,
+    &quot;Python.preferencestk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.refresher.executor&quot;: &quot;Run&quot;,
+    &quot;Python.remindertk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.searchctrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.searchctrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.smartdatetimectrl (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.smartdatetimectrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.smartdatetimectrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.spinctrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.squaremap.executor&quot;: &quot;Run&quot;,
+    &quot;Python.squaremaptk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.statustk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.syncmlwarning.executor&quot;: &quot;Run&quot;,
+    &quot;Python.syncpreferences.executor&quot;: &quot;Run&quot;,
+    &quot;Python.task.executor&quot;: &quot;Run&quot;,
+    &quot;Python.taskcoach.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tasktk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tctest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.templatestk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_listctrl_virtual.executor&quot;: &quot;Run&quot;,
+    &quot;Python.textctrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.textctrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.timeline (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.timeline.executor&quot;: &quot;Run&quot;,
+    &quot;Python.timelinetk (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.timelinetk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tkReportScheduler.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tkScheduler.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tkdatetimectrl.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tkevents.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tkfontchooser.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tktimeline.py.bak.executor&quot;: &quot;Run&quot;,
+    &quot;Python.toolbartk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tooltip.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tooltiptk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.treectrltk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.version.executor&quot;: &quot;Run&quot;,
+    &quot;Python.windowdimensionstrackertk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.xfce4warningtk.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;appmap.toolWindow.codeObjects.collapsed&quot;: &quot;false&quot;,
+    &quot;appmap.toolWindow.runtimeAnalysis.collapsed&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix/virtuallistctrl-refresh-docs-schedule&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last.edited.regexp&quot;: &quot;Sample Text&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/sylvain/Téléchargements/src/task-coach-git/taskcoach/taskcoachlib/guitk/viewer/mixintk.py&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.davideladisa.commitai.settings.AppSettingsConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;/home/sylvain/Téléchargements/src/taskcoach-team/taskcoach/taskcoachlib/domain/task/task.py&quot;,
+    &quot;two.files.diff.last.used.folder&quot;: &quot;/home/sylvain/Téléchargements/src/taskcoach-team/taskcoach/taskcoachlib&quot;
+  }
+}</component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;export GTK_DEBUG=interactive" module-name="task-coach-git" is-module-sdk="true">
+        <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;export GTK_DEBUG=interactive" />
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="task-coach-git" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="PyDebuggerOptionsProvider">
+    <option name="mySaveCallSignatures" value="true" />
+    <option name="mySupportGeventDebugging" value="true" />
+    <option name="myDebuggerBackend" value="DEBUGPY" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib/gui" />
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib/filesystem" />
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib/domain/base" />
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk" />
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib/gui" />
+      <recent name="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="tests" />
+      </set>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.taskcoach">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="task-coach-git" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="containertk" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="task-coach-git" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/containertk.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="taskcoach" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="task-coach-git" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/taskcoach" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/taskcoach/taskcoach.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="treectrltk" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="task-coach-git" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.11" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/treectrltk.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.taskcoach" />
+        <item itemvalue="Python.treectrltk" />
+        <item itemvalue="Python.containertk" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5dfc5557-eb63-4670-85c4-09b187663bdf" name="Changes" comment="" />
+      <created>1719646752457</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1719646752457</updated>
+    </task>
+    <task id="LOCAL-00763" summary=" Le problème venait du formatage des valeurs négatives dans la méthode statique masked.py:309-325&#10;  de la classe masked.py:234 dans masked.py :&#10;&#10;  ### Cause de l'erreur&#10;  La ligne de formatage était écrite ainsi :&#10;    return f&quot;-{f'{hours:d}':&gt;9}&quot; if negative_value else f&quot;{hours:9d}&quot;&#10;  • Pour hours = 10 et negative_value = True : f'{hours:d}':&gt;9 créait d'abord une chaîne de 9&#10;  caractères avec les espaces à gauche ('       10'), puis préfixait le signe moins f&quot;-{...}&quot;, ce&#10;  qui donnait &quot;-       10&quot; (10 caractères au lieu de 9).&#10;  • Le masque de saisie (X{9}:##:##) coupait / décalait alors les caractères en trop, produisant &quot;-&#10;  • Pour hours = 0 (ex: seconds = -4), cela produisait &quot;-        0:00:04&quot; au lieu de &quot;       -&#10;  1:20:00&quot; au lieu de &quot;      -10:20:00&quot;.&#10;  0:00:04&quot;.&#10;  ──────&#10;  ### Correction apportée dans masked.py:309-325&#10;&#10;  Le signe moins doit être accolé au nombre d'heures avant d'appliquer l'alignement à droite sur 9&#10;  caractères :&#10;&#10;        @staticmethod&#10;        def __hour_string(hours, negative_value):&#10;            &quot;&quot;&quot;&#10;            Génère une chaîne pour représenter les heures.&#10;&#10;            Si la valeur est négative, ajoute un signe moins devant le nombre d'heures.&#10;            &quot;&quot;&quot;&#10;            return f&quot;{'-' + str(hours):&gt;9}&quot; if negative_value else f&quot;{hours:9d}&quot;&#10;  ──────&#10;  ### Vérification&#10;&#10;  Tous les 10 tests de DateTimeEntryTest.py (incluant ReadOnlyTimeDeltaEntryTest et&#10;  TimeDeltaEntryTest) passent désormais avec succès :&#10;&#10;  • ReadOnlyTimeDeltaEntryTest.testSetNegativeValue : ✅ OK (&quot;      -10:20:00&quot;)&#10;  • ReadOnlyTimeDeltaEntryTest.testSetSmallNegativeValue : ✅ OK (&quot;       -0:00:04&quot;)">
+      <option name="closed" value="true" />
+      <created>1787149617813</created>
+      <option name="number" value="00763" />
+      <option name="presentableId" value="LOCAL-00763" />
+      <option name="project" value="LOCAL" />
+      <updated>1787149617813</updated>
+    </task>
+    <task id="LOCAL-00764" summary="Refactor editor.py and EffortEditorTest.py for improved readability and functionality&#10;testCreate appelle désormais DateTime.date() au lieu de l’ancienne API inexistante&#10;  DateTime.Date() dans taskcoach/tests/unittests/guiTests/EffortEditorTest.py:81.">
+      <option name="closed" value="true" />
+      <created>1787150701590</created>
+      <option name="number" value="00764" />
+      <option name="presentableId" value="LOCAL-00764" />
+      <option name="project" value="LOCAL" />
+      <updated>1787150701590</updated>
+    </task>
+    <task id="LOCAL-00765" summary="VirtualListCtrl possède maintenant scheduleRefresh, donc le code&#10;  choisit un rafraîchissement différé via wx.CallAfter. Les tests interrogent la ligne immédiatement&#10;  après l’ajout ; le compteur wx est encore à zéro. Les vues en liste doivent rester synchrones, les&#10;  arbres peuvent conserver le différé.&#10;  &#10;  Les listes virtuelles (EffortViewer) sont désormais rafraîchies immédiatement avec RefreshAllItems,&#10;  afin que GetItemText(0) soit disponible juste après l’ajout d’un effort. Le rafraîchissement différé&#10;  reste réservé aux vues arborescentes.&#10;&#10;  Cela couvre les trois classes concernées, qui partagent le même mixin de rendu.">
+      <option name="closed" value="true" />
+      <created>1787151373248</created>
+      <option name="number" value="00765" />
+      <option name="presentableId" value="LOCAL-00765" />
+      <option name="project" value="LOCAL" />
+      <updated>1787151373248</updated>
+    </task>
+    <task id="LOCAL-00766" summary="Refactor EffortViewerTest.py and listctrl.py for improved assertions and color/font handling.&#10;&#10;OnGetItemAttr lève un TypeError, donc wx ignore l’attribut et&#10;  renvoie la couleur par défaut. Je vérifie la signature wxPython disponible et rétablis l’objet&#10;  d’attribut compatible.&#10;  &#10;   Les objets de domaine renvoient désormais des valeurs neutres : couleurs RGB (r, g, b) et polices&#10;  (famille, taille, style). wx.ItemAttr attend en revanche des wx.Colour et wx.Font. Je fais la&#10;  conversion à la frontière wx, dans le contrôle de liste.&#10;  &#10;  La correction est en place. La compilation réussit ; l’import isolé du module de widgets est bloqué&#10;  par un cycle d’import déjà présent (i18n ↔ config), donc je valide directement l’appel wxPython exact&#10;  sans charger le paquet applicatif complet.&#10;  &#10;  OnGetItemAttr convertit maintenant les valeurs métier neutres :&#10;&#10;  - RGB (r, g, b) → wx.Colour&#10;  - police (famille, taille, style) → wx.Font&#10;  - constantes de thème → valeurs système wx&#10;&#10;  Ainsi wx.ItemAttr est construit sans exception et la couleur rouge définie par le test est bien&#10;  appliquée. La compilation et le contrôle du diff passent.">
+      <option name="closed" value="true" />
+      <created>1787152245253</created>
+      <option name="number" value="00766" />
+      <option name="presentableId" value="LOCAL-00766" />
+      <option name="project" value="LOCAL" />
+      <updated>1787152245253</updated>
+    </task>
+    <task id="LOCAL-00767" summary="Refactor EffortViewerTest.py and listctrl.py for improved assertions and color/font handling.&#10;&#10;OnGetItemAttr lève un TypeError, donc wx ignore l’attribut et&#10;  renvoie la couleur par défaut. Je vérifie la signature wxPython disponible et rétablis l’objet&#10;  d’attribut compatible.&#10;  &#10;   Les objets de domaine renvoient désormais des valeurs neutres : couleurs RGB (r, g, b) et polices&#10;  (famille, taille, style). wx.ItemAttr attend en revanche des wx.Colour et wx.Font. Je fais la&#10;  conversion à la frontière wx, dans le contrôle de liste.&#10;  &#10;  La correction est en place. La compilation réussit ; l’import isolé du module de widgets est bloqué&#10;  par un cycle d’import déjà présent (i18n ↔ config), donc je valide directement l’appel wxPython exact&#10;  sans charger le paquet applicatif complet.&#10;  &#10;  OnGetItemAttr convertit maintenant les valeurs métier neutres :&#10;&#10;  - RGB (r, g, b) → wx.Colour&#10;  - police (famille, taille, style) → wx.Font&#10;  - constantes de thème → valeurs système wx&#10;&#10;  Ainsi wx.ItemAttr est construit sans exception et la couleur rouge définie par le test est bien&#10;  appliquée. La compilation et le contrôle du diff passent.">
+      <option name="closed" value="true" />
+      <created>1787152261168</created>
+      <option name="number" value="00767" />
+      <option name="presentableId" value="LOCAL-00767" />
+      <option name="project" value="LOCAL" />
+      <updated>1787152261168</updated>
+    </task>
+    <task id="LOCAL-00768" summary="L’échec survient pendant le setUp, avant l’assertion sur les réglages : un CompositeEffortPerPeriod&#10;  émet un changement de durée mais n’a pas d’id(). Je vais adapter l’observateur du viewer pour traiter&#10;  ces objets agrégés sans les supposer persistables.&#10;  &#10;  La cause était uniquement une ligne de journalisation ajoutée récemment : elle appelait sender.id()&#10;  avant le rafraîchissement. J’ai supprimé cette hypothèse ; le composite est maintenant journalisé via&#10;  sa représentation, puis traité normalement.&#10;  &#10;  CompositeEffortPerPeriod n’est pas un objet persisté et n’a donc pas de méthode id(). L’observateur&#10;  ne l’appelle plus dans son journal de débogage et peut rafraîchir l’effort agrégé normalement.">
+      <option name="closed" value="true" />
+      <created>1787152583152</created>
+      <option name="number" value="00768" />
+      <option name="presentableId" value="LOCAL-00768" />
+      <option name="project" value="LOCAL" />
+      <updated>1787152583152</updated>
+    </task>
+    <task id="LOCAL-00769" summary="L’écart d’une commande indique une colonne qui n’est plus correctement exclue selon le mode actif.&#10;&#10;L’écart est attendu depuis l’ajout volontaire de la colonne « ID » : la commande correspondante est&#10;  présente dans tous les modes, mais les attentes du test n’ont pas été ajustées. Je mets à jour&#10;  uniquement ces quatre cardinalités.&#10;  &#10;  La colonne ID, ajoutée à tous les modes, apporte une commande supplémentaire. Les attentes sont donc&#10;  maintenant : details 7, day 9, week 10, month 9.&#10;&#10;  Compilation et contrôle du diff réussis.">
+      <option name="closed" value="true" />
+      <created>1787152841374</created>
+      <option name="number" value="00769" />
+      <option name="presentableId" value="LOCAL-00769" />
+      <option name="project" value="LOCAL" />
+      <updated>1787152841374</updated>
+    </task>
+    <task id="LOCAL-00770" summary="SetAffirmativeButton() ne remplace pas directement un getter : il faut conserver la référence au&#10;  bouton lors de sa création, l’enregistrer dans le sizer, puis lier l’événement sur cette référence.&#10;  Je vérifie le constructeur et applique ce remplacement.&#10;  &#10;  Je remplace la fabrique automatique par un StdDialogButtonSizer explicite : le bouton OK est alors&#10;  disponible comme variable locale, passé à SetAffirmativeButton(), puis lié à onOk.&#10;  &#10;  SetAffirmativeButton() sert à enregistrer un bouton créé explicitement ; il ne le retourne pas. Le&#10;  dialogue crée donc okButton, l’enregistre avec SetAffirmativeButton(), puis lie directement&#10;  okButton.Bind(...).">
+      <option name="closed" value="true" />
+      <created>1787154424520</created>
+      <option name="number" value="00770" />
+      <option name="presentableId" value="LOCAL-00770" />
+      <option name="project" value="LOCAL" />
+      <updated>1787154424520</updated>
+    </task>
+    <task id="LOCAL-00771" summary="SetAffirmativeButton() ne remplace pas directement un getter : il faut conserver la référence au&#10;  bouton lors de sa création, l’enregistrer dans le sizer, puis lier l’événement sur cette référence.&#10;  Je vérifie le constructeur et applique ce remplacement.&#10;  &#10;  Je remplace la fabrique automatique par un StdDialogButtonSizer explicite : le bouton OK est alors&#10;  disponible comme variable locale, passé à SetAffirmativeButton(), puis lié à onOk.&#10;  &#10;  SetAffirmativeButton() sert à enregistrer un bouton créé explicitement ; il ne le retourne pas. Le&#10;  dialogue crée donc okButton, l’enregistre avec SetAffirmativeButton(), puis lie directement&#10;  okButton.Bind(...).">
+      <option name="closed" value="true" />
+      <created>1787154511289</created>
+      <option name="number" value="00771" />
+      <option name="presentableId" value="LOCAL-00771" />
+      <option name="project" value="LOCAL" />
+      <updated>1787154511289</updated>
+    </task>
+    <task id="LOCAL-00772" summary="Fix description concatenation in filter.py to use item.description() instead of item.getDescription()">
+      <option name="closed" value="true" />
+      <created>1787154529241</created>
+      <option name="number" value="00772" />
+      <option name="presentableId" value="LOCAL-00772" />
+      <option name="project" value="LOCAL" />
+      <updated>1787154529241</updated>
+    </task>
+    <task id="LOCAL-00773" summary="Fix description concatenation in filter.py to use item.description() instead of item.getDescription()">
+      <option name="closed" value="true" />
+      <created>1787154549269</created>
+      <option name="number" value="00773" />
+      <option name="presentableId" value="LOCAL-00773" />
+      <option name="project" value="LOCAL" />
+      <updated>1787154549269</updated>
+    </task>
+    <task id="LOCAL-00774" summary="Le test simule wx.FileSelector, mais le contrôleur mémorise cette fonction dans&#10;  taskcoachlib.gui.iocontroller.file_selector à l’import. La simulation n’atteint donc plus le&#10;  contrôleur et aucune confirmation n’est affichée. Je corrige le fixture pour remplacer cette&#10;  dépendance injectée et initialise explicitement le marqueur.&#10;  &#10;  Le test remplace maintenant iocontroller.file_selector, la dépendance réellement utilisée par&#10;  IOController, au lieu de wx.FileSelector. userWarned est aussi initialisé à False.&#10;&#10;  La confirmation d’écrasement reçoit bien le fichier simulé et peut appeler la wx.MessageBox mockée.">
+      <option name="closed" value="true" />
+      <created>1787155324328</created>
+      <option name="number" value="00774" />
+      <option name="presentableId" value="LOCAL-00774" />
+      <option name="project" value="LOCAL" />
+      <updated>1787155324328</updated>
+    </task>
+    <task id="LOCAL-00775" summary="Refactor asserts and settings for improved debugging and clarity">
+      <option name="closed" value="true" />
+      <created>1787380766154</created>
+      <option name="number" value="00775" />
+      <option name="presentableId" value="LOCAL-00775" />
+      <option name="project" value="LOCAL" />
+      <updated>1787380766155</updated>
+    </task>
+    <task id="LOCAL-00776" summary="Refactor code for improved readability and maintainability. Corrections de bugs, corrections de prise de logs">
+      <option name="closed" value="true" />
+      <created>1787552435567</created>
+      <option name="number" value="00776" />
+      <option name="presentableId" value="LOCAL-00776" />
+      <option name="project" value="LOCAL" />
+      <updated>1787552435567</updated>
+    </task>
+    <task id="LOCAL-00777" summary="Refactor code for improved readability and maintainability. Update method signatures and enhance logging for better debugging.">
+      <option name="closed" value="true" />
+      <created>1787636827218</created>
+      <option name="number" value="00777" />
+      <option name="presentableId" value="LOCAL-00777" />
+      <option name="project" value="LOCAL" />
+      <updated>1787636827218</updated>
+    </task>
+    <task id="LOCAL-00778" summary="Refactor logging statements for improved readability and consistency across multiple files.">
+      <option name="closed" value="true" />
+      <created>1787727182391</created>
+      <option name="number" value="00778" />
+      <option name="presentableId" value="LOCAL-00778" />
+      <option name="project" value="LOCAL" />
+      <updated>1787727182391</updated>
+    </task>
+    <task id="LOCAL-00779" summary="Refactor logging statements for improved readability and consistency across multiple files.">
+      <option name="closed" value="true" />
+      <created>1787727197954</created>
+      <option name="number" value="00779" />
+      <option name="presentableId" value="LOCAL-00779" />
+      <option name="project" value="LOCAL" />
+      <updated>1787727197954</updated>
+    </task>
+    <task id="LOCAL-00780" summary="Refactor toolbar separator handling for improved layout consistency">
+      <option name="closed" value="true" />
+      <created>1787731174896</created>
+      <option name="number" value="00780" />
+      <option name="presentableId" value="LOCAL-00780" />
+      <option name="project" value="LOCAL" />
+      <updated>1787731174896</updated>
+    </task>
+    <task id="LOCAL-00781" summary="Refactor print statements to use logging for improved debugging and consistency">
+      <option name="closed" value="true" />
+      <created>1787731696719</created>
+      <option name="number" value="00781" />
+      <option name="presentableId" value="LOCAL-00781" />
+      <option name="project" value="LOCAL" />
+      <updated>1787731696719</updated>
+    </task>
+    <task id="LOCAL-00782" summary="Refactor print statements to use logging for improved debugging and consistency">
+      <option name="closed" value="true" />
+      <created>1787742492074</created>
+      <option name="number" value="00782" />
+      <option name="presentableId" value="LOCAL-00782" />
+      <option name="project" value="LOCAL" />
+      <updated>1787742492074</updated>
+    </task>
+    <task id="LOCAL-00783" summary="Refactor print statements to use logging for improved debugging and consistency">
+      <option name="closed" value="true" />
+      <created>1787805643412</created>
+      <option name="number" value="00783" />
+      <option name="presentableId" value="LOCAL-00783" />
+      <option name="project" value="LOCAL" />
+      <updated>1787805643412</updated>
+    </task>
+    <task id="LOCAL-00784" summary="Refactor print statements to use logging for improved debugging and consistency">
+      <option name="closed" value="true" />
+      <created>1787806103386</created>
+      <option name="number" value="00784" />
+      <option name="presentableId" value="LOCAL-00784" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806103386</updated>
+    </task>
+    <task id="LOCAL-00785" summary="Refactor print statements to use logging for improved consistency and debugging">
+      <option name="closed" value="true" />
+      <created>1787806148270</created>
+      <option name="number" value="00785" />
+      <option name="presentableId" value="LOCAL-00785" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806148271</updated>
+    </task>
+    <task id="LOCAL-00786" summary="Refactor print statements to use logging for improved consistency and debugging">
+      <option name="closed" value="true" />
+      <created>1787806197909</created>
+      <option name="number" value="00786" />
+      <option name="presentableId" value="LOCAL-00786" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806197909</updated>
+    </task>
+    <task id="LOCAL-00787" summary="Refactor ToolTip class for improved readability and maintainability">
+      <option name="closed" value="true" />
+      <created>1787806270318</created>
+      <option name="number" value="00787" />
+      <option name="presentableId" value="LOCAL-00787" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806270319</updated>
+    </task>
+    <task id="LOCAL-00788" summary="Fix conditional statement for GUI name check in __init__.py">
+      <option name="closed" value="true" />
+      <created>1787806404579</created>
+      <option name="number" value="00788" />
+      <option name="presentableId" value="LOCAL-00788" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806404579</updated>
+    </task>
+    <task id="LOCAL-00789" summary="Refactor import statements for improved organization and clarity">
+      <option name="closed" value="true" />
+      <created>1787806427453</created>
+      <option name="number" value="00789" />
+      <option name="presentableId" value="LOCAL-00789" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806427453</updated>
+    </task>
+    <task id="LOCAL-00790" summary="Add documentation for serialization invariants in __init__.py">
+      <option name="closed" value="true" />
+      <created>1787806497059</created>
+      <option name="number" value="00790" />
+      <option name="presentableId" value="LOCAL-00790" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806497059</updated>
+    </task>
+    <task id="LOCAL-00791" summary="Add all exports to __init__.py for improved module accessibility">
+      <option name="closed" value="true" />
+      <created>1787806527147</created>
+      <option name="number" value="00791" />
+      <option name="presentableId" value="LOCAL-00791" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806527147</updated>
+    </task>
+    <task id="LOCAL-00792" summary="Uncomment __all__ exports in __init__.py for improved module accessibility">
+      <option name="closed" value="true" />
+      <created>1787806556253</created>
+      <option name="number" value="00792" />
+      <option name="presentableId" value="LOCAL-00792" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806556253</updated>
+    </task>
+    <task id="LOCAL-00793" summary="Refactor import statements for consistency and clarity in __init__.py">
+      <option name="closed" value="true" />
+      <created>1787806673934</created>
+      <option name="number" value="00793" />
+      <option name="presentableId" value="LOCAL-00793" />
+      <option name="project" value="LOCAL" />
+      <updated>1787806673934</updated>
+    </task>
+    <task id="LOCAL-00794" summary="Uncomment and update viewer ID initialization for clarity in menu.py">
+      <option name="closed" value="true" />
+      <created>1787807250487</created>
+      <option name="number" value="00794" />
+      <option name="presentableId" value="LOCAL-00794" />
+      <option name="project" value="LOCAL" />
+      <updated>1787807250487</updated>
+    </task>
+    <task id="LOCAL-00795" summary="Update ID generation logic for consistency in newid.py">
+      <option name="closed" value="true" />
+      <created>1787807282693</created>
+      <option name="number" value="00795" />
+      <option name="presentableId" value="LOCAL-00795" />
+      <option name="project" value="LOCAL" />
+      <updated>1787807282693</updated>
+    </task>
+    <task id="LOCAL-00796" summary="Refactor Viewer initialization and layout logic for clarity in basetk.py, container.py, and containertk.py">
+      <option name="closed" value="true" />
+      <created>1787982690619</created>
+      <option name="number" value="00796" />
+      <option name="presentableId" value="LOCAL-00796" />
+      <option name="project" value="LOCAL" />
+      <updated>1787982690619</updated>
+    </task>
+    <task id="LOCAL-00797" summary="Refactor Viewer initialization and layout logic for clarity in basetk.py, container.py, and containertk.py">
+      <option name="closed" value="true" />
+      <created>1787982723729</created>
+      <option name="number" value="00797" />
+      <option name="presentableId" value="LOCAL-00797" />
+      <option name="project" value="LOCAL" />
+      <updated>1787982723729</updated>
+    </task>
+    <task id="LOCAL-00798" summary="Les domaines et le guitk semblent stables. Il reste encore à afficher les tâches et revoir les menus avant toutes autres choses.">
+      <option name="closed" value="true" />
+      <created>1788069207132</created>
+      <option name="number" value="00798" />
+      <option name="presentableId" value="LOCAL-00798" />
+      <option name="project" value="LOCAL" />
+      <updated>1788069207133</updated>
+    </task>
+    <task id="LOCAL-00799" summary="Correction de l’interface Tkinter et des commandes UI&#10;&#10;Correction de la transmission du viewer dans FileSaveSelectedTaskAsTemplate.&#10;Adaptation de la gestion des menus et des fenêtres principales Tkinter.&#10;Correction de la mémorisation des menus et des index d’entrées associés aux commandes.&#10;Mise à jour des entrées de menu avec entryconfigure().&#10;Amélioration de la gestion des commandes et des conteneurs UI.&#10;Correction de la création et de l’association des widgets de la barre d’outils.&#10;Correction de la gestion du widget de recherche et de ses bindings clavier.&#10;Amélioration de la gestion des viewers, des treeviews et des rafraîchisseurs.&#10;Ajout de protections contre les widgets indisponibles pendant l’initialisation.&#10;Amélioration des logs de diagnostic et suppression des traitements incompatibles avec Tkinter.">
+      <option name="closed" value="true" />
+      <created>1788500087714</created>
+      <option name="number" value="00799" />
+      <option name="presentableId" value="LOCAL-00799" />
+      <option name="project" value="LOCAL" />
+      <updated>1788500087715</updated>
+    </task>
+    <task id="LOCAL-00800" summary="Amélioration de la classe ToggleCategoryMenu dans menutk.py pour une meilleure gestion des catégories et ajout de détails dans les exceptions dans observer.py.">
+      <option name="closed" value="true" />
+      <created>1788590104103</created>
+      <option name="number" value="00800" />
+      <option name="presentableId" value="LOCAL-00800" />
+      <option name="project" value="LOCAL" />
+      <updated>1788590104103</updated>
+    </task>
+    <task id="LOCAL-00801" summary="Diminution des messages de log en passant de DEBUG à INFO.">
+      <option name="closed" value="true" />
+      <created>1788599274519</created>
+      <option name="number" value="00801" />
+      <option name="presentableId" value="LOCAL-00801" />
+      <option name="project" value="LOCAL" />
+      <updated>1788599274519</updated>
+    </task>
+    <task id="LOCAL-00802" summary="Diminution des messages de log en passant de DEBUG à INFO.">
+      <option name="closed" value="true" />
+      <created>1788599287362</created>
+      <option name="number" value="00802" />
+      <option name="presentableId" value="LOCAL-00802" />
+      <option name="project" value="LOCAL" />
+      <updated>1788599287362</updated>
+    </task>
+    <task id="LOCAL-00803" summary="Amélioration de la gestion des sous-menus dans ToggleCategoryMenu et mise à jour des messages de log pour plus de clarté.">
+      <option name="closed" value="true" />
+      <created>1788602397739</created>
+      <option name="number" value="00803" />
+      <option name="presentableId" value="LOCAL-00803" />
+      <option name="project" value="LOCAL" />
+      <updated>1788602397740</updated>
+    </task>
+    <task id="LOCAL-00804" summary="Amélioration de la gestion des mises à jour du menu dynamique avec ajout de gestion des erreurs et de messages de log détaillés.&#10;Correction dans DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate() avec postcommand pour la mise à jour avant l'ouverture de menu.">
+      <option name="closed" value="true" />
+      <created>1788673467482</created>
+      <option name="number" value="00804" />
+      <option name="presentableId" value="LOCAL-00804" />
+      <option name="project" value="LOCAL" />
+      <updated>1788673467482</updated>
+    </task>
+    <task id="LOCAL-00805" summary="Amélioration de la gestion des erreurs dans Observer.__init__ avec ajout de logs d'avertissement et d'information, et gestion des exceptions lors de l'appel à super().">
+      <option name="closed" value="true" />
+      <created>1788674315992</created>
+      <option name="number" value="00805" />
+      <option name="presentableId" value="LOCAL-00805" />
+      <option name="project" value="LOCAL" />
+      <updated>1788674315992</updated>
+    </task>
+    <task id="LOCAL-00806" summary="Amélioration de la gestion des logs dans les méthodes appendToToolBar et appendUICommands, ajout de messages de débogage et de mise en garde pour une meilleure traçabilité. Améliorations des appendToToolbar de différentes commandes avec retour des widgets.">
+      <option name="closed" value="true" />
+      <created>1788680432798</created>
+      <option name="number" value="00806" />
+      <option name="presentableId" value="LOCAL-00806" />
+      <option name="project" value="LOCAL" />
+      <updated>1788680432799</updated>
+    </task>
+    <task id="LOCAL-00807" summary="Amélioration de la gestion des imports et des menus contextuels, ajout de la gestion des exceptions pour les imports manquants et mise à jour des références aux méthodes de l'arbre.">
+      <option name="closed" value="true" />
+      <created>1788771295961</created>
+      <option name="number" value="00807" />
+      <option name="presentableId" value="LOCAL-00807" />
+      <option name="project" value="LOCAL" />
+      <updated>1788771295961</updated>
+    </task>
+    <task id="LOCAL-00808" summary="fix: update task viewer widget creation and refresh logic&#10;Amélioration de la gestion des conteneurs de visualisateurs, mise à jour des références et ajout de la gestion des détails des tâches pour une meilleure traçabilité.">
+      <option name="closed" value="true" />
+      <created>1790933286609</created>
+      <option name="number" value="00808" />
+      <option name="presentableId" value="LOCAL-00808" />
+      <option name="project" value="LOCAL" />
+      <updated>1790933286609</updated>
+    </task>
+    <task id="LOCAL-00809" summary="fix: improve task insertion and rendering logic in Treeview">
+      <option name="closed" value="true" />
+      <created>1790941862437</created>
+      <option name="number" value="00809" />
+      <option name="presentableId" value="LOCAL-00809" />
+      <option name="project" value="LOCAL" />
+      <updated>1790941862437</updated>
+    </task>
+    <task id="LOCAL-00810" summary="fix: improve variable naming for clarity in ToggleCategoryMenu.&#10;Résumé des corrections&#10;Problème initial : La variable category était utilisée dans deux boucles imbriquées, ce qui créait un masquage (shadowing) de variable.&#10;&#10;Corrections appliquées :&#10;&#10;Ligne 2024-2025 : Renommé les variables dans la première boucle :&#10;lambda category → lambda one_category&#10;for category in categories → for the_category in categories&#10;Ligne 2034 : Renommé dans la compréhension de liste :&#10;category for category in categories → category for a_category in categories&#10;Lignes 2046, 2052, 2057, 2062 : Renommé dans la deuxième boucle :&#10;for category in categoriesWithChildren → for the_category in categoriesWithChildren&#10;Mis à jour toutes les références à category pour utiliser the_category&#10;Le problème de shadowing est maintenant résolu. Chaque variable a un nom distinct, ce qui rend le code plus clair et évite les confusions entre les différentes boucles.">
+      <option name="closed" value="true" />
+      <created>1790943664748</created>
+      <option name="number" value="00810" />
+      <option name="presentableId" value="LOCAL-00810" />
+      <option name="project" value="LOCAL" />
+      <updated>1790943664748</updated>
+    </task>
+    <task id="LOCAL-00811" summary="docs: add initial README with project overview and installation instructions">
+      <option name="closed" value="true" />
+      <created>1791277715585</created>
+      <option name="number" value="00811" />
+      <option name="presentableId" value="LOCAL-00811" />
+      <option name="project" value="LOCAL" />
+      <updated>1791277715585</updated>
+    </task>
+    <option name="localTasksCounter" value="812" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="master" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
+    <MESSAGE value="Refactor print statements to use logging for improved consistency and debugging" />
+    <MESSAGE value="Refactor ToolTip class for improved readability and maintainability" />
+    <MESSAGE value="Fix conditional statement for GUI name check in __init__.py" />
+    <MESSAGE value="Refactor import statements for improved organization and clarity" />
+    <MESSAGE value="Add documentation for serialization invariants in __init__.py" />
+    <MESSAGE value="Add all exports to __init__.py for improved module accessibility" />
+    <MESSAGE value="Uncomment __all__ exports in __init__.py for improved module accessibility" />
+    <MESSAGE value="Refactor import statements for consistency and clarity in __init__.py" />
+    <MESSAGE value="Uncomment and update viewer ID initialization for clarity in menu.py" />
+    <MESSAGE value="Update ID generation logic for consistency in newid.py" />
+    <MESSAGE value="Refactor Viewer initialization and layout logic for clarity in basetk.py, container.py, and containertk.py" />
+    <MESSAGE value="Les domaines et le guitk semblent stables. Il reste encore à afficher les tâches et revoir les menus avant toutes autres choses." />
+    <MESSAGE value="Correction de l’interface Tkinter et des commandes UI&#10;&#10;Correction de la transmission du viewer dans FileSaveSelectedTaskAsTemplate.&#10;Adaptation de la gestion des menus et des fenêtres principales Tkinter.&#10;Correction de la mémorisation des menus et des index d’entrées associés aux commandes.&#10;Mise à jour des entrées de menu avec entryconfigure().&#10;Amélioration de la gestion des commandes et des conteneurs UI.&#10;Correction de la création et de l’association des widgets de la barre d’outils.&#10;Correction de la gestion du widget de recherche et de ses bindings clavier.&#10;Amélioration de la gestion des viewers, des treeviews et des rafraîchisseurs.&#10;Ajout de protections contre les widgets indisponibles pendant l’initialisation.&#10;Amélioration des logs de diagnostic et suppression des traitements incompatibles avec Tkinter." />
+    <MESSAGE value="Amélioration de la classe ToggleCategoryMenu dans menutk.py pour une meilleure gestion des catégories et ajout de détails dans les exceptions dans observer.py." />
+    <MESSAGE value="Diminution des messages de log en passant de DEBUG à INFO." />
+    <MESSAGE value="Amélioration de la gestion des sous-menus dans ToggleCategoryMenu et mise à jour des messages de log pour plus de clarté." />
+    <MESSAGE value="Amélioration de la gestion des mises à jour du menu dynamique avec ajout de gestion des erreurs et de messages de log détaillés.&#10;Correction dans DynamicMenuThatGetsUICommandsFromViewer.registerForMenuUpdate() avec postcommand pour la mise à jour avant l'ouverture de menu." />
+    <MESSAGE value="Amélioration de la gestion des erreurs dans Observer.__init__ avec ajout de logs d'avertissement et d'information, et gestion des exceptions lors de l'appel à super()." />
+    <MESSAGE value="Amélioration de la gestion des logs dans les méthodes appendToToolBar et appendUICommands, ajout de messages de débogage et de mise en garde pour une meilleure traçabilité. Améliorations des appendToToolbar de différentes commandes avec retour des widgets." />
+    <MESSAGE value="Amélioration de la gestion des imports et des menus contextuels, ajout de la gestion des exceptions pour les imports manquants et mise à jour des références aux méthodes de l'arbre." />
+    <MESSAGE value="{&quot;error&quot;:{&quot;message&quot;:&quot;The model `llama-3.3-70b-versatile` does not exist or you do not have access to it.&quot;,&quot;type&quot;:&quot;invalid_request_error&quot;,&quot;code&quot;:&quot;model_not_found&quot;}}" />
+    <MESSAGE value="fix: update task viewer widget creation and refresh logic&#10;Amélioration de la gestion des conteneurs de visualisateurs, mise à jour des références et ajout de la gestion des détails des tâches pour une meilleure traçabilité." />
+    <MESSAGE value="fix: improve task insertion and rendering logic in Treeview" />
+    <MESSAGE value="fix: improve variable naming for clarity in ToggleCategoryMenu.&#10;Résumé des corrections&#10;Problème initial : La variable category était utilisée dans deux boucles imbriquées, ce qui créait un masquage (shadowing) de variable.&#10;&#10;Corrections appliquées :&#10;&#10;Ligne 2024-2025 : Renommé les variables dans la première boucle :&#10;lambda category → lambda one_category&#10;for category in categories → for the_category in categories&#10;Ligne 2034 : Renommé dans la compréhension de liste :&#10;category for category in categories → category for a_category in categories&#10;Lignes 2046, 2052, 2057, 2062 : Renommé dans la deuxième boucle :&#10;for category in categoriesWithChildren → for the_category in categoriesWithChildren&#10;Mis à jour toutes les références à category pour utiliser the_category&#10;Le problème de shadowing est maintenant résolu. Chaque variable a un nom distinct, ce qui rend le code plus clair et évite les confusions entre les différentes boucles." />
+    <MESSAGE value="docs: add initial README with project overview and installation instructions" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs: add initial README with project overview and installation instructions" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="self.__status == 1" language="Python" />
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/base/object.py</url>
+          <line>624</line>
+          <log-expression expression="print(f&quot;object.SynchronizedObject.setStatusNew : 🛑 DEBUG - Modification de self.__status pour {self} : {self.__status}&quot;)" language="Python" />
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="self.__status == 1" language="Python" />
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/task/task.py</url>
+          <line>1313</line>
+          <log-expression expression="print(f&quot;Task.setCompletionDateTime : 🛑 DEBUG - Modification de self.__status pour {self} : {self.__status}&quot;) " language="Python" />
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="NONE" type="python-line">
+          <condition expression="self.__status == 1" language="Python" />
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/task/task.py</url>
+          <line>1592</line>
+          <log-expression expression="print(f&quot;Task.status : 🛑 DEBUG - Modification de self.__status pour {self} : {self.__status}&quot;)" language="Python" />
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <condition expression="self.__status == 1" language="Python" />
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/task/task.py</url>
+          <line>2453</line>
+          <log-expression expression="print(f&quot;Task.iconForStatus : 🛑 DEBUG - Modification de self.__status pour {self} : {self.__status}&quot;) " language="Python" />
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/widgetTests/DragAndDropTest.py</url>
+          <line>51</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/persistenceTests/AutoSaverTest.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/changes.in/converter.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/buildbot/master/latest.py</url>
+          <line>3</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file:///usr/lib/python3.11/importlib/machinery.py</url>
+          <line>2</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint suspend="NONE" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/tools/wxhelper.py</url>
+          <line>2</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint suspend="NONE" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/render.py</url>
+          <line>26</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/release.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/thirdparty/snarl.py</url>
+          <line>8</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tools/webchecker.py</url>
+          <line>115</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/guiTests/MenuTest.py</url>
+          <line>127</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/uicommand/base_uicommand.py</url>
+          <line>326</line>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/uicommand/base_uicommand.py</url>
+          <line>327</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/uicommand/base_uicommand.py</url>
+          <line>190</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/menu.py</url>
+          <line>256</line>
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/filesystem/fs_darwin.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="63" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/widgets/tooltip.py</url>
+          <line>104</line>
+          <option name="timeStamp" value="64" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/powermgt/xsm.py</url>
+          <line>23</line>
+          <option name="timeStamp" value="67" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/effort/effortlist.py</url>
+          <line>87</line>
+          <option name="timeStamp" value="68" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/widgetstk/frametk.py</url>
+          <line>121</line>
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/widgetTests/DateTimeCtrlTest.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="93" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/basetk.py</url>
+          <line>1885</line>
+          <option name="timeStamp" value="94" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/widgets/treectrl.py</url>
+          <line>28</line>
+          <option name="timeStamp" value="95" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/uicommand/settings_uicommandtk.py</url>
+          <line>99</line>
+          <option name="timeStamp" value="100" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/idlecontrollertk.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="103" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/syncml/basesource.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="104" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/mixintk.py</url>
+          <line>86</line>
+          <option name="timeStamp" value="106" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/thirdparty/squaremap/squaremap.py</url>
+          <line>1</line>
+          <option name="timeStamp" value="107" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/viewer/basetk.py</url>
+          <line>212</line>
+          <option name="timeStamp" value="111" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/remindercontroller.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="112" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2133</line>
+          <option name="timeStamp" value="114" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2175</line>
+          <option name="timeStamp" value="115" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2146</line>
+          <option name="timeStamp" value="116" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2139</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/menu.py</url>
+          <line>1936</line>
+          <option name="timeStamp" value="120" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2135</line>
+          <option name="timeStamp" value="121" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2284</line>
+          <option name="timeStamp" value="123" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2297</line>
+          <option name="timeStamp" value="124" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2340</line>
+          <option name="timeStamp" value="125" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2398</line>
+          <option name="timeStamp" value="126" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2411</line>
+          <option name="timeStamp" value="127" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2423</line>
+          <option name="timeStamp" value="128" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/task.py</url>
+          <line>2438</line>
+          <option name="timeStamp" value="129" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/../taskcoach-team/taskcoach/taskcoachlib/application/application.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="130" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/task/tasklist.py</url>
+          <line>24</line>
+          <option name="timeStamp" value="133" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/help/balloontips.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="134" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/base.py</url>
+          <line>863</line>
+          <option name="timeStamp" value="135" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/application/application.py</url>
+          <line>97</line>
+          <option name="timeStamp" value="136" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/category.py</url>
+          <line>73</line>
+          <option name="timeStamp" value="137" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/test_app.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="138" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/gui/viewer/base.py</url>
+          <line>1583</line>
+          <option name="timeStamp" value="139" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/command/attachmentCommands.py</url>
+          <line>22</line>
+          <option name="timeStamp" value="140" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/widgets/treectrl.py</url>
+          <line>249</line>
+          <option name="timeStamp" value="141" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/widgetTests/ListCtrlTest.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="142" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/thirdparty/smartdatetimectrl.py</url>
+          <line>2782</line>
+          <option name="timeStamp" value="143" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/base/attribute.py</url>
+          <line>39</line>
+          <option name="timeStamp" value="150" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/buildlib/bdist_portableapps.py</url>
+          <line>21</line>
+          <option name="timeStamp" value="151" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/domainTests/test_base.py</url>
+          <line>50</line>
+          <option name="timeStamp" value="152" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/base/object.py</url>
+          <line>216</line>
+          <option name="timeStamp" value="153" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/domainTests/test_attachment.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/domainTests/test_owner.py</url>
+          <line>55</line>
+          <option name="timeStamp" value="155" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/domain/base/object.py</url>
+          <line>982</line>
+          <option name="timeStamp" value="156" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/tests/unittests/persistenceTests/TaskFileTest.py</url>
+          <line>1354</line>
+          <option name="timeStamp" value="157" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/mainwindowtk.py</url>
+          <line>668</line>
+          <option name="timeStamp" value="160" />
+        </line-breakpoint>
+        <line-breakpoint suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taskcoach/taskcoachlib/guitk/mainwindowtk.py</url>
+          <line>486</line>
+          <option name="timeStamp" value="161" />
+        </line-breakpoint>
+      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="tests">
+        <watch expression="isChecked" language="Python" />
+        <watch expression="monitor._changes" language="Python" />
+      </configuration>
+      <configuration name="PythonConfigurationType">
+        <watch expression="event.x" language="Python" />
+        <watch expression="event.y" language="Python" />
+        <watch expression="self.widget.identify(&quot;item&quot;, event.x, event.y)" language="Python" />
+        <watch expression="self.winfo_manager()" language="Python" />
+        <watch expression="self.master" language="Python" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

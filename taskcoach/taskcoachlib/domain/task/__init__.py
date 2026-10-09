@@ -16,8 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .task import Task
+from .task import Task  # noqa: F401
 from .tasklist import TaskList
-from .status import *
+from .status import TaskStatus, inactive, late, active, duesoon, overdue, completed
 from . import filter  # pylint: disable=W0622
 from . import sorter
+
+__all__ = [
+    "Task",
+    "TaskList",
+    "TaskStatus",
+    "inactive",
+    "late",
+    "active",
+    "duesoon",
+    "overdue",
+    "completed",
+    "filter",
+    "sorter",
+]

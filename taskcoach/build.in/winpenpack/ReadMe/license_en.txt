@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------
-winPenPack Project § X-Software collection
-Copyright © 2005-2010 Danilo Leggieri and winPenPack Development Team
+winPenPack Project ï¿½ X-Software collection
+Copyright ï¿½ 2005-2010 Danilo Leggieri and winPenPack Development Team
 ---------------------------------------------------------------------
 
 http://www.winpenpack.com
@@ -152,7 +152,7 @@ a) Trademarks of programs included in winPenPack and in X-Softwares
 
 b) winPenPack trademarks
 
-   The winPenPack logo and "winPenPack"/"winPenPack – X-Software collection" 
+   The winPenPack logo and "winPenPack"/"winPenPack ï¿½ X-Software collection" 
    trademarks may not be used in other products or services different from 
    those supplied from winPenPack, neither in any manner that causes confusion 
    among users or disparages and discredits winPenPack. Materials released under 
@@ -205,7 +205,7 @@ other information channel.
 Permission is granted to anyone to modify winPenPack materials released under GNU 
 General Public License, or equivalent licenses, then creating derivative works, 
 and also copying and distributing this modified materials, stating explicitly 
-that is a modified copy and also each modification date.
+that is a modified copy and also each modification Date.
 
 
 winPenPack development Team resolve to be derivative works:
@@ -248,7 +248,7 @@ c) must include all original copyright indications,
    unchanged in content and position (i.e. into .ini 
    files associated to X-Softwares, into splash screen, 
    into about boxes), and adding author copyright of 
-   modifications and modification date after original 
+   modifications and modification Date after original
    copyright, as stated in GNU General Public License;
    
 d) must be released under a license similar to the 

@@ -19,9 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # When running from source, select the right binary...
 
 import sys
-
 if not hasattr(sys, "frozen"):
-    import struct, os
+    import struct
+    import os
 
     _subdir = "ia64" if struct.calcsize("L") == 8 else "ia32"
 
@@ -40,6 +40,7 @@ if not hasattr(sys, "frozen"):
 import _powermgt  # pylint: disable=F0401
 import threading
 import wx
+# from .base import PowerStateMixinBase
 from taskcoachlib.powermgt.base import PowerStateMixinBase
 
 
@@ -48,11 +49,11 @@ class PowerStateMixin(PowerStateMixinBase):
     POWEROFF = _powermgt.POWEROFF
 
     def __init__(self, *args, **kwargs):
-        super(PowerStateMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         class Observer(_powermgt.PowerObserver):
             def __init__(self, cb):
-                super(Observer, self).__init__()
+                super().__init__()
 
                 self.__callback = cb
 
@@ -60,9 +61,7 @@ class PowerStateMixin(PowerStateMixinBase):
                 wx.CallAfter(self.__callback, state)
 
         self.__observer = Observer(self.__OnPowerState)
-        self.__thread = threading.Thread(
-            target=self.__observer.run
-        )  # pylint: disable=E1101
+        self.__thread = threading.Thread(target=self.__observer.run)  # pylint: disable=E1101
         self.__thread.start()
 
     def __OnPowerState(self, state):

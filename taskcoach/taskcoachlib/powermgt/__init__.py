@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 
+# from taskcoachlib.domain.task.task import GUI_NAME
+
 if sys.platform == "win32":
     from taskcoachlib.powermgt.win32 import PowerStateMixin
 elif sys.platform == "darwin":
@@ -28,4 +30,20 @@ else:
         PowerStateMixinBase as PowerStateMixin,
     )
 
-from taskcoachlib.powermgt.idle import IdleNotifier
+from taskcoachlib.config.arguments import get_gui, CURRENT_GUI
+
+GUI_NAME = get_gui() or CURRENT_GUI
+
+
+if GUI_NAME == "wx":
+    import wx  # On garde la compatibilité wx
+
+    tk = None
+    from taskcoachlib.powermgt.idle import IdleNotifier
+
+elif GUI_NAME == "tk":
+    import tkinter as tk
+
+    # On définit un faux wx pour éviter les erreurs NameError
+    wx = None  # Permet d’éviter les NameError si une référence subsiste
+    from taskcoachlib.powermgt.idletk import IdleNotifier

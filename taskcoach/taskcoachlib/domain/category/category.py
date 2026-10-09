@@ -23,82 +23,115 @@ from taskcoachlib.domain import base, note, attachment
 class Category(
     attachment.AttachmentOwner, note.NoteOwner, base.CompositeObject
 ):
+    """Category class for organizing tasks and notes.
+
+    Appearance (derived and effective values) is handled by the base class
+    and ComputeStyles polling. No explicit calls needed.
+    """
+
     def __init__(
         self,
-        subject,
+        subject,  # =""
         categorizables=None,
         children=None,
         filtered=False,
         parent=None,
         description="",
         exclusiveSubcategories=False,
+        stylePriority=0,
         *args,
-        **kwargs
+        **kwargs,
     ):
-        super(Category, self).__init__(
+        # Indique que l'objet n'est pas encore complètement construit.
+        self.__initializing = True
+
+        super().__init__(
             subject=subject,
             children=children or [],
             parent=parent,
             description=description,
             *args,
-            **kwargs
+            **kwargs,
         )
+
+        # Liste d'attributs de base contenant la liste des catégorisables.
         self.__categorizables = base.SetAttribute(
-            set(categorizables or []),
-            self,
-            self.categorizableAddedEvent,
-            self.categorizableRemovedEvent,
+            values=set(categorizables or []),
+            owner=self,
+            addEvent=self.categorizableAddedEvent,
+            removeEvent=self.categorizableRemovedEvent,
             weak=True,
         )
         self.__filtered = filtered
         self.__exclusiveSubcategories = exclusiveSubcategories
+        self.__stylePriority = stylePriority
+
+        # L'objet est maintenant complètement construit.
+        self.__initializing = False
+        # Note: Effective appearance is computed by ComputeStyles polling
 
     @classmethod
     def monitoredAttributes(class_):
+        # def monitoredAttributes(cls):
+        # return base.CompositeObject.monitoredAttributes() + ["exclusiveSubcategories"]
         return base.CompositeObject.monitoredAttributes() + [
-            "exclusiveSubcategories"
+            "exclusiveSubcategories",
+            "stylePriority",
         ]
 
     @classmethod
     def filterChangedEventType(class_):
+        # def filterChangedEventType(cls):
         """Event type to notify observers that categorizables belonging to
         this category are filtered or not."""
         return "category.filter"
 
     @classmethod
     def categorizableAddedEventType(class_):
+        # def categorizableAddedEventType(cls):
         """Event type to notify observers that categorizables have been added
         to this category."""
         return "category.categorizable.added"
 
     @classmethod
     def categorizableRemovedEventType(class_):
+        # def categorizableRemovedEventType(cls):
         """Event type to notify observers that categorizables have been removed
         from this category."""
         return "category.categorizable.removed"
 
     @classmethod
     def exclusiveSubcategoriesChangedEventType(class_):
+        # def exclusiveSubcategoriesChangedEventType(cls):
         """Event type to notify observers that subcategories have become
         exclusive (or vice versa)."""
         return "category.exclusiveSubcategories"
 
     @classmethod
+    def stylePriorityChangedEventType(class_):
+        """Event type to notify observers that style priority has changed."""
+        return "category.stylePriority"
+
+    @classmethod
     def modificationEventTypes(class_):
-        eventTypes = super(Category, class_).modificationEventTypes()
+        # def modificationEventTypes(cls):
+        eventTypes = super().modificationEventTypes()
+        # return event_types + [class_.filterChangedEventType(),
         return eventTypes + [
             class_.filterChangedEventType(),
             class_.categorizableAddedEventType(),
             class_.categorizableRemovedEventType(),
             class_.exclusiveSubcategoriesChangedEventType(),
+            class_.stylePriorityChangedEventType(),
         ]
 
     def __getstate__(self):
-        state = super(Category, self).__getstate__()
+        state = super().__getstate__()
         state.update(
             dict(
                 categorizables=self.__categorizables.get(),
                 filtered=self.__filtered,
+                stylePriority=self.__stylePriority,
             ),
             exclusiveSubcategories=self.__exclusiveSubcategories,
         )
@@ -106,40 +139,88 @@ class Category(
 
     @patterns.eventSource
     def __setstate__(self, state, event=None):
-        super(Category, self).__setstate__(state, event=event)
+        super().__setstate__(state, event=event)
         self.setCategorizables(state["categorizables"], event=event)
         self.setFiltered(state["filtered"], event=event)
         self.makeSubcategoriesExclusive(
             state["exclusiveSubcategories"], event=event
         )
+        self.setStylePriority(state.get("stylePriority", 0), event=event)
 
-    def __getcopystate__(self):
-        state = super(Category, self).__getcopystate__()
+    def __getcopystate__(self) -> dict:
+        state = super().__getcopystate__()
         state.update(
             dict(
                 categorizables=self.__categorizables.get(),
                 filtered=self.__filtered,
+                stylePriority=self.__stylePriority,
             )
         )
+        print(f"Category.__getcopystate : retourne state={state}!")
         return state
 
     def subjectChangedEvent(self, event):
-        super(Category, self).subjectChangedEvent(event)
+        super().subjectChangedEvent(event)
         self.categorySubjectChangedEvent(event)
 
     def categorySubjectChangedEvent(self, event):
+        """
+        Définit un événement de changement de sujet pour la catégorie,
+        qui est déclenché lorsque le sujet de la catégorie change.
+
+        Cet événement est ensuite propagé à tous les éléments catégorisables
+        appartenant à cette catégorie,
+        afin qu'ils puissent réagir en conséquence
+        (par exemple, en mettant à jour leur affichage
+        ou en recalculant des valeurs dérivées du sujet de la catégorie).
+
+        Propage un changement de sujet aux objets catégorisables.
+
+        Ignore les événements reçus pendant la construction de l'objet.
+
+        Args:
+            event: L'événement de changement de sujet qui a été déclenché.
+
+        Returns:
+            None
+        """
+        # Il faut empêcher categorySubjectChangedEvent() d'agir pendant l'initialisation.
+        # Ignore les événements déclenchés pendant super().__init__().
+        # if self.__initializing:
+        if getattr(self, "_Category__initializing", False):
+            return
+
         subject = self.subject()
         for eachCategorizable in self.categorizables(recursive=True):
             eachCategorizable.categorySubjectChangedEvent(event, subject)
 
     def categorizables(self, recursive=False):
+        """Return the set of categorizables that belong to this category.
+        If recursive is True, also include categorizables that belong to
+        subcategories.
+
+        Args:
+            recursive (bool): Whether to include categorizables from subcategories.
+
+        Returns:
+            Set of categorizables that belong to this category (and optionally its subcategories).
+        """
+        if not hasattr(self, "_Category__categorizables"):
+            return set()
+
+        # Met la Liste d'attributs de base contenant la liste des catégorisables dans result.
         result = self.__categorizables.get()
+        # Si récursive, pour chaque enfant de la liste d'enfants, result devient result OU la liste d'attributs de l'enfant :
         if recursive:
             for child in self.children():
                 result |= child.categorizables(recursive)
         return result
 
     def addCategorizable(self, *categorizables, **kwargs):
+        """Add one or more categorizables to this category."""
+        print(
+            f"Category.addCategorizable: pour {self}, ajoute les categorizables : {categorizables} !"
+        )
         self.__categorizables.add(
             set(categorizables), event=kwargs.pop("event", None)
         )
@@ -148,7 +229,7 @@ class Category(
         event.addSource(
             self,
             *categorizables,
-            **dict(type=self.categorizableAddedEventType())
+            **dict(type=self.categorizableAddedEventType()),
         )
 
     def removeCategorizable(self, *categorizables, **kwargs):
@@ -160,7 +241,7 @@ class Category(
         event.addSource(
             self,
             *categorizables,
-            **dict(type=self.categorizableRemovedEventType())
+            **dict(type=self.categorizableRemovedEventType()),
         )
 
     def setCategorizables(self, categorizables, event=None):
@@ -185,7 +266,7 @@ class Category(
         """Override to include all categorizables in the event
         that belong to this category since their appearance (may)
         have changed too."""
-        super(Category, self).appearanceChangedEvent(event)
+        super().appearanceChangedEvent(event)
         for categorizable in self.categorizables():
             categorizable.appearanceChangedEvent(event)
 
@@ -218,4 +299,26 @@ class Category(
             self,
             self.hasExclusiveSubcategories(),
             type=self.exclusiveSubcategoriesChangedEventType(),
+        )
+
+    # Style Priority - determines which category's style wins when a task has multiple categories
+    # Higher priority wins. Default is 0.
+
+    def stylePriority(self):
+        """Return the style priority for this category."""
+        return self.__stylePriority
+
+    @patterns.eventSource
+    def setStylePriority(self, priority, event=None):
+        """Set the style priority for this category."""
+        if priority == self.__stylePriority:
+            return
+        self.__stylePriority = priority
+        self.stylePriorityChangedEvent(event)
+
+    def stylePriorityChangedEvent(self, event):
+        event.addSource(
+            self,
+            self.__stylePriority,
+            type=self.stylePriorityChangedEventType(),
         )

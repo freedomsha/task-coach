@@ -16,10 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+# from builtins import object
+from ... import tctest
 from taskcoachlib import gui, config, widgets, persistence
 from taskcoachlib.domain import task, date
+
+# from taskcoachlib.thirdparty import hypertreelist
 from wx.lib.agw import hypertreelist
+from taskcoachlib.gui import viewer
+from taskcoachlib.gui.viewer import mixin
 
 
 class AuiManagedFrameWithDynamicCenterPane(
@@ -31,12 +36,12 @@ class AuiManagedFrameWithDynamicCenterPane(
 
 class Window(AuiManagedFrameWithDynamicCenterPane):
     def addPane(self, viewer, title, name="name", floating=False):
-        super(Window, self).addPane(viewer, title, name, floating)
+        super().addPane(viewer, title, name, floating)
 
 
-class ViewerTest(test.wxTestCase):
+class ViewerTest(tctest.wxTestCase):
     def setUp(self):
-        super(ViewerTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.task = task.Task("task")
@@ -49,7 +54,7 @@ class ViewerTest(test.wxTestCase):
         self.viewerContainer.addViewer(self.viewer)
 
     def tearDown(self):
-        super(ViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -158,7 +163,7 @@ class ViewerTest(test.wxTestCase):
         )
 
 
-class SortableViewerTest(test.TestCase):
+class SortableViewerTest(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
         self.viewer = self.createViewer()
@@ -223,7 +228,7 @@ class SortableViewerTest(test.TestCase):
         )
 
 
-class SortableViewerForTasksTest(test.TestCase):
+class SortableViewerForTasksTest(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
 
@@ -258,7 +263,7 @@ class SearchableViewerUnderTest(
     pass
 
 
-class SearchableViewerTest(test.TestCase):
+class SearchableViewerTest(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
         self.viewer = self.createViewer()
@@ -350,7 +355,7 @@ class SearchableViewerTest(test.TestCase):
         self.assertFalse(anotherViewer.presentation())
 
 
-class FilterableViewerTest(test.TestCase):
+class FilterableViewerTest(tctest.TestCase):
     def setUp(self):
         self.viewer = gui.viewer.mixin.FilterableViewerMixin()
 
@@ -364,14 +369,15 @@ class FilterableViewerForTasksUnderTest(
     pass
 
 
-class FilterableViewerForTasks(test.TestCase):
+class FilterableViewerForTasks(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
         task.Task.settings = self.settings
         self.viewer = self.createViewer()
 
     def tearDown(self):
-        super(FilterableViewerForTasks, self).tearDown()
+        super().tearDown()
+        # self.viewer.taskFile.Close()
         self.viewer.taskFile.close()
         self.viewer.taskFile.stop()
 
@@ -587,7 +593,7 @@ class FilterableViewerForTasks(test.TestCase):
         self.assertFalse(anotherViewer.presentation())
 
 
-class ViewerBaseClassTest(test.wxTestCase):
+class ViewerBaseClassTest(tctest.wxTestCase):
     def testNotImplementedError(self):
         taskFile = persistence.TaskFile()
         try:
@@ -603,14 +609,14 @@ class ViewerBaseClassTest(test.wxTestCase):
             taskFile.stop()
 
 
-class ViewerIteratorTestCase(test.wxTestCase):
+class ViewerIteratorTestCase(tctest.wxTestCase):
     treeMode = "Subclass responsibility"
 
     def createViewer(self):
         return gui.viewer.TaskViewer(self.window, self.taskFile, self.settings)
 
     def setUp(self):
-        super(ViewerIteratorTestCase, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         task.Task.settings = self.settings
         self.taskFile = persistence.TaskFile()
@@ -623,7 +629,7 @@ class ViewerIteratorTestCase(test.wxTestCase):
         self.viewer.sortBy("subject")
 
     def tearDown(self):
-        super(ViewerIteratorTestCase, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -680,7 +686,7 @@ class ListViewerIteratorTest(ViewerIteratorTestCase, ViewerIteratorTestsMixin):
     treeMode = "False"
 
 
-class ViewerWithColumnsTest(test.wxTestCase):
+class ViewerWithColumnsTest(tctest.wxTestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
@@ -689,7 +695,7 @@ class ViewerWithColumnsTest(test.wxTestCase):
         )
 
     def tearDown(self):
-        super(ViewerWithColumnsTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 

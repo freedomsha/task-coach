@@ -16,8 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os, select, time, threading
-
+# from __future__ import print_function
+# from builtins import chr
+# from builtins import input
+# from builtins import object
+# from builtins import str
+from io import open as file
+import os
+import select
+import time
+import threading
 from ctypes import *
 
 _libSM = CDLL("libSM.so.6")
@@ -25,6 +33,7 @@ _libICE = CDLL("libICE.so.6")
 
 # ==============================================================================
 # ICE stuff...
+
 
 Bool = c_int
 Status = c_int
@@ -64,6 +73,12 @@ IceSetIOErrorHandler = CFUNCTYPE(IceIOErrorHandler, IceIOErrorHandler)(
 
 # Callback masks
 
+# old code:
+# SmcSaveYourselfProcMask = (1 << 0)
+# SmcDieProcMask = (1 << 1)
+# SmcSaveCompleteProcMask = (1 << 2)
+# SmcShutdownCancelledProcMask = (1 << 3)
+# new code from strainofnight
 SmcSaveYourselfProcMask = 1 << 0
 SmcDieProcMask = 1 << 1
 SmcSaveCompleteProcMask = 1 << 2
@@ -114,6 +129,7 @@ SmRestartStyleHint = "RestartStyleHint"
 SmShutdownCommand = "ShutdownCommand"
 SmUserID = "UserID"
 
+
 # ==============================================================================
 # Types and structures
 
@@ -124,9 +140,7 @@ class _SmcConn(Structure):
 
 SmcConn = POINTER(_SmcConn)
 
-SmcSaveYourselfProc = CFUNCTYPE(
-    None, SmcConn, c_void_p, c_int, Bool, c_int, Bool
-)
+SmcSaveYourselfProc = CFUNCTYPE(None, SmcConn, c_void_p, c_int, Bool, c_int, Bool)
 SmcDieProc = CFUNCTYPE(None, SmcConn, c_void_p)
 SmcSaveCompleteProc = CFUNCTYPE(None, SmcConn, c_void_p)
 SmcShutdownCancelledProc = CFUNCTYPE(None, SmcConn, c_void_p)
@@ -153,10 +167,10 @@ class SmcShutdownCancelledCallback(Structure):
 
 class SmcCallbacks(Structure):
     _fields_ = [
-        ("save_yourself", SmcSaveYourselfCallback),
+        ("saveYourself", SmcSaveYourselfCallback),
         ("die", SmcDieCallback),
-        ("save_complete", SmcSaveCompleteCallback),
-        ("shutdown_cancelled", SmcShutdownCancelledCallback),
+        ("saveComplete", SmcSaveCompleteCallback),
+        ("shutdownCancelled", SmcShutdownCancelledCallback),
     ]
 
 
@@ -219,7 +233,6 @@ SmcSetProperties = CFUNCTYPE(None, SmcConn, c_int, POINTER(POINTER(SmProp)))(
 # ==============================================================================
 # Higher-level stuff
 
-
 class ICELoop(threading.Thread):
     """
     This class manages ICE connections tracking and select()ing them
@@ -236,7 +249,7 @@ class ICELoop(threading.Thread):
 
         IceAddConnectionWatch(self.watchProc, None)
 
-        super(ICELoop, self).__init__()
+        super().__init__()
 
         self.start()
 
@@ -279,20 +292,13 @@ class SessionMonitor(ICELoop):
     """
 
     def __init__(self):
-        super(SessionMonitor, self).__init__()
+        super().__init__()
 
-        self.callbacks = SmcCallbacks(
-            SmcSaveYourselfCallback(
-                SmcSaveYourselfProc(self._saveYourself), None
-            ),
-            SmcDieCallback(SmcDieProc(self._die), None),
-            SmcSaveCompleteCallback(
-                SmcSaveCompleteProc(self._saveComplete), None
-            ),
-            SmcShutdownCancelledCallback(
-                SmcShutdownCancelledProc(self._shutdownCancelled), None
-            ),
-        )
+        self.callbacks = SmcCallbacks(SmcSaveYourselfCallback(SmcSaveYourselfProc(self._saveYourself), None),
+                                      SmcDieCallback(SmcDieProc(self._die), None),
+                                      SmcSaveCompleteCallback(SmcSaveCompleteProc(self._saveComplete), None),
+                                      SmcShutdownCancelledCallback(SmcShutdownCancelledProc(self._shutdownCancelled),
+                                                                   None))
 
         id_ret = c_char_p()
 
@@ -332,7 +338,7 @@ class SessionMonitor(ICELoop):
         # XXXTODO: retry ? How ?
 
     def stop(self):
-        super(SessionMonitor, self).stop()
+        super().stop()
         self.join()
         if self.isValid():
             SmcCloseConnection(self.conn, 0, None)
@@ -343,9 +349,7 @@ class SessionMonitor(ICELoop):
                 value = value.encode("UTF-8")
 
             if isinstance(value, str):
-                propval = SmPropValue(
-                    len(value), cast(c_char_p(value), c_void_p)
-                )
+                propval = SmPropValue(len(value), cast(c_char_p(value), c_void_p))
                 prop = SmProp(name, c_char_p(SmARRAY8), 1, pointer(propval))
                 SmcSetProperties(self.conn, 1, pointer(pointer(prop)))
             elif isinstance(value, int):
@@ -360,9 +364,7 @@ class SessionMonitor(ICELoop):
                         val = val.encode("UTF-8")
                     values[idx].length = len(val)
                     values[idx].value = cast(c_char_p(val), c_void_p)
-                prop = SmProp(
-                    name, c_char_p(SmLISTofARRAY8), len(value), values
-                )
+                prop = SmProp(name, c_char_p(SmLISTofARRAY8), len(value), values)
                 SmcSetProperties(self.conn, 1, pointer(pointer(prop)))
             else:
                 raise TypeError(
@@ -376,9 +378,7 @@ class SessionMonitor(ICELoop):
         if self.isValid():
             SmcSaveYourselfDone(self.conn, int(status))
 
-    def _saveYourself(
-        self, conn, client_data, save_type, shutdown, interact_style, fast
-    ):
+    def _saveYourself(self, conn, client_data, save_type, shutdown, interact_style, fast):
         if self.isValid():
             self.saveYourself(save_type, shutdown, interact_style, fast)
 
@@ -448,7 +448,7 @@ if __name__ == "__main__":
 
     class TestMonitor(SessionMonitor):
         def __init__(self):
-            super(TestMonitor, self).__init__()
+            super().__init__()
 
             print("Version:", self.version)
             print("Revision:", self.revision)
@@ -457,15 +457,14 @@ if __name__ == "__main__":
 
             print("Client ID:", self.clientID)
 
+        # @staticmethod
         def log(self, msg):
+            # file('session.txt', 'a+').write('==== %s\n' % msg)
             open("session.txt", "a+").write("==== %s\n" % msg)
             print(msg)
 
         def saveYourself(self, save_type, shutdown, interact_style, fast):
-            self.log(
-                "Save yourself %d %d %d %d"
-                % (save_type, shutdown, interact_style, fast)
-            )
+            self.log("Save yourself %d %d %d %d" % (save_type, shutdown, interact_style, fast))
             self.saveYourselfDone(True)
 
         def die(self):
@@ -478,6 +477,7 @@ if __name__ == "__main__":
             self.log("Shutdown cancelled")
 
     monitor = TestMonitor()
+    # raw_input('') ?
     input("")
     monitor.stop()
     monitor.join()

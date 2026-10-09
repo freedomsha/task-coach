@@ -16,38 +16,62 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 from taskcoachlib import patterns
-from taskcoachlib.thirdparty.pubsub import pub
+
+# try:
+#    from taskcoachlib.thirdparty.pubsub import pub
+# except ImportError:
+#    from wx.lib.pubsub import pub
+# except ModuleNotFoundError:
+from pubsub import pub
+
+log = logging.getLogger(__name__)
 
 
-class Sorter(patterns.ListDecorator):
+class Sorter(patterns.ListDecorator):  # classe enfant
     """This class decorates a list and sorts its contents."""
+
+    # Cette classe décore une liste et trie son contenu.
 
     def __init__(self, *args, **kwargs):
         self._sortKeys = kwargs.pop("sortBy", ["subject"])
         self._sortCaseSensitive = kwargs.pop("sortCaseSensitive", True)
-        super(Sorter, self).__init__(*args, **kwargs)
+        super().__init__(
+            *args, **kwargs
+        )  # Cela appelle CollectionDecorator.__init__
         for sortKey in self._sortKeys:
             self._registerObserverForAttribute(sortKey.lstrip("-"))
         self.reset()
 
     def thaw(self):
-        super(Sorter, self).thaw()
+        super().thaw()  # <--- Cet appel remonte à CollectionDecorator.thaw()
         if not self.isFrozen():
             self.reset()
 
     def detach(self):
-        super(Sorter, self).detach()
+        super().detach()
         for sortKey in self._sortKeys:
             self._removeObserverForAttribute(sortKey.lstrip("-"))
 
     @classmethod
     def sortEventType(cls):
-        return "pubsub.%s.sorted" % cls.__name__
+        # return "pubsub.%s.sorted" % cls.__name__
+        return f"pubsub.{cls.__name__}.sorted"
 
     @patterns.eventSource
     def extendSelf(self, items, event=None):
-        super(Sorter, self).extendSelf(items, event)
+        """
+        Ajoute des éléments au tri et invalide le cache des éléments racines.
+
+        Args:
+            items (iterable): Éléments à ajouter.
+            event: Événement éventuellement propagé.
+
+        Returns:
+            Résultat de la méthode parent.
+        """
+        super().extendSelf(items, event=event)
         self.reset()
 
     def isAscending(self):
@@ -120,13 +144,41 @@ class Sorter(patterns.ListDecorator):
         )
 
     def _getSortKeyFunction(self, sortKey):
+        """
+        Recherche la fonction utilisée pour calculer une clé de tri.
+
+        Args:
+            sortKey (str): Nom du champ de tri.
+
+        Returns:
+            Callable: Fonction de calcul de clé.
+
+        Raises:
+            AttributeError:
+                Si aucune fonction de tri n'existe.
+        """
         try:
-            return getattr(self.DomainObjectClass, "%sSortFunction" % sortKey)
+            # return getattr(self.DomainObjectClass, "%sSortFunction" % sortKey)
+            return getattr(self.DomainObjectClass, f"{sortKey}SortFunction")
         except AttributeError:
+            # raise AttributeError(
+            log.debug(
+                f"Aucune fonction {sortKey}SortFunction "
+                f"dans {self.DomainObjectClass.__name__}"
+            )
             return self._getSortKeyFunction("subject")
 
     def _registerObserverForAttribute(self, attribute):
+        # log.debug(f"Registering observer for attribute {attribute}.")
+        # print(
+        log.debug(
+            f"base.Sorter._registerObserverForAttribute : Registering observer for attribute {attribute}."
+        )
         for eventType in self._getSortEventTypes(attribute):
+            print(
+                "base.sorter._registerObserverForAttribute : REGISTER:",
+                repr(eventType),
+            )
             if eventType.startswith("pubsub"):
                 pub.subscribe(self.onAttributeChanged, eventType)
             else:
@@ -150,10 +202,30 @@ class Sorter(patterns.ListDecorator):
         self.reset()
 
     def _getSortEventTypes(self, attribute):
+        # try:
+        #     # return getattr(
+        #     #     self.DomainObjectClass, "%sSortEventTypes" % attribute
+        #     # )()
+        #     return getattr(
+        #         self.DomainObjectClass, f"{attribute}SortEventTypes"
+        #     )()
+        # except AttributeError:
+        #     return []
+        # Version plus robuste :
         try:
-            return getattr(
-                self.DomainObjectClass, "%sSortEventTypes" % attribute
+            eventTypes = getattr(
+                self.DomainObjectClass, f"{attribute}SortEventTypes"
             )()
+
+            # Sécurité si eventTypes n'est pas une liste mais une chaîne de caractères
+            if isinstance(eventTypes, str):
+                eventTypes = (eventTypes,)
+                log.debug(
+                    f"base.Sorter._getSortEventTypes : eventTypes {eventTypes} est une chaîne de caractères au lieu d'une liste."
+                )
+
+            return eventTypes
+
         except AttributeError:
             return []
 
@@ -161,9 +233,16 @@ class Sorter(patterns.ListDecorator):
 class TreeSorter(Sorter):
     def __init__(self, *args, **kwargs):
         self.__rootItems = None  # Cached root items
-        super(TreeSorter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
+    # @staticmethod
     def treeMode(self):
+        """
+        Indique que le tri concerne une structure arborescente.
+
+        Returns:
+            bool: Toujours True pour TreeSorter.
+        """
         return True
 
     def createSortKeyFunction(self, key):
@@ -178,12 +257,12 @@ class TreeSorter(Sorter):
 
     def reset(self, *args, **kwargs):  # pylint: disable=W0221
         self.__invalidateRootItemCache()
-        return super(TreeSorter, self).reset(*args, **kwargs)
+        return super().reset(*args, **kwargs)
 
     @patterns.eventSource
     def extendSelf(self, items, event=None):
         self.__invalidateRootItemCache()
-        return super(TreeSorter, self).extendSelf(items, event=event)
+        return super().extendSelf(items, event=event)
 
     @patterns.eventSource
     def removeItemsFromSelf(self, itemsToRemove, event=None):
@@ -194,14 +273,18 @@ class TreeSorter(Sorter):
             for item in itemsToRemove.copy():
                 itemsToRemove.update(item.children(recursive=True))
         itemsToRemove = [item for item in itemsToRemove if item in self]
-        return super(TreeSorter, self).removeItemsFromSelf(
-            itemsToRemove, event=event
-        )
+        return super().removeItemsFromSelf(itemsToRemove, event=event)
 
     def rootItems(self):
         """Return the root items, i.e. items without a parent."""
+        log.debug(
+            f"TreeSorter.rootItems : self.__rootItems={self.__rootItems}."
+        )
         if self.__rootItems is None:
             self.__rootItems = [item for item in self if item.parent() is None]
+        log.debug(
+            f"TreeSorter.rootItems : retourne self.__rootItems : {self.__rootItems}."
+        )
         return self.__rootItems
 
     def __invalidateRootItemCache(self):

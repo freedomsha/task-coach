@@ -14,13 +14,17 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
 
-"""
 In place editors for viewers.
+Éditeurs en place pour les téléspectateurs.
 """  # pylint: disable=W0105
 
+# from builtins import str
+# from builtins import object
+
 import wx
+
+# from taskcoachlib.thirdparty.agw import hypertreelist
 from wx.lib.agw import hypertreelist
 from taskcoachlib import widgets
 from taskcoachlib.domain import date
@@ -34,12 +38,13 @@ class KillFocusAcceptsEditsMixin(object):
         try:
             if self.__has_focus():
                 # User hit Escape
-                super(KillFocusAcceptsEditsMixin, self).StopEditing()
+                super().StopEditing()
             else:
                 # User clicked outside edit window
                 self.AcceptChanges()
                 self.Finish()
-        except wx.PyDeadObjectError or RuntimeError:
+        # except wx.PyDeadObjectError:
+        except RuntimeError:
             pass
 
     def __has_focus(self):
@@ -65,7 +70,7 @@ class DescriptionCtrl(KillFocusAcceptsEditsMixin, hypertreelist.EditTextCtrl):
 
     def __init__(self, *args, **kwargs):
         kwargs["style"] = kwargs.get("style", 0) | wx.TE_MULTILINE
-        super(DescriptionCtrl, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class EscapeKeyMixin(object):
@@ -100,7 +105,7 @@ class _SpinCtrl(
     def __init__(
         self, parent, wxId, item, column, owner, value, *args, **kwargs
     ):
-        super(_SpinCtrl, self).__init__(
+        super().__init__(
             parent, wxId, item, column, owner, str(value), *args, **kwargs
         )
         self._textCtrl.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
@@ -117,7 +122,7 @@ class PercentageCtrl(_SpinCtrl):
     """Spin control for percentages."""
 
     def __init__(self, *args, **kwargs):
-        super(PercentageCtrl, self).__init__(min=0, max=100, *args, **kwargs)
+        super().__init__(min=0, max=100, *args, **kwargs)
 
 
 class Panel(wx.Panel):
@@ -128,7 +133,7 @@ class Panel(wx.Panel):
     ):  # pylint: disable=W0613
         # Don't pass the value argument to the wx.Panel since it doesn't take
         # a value argument
-        super(Panel, self).__init__(parent, wxId, *args, **kwargs)
+        super().__init__(parent, wxId, *args, **kwargs)
 
     def makeSizer(self, control):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -143,7 +148,7 @@ class BudgetCtrl(
     <hours>:<minutes>:<seconds>."""
 
     def __init__(self, parent, wxId, item, column, owner, value):
-        super(BudgetCtrl, self).__init__(parent, wxId, item, column, owner)
+        super().__init__(parent, wxId, item, column, owner)
         hours, minutes, seconds = value.hoursMinutesSeconds()
         # Can't inherit from TimeDeltaCtrl because we need to override GetValue,
         # so we use composition instead
@@ -163,7 +168,7 @@ class AmountCtrl(
     """Masked inline text control for editing amounts (floats >= 0)."""
 
     def __init__(self, parent, wxId, item, column, owner, value):
-        super(AmountCtrl, self).__init__(parent, wxId, item, column, owner)
+        super().__init__(parent, wxId, item, column, owner)
         self.__floatCtrl = widgets.masked.AmountCtrl(self, value)
         self.__floatCtrl.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.makeSizer(self.__floatCtrl)
@@ -173,7 +178,7 @@ class AmountCtrl(
 
 
 class DateTimeCtrl(KillFocusAcceptsEditsMixin, hypertreelist.EditCtrl, Panel):
-    """Inline date and time picker control."""
+    """Inline Date and time picker control."""
 
     def __init__(self, parent, wxId, item, column, owner, value, **kwargs):
         relative = kwargs.pop("relative", False)

@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from taskcoachlib.i18n import _
 from taskcoachlib import meta
 
-# Help texts for menu items and toolbar buttons (so called uicommands).
-# At the moment this lists mostly the uicommands that have a keyboard shortcut
+# Help texts for menu items and toolbar buttons (so called uicommands). 
+# At the moment this lists mostly the uicommands that have a keyboard shortcut 
 # because we need to be able to reuse the help text in the help dialog.
 
 addAttachment = _(

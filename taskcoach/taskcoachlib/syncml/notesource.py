@@ -23,14 +23,13 @@ from taskcoachlib.persistence.icalendar import ical
 
 from taskcoachlib.i18n import _
 
-import wx, inspect
+import wx
+import inspect
 
 
 class NoteSource(BaseSource):
-    def __init__(
-        self, callback, noteList, categoryList, dataType, *args, **kwargs
-    ):
-        super(NoteSource, self).__init__(callback, noteList, *args, **kwargs)
+    def __init__(self, callback, noteList, categoryList, dataType, *args, **kwargs):
+        super().__init__(callback, noteList, *args, **kwargs)
 
         self.categoryList = categoryList
         self._dataType = dataType
@@ -38,21 +37,22 @@ class NoteSource(BaseSource):
     def updateItemProperties(self, item, note):
         item.dataType = self._dataType
         if self._dataType == "text/x-vnote":
-            item.data = ical.VNoteFromNote(note, doFold=False).encode("UTF-8")
+            # item.data = ical.VNoteFromNote(note, doFold=False).encode("UTF-8")
+            item.data = ical.VNoteFromNote(note, doFold=False)
         else:
+            # item.data = (
+            #     "%s\n%s" % (note.subject(), note.description())
+            # ).encode("UTF-8")
             item.data = (
                 "%s\n%s" % (note.subject(), note.description())
-            ).encode("UTF-8")
+            )
 
     def _parseObject(self, item):
         # Horde doesn't seem to give a fuck about the supported types we send it.
         if item.dataType == "text/plain":
-            lines = [x.rstrip("\r") for x in item.data.split("\n")]
-            kwargs = (
-                dict(subject=lines[0], description="\n".join(lines[1:]))
-                if lines
-                else dict()
-            )
+            lines = map(lambda x: x.rstrip("\r"), item.data.split("\n"))
+            # lines = [x.rstrip('\r') for x in item.data.split('\n')]
+            kwargs = dict(subject=lines[0], description="\n".join(lines[1:])) if lines else dict()
             categories = list()
         else:
             parser = ical.VCalendarParser()
@@ -90,6 +90,6 @@ class NoteSource(BaseSource):
         for category in local.categories():
             category.addCategorizable(local)
 
-        super(NoteSource, self).doUpdateItem(note, local)
+        super().doUpdateItem(note, local)
 
         return 200

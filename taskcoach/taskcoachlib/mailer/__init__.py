@@ -16,7 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx, os, re, tempfile, urllib.request, urllib.parse, urllib.error, email, email.header
+# from builtins import map
+from io import open as file
+import wx
+import os
+import re
+import tempfile
+import email
+import email.header
+import urllib.parse
+
+# from taskcoachlib.thirdparty import chardet
 import chardet
 from taskcoachlib.tools import openfile
 from taskcoachlib.mailer.macmail import getSubjectOfMail
@@ -25,8 +35,18 @@ from taskcoachlib import operating_system
 
 
 def readMail(filename, readContent=True):
-    with open(filename, "r") as fd:
-        message = email.message_from_file(fd)
+    """Lit un email depuis un fichier et retourne son contenu."""
+    if isinstance(
+        filename, str
+    ):  # Si fd est un chemin de fichier, on ouvre en binaire
+        with open(filename, "rb") as f:
+            message = email.message_from_bytes(
+                f.read()
+            )  # ✅ Utilise `message_from_bytes`
+    else:  # Sinon, fd est déjà un objet fichier
+        with file(filename, "r") as fd:  # str or bytes ?
+            # with open(filename, 'r') as fd: # ✅ Lecture binaire
+            message = email.message_from_file(fd)
     subject = getSubject(message)
     content = getContent(message) if readContent else ""
     return subject, content
@@ -36,21 +56,45 @@ charset_re = re.compile('charset="?([-0-9a-zA-Z]+)"?')
 
 
 def getSubject(message):
-    subject = message["subject"]
+    """Extrait le sujet d'un email en le décodant correctement."""
+    # subject = message["subject"]
+    subject = message.get("Subject")  # ✅ Utilise `get()` pour éviter KeyError
+
+    if subject is None:  # ✅ Vérifie si le sujet est `None`
+        return "(Pas de sujet)"
+
+    # try:
+    #     return " ".join(
+    #         (part[0].decode(part[1]) if part[1] else part[0])
+    #         for part in email.header.decode_header(subject)
+    #     )
     try:
         return " ".join(
-            (part[0].decode(part[1]) if part[1] else part[0])
+            (
+                part[0].decode(part[1])
+                if isinstance(part[0], bytes)
+                else part[0]
+            )
             for part in email.header.decode_header(subject)
         )
     except UnicodeDecodeError:
-        encoding = message.get_content_charset()
-        if encoding is None:
-            encoding = message.get("Content-Transfer-Encoding")
-        if encoding is None:
-            encoding = "utf-8"
+        # encoding = message.get_content_charset()
+        # if encoding is None:
+        #     encoding = message.get("Content-Transfer-Encoding")
+        # if encoding is None:
+        #     encoding = "utf-8"
+        # try:
+        #     return subject.decode(encoding)
+        # except:
+        #     return repr(subject)
+        encoding = (
+            message.get_content_charset()
+            or message.get("Content-Transfer-Encoding")
+            or "utf-8"
+        )
         try:
             return subject.decode(encoding)
-        except:
+        except Exception:
             return repr(subject)
 
 
@@ -79,24 +123,23 @@ def getContent(message):
         return ""
 
 
-def openMailWithOutlook(filename):
-    id_ = None
-    for line in open(filename, "r"):
-        if line.startswith("X-Outlook-ID:"):
-            id_ = line[13:].strip()
-            break
-        elif line.strip() == "":
-            break
-
-    if id_ is None:
-        return False
-
-    from win32com.client import GetActiveObject  # pylint: disable=F0401
-
-    app = GetActiveObject("Outlook.Application")
-    app.ActiveExplorer().Session.GetItemFromID(id_).Display()
-
-    return True
+# def openMailWithOutlook(filename):
+#     id_ = None
+#     for line in open(filename, "r"):
+#         if line.startswith("X-Outlook-ID:"):
+#             id_ = line[13:].strip()
+#             break
+#         elif line.strip() == "":
+#             break
+#
+#     if id_ is None:
+#         return False
+#
+#     from win32com.client import GetActiveObject  # pylint: disable=F0401
+#     app = GetActiveObject("Outlook.Application")
+#     app.ActiveExplorer().Session.GetItemFromID(id_).Display()
+#
+#     return True
 
 
 def openMail(filename):
@@ -109,13 +152,13 @@ def openMail(filename):
         )
         try:
             value, type_ = winreg.QueryValueEx(key, "")
-            if type_ in [winreg.REG_SZ, winreg.REG_EXPAND_SZ]:
-                if "outlook.exe" in value.lower():
-                    try:
-                        if openMailWithOutlook(filename):
-                            return
-                    except:
-                        pass
+            # if type_ in [winreg.REG_SZ, winreg.REG_EXPAND_SZ]:
+            #     if "outlook.exe" in value.lower():
+            #         try:
+            #             if openMailWithOutlook(filename):
+            #                 return
+            #         except Exception:
+            #             pass
         finally:
             winreg.CloseKey(key)
 
@@ -139,9 +182,9 @@ def sendMail(to, subject, body, cc=None, openURL=openfile.openFile):
     # the user uses something else ?
 
     if not operating_system.isMac():
-        body = unicode_quote(body)  # Otherwise newlines disappear
-        cc = list(map(unicode_quote, cc))
-        to = list(map(unicode_quote, to))
+        body = urllib.parse.quote(body)  # Otherwise newlines disappear
+        cc = list(map(urllib.parse.quote, cc))
+        to = list(map(urllib.parse.quote, to))
 
     components = ["subject=%s" % subject, "body=%s" % body]
     if cc:

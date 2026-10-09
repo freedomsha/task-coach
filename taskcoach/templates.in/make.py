@@ -18,27 +18,41 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from io import open as file
 import os
-import xml.etree.ElementTree as ET
+# Warning: CamelCase variable imported as constant ou lowercase
+from xml.etree import ElementTree as xET
 
 
-def dumpTemplate(filename, fd):
+# templates.in exporte et les fichiers et dossiers personnels
+
+
+def dumptemplate(filename, fd):
+    # décomposition du nom de fichier
+    # chemin
     path, name = os.path.split(filename)
+    # fichier
     name, ext = os.path.splitext(name)
-
+    # penser à spliter le résultat sur plusieurs lignes
+    # Si l'extension du fichier est .tsktmpl:
     if ext == ".tsktmpl":
-        fd.write(
-            "    templates.append((%s, %s))\n"
-            % (repr(name), repr(open(filename, "rb").read()))
-        )
-        tree = ET.parse(open(filename, "rb"))
+        # écrire (en binaire)
+        # Warning : Unexpected argument 'rb' et Unresolved attribute reference 'read' for class 'str'
+        fd.write("    templates.append((%s, %s))\n" % (repr(name),
+                                                       repr(file(filename, "rb").read())))
+        # fd.write('    templates.append(({}, {}))\n'.format(repr(name),
+        #                                                   repr(file(filename, 'rb').read())))
+        # fd.write(f'    templates.append(({repr(name)}, {repr(file(filename, 'rb').read())}))\n')
+        # Python version 3.11 does not allow nesting of string literals with the same quote type inside f-strings
+        # Python version 3.11 n'autorise pas l'imbrication de chaînes littérales avec le même type de guillemets dans les f-strings
+        tree = xET.parse(file(filename, "rb"))
         root = tree.getroot()
         subject = root.find("task").attrib["subject"]
-        fd.write("    _(%s)\n" % repr(subject.encode("UTF-8")))
+        fd.write("    _(%s)\n" % repr(subject.encode(encoding="UTF-8")))
 
 
 def dumpDirectory(path):
-    fd = open(
+    fd = file(
         os.path.join(
             "..", "taskcoachlib", "persistence", "xml", "templates.py"
         ),
@@ -51,7 +65,7 @@ def dumpDirectory(path):
     fd.write("    templates = []\n")
 
     for name in os.listdir(path):
-        dumpTemplate(os.path.join(path, name), fd)
+        dumptemplate(os.path.join(path, name), fd)
 
     fd.write("\n    return templates\n")
 

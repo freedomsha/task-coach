@@ -22,17 +22,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     viewers. """  # pylint: disable=W0105
 
 
+# from builtins import object
+import logging
 from taskcoachlib import patterns
 from taskcoachlib.domain import date
-from taskcoachlib.thirdparty.pubsub import pub
+
+# try:
+#     from taskcoachlib.thirdparty.pubsub import pub
+# except ImportError:
+#    from wx.lib.pubsub import pub
+from pubsub import pub
 from taskcoachlib.gui.newid import IdProvider
 import wx
+
+log = logging.getLogger(__name__)
 
 
 class MinuteRefresher(object):
     """This class can be used by viewers to refresh themselves every minute
     to refresh attributes like time left. The user of this class is
-    responsible for calling refresher.startClock() and stopClock()."""
+    responsible for calling refresher.startClock() and stopClock().
+
+    Cette classe peut être utilisée par les téléspectateurs pour s'actualiser chaque minute
+    afin d'actualiser des attributs tels que le temps restant.
+    L'utilisateur de cette classe est responsable de l'appel de Refresher.startClock() et stopClock().
+    """
 
     def __init__(self, viewer):
         self.__viewer = viewer
@@ -51,19 +65,30 @@ class MinuteRefresher(object):
 
 
 class SecondRefresher(patterns.Observer, wx.EvtHandler):
-    """This class can be used by viewers to refresh themselves every second
-    whenever items (tasks, efforts) are being tracked."""
+    """Cette classe peut être utilisée par les téléspectateurs pour se rafraîchir chaque seconde
+    chaque fois que des éléments (tâches, efforts) sont suivis.
+    """
 
     # APScheduler seems to take a lot of resources in this setup, so we use a wx.Timer
+    # Libération des identifiants
 
     def __init__(self, viewer, trackingChangedEventType):
-        super(SecondRefresher, self).__init__()
+        super().__init__()
         self.__viewer = viewer
+        log.debug(f"Creating SecondRefresher for viewer {viewer}")
         self.__presentation = viewer.presentation()
         self.__trackedItems = set()
+        # Utiliser IdProvider.get() pour obtenir un identifiant unique
+        # TODO : essayer avec timer_id
         id_ = IdProvider.get()
+        # id_ = wx.ID_ANY
+        # self.__timer_id = IdProvider.get()
         self.__timer = wx.Timer(self, id_)
+        # self.__timer = wx.Timer(self, self.__timer_id)
+        # wx.EVT_TIMER(self, id_, self.onEverySecond)
+        #  wxPyDeprecationWarning: Call to deprecated item __call__. Use :meth:`EvtHandler.Bind` instead.
         self.Bind(wx.EVT_TIMER, self.onEverySecond, id=id_)
+        # self.Bind(wx.EVT_TIMER, self.onEverySecond, self.__timer)
         pub.subscribe(self.onTrackingChanged, trackingChangedEventType)
         self.registerObserver(
             self.onItemAdded,
@@ -78,16 +103,21 @@ class SecondRefresher(patterns.Observer, wx.EvtHandler):
         self.setTrackedItems(self.trackedItems(self.__presentation))
 
     def removeInstance(self):
-        IdProvider.put(self.__timer.GetId())
-        super(SecondRefresher, self).removeInstance()
+        # Lors de la destruction de l'objet,
+        # s'assurer de libérer cet identifiant avec IdProvider.put().
+        IdProvider.put(self.__timer.GetId())  # Libérer l'identifiant
+        super().removeInstance()
 
     def onItemAdded(self, event):
+        # Implémentez ici ce qui doit être fait lorsqu'un élément est ajouté
         self.addTrackedItems(self.trackedItems(list(event.values())))
 
     def onItemRemoved(self, event):
+        # Implémentez ici ce qui doit être fait lorsqu'un élément est supprimé
         self.removeTrackedItems(self.trackedItems(list(event.values())))
 
     def onTrackingChanged(self, newValue, sender):
+        # Implémentez ici ce qui doit être fait lorsque le suivi change
         if sender not in self.__presentation:
             self.setTrackedItems(self.trackedItems(self.__presentation))
             return
@@ -98,6 +128,8 @@ class SecondRefresher(patterns.Observer, wx.EvtHandler):
         self.refreshItems([sender])
 
     def onEverySecond(self, event=None):
+        # def onEverySecond(self, event):
+        # Implémentez ici ce qui doit être fait chaque seconde
         self.refreshItems(self.__trackedItems)
 
     def refreshItems(self, items):
@@ -107,10 +139,12 @@ class SecondRefresher(patterns.Observer, wx.EvtHandler):
             self.stopClock()
 
     def setTrackedItems(self, items):
+        # Implémentez ici la logique pour définir les éléments suivis
         self.__trackedItems = set(items)
         self.startOrStopClock()
 
     def updatePresentation(self):
+        log.debug("Updating presentation in SecondRefresher")
         self.__presentation = self.__viewer.presentation()
         self.setTrackedItems(self.trackedItems(self.__presentation))
 
@@ -132,6 +166,7 @@ class SecondRefresher(patterns.Observer, wx.EvtHandler):
 
     def startClock(self):
         self.__timer.Start(1000, False)
+        # Démarrer le timer pour un intervalle de 1 seconde
 
     def stopClock(self):
         self.__timer.Stop()
@@ -142,6 +177,15 @@ class SecondRefresher(patterns.Observer, wx.EvtHandler):
     def currentlyTrackedItems(self):
         return list(self.__trackedItems)
 
+    # def trackedItems(self, items):
     @staticmethod
     def trackedItems(items):
+        # Implémentez ici la logique pour récupérer les éléments suivis
         return [item for item in items if item.isBeingTracked(recursive=True)]
+
+    # def __del__(self):
+    #     # Lors de la destruction de l'objet,
+    #     # s'assurer de libérer cet identifiant avec IdProvider.put().
+    #     if self.__timer.IsRunning():
+    #         self.__timer.Stop()
+    #     IdProvider.put(self.__timer_id)  # Libérer l'identifiant

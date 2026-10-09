@@ -16,17 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib import gui, config, persistence
-from taskcoachlib.domain import task, note, category
-from taskcoachlib.thirdparty import lockfile
-from unittests import dummy
+# from builtins import str
+# from builtins import range
+import lockfile
 import os
 import shutil
 import wx
-import test
+from ... import tctest
+from taskcoachlib import gui, config, persistence
+import taskcoachlib.gui.iocontroller as iocontroller_module
+from taskcoachlib.domain import task, note, category
+
+# from taskcoachlib.thirdparty import lockfile
+from .. import dummy
 
 
-class IOControllerTest(test.TestCase):
+class IOControllerTest(tctest.TestCase):
     def setUp(self):
         task.Task.settings = self.settings = config.Settings(load=False)
         self.taskFile = dummy.TaskFile()
@@ -46,7 +51,7 @@ class IOControllerTest(test.TestCase):
                 shutil.rmtree(filename + ".lock")  # pragma: no cover
             if os.path.exists(filename + ".delta"):
                 os.remove(filename + ".delta")
-        super(IOControllerTest, self).tearDown()
+        super().tearDown()
 
     def doIOAndCheckRecentFiles(
         self,
@@ -324,11 +329,14 @@ class IOControllerTest(test.TestCase):
         self.assertTrue(self.askBreakLockCalled)
 
 
-class IOControllerOverwriteExistingFileTest(test.TestCase):
+class IOControllerOverwriteExistingFileTest(tctest.TestCase):
     def setUp(self):
-        super(IOControllerOverwriteExistingFileTest, self).setUp()
-        self.originalFileSelector = wx.FileSelector
-        wx.FileSelector = (
+        super().setUp()
+        # self.originalFileSelector = wx.FileSelector
+        self.userWarned = False
+        self.originalFileSelector = iocontroller_module.file_selector
+        # wx.FileSelector = (
+        iocontroller_module.file_selector = (
             lambda *args, **kwargs: "filename without extension to trigger our own overwrite warning"
         )
         self.originalMessageBox = wx.MessageBox
@@ -347,9 +355,10 @@ class IOControllerOverwriteExistingFileTest(test.TestCase):
     def tearDown(self):
         self.taskFile.close()
         self.taskFile.stop()
-        wx.FileSelector = self.originalFileSelector
+        # wx.FileSelector = self.originalFileSelector
+        iocontroller_module.file_selector = self.originalFileSelector
         wx.MessageBox = self.originalMessageBox
-        super(IOControllerOverwriteExistingFileTest, self).tearDown()
+        super().tearDown()
 
     def testCancelSaveAsExistingFile(self):
         self.iocontroller.saveas(fileExists=lambda filename: True)

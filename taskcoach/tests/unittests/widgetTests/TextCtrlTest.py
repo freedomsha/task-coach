@@ -16,23 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import widgets
 
 
-class BaseTextCtrlTest(test.wxTestCase):
+class BaseTextCtrlTest(tctest.wxTestCase):
     def testRemoveAnyControlCharactersEnteredByUser(self):
-        textctrl = widgets.textctrl.BaseTextCtrl(
-            self.frame, "T\x02\x01est\x09"
-        )
+        textctrl = widgets.textctrl.BaseTextCtrl(self.frame, "T\x02\x01est\x09")
         self.assertEqual("Test\t", textctrl.GetValue())
 
 
-class MultiLineTextCtrlTest(test.wxTestCase):
+class MultiLineTextCtrlTest(tctest.wxTestCase):
     def testOpenWebbrowserOnURLClick(self):
         textctrl = widgets.MultiLineTextCtrl(self.frame)
         textctrl.AppendText("test http://test.com/ test")
-        # FIXME: simulate a mouseclick on the url
+        # FIXME: simulate a mouseclick on the urlpo
 
     def testSetInsertionPointAtStart(self):
         textctrl = widgets.MultiLineTextCtrl(self.frame, text="Hiya")

@@ -16,16 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx
 
+import wx
 from taskcoachlib.i18n import _
 
 
 class SyncMLWarningDialog(wx.Dialog):
     def __init__(self, parent):
-        super(SyncMLWarningDialog, self).__init__(
-            parent, wx.ID_ANY, _("Compatibility warning")
-        )
+        super().__init__(parent, wx.ID_ANY, _("Compatibility warning"))
 
         textWidget = wx.StaticText(
             self,

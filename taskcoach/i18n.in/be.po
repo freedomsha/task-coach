@@ -93,11 +93,11 @@ msgid "Remove attachment to \"%s\""
 msgstr "Выдаліць укладаньне з \"%s\""
 
 #: taskcoachlib/command/base.py:192
-msgid "Copy"
+msgid "copy"
 msgstr "Капіяваць"
 
 #: taskcoachlib/command/base.py:193
-msgid "Copy \"%s\""
+msgid "copy \"%s\""
 msgstr "Капіяваць \"%s\""
 
 #: taskcoachlib/command/base.py:207
@@ -258,19 +258,19 @@ msgid "Change task of \"%s\" effort"
 msgstr "Зьмяніць задачу працы \"%s\""
 
 #: taskcoachlib/command/effortCommands.py:100
-msgid "Change effort start date and time"
+msgid "Change effort start Date and time"
 msgstr "Зьмяніць дату і час пачатку працы"
 
 #: taskcoachlib/command/effortCommands.py:101
-msgid "Change effort start date and time of \"%s\""
+msgid "Change effort start Date and time of \"%s\""
 msgstr "Зьмяніць дату і час пачатку працы \"%s\""
 
 #: taskcoachlib/command/effortCommands.py:135
-msgid "Change effort stop date and time"
+msgid "Change effort stop Date and time"
 msgstr "Зьмяніць дату і час канчатка працы"
 
 #: taskcoachlib/command/effortCommands.py:136
-msgid "Change effort stop date and time of \"%s\""
+msgid "Change effort stop Date and time of \"%s\""
 msgstr "Зьмяніць дату і час канчатка працы \"%s\""
 
 #: taskcoachlib/command/noteCommands.py:26
@@ -446,35 +446,35 @@ msgid "Add note to tasks"
 msgstr "Дадаць нататку да задачы"
 
 #: taskcoachlib/command/taskCommands.py:532
-msgid "Change planned start date"
+msgid "Change planned start Date"
 msgstr "Зьмяніць планавую дату пачатку"
 
 #: taskcoachlib/command/taskCommands.py:533
-msgid "Change planned start date of \"%s\""
+msgid "Change planned start Date of \"%s\""
 msgstr "Зьмяніць планавую дату пачатку для \"%s\""
 
 #: taskcoachlib/command/taskCommands.py:553
-msgid "Change due date"
+msgid "Change due Date"
 msgstr "Зьмяніць тэрмін"
 
 #: taskcoachlib/command/taskCommands.py:554
-msgid "Change due date of \"%s\""
+msgid "Change due Date of \"%s\""
 msgstr "Зьмяніць тэрмін \"%s\""
 
 #: taskcoachlib/command/taskCommands.py:574
-msgid "Change actual start date"
+msgid "Change actual start Date"
 msgstr "Зьмяніць фактычную дату пачатку"
 
 #: taskcoachlib/command/taskCommands.py:575
-msgid "Change actual start date of \"%s\""
+msgid "Change actual start Date of \"%s\""
 msgstr "Зьмяніць фактычную дату пачатку \"%s\""
 
 #: taskcoachlib/command/taskCommands.py:595
-msgid "Change completion date"
+msgid "Change completion Date"
 msgstr "Зьмяніць дату выканання"
 
 #: taskcoachlib/command/taskCommands.py:596
-msgid "Change completion date of \"%s\""
+msgid "Change completion Date of \"%s\""
 msgstr "Зьмяніць дату выканання \"%s\""
 
 #: taskcoachlib/command/taskCommands.py:619
@@ -482,7 +482,7 @@ msgid "Change reminder dates/times"
 msgstr "Зьмяніць дату/час напамінку"
 
 #: taskcoachlib/command/taskCommands.py:620
-msgid "Change reminder date/time of \"%s\""
+msgid "Change reminder Date/time of \"%s\""
 msgstr "Зьмяніць дату/час напамінку \"%s\""
 
 #: taskcoachlib/command/taskCommands.py:632
@@ -593,88 +593,88 @@ msgstr "Адкрыць укладаньне"
 msgid "Open the selected attachments"
 msgstr "Адкрыць выбраныя ўкладаньні"
 
-#: taskcoachlib/domain/date/snooze.py:22
+#: taskcoachlib/domain/Date/snooze.py:22
 msgid "5 minutes"
 msgstr "5 хвілін"
 
-#: taskcoachlib/domain/date/snooze.py:22
+#: taskcoachlib/domain/Date/snooze.py:22
 msgid "Don't snooze"
 msgstr "Не адкладаць"
 
-#: taskcoachlib/domain/date/snooze.py:23
+#: taskcoachlib/domain/Date/snooze.py:23
 msgid "10 minutes"
 msgstr "10 хвілін"
 
-#: taskcoachlib/domain/date/snooze.py:23
+#: taskcoachlib/domain/Date/snooze.py:23
 msgid "15 minutes"
 msgstr "15 хвілін"
 
-#: taskcoachlib/domain/date/snooze.py:24
+#: taskcoachlib/domain/Date/snooze.py:24
 msgid "20 minutes"
 msgstr "20 хвілін"
 
-#: taskcoachlib/domain/date/snooze.py:24
+#: taskcoachlib/domain/Date/snooze.py:24
 msgid "30 minutes"
 msgstr "30 хвілін"
 
-#: taskcoachlib/domain/date/snooze.py:25
+#: taskcoachlib/domain/Date/snooze.py:25
 msgid "1.5 hour"
 msgstr "1,5 гадзіны"
 
-#: taskcoachlib/domain/date/snooze.py:25
+#: taskcoachlib/domain/Date/snooze.py:25
 msgid "45 minutes"
 msgstr "45 хвілін"
 
-#: taskcoachlib/domain/date/snooze.py:25
+#: taskcoachlib/domain/Date/snooze.py:25
 #: taskcoachlib/thirdparty/smartdatetimectrl.py:1759
 msgid "1 hour"
 msgstr "1 гадзіна"
 
-#: taskcoachlib/domain/date/snooze.py:26
+#: taskcoachlib/domain/Date/snooze.py:26
 msgid "2 hours"
 msgstr "2 гадзіны"
 
-#: taskcoachlib/domain/date/snooze.py:26
+#: taskcoachlib/domain/Date/snooze.py:26
 msgid "3 hours"
 msgstr "3 гадзіны"
 
-#: taskcoachlib/domain/date/snooze.py:26
+#: taskcoachlib/domain/Date/snooze.py:26
 msgid "4 hours"
 msgstr "4 гадзіны"
 
-#: taskcoachlib/domain/date/snooze.py:27
+#: taskcoachlib/domain/Date/snooze.py:27
 msgid "12 hours"
 msgstr "12 гадзін"
 
-#: taskcoachlib/domain/date/snooze.py:27
+#: taskcoachlib/domain/Date/snooze.py:27
 msgid "6 hours"
 msgstr "6 гадзін"
 
-#: taskcoachlib/domain/date/snooze.py:27
+#: taskcoachlib/domain/Date/snooze.py:27
 msgid "8 hours"
 msgstr "8 гадзін"
 
-#: taskcoachlib/domain/date/snooze.py:28
+#: taskcoachlib/domain/Date/snooze.py:28
 msgid "18 hours"
 msgstr "18 гадзін"
 
-#: taskcoachlib/domain/date/snooze.py:28
+#: taskcoachlib/domain/Date/snooze.py:28
 msgid "24 hours"
 msgstr "24 гадзіны"
 
-#: taskcoachlib/domain/date/snooze.py:29
+#: taskcoachlib/domain/Date/snooze.py:29
 msgid "48 hours"
 msgstr "48 гадзін"
 
-#: taskcoachlib/domain/date/snooze.py:29
+#: taskcoachlib/domain/Date/snooze.py:29
 msgid "72 hours"
 msgstr "72 гадзіны"
 
-#: taskcoachlib/domain/date/snooze.py:30
+#: taskcoachlib/domain/Date/snooze.py:30
 msgid "2 weeks"
 msgstr "2 тыдні"
 
-#: taskcoachlib/domain/date/snooze.py:30
+#: taskcoachlib/domain/Date/snooze.py:30
 #: taskcoachlib/thirdparty/smartdatetimectrl.py:1747
 msgid "1 week"
 msgstr "1 тыдзень"
@@ -704,7 +704,7 @@ msgid "Inactive tasks: %d (%d%%)"
 msgstr "Неактыўныя задачы: %d (%d%%)"
 
 #: taskcoachlib/domain/task/status.py:63
-msgid "Show/hide inactive tasks (incomplete tasks without actual start date)"
+msgid "Show/hide inactive tasks (incomplete tasks without actual start Date)"
 msgstr ""
 
 #: taskcoachlib/domain/task/status.py:65
@@ -740,7 +740,7 @@ msgstr "Схаваць актыўныя задачы"
 
 #: taskcoachlib/domain/task/status.py:71
 msgid ""
-"Show/hide active tasks (incomplete tasks with an actual start date in the "
+"Show/hide active tasks (incomplete tasks with an actual start Date in the "
 "past)"
 msgstr ""
 
@@ -758,7 +758,7 @@ msgstr "Схаваць мінаючыя задачы"
 
 #: taskcoachlib/domain/task/status.py:75
 msgid ""
-"Show/hide due soon tasks (incomplete tasks with a due date in the near "
+"Show/hide due soon tasks (incomplete tasks with a due Date in the near "
 "future)"
 msgstr ""
 
@@ -776,7 +776,7 @@ msgstr "Пратэрмінаваных задач: %d (%d%%)"
 
 #: taskcoachlib/domain/task/status.py:79
 msgid ""
-"Show/hide over due tasks (incomplete tasks with a due date in the past)"
+"Show/hide over due tasks (incomplete tasks with a due Date in the past)"
 msgstr ""
 
 #: taskcoachlib/domain/task/status.py:81
@@ -1221,14 +1221,14 @@ msgstr "Зьмяніць, каб зьмяніць усе апісаньні"
 #: taskcoachlib/gui/viewer/category.py:123 taskcoachlib/gui/viewer/note.py:161
 #: taskcoachlib/gui/viewer/task.py:1105
 #: taskcoachlib/persistence/csv/generator.py:40
-msgid "Creation date"
+msgid "Creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/dialog/editor.py:168
 #: taskcoachlib/gui/viewer/attachment.py:117
 #: taskcoachlib/gui/viewer/category.py:129 taskcoachlib/gui/viewer/note.py:168
 #: taskcoachlib/gui/viewer/task.py:1112
-msgid "Modification date"
+msgid "Modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/dialog/editor.py:230
@@ -1293,7 +1293,7 @@ msgstr "Даты"
 #: taskcoachlib/gui/wizard/csvimport.py:233
 #: taskcoachlib/persistence/csv/generator.py:36
 #: taskcoachlib/persistence/csv/reader.py:96
-msgid "Planned start date"
+msgid "Planned start Date"
 msgstr "Планавы пачатак прац"
 
 #: taskcoachlib/gui/dialog/editor.py:393
@@ -1302,14 +1302,14 @@ msgstr "Планавы пачатак прац"
 #: taskcoachlib/gui/wizard/csvimport.py:234
 #: taskcoachlib/persistence/csv/generator.py:37
 #: taskcoachlib/persistence/csv/reader.py:98
-msgid "Due date"
+msgid "Due Date"
 msgstr "Тэрмін"
 
 #: taskcoachlib/gui/dialog/editor.py:395 taskcoachlib/gui/viewer/task.py:1035
 #: taskcoachlib/gui/wizard/csvimport.py:235
 #: taskcoachlib/persistence/csv/generator.py:35
 #: taskcoachlib/persistence/csv/reader.py:94
-msgid "Actual start date"
+msgid "Actual start Date"
 msgstr "Фактычная дата пачатку"
 
 #: taskcoachlib/gui/dialog/editor.py:396
@@ -1318,7 +1318,7 @@ msgstr "Фактычная дата пачатку"
 #: taskcoachlib/gui/wizard/csvimport.py:236
 #: taskcoachlib/persistence/csv/generator.py:38
 #: taskcoachlib/persistence/csv/reader.py:100
-msgid "Completion date"
+msgid "Completion Date"
 msgstr "Дата выканання"
 
 #: taskcoachlib/gui/dialog/editor.py:440
@@ -1466,7 +1466,7 @@ msgid "Start tracking from last stop time"
 msgstr "Пачаць улік працы з часу апошняга прыпынку"
 
 #: taskcoachlib/gui/dialog/editor.py:1245
-msgid "Stop tracking now"
+msgid "Stop tracking Now"
 msgstr "Спыніць улік працы зараз"
 
 #: taskcoachlib/gui/dialog/editor.py:1281
@@ -1565,11 +1565,11 @@ msgid "Schedule each next recurrence based on"
 msgstr "Планаваць паўторы, засноўваючыся на"
 
 #: taskcoachlib/gui/dialog/entry.py:476
-msgid "previous planned start and/or due date"
+msgid "previous planned start and/or due Date"
 msgstr ""
 
 #: taskcoachlib/gui/dialog/entry.py:477
-msgid "last completion date"
+msgid "last completion Date"
 msgstr ""
 
 #: taskcoachlib/gui/dialog/entry.py:522
@@ -1993,16 +1993,16 @@ msgid "Nothing"
 msgstr "Нічога"
 
 #: taskcoachlib/gui/dialog/preferences.py:611
-msgid "Changing the planned start date changes the due date"
+msgid "Changing the planned start Date changes the due Date"
 msgstr "Змена планавай даты пачатку зменіць дату тэрміна"
 
 #: taskcoachlib/gui/dialog/preferences.py:613
-msgid "Changing the due date changes the planned start date"
+msgid "Changing the due Date changes the planned start Date"
 msgstr "Змена даты тэрміна зменіць планавую дату пачатку"
 
 #: taskcoachlib/gui/dialog/preferences.py:615
 msgid ""
-"What to do with planned start and due date if the other one is changed"
+"What to do with planned start and due Date if the other one is changed"
 msgstr ""
 "Дзеянні для планавай даты пачатку і даты тэрміна, калі адна з іх зменіцца"
 
@@ -2023,7 +2023,7 @@ msgid "Tomorrow"
 msgstr "Заўтра"
 
 #: taskcoachlib/gui/dialog/preferences.py:622
-msgid "Day after tomorrow"
+msgid "Day after Tomorrow"
 msgstr "Паслязаўтра"
 
 #: taskcoachlib/gui/dialog/preferences.py:623
@@ -2051,23 +2051,23 @@ msgid "End of working day"
 msgstr "Канец працоўнага дня"
 
 #: taskcoachlib/gui/dialog/preferences.py:631
-msgid "Default planned start date and time"
+msgid "Default planned start Date and time"
 msgstr "Дата і час па змаўчаньні для планавай даты пачатку"
 
 #: taskcoachlib/gui/dialog/preferences.py:634
-msgid "Default due date and time"
+msgid "Default due Date and time"
 msgstr "Дата і час тэрміна па змаўчаньні"
 
 #: taskcoachlib/gui/dialog/preferences.py:637
-msgid "Default actual start date and time"
+msgid "Default actual start Date and time"
 msgstr "Дата і час па змаўчаньні для фактычнай даты пачатку"
 
 #: taskcoachlib/gui/dialog/preferences.py:640
-msgid "Default completion date and time"
+msgid "Default completion Date and time"
 msgstr "Дата і час завяршэння па змаўчаньні"
 
 #: taskcoachlib/gui/dialog/preferences.py:643
-msgid "Default reminder date and time"
+msgid "Default reminder Date and time"
 msgstr "Дата і час напамінку па змаўчаньні"
 
 #: taskcoachlib/gui/dialog/preferences.py:650
@@ -2076,7 +2076,7 @@ msgid ""
 "\"Proposed\" dates and times are filled in, but not checked.\n"
 "\n"
 "\"Start of day\" is midnight and \"End of day\" is just before midnight. "
-"When using these, task viewers hide the time and show only the date.\n"
+"When using these, task viewers hide the time and show only the Date.\n"
 "\n"
 "\"Start of working day\" and \"End of working day\" use the working day as "
 "set in the Features tab of this preferences dialog."
@@ -2175,7 +2175,7 @@ msgid "%(name)s reminder - %(task)s"
 msgstr "напамінак %(name)s - %(task)s"
 
 #: taskcoachlib/gui/dialog/reminder.py:64
-msgid "Reminder date/time"
+msgid "Reminder Date/time"
 msgstr "Дата/час напамінку"
 
 #: taskcoachlib/gui/dialog/reminder.py:65
@@ -2335,11 +2335,11 @@ msgid "Version %(version)s of %(name)s is available from"
 msgstr "Даступная версія %(version)s %(name)s"
 
 #: taskcoachlib/gui/dialog/version.py:77
-msgid "%(name)s is up to date"
+msgid "%(name)s is up to Date"
 msgstr "%(name)s апошняй версіі"
 
 #: taskcoachlib/gui/dialog/version.py:81
-msgid "%(name)s is up to date at version %(version)s."
+msgid "%(name)s is up to Date at version %(version)s."
 msgstr "Апошняя версія %(name)s - %(version)s."
 
 #: taskcoachlib/gui/dialog/version.py:86
@@ -2401,7 +2401,7 @@ msgid "Stop it at %s"
 msgstr "Спыніць у %s"
 
 #: taskcoachlib/gui/idlecontroller.py:48
-msgid "Stop it at %s and resume now"
+msgid "Stop it at %s and resume Now"
 msgstr "Спыніць у %s і працягнуць цяпер"
 
 #: taskcoachlib/gui/idlecontroller.py:109
@@ -2603,7 +2603,7 @@ msgstr "Памылка чытаньня %s:\n"
 
 #: taskcoachlib/gui/iocontroller.py:500
 msgid ""
-"The backup manager will now open to allow you to restore\n"
+"The backup manager will Now open to allow you to restore\n"
 "an older version of this file."
 msgstr ""
 
@@ -3134,7 +3134,7 @@ msgid "Cu&t\tCtrl+X"
 msgstr "Выра&зать\tCtrl+X"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:600
-msgid "&Copy\tCtrl+C"
+msgid "&copy\tCtrl+C"
 msgstr "&Капіяваць\tCtrl+C"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:625
@@ -3721,7 +3721,7 @@ msgstr "Сё&ння"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:2488
 #: taskcoachlib/gui/uicommand/uicommand.py:2495
-msgid "Show today"
+msgid "Show Today"
 msgstr "Паказаць сёння"
 
 #: taskcoachlib/gui/uicommand/uicommand.py:2511
@@ -3795,11 +3795,11 @@ msgstr "&Апісаньне"
 #: taskcoachlib/gui/viewer/category.py:159
 #: taskcoachlib/gui/viewer/mixin.py:295 taskcoachlib/gui/viewer/note.py:105
 #: taskcoachlib/gui/viewer/note.py:165 taskcoachlib/gui/viewer/task.py:1216
-msgid "&Creation date"
+msgid "&Creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/attachment.py:115
-msgid "Sort by creation date"
+msgid "Sort by creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/attachment.py:122
@@ -3807,11 +3807,11 @@ msgstr ""
 #: taskcoachlib/gui/viewer/category.py:162
 #: taskcoachlib/gui/viewer/mixin.py:299 taskcoachlib/gui/viewer/note.py:108
 #: taskcoachlib/gui/viewer/note.py:173 taskcoachlib/gui/viewer/task.py:1219
-msgid "&Modification date"
+msgid "&Modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/attachment.py:123
-msgid "Sort by last modification date"
+msgid "Sort by last modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/attachment.py:134
@@ -3836,13 +3836,13 @@ msgstr "Паказаць/Схаваць слупок нататак"
 #: taskcoachlib/gui/viewer/attachment.py:140
 #: taskcoachlib/gui/viewer/category.py:160 taskcoachlib/gui/viewer/note.py:106
 #: taskcoachlib/gui/viewer/task.py:1217
-msgid "Show/hide creation date column"
+msgid "Show/hide creation Date column"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/attachment.py:143
 #: taskcoachlib/gui/viewer/category.py:163 taskcoachlib/gui/viewer/note.py:109
 #: taskcoachlib/gui/viewer/task.py:1220
-msgid "Show/hide last modification date column"
+msgid "Show/hide last modification Date column"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/base.py:87
@@ -4013,11 +4013,11 @@ msgid "Sort categories by description"
 msgstr "Сартаваць катэгорыі па апісаньні"
 
 #: taskcoachlib/gui/viewer/mixin.py:339
-msgid "Sort categories by creation date"
+msgid "Sort categories by creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:340
-msgid "Sort categories by last modification date"
+msgid "Sort categories by last modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:341
@@ -4037,11 +4037,11 @@ msgid "Sort attachments by category"
 msgstr "Сартаваць укладаньні па катэгорыі"
 
 #: taskcoachlib/gui/viewer/mixin.py:359
-msgid "Sort attachments by creation date"
+msgid "Sort attachments by creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:360
-msgid "Sort attachments by last modification date"
+msgid "Sort attachments by last modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:364 taskcoachlib/gui/viewer/note.py:128
@@ -4057,11 +4057,11 @@ msgid "Sort notes by category"
 msgstr "Сартаваць нататкі па катэгорыі"
 
 #: taskcoachlib/gui/viewer/mixin.py:367 taskcoachlib/gui/viewer/note.py:166
-msgid "Sort notes by creation date"
+msgid "Sort notes by creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:368 taskcoachlib/gui/viewer/note.py:174
-msgid "Sort notes by last modification date"
+msgid "Sort notes by last modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:369 taskcoachlib/gui/viewer/note.py:120
@@ -4081,11 +4081,11 @@ msgid "Sort tasks by category"
 msgstr "Сартаваць задачы па катэгорыях"
 
 #: taskcoachlib/gui/viewer/mixin.py:377
-msgid "Sort tasks by creation date"
+msgid "Sort tasks by creation Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:378
-msgid "Sort tasks by last modification date"
+msgid "Sort tasks by last modification Date"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:379
@@ -4093,27 +4093,27 @@ msgid "Sort tasks manually"
 msgstr ""
 
 #: taskcoachlib/gui/viewer/mixin.py:422
-msgid "Sort tasks by planned start date"
+msgid "Sort tasks by planned start Date"
 msgstr "Сартаваць задачы па планавай даце пачатку"
 
 #: taskcoachlib/gui/viewer/mixin.py:422 taskcoachlib/gui/viewer/task.py:1133
-msgid "&Planned start date"
+msgid "&Planned start Date"
 msgstr "&Планавая дата пачатку"
 
 #: taskcoachlib/gui/viewer/mixin.py:423
-msgid "Sort tasks by due date"
+msgid "Sort tasks by due Date"
 msgstr "Сартаваньне задач па тэрміне"
 
 #: taskcoachlib/gui/viewer/mixin.py:423 taskcoachlib/gui/viewer/task.py:1136
-msgid "&Due date"
+msgid "&Due Date"
 msgstr "Тэ&рмін"
 
 #: taskcoachlib/gui/viewer/mixin.py:424
-msgid "Sort tasks by completion date"
+msgid "Sort tasks by completion Date"
 msgstr "Сартаваньне задач па даце выкананьня"
 
 #: taskcoachlib/gui/viewer/mixin.py:424 taskcoachlib/gui/viewer/task.py:1142
-msgid "&Completion date"
+msgid "&Completion Date"
 msgstr "Дата в&ыкананьня"
 
 #: taskcoachlib/gui/viewer/mixin.py:425
@@ -4202,7 +4202,7 @@ msgid "Sort tasks by revenue"
 msgstr "Сартаваньне задач па прыбытку"
 
 #: taskcoachlib/gui/viewer/mixin.py:437
-msgid "Sort tasks by reminder date and time"
+msgid "Sort tasks by reminder Date and time"
 msgstr "Сартаваць задачы па даце і часу напамінку"
 
 #: taskcoachlib/gui/viewer/mixin.py:437 taskcoachlib/gui/viewer/task.py:1213
@@ -4299,31 +4299,31 @@ msgid "&Dates"
 msgstr "Даты"
 
 #: taskcoachlib/gui/viewer/task.py:1126
-msgid "&All date columns"
+msgid "&All Date columns"
 msgstr "&Усе слупкі з датамі"
 
 #: taskcoachlib/gui/viewer/task.py:1127
-msgid "Show/hide all date-related columns"
+msgid "Show/hide all Date-related columns"
 msgstr "Паказаць/схаваць усе слупкі, злучаныя з датамі"
 
 #: taskcoachlib/gui/viewer/task.py:1134
-msgid "Show/hide planned start date column"
+msgid "Show/hide planned start Date column"
 msgstr "Паказаць/схаваць планавую дату пачатку"
 
 #: taskcoachlib/gui/viewer/task.py:1137
-msgid "Show/hide due date column"
+msgid "Show/hide due Date column"
 msgstr "Паказаць/схаваць слупок тэрміна"
 
 #: taskcoachlib/gui/viewer/task.py:1139
-msgid "&Actual start date"
+msgid "&Actual start Date"
 msgstr "&Фактычная дата пачатку"
 
 #: taskcoachlib/gui/viewer/task.py:1140
-msgid "Show/hide actual start date column"
+msgid "Show/hide actual start Date column"
 msgstr "Паказаць/схаваць слупок з фактычнай датай пачатку"
 
 #: taskcoachlib/gui/viewer/task.py:1143
-msgid "Show/hide completion date column"
+msgid "Show/hide completion Date column"
 msgstr "Паказаць/схаваць слупок даты выканання"
 
 #: taskcoachlib/gui/viewer/task.py:1146
@@ -4499,7 +4499,7 @@ msgstr "Катэгорыя"
 #: taskcoachlib/gui/wizard/csvimport.py:237
 #: taskcoachlib/persistence/csv/generator.py:39
 #: taskcoachlib/persistence/csv/reader.py:102
-msgid "Reminder date"
+msgid "Reminder Date"
 msgstr "Дата напамінку"
 
 #: taskcoachlib/gui/wizard/csvimport.py:241
@@ -4730,8 +4730,8 @@ msgstr "Апісаньне: некалькі радкоў апісаньня з�
 
 #: taskcoachlib/help/__init__.py:173
 msgid ""
-"Planned start date: the first date on which the task can be started. \n"
-"The planned start date defaults to the date the task is created. It can also "
+"Planned start Date: the first Date on which the task can be Started. \n"
+"The planned start Date defaults to the Date the task is created. It can also "
 "be 'None' \n"
 "indicating that you don't really want to start this task. This can be "
 "convenient \n"
@@ -4746,8 +4746,8 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:177
 msgid ""
-"Due date: the date the task should be finished. \n"
-"This can be 'None' indicating that this task has no fixed due date."
+"Due Date: the Date the task should be Finished. \n"
+"This can be 'None' indicating that this task has no fixed due Date."
 msgstr ""
 "Тэрмін: дата, да якой задача павінна быць выканана. \n"
 "Яна можа быць не зададзена, што кажа пра тое, \n"
@@ -4755,8 +4755,8 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:179
 msgid ""
-"Actual start date: the date the task was actually started.\n"
-"The actual start date can be edited directly, but it is also set when you \n"
+"Actual start Date: the Date the task was actually Started.\n"
+"The actual start Date can be edited directly, but it is also set when you \n"
 "track effort for the task or when you set the percentage completed of a "
 "task\n"
 "to a value between 0% and 100%."
@@ -4769,10 +4769,10 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:183
 msgid ""
-"Completion date: this date is 'None' as long as the task has \n"
-"not been completed. It is set to the current date when you mark the task as "
+"Completion Date: this Date is 'None' as long as the task has \n"
+"not been completed. It is set to the current Date when you mark the task as "
 "\n"
-"completed. The completion date can also be entered manually."
+"completed. The completion Date can also be entered manually."
 msgstr ""
 "Дата выкананьня: калі гэта дата не зададзена значыць задача не выканана. \n"
 "Калі вы адзначаеце задачу выкананай, усталёўваецца бягучая дата.\n"
@@ -4781,11 +4781,11 @@ msgstr ""
 #: taskcoachlib/help/__init__.py:186
 msgid ""
 "Prerequisites: other tasks that need to be completed before\n"
-"a task can be started. The task remains inactive until the last prerequisite "
+"a task can be Started. The task remains inactive until the last prerequisite "
 "task is \n"
-"completed. Note that if the task has a specific planned start date set, "
+"completed. Note that if the task has a specific planned start Date set, "
 "that\n"
-"date has to be in the past <em>and</em> all prerequisite tasks need to be\n"
+"Date has to be in the past <em>and</em> all prerequisite tasks need to be\n"
 "completed before the task becomes late."
 msgstr ""
 "Неабходныя: іншыя задачы, якія неабходна выканаць перад тым, як \n"
@@ -4820,12 +4820,12 @@ msgstr ""
 "Наступныя ўласцівасці разлічваюцца па ўласцівасцях, размешчаным вышэй:"
 
 #: taskcoachlib/help/__init__.py:198
-msgid "Days left: the number of days left until the due date."
+msgid "Days left: the number of days left until the due Date."
 msgstr "Дзён засталося: колькасць дзён, застаўшыхся да сканчэння тэрміна."
 
 #: taskcoachlib/help/__init__.py:199
 msgid ""
-"Dependents: other tasks that can be started when the \n"
+"Dependents: other tasks that can be Started when the \n"
 "prerequisite task has been completed."
 msgstr ""
 
@@ -4847,12 +4847,12 @@ msgid "Tasks always have exactly one of the following states:"
 msgstr "Задачы заўсёды павінны быць у адным з наступных станаў:"
 
 #: taskcoachlib/help/__init__.py:209
-msgid "Active: the actual start date is in the past;"
+msgid "Active: the actual start Date is in the past;"
 msgstr "Актыўная: фактычная дата пачатку ў мінулым;"
 
 #: taskcoachlib/help/__init__.py:210
 msgid ""
-"Inactive: the task has not been started and/or not all \n"
+"Inactive: the task has not been Started and/or not all \n"
 "prerequisite tasks have been completed;"
 msgstr ""
 "Неактыўная: задача не была пачата і/ці не ўсе\n"
@@ -4867,12 +4867,12 @@ msgid "In addition, tasks can be referenced as:"
 msgstr "Акрамя таго, задачы могуць спасылацца на:"
 
 #: taskcoachlib/help/__init__.py:216
-msgid "Overdue: the due date is in the past;"
+msgid "Overdue: the due Date is in the past;"
 msgstr "Пратэрмінавана: дата тэрміна ў мінулым;"
 
 #: taskcoachlib/help/__init__.py:217
 msgid ""
-"Due soon: the due date is soon (what 'soon' is, can be \n"
+"Due soon: the due Date is soon (what 'soon' is, can be \n"
 "changed in the preferences);"
 msgstr ""
 "Мінае: хутка мінае тэрмін выкананьня (наколькі 'хутка', \n"
@@ -4881,7 +4881,7 @@ msgstr ""
 #: taskcoachlib/help/__init__.py:219
 msgid ""
 "Late: the planned start is in the past and the task has \n"
-"not been started;"
+"not been Started;"
 msgstr "Састарэлая: планавая дата пачатку ў мінулым і задача не была пачата;"
 
 #: taskcoachlib/help/__init__.py:221
@@ -4943,8 +4943,8 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:244
 msgid ""
-"You can set a reminder for a specific date and time. %(name)s will\n"
-"show a reminder message at that date and time. From the reminder dialog\n"
+"You can set a reminder for a specific Date and time. %(name)s will\n"
+"show a reminder message at that Date and time. From the reminder dialog\n"
 "you can open the task, start tracking effort for the task, or mark the task\n"
 "completed. It is also possible to snooze the reminder."
 msgstr ""
@@ -4984,12 +4984,12 @@ msgid "Task: the task the effort belongs to."
 msgstr "Задача: задача, якой прыналежыць праца."
 
 #: taskcoachlib/help/__init__.py:268
-msgid "Start date/time: start date and time of the effort."
+msgid "Start Date/time: start Date and time of the effort."
 msgstr "Дата/час пачатку: дата і час пачатку працы над задачай."
 
 #: taskcoachlib/help/__init__.py:269
 msgid ""
-"Stop date/time: stop date and time of the effort. This can be \n"
+"Stop Date/time: stop Date and time of the effort. This can be \n"
 "'None' as long as you are still working on the task."
 msgstr ""
 "Дата/час канца: дата і час канца працы над задачай. Яна \n"
@@ -5634,7 +5634,7 @@ msgstr "Паказваць выкананыя: ці паказваць выка�
 
 #: taskcoachlib/help/__init__.py:586
 msgid ""
-"Show inactive: whether to show inactive tasks (planned start date \n"
+"Show inactive: whether to show inactive tasks (planned start Date \n"
 "in the future)."
 msgstr ""
 "Паказваць неактыўныя: паказваць ці не неактыўныя задачы (планавая дата "
@@ -5866,8 +5866,8 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:689
 msgid ""
-"%(name)s imports task subjects, planned start date, due date, completion \n"
-"date, priority, contexts and projects. Contexts and projects are both \n"
+"%(name)s imports task subjects, planned start Date, due Date, completion \n"
+"Date, priority, contexts and projects. Contexts and projects are both \n"
 "transformed into categories in %(name)s. Projects cannot be transformed into "
 "\n"
 "parent tasks because Todo.txt allows tasks to belong to multiple projects, \n"
@@ -5897,8 +5897,8 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:702
 msgid ""
-"%(name)s exports task subjects, planned start date, due date, completion \n"
-"date, priority and categories to the Todo.txt format. Other attributes are "
+"%(name)s exports task subjects, planned start Date, due Date, completion \n"
+"Date, priority and categories to the Todo.txt format. Other attributes are "
 "not\n"
 "exported."
 msgstr ""
@@ -5909,7 +5909,7 @@ msgstr ""
 #: taskcoachlib/help/__init__.py:706
 msgid ""
 "%(name)s supports dates and times, but Todo.txt only supports \n"
-"dates, so the time part of start, due, and completion date/times is not\n"
+"dates, so the time part of start, due, and completion Date/times is not\n"
 "exported."
 msgstr ""
 "%(name)s падтрымлівае даты і час, але Todo.txt падтрымлівае \n"
@@ -5921,7 +5921,7 @@ msgid ""
 "The default Todo.txt format only supports planned start dates and \n"
 "completion dates, but no due dates. Therefore, %(name)s uses an extension "
 "to\n"
-"export the due date of tasks. Due dates are shown as \"due:YYYY-MM-DD\" in "
+"export the due Date of tasks. Due dates are shown as \"due:YYYY-MM-DD\" in "
 "the\n"
 "todo.txt file."
 msgstr ""
@@ -5959,12 +5959,12 @@ msgstr ""
 
 #: taskcoachlib/help/__init__.py:731
 msgid ""
-"Templates are blueprints for new tasks. Right now, the only task \n"
+"Templates are blueprints for new tasks. Right Now, the only task \n"
 "properties that can be \"parameterized\" are the dates. When instantiating a "
 "\n"
 "template, the created task has its dates replaced with dates relative to the "
 "\n"
-"current date."
+"current Date."
 msgstr ""
 "Шаблоны - праекты для новых задач. Цяпер адзіныя ўласцівасці задачы, \n"
 "якія могуць быць \"наладжаны\" - толькі даты. Пры выкарыстанні шаблону \n"
@@ -6002,13 +6002,13 @@ msgid ""
 "template\" menu in the Task menu, or the equivalent toolbar button. When the "
 "\n"
 "task is created, the due, start and completion dates, if applicable, are \n"
-"reevaluated relatively to the current date. That means that if you create a "
+"reevaluated relatively to the current Date. That means that if you create a "
 "\n"
-"template from a task starting today and due tomorrow, every time the "
+"template from a task starting Today and due Tomorrow, every time the "
 "template \n"
-"is instantiated, the planned start date will be replaced by the current date "
+"is instantiated, the planned start Date will be replaced by the current Date "
 "and the \n"
-"due date by the current date plus one day."
+"due Date by the current Date plus one day."
 msgstr ""
 "Для выкарыстання шаблону выберыце \"Новая задача па шаблоне\" \n"
 "у меню Задача ці адпаведную кнопку на панэлі прылад.\n"
@@ -6022,7 +6022,7 @@ msgstr ""
 msgid ""
 "You can also add templates from the template editor (File/Edit\n"
 "templates), as well as edit the template's basic properties (dates and\n"
-"subject). Dates are provided in a human-readable format; the date editor\n"
+"subject). Dates are provided in a human-readable format; the Date editor\n"
 "will become red if %(name)s cannot figure out what it means. Example\n"
 "dates:"
 msgstr ""
@@ -6255,7 +6255,7 @@ msgid "Ctrl-Z"
 msgstr "Ctrl-Z"
 
 #: taskcoachlib/help/__init__.py:838
-msgid "Edit the selected item(s) or close a dialog"
+msgid "Edit the selected item(s) or Close a dialog"
 msgstr "Зьмяніць вылучаны(я) аб'ект(ы) ці закрыць дыялог"
 
 #: taskcoachlib/help/__init__.py:838
@@ -6347,14 +6347,14 @@ msgstr "F2"
 #: taskcoachlib/help/__init__.py:860
 msgid ""
 "<h4>%(name)s - %(description)s</h4>\n"
-"<h5>Version %(version)s, %(date)s</h5>\n"
+"<h5>Version %(version)s, %(Date)s</h5>\n"
 "<p>By %(author)s &lt;%(author_email)s&gt;<p>\n"
 "<p><a href=\"%(url)s\" target=\"_blank\">%(url)s</a></p>\n"
 "<p>%(copyright)s</p>\n"
 "<p>%(license_notice_html)s</p>\n"
 msgstr ""
 "<h4>%(name)s - %(description)s</h4>\n"
-" <h5>Версія %(version)s, %(date)s</h5>\n"
+" <h5>Версія %(version)s, %(Date)s</h5>\n"
 " <p>Аўтар %(author)s &lt;%(author_email)s&gt;<p>\n"
 " <p><a href=\"%(url)s\" target=\"_blank\">%(url)s</a></p>\n"
 " <p>%(copyright)s</p>\n"
@@ -6374,7 +6374,7 @@ msgstr ""
 msgid ""
 "%(name)s has a mailing list where you can discuss usage of %(name)s with "
 "fellow users, discuss and request features and complain about bugs. Go to "
-"%(url)s and join today!"
+"%(url)s and join Today!"
 msgstr ""
 "У %(name)s ёсць спіс рассыланьня, дзе Вы можаце абмеркаваць выкарыстаньне "
 "%(name)s з іншымі карыстачамі, абмеркаваць і запытаць асаблівасці, а таксама "
@@ -6516,7 +6516,7 @@ msgid "Cut the selected item(s) to the clipboard"
 msgstr "Выразаць вылучаныя элементы ў буфер абмену"
 
 #: taskcoachlib/help/uicommand.py:30
-msgid "Copy the selected item(s) to the clipboard"
+msgid "copy the selected item(s) to the clipboard"
 msgstr "Капіяваць вылучаныя элементы ў буфер абмену"
 
 #: taskcoachlib/help/uicommand.py:31
@@ -6903,7 +6903,7 @@ msgid "Creation time"
 msgstr ""
 
 #: taskcoachlib/persistence/csv/generator.py:41
-msgid "Period end date"
+msgid "Period end Date"
 msgstr ""
 
 #: taskcoachlib/persistence/csv/generator.py:41
@@ -6911,7 +6911,7 @@ msgid "Period end time"
 msgstr ""
 
 #: taskcoachlib/persistence/csv/generator.py:41
-msgid "Period start date"
+msgid "Period start Date"
 msgstr ""
 
 #: taskcoachlib/persistence/csv/generator.py:41
@@ -6923,11 +6923,11 @@ msgid "No subject"
 msgstr "Няма тэмы"
 
 #: taskcoachlib/persistence/xml/templates.py:8
-msgid "New task due today"
+msgid "New task due Today"
 msgstr "Тэрмін новай задачы мінае сёння"
 
 #: taskcoachlib/persistence/xml/templates.py:10
-msgid "New task due tomorrow"
+msgid "New task due Tomorrow"
 msgstr "Тэрмін новай задачы мінае заўтра"
 
 #: taskcoachlib/render.py:50 taskcoachlib/thirdparty/smartdatetimectrl.py:1754
@@ -6975,7 +6975,7 @@ msgid "Yesterday"
 msgstr ""
 
 #: taskcoachlib/render.py:284
-msgid "now"
+msgid "Now"
 msgstr "зараз"
 
 #: taskcoachlib/syncml/basesource.py:40 taskcoachlib/syncml/basesource.py:52
@@ -7132,15 +7132,15 @@ msgid "Which tasks to display"
 msgstr "Якія задачы паказваць"
 
 #: taskcoachlib/widgets/calendarconfig.py:86
-msgid "Tasks with a planned start date and a due date"
+msgid "Tasks with a planned start Date and a due Date"
 msgstr "Задачы з планавай датай пачатку і тэрмінам"
 
 #: taskcoachlib/widgets/calendarconfig.py:87
-msgid "Tasks with a planned start date"
+msgid "Tasks with a planned start Date"
 msgstr "Задачы з планавай датай пачатку"
 
 #: taskcoachlib/widgets/calendarconfig.py:88
-msgid "Tasks with a due date"
+msgid "Tasks with a due Date"
 msgstr "Задачы з датай тэрміна"
 
 #: taskcoachlib/widgets/calendarconfig.py:89

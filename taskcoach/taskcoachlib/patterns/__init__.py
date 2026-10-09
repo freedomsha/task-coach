@@ -16,13 +16,64 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .singleton import *
-from .observer import *
-from .command import *
-from .composite import (
+from taskcoachlib.patterns.singleton import Singleton
+from taskcoachlib.patterns.observer import (
+    CollectionDecorator,
+    Decorator,
+    Event,
+    eventSource,
+    List,
+    ListDecorator,
+    MethodProxy,
+    ObservableCollection,
+    ObservableList,
+    ObservableSet,
+    Observer,
+    Publisher,
+    Set,
+    SetDecorator,
+    unwrapObservers,
+    wrapObserver,
+)
+from taskcoachlib.patterns.command import Command, CommandHistory
+from taskcoachlib.patterns.composite import (
     Composite,
     ObservableComposite,
     CompositeList,
     CompositeSet,
 )
-from .metaclass import *
+from taskcoachlib.patterns.metaclass import (
+    NumberedInstances,
+    metadic,
+    _generatemetaclass,
+    makecls,
+)
+
+__all__ = [
+    "Singleton",
+    "CollectionDecorator",
+    "Command",
+    "CommandHistory",
+    "Composite",
+    "CompositeList",
+    "CompositeSet",
+    "Decorator",
+    "Event",
+    "eventSource",
+    "List",
+    "ListDecorator",
+    "makecls",
+    "metadic",
+    "MethodProxy",
+    "NumberedInstances",
+    "ObservableCollection",
+    "ObservableComposite",
+    "ObservableList",
+    "ObservableSet",
+    "Observer",
+    "Publisher",
+    "Set",
+    "SetDecorator",
+    "unwrapObservers",
+    "wrapObserver",
+]

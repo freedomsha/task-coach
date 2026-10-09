@@ -4,13 +4,18 @@
 """Generate python dictionaries catalog from textual translation description.
 
 This program converts a textual Uniforum-style message catalog (.po file) into
-a python dictionary 
+a python dictionary
 
 Based on msgfmt.py by Martin v. Löwis <loewis@informatik.hu-berlin.de>
 
 """
+# from __future__ import print_function
 
-import sys, re, os
+from io import open
+import ast
+import sys
+import re
+import os
 
 MESSAGES = {}
 STRINGS = set()
@@ -19,15 +24,15 @@ STRINGS = set()
 
 
 def add(id_, string, fuzzy):
-    "Add a non-fuzzy translation to the dictionary."
+    """Add a non-fuzzy translation to the dictionary."""
     global MESSAGES
     if not fuzzy and string:
         MESSAGES[id_] = string
     STRINGS.add(id_)
 
 
-def generateDict():
-    "Return the generated dictionary"
+def generatedict():
+    """Return the generated dictionary"""
     global MESSAGES
     metadata = MESSAGES[""]
     del MESSAGES[""]
@@ -36,6 +41,65 @@ def generateDict():
         "# -*- coding: %s -*-\n#This is generated code - do not edit\nencoding = '%s'\ndict = %s"
         % (encoding, encoding, MESSAGES)
     )
+
+
+def parse(filename):
+    """Parse a .po file and return (dict, encoding) directly without writing a file."""
+    ID = 1
+    STR = 2
+    global MESSAGES
+    MESSAGES = {}
+
+    if filename.endswith(".po"):
+        infile = filename
+    else:
+        infile = filename + ".po"
+
+    with open(infile, encoding='utf-8') as f:
+        lines = f.readlines()
+
+    section = None
+    fuzzy = 0
+    msgid = msgstr = ""
+
+    for l in lines:
+        if l and l[0] == "#" and section == STR:
+            add(msgid, msgstr, fuzzy)
+            section = None
+            fuzzy = 0
+        if l[:2] == "#," and "fuzzy" in l:
+            fuzzy = 1
+        if l and l[0] == "#":
+            continue
+        if l.startswith("msgid"):
+            if section == STR:
+                add(msgid, msgstr, fuzzy)
+            section = ID
+            l = l[5:]
+            msgid = msgstr = ""
+        elif l.startswith("msgstr"):
+            section = STR
+            l = l[6:]
+        l = l.strip()
+        if not l:
+            continue
+        l = ast.literal_eval(l)
+        if section == ID:
+            msgid += l
+        elif section == STR:
+            msgstr += l
+
+    if section == STR:
+        add(msgid, msgstr, fuzzy)
+
+    metadata = MESSAGES.get("", "")
+    if "" in MESSAGES:
+        del MESSAGES[""]
+
+    match = re.search(r"charset=(\S*)\n", metadata)
+    encoding = match.group(1) if match else "UTF-8"
+
+    return MESSAGES.copy(), encoding
 
 
 def make(filename, outfile=None):
@@ -53,6 +117,7 @@ def make(filename, outfile=None):
         outfile = os.path.splitext(infile)[0] + ".py"
 
     try:
+        # lines = open(infile, "r").readlines()
         lines = open(infile).readlines()
     except IOError as msg:
         print(msg, file=sys.stderr)
@@ -92,17 +157,18 @@ def make(filename, outfile=None):
         if not l:
             continue
         # XXX: Does this always follow Python escape semantics? # pylint: disable=W0511
-        l = eval(l)
+        # l = eval(l)
+        l = ast.literal_eval(l)
         if section == ID:
             msgid += l
         elif section == STR:
             msgstr += l
         else:
-            print(
-                "Syntax error on %s:%d" % (infile, lno),
-                "before:",
-                file=sys.stderr,
-            )
+            # print >> sys.stderr, 'Syntax error on %s:%d' % (infile, lno),
+            #      'before:'
+            # print >> sys.stderr, line
+            print("Syntax error on %s:%d" % (infile, lno),
+                  "before:", file=sys.stderr)
             print(l, file=sys.stderr)
             sys.exit(1)
     # Add last entry
@@ -110,7 +176,8 @@ def make(filename, outfile=None):
         add(msgid, msgstr, fuzzy)
 
     # Compute output
-    output = generateDict()
+    # output = bytes(generatedict(), 'utf-8')  # génération du fichier en binaire
+    output = generatedict()
 
     # TODO: This is a hack to get the encoding from the output
     encoding = re.search(r"\-\*\-\s*coding\:\s*(.*)\s*\-\*\-\n", output).group(
@@ -118,6 +185,7 @@ def make(filename, outfile=None):
     )
 
     try:
+        # open(outfile, "wb").write(output)  # ! fichier binaire, utiliser des données de type bytes
         open(outfile, "w", encoding=encoding).write(output)
     except IOError as msg:
         print(msg, file=sys.stderr)

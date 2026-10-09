@@ -65,14 +65,14 @@ Examples
    Null N-string
      Zero length: 0x00 0x00 0x00 0x00
 
-   2010/11/20 date
+   2010/11/20 Date
       +---------------------+------+------+------+------+---------+------+------+-------+------+------+
       | Length              | 2    | 0    | 1    | 0    | minus   | 1    | 1    | minus | 2    | 0    |
       +---------------------+------+------+------+------+---------+------+------+-------+------+------+
       | 0x00 0x00 0x00 0x0a | 0x32 | 0x30 | 0x31 | 0x30 | 0x2d    | 0x31 | 0x31 | 0x2d  | 0x32 | 0x30 |
       +---------------------+------+------+------+------+---------+------+------+-------+------+------+
 
-   2010/11/20 12:02:35 date and time
+   2010/11/20 12:02:35 Date and time
       +---------------------+------+------+------+------+---------+------+------+-------+------+------+-------+------+------+------+------+------+------+------+------+
       | Length              | 2    | 0    | 1    | 0    | minus   | 1    | 1    | minus | 2    | 0    | space | 1    | 2    | :    | 0    | 2    | :    | 3    | 5    |
       +---------------------+------+------+------+------+---------+------+------+-------+------+------+-------+------+------+------+------+------+------+------+------+
@@ -148,10 +148,10 @@ The device sends each new task as a struct with the following members, in that o
 
    * Subject: string
    * Description: string
-   * Start date: date and time
-   * Due date: date and time
-   * Completion date: date and time
-   * Reminder date: date and time
+   * Start Date: Date and time
+   * Due Date: Date and time
+   * Completion Date: Date and time
+   * Reminder Date: Date and time
    * Priority: integer
    * Recurrence: integer. Actually a boolean; 0 means the task has no recurrence set and 1 means it has.
    * Recurrence period: integer; number of periods for the recurrence
@@ -175,10 +175,10 @@ The device sends each modified task as a struct with the following members, in t
    * Subject: string
    * ID: string; the Task Coach ID of the task
    * Description: string
-   * Start date: date and time
-   * Due date: date and time
-   * Completion date: date and time
-   * Reminder date: date and time
+   * Start Date: Date and time
+   * Due Date: Date and time
+   * Completion Date: Date and time
+   * Reminder Date: Date and time
    * Priority: integer
    * Recurrence: integer. Actually a boolean; 0 means the task has no recurrence set and 1 means it has.
    * Recurrence period: integer; number of periods for the recurrence
@@ -197,8 +197,8 @@ The device sends each new effort as a struct with the following members, in that
 
    * Subject: string
    * Task coach ID of the task the effort is related to: N-string
-   * Effort start date: date and time
-   * Effort end date: date and time, may be NULL.
+   * Effort start Date: Date and time
+   * Effort end Date: Date and time, may be NULL.
 
 The desktop answers with the Task Coach ID for the newly created effort.
 
@@ -209,8 +209,8 @@ The device sends each modified effort as a struct with the following members, in
 
    * Task Coach ID of the effort: string
    * Subject: string
-   * Start date: date and time
-   * End date: date and time, may be NULL.
+   * Start Date: Date and time
+   * End Date: Date and time, may be NULL.
 
 The desktop answers with a string that may be safely discarded.
 
@@ -247,10 +247,10 @@ The desktop sends each task as a struct with the following members, in that orde
    * Subject: string
    * Task Coach ID: string
    * Description: string
-   * Start date: date and time
-   * Due date: date and time
-   * Completion date: date and time
-   * Reminder: date and time
+   * Start Date: Date and time
+   * Due Date: Date and time
+   * Completion Date: Date and time
+   * Reminder: Date and time
    * Parent Task Coach ID: N-string
    * Priority: integer
    * Recurrence: integer; 1 if the task has a recurrence setting, 0 otherwise
@@ -269,8 +269,8 @@ The desktop sends each effort as a struct with the following members, in that or
    * Task Coach ID: string
    * Subject: string
    * Task Task Coach ID: N-string
-   * Start date: date and time
-   * End date: date and time
+   * Start Date: Date and time
+   * End Date: Date and time
 
 The device must answer to each with a non-zero integer.
 

@@ -20,35 +20,35 @@ import os
 from distutils.core import Command
 from distutils.file_util import copy_file
 from distutils import log
+from io import open as file
 
 
-class bdist_portable_base(Command, object):
-    """Base class for bdist commands that create portable distributions."""
-
+class bdist_portable_base(Command):
+    """ Base class for bdist commands that create portable distributions. """
+    
     def copy_files(self, src_dir, dest_dir, copy_recursively=False):
-        if src_dir.endswith(".hg"):
+        if src_dir.endswith('.hg'):
             return
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         for entry in os.listdir(src_dir):
             abs_entry = os.path.join(src_dir, entry)
             if os.path.isfile(abs_entry):
-                if os.path.splitext(abs_entry)[1] in (".txt", ".ini"):
+                if os.path.splitext(abs_entry)[1] in ('.txt', '.ini'):
                     self.copy_and_expand(abs_entry, dest_dir)
                 else:
                     copy_file(abs_entry, dest_dir)
             elif os.path.isdir(abs_entry) and copy_recursively:
-                self.copy_files(
-                    abs_entry, os.path.join(dest_dir, entry), copy_recursively
-                )
-
+                self.copy_files(abs_entry, os.path.join(dest_dir, entry), copy_recursively)
+                
     def copy_and_expand(self, src_filename, dest_dir):
-        log.info("copying and expanding %s to %s" % (src_filename, dest_dir))
-        src_file = open(src_filename, "rb")
+        log.info('copying and expanding %s to %s' % (src_filename, dest_dir))
+        src_file = file(src_filename, 'rb')
         contents = src_file.read()
         src_file.close()
         contents = contents % self.__dict__
         dest_filename = os.path.join(dest_dir, os.path.basename(src_filename))
-        dest_file = open(dest_filename, "wb")
+        dest_file = file(dest_filename, 'wb')
         dest_file.write(contents)
         dest_file.close()
+        

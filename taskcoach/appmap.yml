@@ -1,0 +1,19 @@
+  name: taskcoach
+  packages:
+  - path: wx
+    shallow: true
+  - path: os
+    shallow: true
+  - path: sys
+    shallow: true
+  - path: app.mod2
+    exclude:
+    - MyClass
+    - MyOtherClass.my_instance_method
+    - MyOtherClass.my_class_method
+  # You can record dependency packages, such as Django.
+  # We don't recommend recording Django by default though, your AppMap Diagram will be quite large
+  # and mostly about Django itself, not your own code.
+  #- dist: Django
+  #  exclude:
+  #  - django.db

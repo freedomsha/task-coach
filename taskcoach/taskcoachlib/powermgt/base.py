@@ -16,10 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
+
 
 class PowerStateMixinBase(object):
     """
-    This is  a mixin intended to  be used on  a wx.Frame/wx.Window. It
+    This is  a mixin intended to be used on a wx.Frame/wx.Window. It
     calls  the OnPowerState  method  when the  computer's power  state
     changes.
 

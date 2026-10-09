@@ -16,10 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx, operator
+import operator
+import wx
+
+from functools import reduce
 from taskcoachlib.thirdparty.timeline import timeline
 from . import tooltip
-from functools import reduce
 
 
 class Timeline(tooltip.ToolTipMixin, timeline.TimeLine):

@@ -17,12 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import taskcoachlib.i18n
+from taskcoachlib import i18n
 from taskcoachlib.thirdparty import smartdatetimectrl as sdtc
 from taskcoachlib.domain import date
 from taskcoachlib import render, operating_system
 
-import wx, datetime
+import wx
+import datetime
 
 
 class _SmartDateTimeCtrl(sdtc.SmartDateTimeCtrl):
@@ -31,7 +32,7 @@ class _SmartDateTimeCtrl(sdtc.SmartDateTimeCtrl):
             kwargs.get("startHour", 8),
             kwargs.get("endHour", 18),
         )
-        super(_SmartDateTimeCtrl, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __shiftDown(self, event):
         if operating_system.isGTK():
@@ -39,10 +40,7 @@ class _SmartDateTimeCtrl(sdtc.SmartDateTimeCtrl):
         return event.ShiftDown()
 
     def HandleKey(self, event):
-        if (
-            not super(_SmartDateTimeCtrl, self).HandleKey(event)
-            and self.GetDateTime() is not None
-        ):
+        if not super().HandleKey(event) and self.GetDateTime() is not None:
             startHour, endHour = self.__interval
             if event.GetKeyCode() in [ord("s"), ord("S")]:
                 hour = (
@@ -70,36 +68,19 @@ class _SmartDateTimeCtrl(sdtc.SmartDateTimeCtrl):
 
 
 class DateTimeCtrl(wx.Panel):
-    def __init__(
-        self,
-        parent,
-        callback=None,
-        noneAllowed=True,
-        starthour=8,
-        endhour=18,
-        interval=15,
-        showSeconds=False,
-        showRelative=False,
-        adjustEndOfDay=False,
-        units=None,
-        **kwargs
-    ):
-        super(DateTimeCtrl, self).__init__(parent, **kwargs)
+    def __init__(self, parent, callback=None, noneAllowed=True,
+                 starthour=8, endhour=18, interval=15, showSeconds=False,
+                 showRelative=False, adjustEndOfDay=False, units=None, **kwargs):
+        super().__init__(parent, **kwargs)
 
         self.__adjust = adjustEndOfDay
         self.__callback = callback
-        self.__ctrl = _SmartDateTimeCtrl(
-            self,
-            enableNone=noneAllowed,
-            dateFormat=render.date,
-            timeFormat=lambda x: render.time(x, seconds=showSeconds),
-            startHour=starthour,
-            endHour=endhour,
-            minuteDelta=interval,
-            secondDelta=interval,
-            showRelative=showRelative,
-            units=units,
-        )
+        self.__ctrl = _SmartDateTimeCtrl(self, enableNone=noneAllowed,
+                                         dateFormat=render.date,
+                                         timeFormat=lambda x: render.time(x, seconds=showSeconds),
+                                         startHour=starthour, endHour=endhour,
+                                         minuteDelta=interval, secondDelta=interval, showRelative=showRelative,
+                                         units=units)
         self.__ctrl.EnableChoices()
 
         # When the widget fires its event, its value has not changed yet (because it can be vetoed).
@@ -110,6 +91,7 @@ class DateTimeCtrl(wx.Panel):
         sizer.Add(self.__ctrl, 1, wx.EXPAND)
         self.SetSizer(sizer)
 
+        # sdtc.EVT_DATETIME_CHANGE(self.__ctrl, self.__OnChange)
         self.__ctrl.Bind(sdtc.EVT_DATETIME_CHANGE, self.__OnChange)
 
     def __OnChange(self, event):
@@ -164,26 +146,14 @@ class DateTimeCtrl(wx.Panel):
 
 
 class TimeEntry(wx.Panel):
-    def __init__(
-        self,
-        parent,
-        value,
-        defaultValue=0,
-        disabledValue=None,
-        disabledMessage=None,
-    ):
-        super(TimeEntry, self).__init__(parent)
+    def __init__(self, parent, value, defaultValue=0, disabledValue=None, disabledMessage=None):
+        super().__init__(parent)
 
         self.__disabledValue = disabledValue
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__entry = sdtc.TimeEntry(
-            self,
-            format=lambda x: render.time(x, minutes=False),
-            hour=defaultValue,
-            minute=0,
-            second=0,
-        )
+        self.__entry = sdtc.TimeEntry(self, format=lambda x: render.time(x, minutes=False),
+                                      hour=defaultValue, minute=0, second=0)
         self.__entry.EnableChoices()
         sizer.Add(self.__entry, 0, wx.ALL, 3)
 
@@ -191,9 +161,7 @@ class TimeEntry(wx.Panel):
             self.__checkbox = wx.CheckBox(self, wx.ID_ANY, disabledMessage)
             self.Bind(wx.EVT_CHECKBOX, self.OnCheck)
             if value == disabledValue:
-                self.__entry.SetTime(
-                    date.Time(hour=defaultValue, minute=0, second=0)
-                )
+                self.__entry.SetTime(date.Time(hour=defaultValue, minute=0, second=0))
                 self.__checkbox.SetValue(True)
                 self.__entry.Enable(False)
             else:

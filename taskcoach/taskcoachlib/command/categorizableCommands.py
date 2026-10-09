@@ -27,7 +27,8 @@ class ToggleCategoryCommand(base.BaseCommand):
 
     def __init__(self, *args, **kwargs):
         self.category = kwargs.pop("category")
-        super(ToggleCategoryCommand, self).__init__(*args, **kwargs)
+        # super(ToggleCategoryCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Keep track of previous category per categorizable in case of mutual
         # exclusive categories:
         self.__previous_categories = dict()
@@ -42,11 +43,13 @@ class ToggleCategoryCommand(base.BaseCommand):
             self.items = items_not_in_category
 
     def do_command(self):
-        super(ToggleCategoryCommand, self).do_command()
+        # super(ToggleCategoryCommand, self).doCommand()
+        super().do_command()
         self.toggle_category()
 
     def undo_command(self):
-        super(ToggleCategoryCommand, self).undo_command()
+        # super(ToggleCategoryCommand, self).undo_command()
+        super().undo_command()
         self.toggle_category()
 
     redo_command = do_command
@@ -62,8 +65,8 @@ class ToggleCategoryCommand(base.BaseCommand):
                 self.unlink_previous_categories(categorizable, event)
 
     def unlink_previous_categories(self, categorizable, event):
-        """Remove categorizable from any mutually exclusive categories it might
-        belong to."""
+        """Supprimez le catégorisable de toutes les catégories mutuellement exclusives auxquelles il pourrait
+        appartenir."""
         if self.category.isMutualExclusive():
             parent = self.category.parent()
             if (
@@ -85,8 +88,8 @@ class ToggleCategoryCommand(base.BaseCommand):
     def unlink_previous_mutual_exclusive_category(
         self, categories, categorizable, event
     ):
-        """Look for the category that categorizable belongs to and remove
-        categorizable from it."""
+        """Recherchez la catégorie à laquelle appartient catégorisable et supprimez-la
+        catégorisable."""
         for category in categories:
             if categorizable in category.categorizables():
                 self.unlink_previous_category(category, categorizable, event)
@@ -105,12 +108,16 @@ class ToggleCategoryCommand(base.BaseCommand):
             for previous_category in self.__previous_categories[categorizable]:
                 self.link_category(previous_category, categorizable, event)
 
-    def link_category(self, category, categorizable, event):
+    def link_category(
+        self, category, categorizable, event
+    ):  # Method may be 'static'
         """Make categorizable belong to category."""
         category.addCategorizable(categorizable, event=event)
         categorizable.addCategory(category, event=event)
 
-    def unlink_category(self, category, categorizable, event):
+    def unlink_category(
+        self, category, categorizable, event
+    ):  # Method may be 'static'
         """Make categorizable no longer belong to category."""
         category.removeCategorizable(categorizable, event=event)
         categorizable.removeCategory(category, event=event)

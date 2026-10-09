@@ -18,21 +18,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import wx
 
+# wxFontFromNativeInfoString = wx.FontFromNativeInfoString  # obsolète
+# wxFontFromNativeInfoString = wx.Font
+
 
 def FontFromNativeInfoString(nativeInfoString):
-    """wx.FontFromNativeInfoString may throw an wx.PyAssertionError when the
-    PointSize is zero. This may happen when fonts are set on one platform
-    and then used on another platform. Catch the exception and return None
-    instead."""
+    """ wx.font_from_native_info_string may throw an wx.PyAssertionError when the
+        PointSize is zero. This may happen when fonts are set on one platform
+        and then used on another platform. Catch the exception and return None
+        instead. """
     if nativeInfoString:
         try:
+            # return wxFontFromNativeInfoString(native_info_string)
             # Old wx.FontFromNativeInfoString not exists in wxPython4, use
             # nfi.FromString instead
             nfi = wx.NativeFontInfo()
             if nfi.FromString(nativeInfoString):
                 return wx.Font(nfi)
             return None
-        except wx.PyAssertionError:
+        # except wx.PyAssertionError:  # cannot find reference
+        except wx.wxAssertionError:
             pass
     return None
 

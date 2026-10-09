@@ -16,9 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 from taskcoachlib.domain import base
-from taskcoachlib.thirdparty.pubsub import pub
+
+# try:
+#     from taskcoachlib.thirdparty.pubsub import pub
+# except ImportError:
+#    from wx.lib.pubsub import pub
+# except ModuleNotFoundError:
+from pubsub import pub
 from . import task
+
+log = logging.getLogger(__name__)
 
 
 class Sorter(base.TreeSorter):
@@ -32,11 +41,12 @@ class Sorter(base.TreeSorter):
     )
 
     def __init__(self, *args, **kwargs):
+        log.debug(f"Initializing Sorter with args {args} and kwargs {kwargs}.")
         self.__treeMode = kwargs.pop("treeMode", False)
         self.__sortByTaskStatusFirst = kwargs.pop(
             "sortByTaskStatusFirst", True
         )
-        super(Sorter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for eventType in (
             task.Task.prerequisitesChangedEventType(),
             task.Task.dueDateTimeChangedEventType(),
@@ -45,8 +55,11 @@ class Sorter(base.TreeSorter):
             task.Task.completionDateTimeChangedEventType(),
         ):
             pub.subscribe(self.onAttributeChanged, eventType)
+            # pubsub.core.callables.ListenerMismatchError: Listener "Sorter.onAttributeChanged"
+            # (from module "taskcoachlib.domain.task.sorter") inadequate: needs to accept 1 more args (newValue)
 
     def setTreeMode(self, treeMode=True):
+        log.debug(f"Setting tree mode to {treeMode}.")
         self.__treeMode = treeMode
         try:
             self.observable().setTreeMode(treeMode)
@@ -64,27 +77,46 @@ class Sorter(base.TreeSorter):
         # self.reset() to be called.
 
     def createSortKeyFunction(self, sortKey):
+        # log.debug(f"Creating sort key function with sortKey {sortKey}.")
         statusSortKey = self.__createStatusSortKey()
-        regularSortKey = super(Sorter, self).createSortKeyFunction(sortKey)
-        return lambda task: statusSortKey(task) + [regularSortKey(task)]
+        regularSortKey = super().createSortKeyFunction(sortKey)
+        return lambda the_task: statusSortKey(the_task) + [
+            regularSortKey(the_task)
+        ]
 
     def __createStatusSortKey(self):
+        # log.debug(
+        #     "Creating status sort key function with sortByTaskStatusFirst "
+        # )
         if self.__sortByTaskStatusFirst:
             if self.isAscending():
-                return lambda task: [task.completed(), task.inactive()]
+                return lambda the_task: [
+                    the_task.completed(),
+                    the_task.inactive(),
+                ]
             else:
-                return lambda task: [not task.completed(), not task.inactive()]
+                return lambda the_task: [
+                    not the_task.completed(),
+                    not the_task.inactive(),
+                ]
         else:
-            return lambda task: []
+            return lambda the_task: []
 
     def _registerObserverForAttribute(self, attribute):
+        # log.debug(f"Registering observer for attribute {attribute}.")
+        print(
+            f"task.sorter._registerObserverForAttribute : Registering observer for attribute {attribute}."
+        )
+        for eventType in self._getSortEventTypes(attribute):
+            print("REGISTER:", repr(eventType))
         # Sorter is always observing task dates and prerequisites because
         # sorting by status depends on those attributes. Hence we don't need
         # to subscribe to these attributes when they become the sort key.
         if attribute not in self.TaskStatusAttributes:
-            super(Sorter, self)._registerObserverForAttribute(attribute)
+            super()._registerObserverForAttribute(attribute)
 
     def _removeObserverForAttribute(self, attribute):
+        # log.debug(f"Removing observer for attribute {attribute}.")
         # See comment at _registerObserverForAttribute.
         if attribute not in self.TaskStatusAttributes:
-            super(Sorter, self)._removeObserverForAttribute(attribute)
+            super()._removeObserverForAttribute(attribute)

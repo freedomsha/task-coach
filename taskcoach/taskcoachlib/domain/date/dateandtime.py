@@ -16,7 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import datetime, re, time
+# from __future__ import division
+
+# from past.utils import old_div
+import datetime
+import re
+import time
 from . import timedelta
 from .date import Date
 from .fix import StrftimeFix
@@ -67,12 +72,13 @@ class DateTime(StrftimeFix, datetime.datetime):
     def toordinal(self):
         """Return the ordinal number of the day, plus a fraction between 0 and
         1 for parts of the day."""
-        ordinal = super(DateTime, self).toordinal()
+        ordinal = super().toordinal()
         seconds = (
             self.hour * self.secondsPerHour
             + self.minute * self.secondsPerMinute
             + self.second
         )
+        # return ordinal + (old_div(seconds, self.secondsPerDay))
         return ordinal + (seconds / float(self.secondsPerDay))
 
     def startOfDay(self):
@@ -124,10 +130,12 @@ class DateTime(StrftimeFix, datetime.datetime):
         if self == DateTime() and isinstance(other, datetime.datetime):
             max = timedelta.TimeDelta.max  # pylint: disable=W0622
             return timedelta.TimeDelta(max.days, max.seconds, max.microseconds)
-        result = super(DateTime, self).__sub__(other)
+        result = super().__sub__(other)
         if isinstance(result, datetime.timedelta):
             result = timedelta.TimeDelta(
-                result.days, result.seconds, result.microseconds
+                result.days,
+                result.seconds,
+                result.microseconds,
             )
         elif isinstance(result, datetime.datetime):
             result = self.__class__(
@@ -142,7 +150,7 @@ class DateTime(StrftimeFix, datetime.datetime):
         return result
 
     def __add__(self, other):
-        result = super(DateTime, self).__add__(other)
+        result = super().__add__(other)
         return self.__class__(
             result.year,
             result.month,
@@ -159,12 +167,33 @@ DateTime.min = DateTime(datetime.datetime.min.year, 1, 1).startOfDay()
 
 
 def parseDateTime(string, *timeDefaults):
+    """
+    Méthode d'analyse de la date et de l'heure.
+
+    Args :
+        string : Date (et heure) à analyser.
+        *timeDefaults : Heure par défaut.
+
+    Returns : None si string est vide ou égal à None, sinon renvoie une date
+              au format (year, month, day, hour:minute:second:microsecond)
+              avec l'heure actuelle s'il n'y a que year, month et day.
+
+    """
+    # Si string est vide ou égal à None alors retourne None
     if string in ("", "None"):
+        # print("dateandtime.parseDateTime : La date string est vide")
         return None
+    # sinon renvoie une date au format (year, month, day, hour:minute:second:microsecond)
     else:
+        # Sépare string en une liste args d'arg au format int.
+        # print(f"dateandtime.parseDateTime : La date string = {string}.")
         args = [int(arg) for arg in re.split("[-:. ]", string)]
+        # print(f"La liste d'arguments de date args = {args}")
+        # Si la liste contient 3 éléments, il s'agit d'une date sans heures. On ajoute l'heure par défaut.
         if len(args) == 3:  # We parsed a date, no time
             args.extend(timeDefaults)
+        # print(f"La liste d'arguments ajustée args = {args}")
+        # print(f"dateandtime.parseDateTime : Le retour de parseDateTime = {DateTime(*args)}")
         return DateTime(*args)  # pylint: disable=W0142
 
 

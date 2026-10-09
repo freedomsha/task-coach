@@ -17,25 +17,34 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import str
+import logging
 from taskcoachlib import persistence, patterns, operating_system
 from taskcoachlib.i18n import _
 import wx
+import wx.html
 
+# from wx import *
+
+log = logging.getLogger(__name__)
 
 # Prepare for printing. On Jolicloud, printing crashes unless we do this:
 
 # BUT on Fedora, if we do this, TaskCoach doesn't even start. My opinion is that
 # Fedora is more widely used than Jolicloud.
 
-## if operating_system.isGTK():
-##     try:
-##         import gtk  # pylint: disable=F0401
-##         gtk.remove_log_handlers()
-##     except ImportError:
-##         pass
+# # if operating_system.isGTK():
+# #     try:
+# #         import gtk  # pylint: disable=F0401
+# #         gtk.remove_log_handlers()
+# #     except ImportError:
+# #         pass
 
 
+# class PrinterSettings(metaclass=patterns.Singleton):
 class PrinterSettings(object, metaclass=patterns.Singleton):
+    """Classe pour gérer les paramètres d'impression."""
+
     edges = ("top", "left", "bottom", "right")
 
     def __init__(self, settings):
@@ -89,11 +98,49 @@ class PrinterSettings(object, metaclass=patterns.Singleton):
 
 
 class HTMLPrintout(wx.html.HtmlPrintout):
+    """Classe pour imprimer du contenu HTML."""
+
     def __init__(self, html_text, settings):
-        super(HTMLPrintout, self).__init__()
+        super().__init__()
+        # Définit le contenu HTML à imprimer
         self.SetHtmlText(html_text)
+        # Définit le pied de page avec numéro de page
         self.SetFooter(_("Page") + " @PAGENUM@/@PAGESCNT@", wx.html.PAGE_ALL)
-        self.SetFonts("Arial", "Courier")
+        # Ancien code :
+        # Définit les polices serif, sans serif et les tailles
+        self.SetFonts(
+            "Arial", "Courier", [7, 8, 10, 12, 14, 16, 18, 22, 24, 30]
+        )
+        # # Nouveau code :
+        # Quand tu voudras remettre la personnalisation des polices :
+        #     Assure-toi que settings transmis à HTMLPrintout est bien l’objet de configuration de Task Coach.
+        #     Tu peux ajouter une vérification simple comme :
+        # assert hasattr(settings, "get"), "settings doit être l'objet Settings, pas un wx.PrintData"
+        #
+        # Et garde ce modèle :
+        #   serif = settings.get("editor", "seriffont", default="Times New Roman")
+        #   sans = settings.get("editor", "sansseriffont", default="Arial")
+        #   sizes = [7, 8, 10, 12, 14, 18, 24]  # ou lu depuis settings
+        #   self.SetFonts(serif, sans, sizes)
+        #
+        # # Lecture des polices depuis les préférences utilisateur
+        # serif_font = settings.get("editor", "seriffont", default="Times New Roman")
+        # # settings est en réalité une instance de wx.PrintData ou wx.PageSetupDialogData, pas l’objet Settings de Task Coach.
+        # sans_serif_font = settings.get("editor", "sansseriffont", default="Arial")
+        #
+        # # Lecture des tailles de police, séparées par virgule ou utilise une valeur par défaut
+        # try:
+        #     font_sizes_str = settings.get("editor", "fontsizes", default="7,8,10,12,14,18,24")
+        #     font_sizes = [int(size) for size in font_sizes_str.split(",")]
+        #     if len(font_sizes) != 7:
+        #         raise ValueError
+        # except Exception:
+        #     font_sizes = [7, 8, 10, 12, 14, 18, 24]  # Valeurs de secours
+        #
+        # # Applique les polices et tailles
+        # self.SetFonts(serif_font, sans_serif_font, font_sizes)
+
+        # Configure les marges à partir des paramètres
         printer_settings = PrinterSettings(settings)
         left, top = printer_settings.pageSetupData.GetMarginTopLeft()
         right, bottom = printer_settings.pageSetupData.GetMarginBottomRight()
@@ -101,18 +148,23 @@ class HTMLPrintout(wx.html.HtmlPrintout):
 
 
 class DCPrintout(wx.Printout):
+    """Classe pour imprimer le contenu d'un widget."""
+
     def __init__(self, widget):
         self.widget = widget
-        super(DCPrintout, self).__init__()
+        super().__init__()
 
     def OnPrintPage(self, page):  # pylint: disable=W0613
         self.widget.Draw(self.GetDC())
 
+    # @staticmethod
     def GetPageInfo(self):  # pylint: disable=W0221
-        return (1, 1, 1, 1)
+        # return (1, 1, 1, 1)
+        return 1, 1, 1, 1
 
 
 def Printout(viewer, settings, printSelectionOnly=False, twoPrintouts=False):
+    """Fonction principale pour gérer l'impression."""
     widget = viewer.getWidget()
     if hasattr(widget, "GetPrintout"):
         _printout = widget.GetPrintout

@@ -16,53 +16,75 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import glob, shutil, sys, os, urllib.request, urllib.parse, urllib.error, tarfile, glob
+# Futurize ajoute 3 ligne :
+from __future__ import print_function
+# from future import standard_library
+# standard_library.install_aliases()
+try:
+    from taskcoachlib.i18n import po2dict
+except ImportError:
+    from ..taskcoachlib.i18n import po2dict
 
-projectRoot = os.path.abspath("..")
+import glob
+import shutil
+import sys
+import os
+import urllib.request
+import urllib.parse
+import urllib.error
+import tarfile
+
+
+# urllib.request est seul nécessaire, parse & error sont inutils
+
+
+""" crée le répertoire de traduction taskcoachlib/i18n """
+projectRoot = os.path.abspath('..')
 if projectRoot not in sys.path:
     sys.path.insert(0, projectRoot)
-from taskcoachlib.i18n import po2dict
 
 
-def downloadTranslations(url):
+# Shadows name 'url' from outer scope
+def downloadtranslations(url):  # url -> urlpos ?
     def po_files(members):
         for member in members:
-            if os.path.splitext(member.name)[1] == ".po":
+            if os.path.splitext(member.name)[1] == ".po":  # is it ok in python 2 and 3 ?
                 yield member
 
-    filename, info = urllib.request.urlretrieve(url)
-    tarFile = tarfile.open(filename, "r:gz")
-    folder = [member for member in tarFile if member.isdir()][0].name
-    tarFile.extractall(members=po_files(tarFile))
-    tarFile.close()
+    # filename, info = urllib.urlretrieve(url)
+    filename, info = urllib.request.urlretrieve(url)  # url -> urlpos ?
+    tarfiled = tarfile.open(filename, 'r:gz')
+    folder = [member for member in tarfiled if member.isdir()][0].name
+    tarfiled.extractall(members=po_files(tarfiled))
+    tarfiled.close()
     os.remove(filename)
 
-    for poFile in glob.glob("*.po"):
-        newPoFile = os.path.join(folder, "i18n.in-%s" % poFile)
+    for poFile in glob.glob('*.po'):
+        newPoFile = os.path.join(folder, 'i18n.in-%s' % poFile)
         shutil.copy(newPoFile, poFile)
-        print("Updating", poFile)
+        print('Updating', poFile)
     shutil.rmtree(folder)
 
 
-def downloadTranslation(url):
+def downloadtranslation(url):  # todo: url -> urlpo ?
     # http://launchpadlibrarian.net/70943850/i18n.in_i18n.in-nl.po
     filename, info = urllib.request.urlretrieve(url)
-    shutil.move(filename, url.split("-")[1])
+    shutil.move(filename, url.split('-')[1])
 
 
-def createPoDicts():
-    for poFile in sorted(glob.glob("*.po")):
-        print("Creating python dictionary from", poFile)
-        pyFile = po2dict.make(poFile)
-        shutil.move(pyFile, "../taskcoachlib/i18n/%s" % pyFile)
+def createpodicts():
+    for poFile in sorted(glob.glob('*.po')):
+        print('Creating python dictionary from', poFile)
+        pyfile = po2dict.make(poFile)
+        shutil.move(pyfile, '../taskcoachlib/i18n/%s' % pyfile)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if len(sys.argv) == 2:
         url = sys.argv[1]
-        if url.endswith(".po"):
-            downloadTranslation(url)
+        if url.endswith('.po'):
+            downloadtranslation(url)
         else:
-            downloadTranslations(url)
+            downloadtranslations(url)
     else:
-        createPoDicts()
+        createpodicts()

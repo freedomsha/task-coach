@@ -16,20 +16,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import converter, changes, sys
+# futurize ajoute 2 lignes:
+from __future__ import print_function
+
+from future.utils import raise_
+from . import converter, changes
+import sys
 
 numberOfReleases = int(sys.argv[2]) if len(sys.argv) >= 3 else sys.maxsize
+# = au 3e argument si le nombre d'argument est >=3 sinon sa valeur maximale
 
-if sys.argv[1] == "text":
+if sys.argv[1] == 'text':
     converter = converter.ReleaseToTextConverter()
-elif sys.argv[1] == "html":
+elif sys.argv[1] == 'html':
     converter = converter.ReleaseToHTMLConverter()
-elif sys.argv[1] == "debian":
+elif sys.argv[1] == 'debian':
     # Only current release, Debian format
     converter = converter.ReleaseToDebianConverter()
     numberOfReleases = 1
 else:
-    raise ValueError("Unknown target format (%s)" % sys.argv[1])
+    # raise ValueError, 'Unknown target format (%s)'%sys.argv[1]
+    raise_(ValueError, 'Unknown target format (%s)' % sys.argv[1])
 
 releases = changes.releases[:numberOfReleases]
 for release in releases:

@@ -16,8 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re, shutil, os
+# from builtins import chr
+# from builtins import object
+import re
+import shutil
+import os
 from taskcoachlib.domain import date
+from io import open as file
 
 
 class TodoTxtWriter(object):
@@ -38,24 +43,23 @@ class TodoTxtWriter(object):
         count = 0
         for task in tasks:
             count += 1
-            self.__fd.write(
-                self.priority(task.priority())
-                + self.completionDate(task.completionDateTime())
-                + self.startDate(task.plannedStartDateTime())
-                + task.subject(recursive=True)
-                + self.contextsAndProjects(task)
-                + self.dueDate(task.dueDateTime())
-                + self.id(task.id())
-                + "\n"
-            )
+            self.__fd.write(self.priority(task.priority()) +
+                            self.completionDate(task.completionDateTime()) +
+                            self.startDate(task.plannedStartDateTime()) +
+                            task.subject(recursive=True) +
+                            self.contextsAndProjects(task) +
+                            self.dueDate(task.dueDateTime()) +
+                            self.id(task.id()) + "\n", )
         metaName = self.__filename + "-meta"
         if os.path.exists(metaName):
             os.remove(metaName)
         if os.path.exists(self.__filename):  # Unit tests
             self.__fd.close()
-            with open(metaName, "wb") as dst:
+            # file -> open
+            with file(metaName, "wb") as dst:
                 dst.write("VERSION: %d\n" % self.VERSION)
-                with open(self.__filename, "rb") as src:
+                # Expected type 'bytes' (matched generic type 'AnyStr'), got 'str' instead
+                with file(self.__filename, "rb") as src:
                     shutil.copyfileobj(src, dst)
         return count
 

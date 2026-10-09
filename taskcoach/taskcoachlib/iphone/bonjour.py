@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 from taskcoachlib.thirdparty import pybonjour
 from twisted.internet.interfaces import IReadDescriptor
 from twisted.internet.defer import Deferred, AlreadyCalledError
@@ -31,16 +32,14 @@ class BonjourServiceDescriptor(object):
 
     def start(self, fd):
         from twisted.internet import reactor
-
         self.__fd = fd
         reactor.addReader(self)
 
     def stop(self):
         if self.__fd is not None:
             from twisted.internet import reactor
-
             reactor.removeReader(self)
-            self.__fd.close()
+            self.__fd.Close()
             self.__fd = None
 
     def doRead(self):
@@ -50,12 +49,13 @@ class BonjourServiceDescriptor(object):
     def fileno(self):
         return None if self.__fd is None else self.__fd.fileno()
 
+    # @staticmethod
     def logPrefix(self):
         return "bonjour"
 
     def connectionLost(self, reason):
         if self.__fd is not None:
-            self.__fd.close()
+            self.__fd.Close()
 
 
 def BonjourServiceRegister(settings, port):
@@ -70,13 +70,7 @@ def BonjourServiceRegister(settings, port):
                 d.callback(reader)
             else:
                 reader.stop()
-                d.errback(
-                    Failure(
-                        RuntimeError(
-                            "Could not register with Bonjour: %d" % errorCode
-                        )
-                    )
-                )
+                d.errback(Failure(RuntimeError("Could not register with Bonjour: %d" % errorCode)))
         except AlreadyCalledError:
             pass
 

@@ -16,45 +16,48 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib.thirdparty.pubsub import pub
+# from builtins import object
+# try:
+from pubsub import pub
+# except ImportError:
+#    try:
+#        from taskcoachlib.thirdparty.pubsub import pub
+#    except ImportError:
+#        from wx.lib.pubsub import pub
 import wx
 
 
-class AutoSaver(object):
-    """AutoSaver observes task files. If a task file is changed by the user
-    (gets 'dirty') and auto save is on, AutoSaver saves the task file."""
+class AutoSaver(object):  # nouvelle classe
+    """ AutoSaver observes task files. If a task file is changed by the user
+        (gets 'dirty') and auto save is on, AutoSaver saves the task file. """
 
     def __init__(self, settings, *args, **kwargs):
-        super(AutoSaver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__settings = settings
         self.__task_files = set()
         self.__bound = False
         pub.subscribe(self.onTaskFileDirty, "taskfile.dirty")
 
     def onTaskFileDirty(self, taskFile):
-        """When a task file gets dirty and auto save is on, note it so
-        it can be saved during idle time."""
+        """ When a task file gets dirty and auto save is on, note it so
+            it can be saved during idle time. """
         if self._needSave(taskFile):
             self.__task_files.add(taskFile)
         if not self.__bound:
             self.__bound = True
             wx.GetApp().Bind(wx.EVT_IDLE, self.on_idle)
 
-    def _needSave(self, task_file):
-        """Return whether the task file needs to be saved."""
-        return (
-            task_file.filename()
-            and task_file.needSave()
-            and self.__settings.getboolean("file", "autosave")
-        )
+    def _needSave(self, taskFile):  # or use task_file ?
+        """ Return whether the task file needs to be saved. """
+        return taskFile.filename() and taskFile.needSave() and \
+            self.__settings.getboolean("file", "autosave")
 
     def _needLoad(self, taskFile):
-        return taskFile.changedOnDisk() and self.__settings.getboolean(
-            "file", "autoload"
-        )
+        return taskFile.changedOnDisk() and \
+            self.__settings.getboolean("file", "autoload")
 
     def on_idle(self, event):
-        """Actually save the dirty files during idle time."""
+        """ Actually save the dirty files during idle time. """
         event.Skip()
         wx.GetApp().Unbind(wx.EVT_IDLE, handler=self.on_idle)
         self.__bound = False

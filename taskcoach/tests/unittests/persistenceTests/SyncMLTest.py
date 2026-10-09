@@ -16,18 +16,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import persistence
 from taskcoachlib.domain import task, note, category, effort, date
 
 
-class TaskFileTestCase(test.TestCase):
+class TaskFileTestCase(tctest.TestCase):
     def setUp(self):
         self.taskFile = persistence.TaskFile()
         self.task = task.Task(subject="Subject")
 
     def tearDown(self):
-        super(TaskFileTestCase, self).tearDown()
+        # super(TaskFileTestCase, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -49,9 +50,7 @@ class TaskFileTestCase(test.TestCase):
         self.taskFile.categories().append(aCategory)
         self.assertTrue(category.Category.STATUS_NEW, aCategory.getStatus())
         aCategory.setSubject("New subject")
-        self.assertTrue(
-            category.Category.STATUS_CHANGED, aCategory.getStatus()
-        )
+        self.assertTrue(category.Category.STATUS_CHANGED, aCategory.getStatus())
 
     def testEffortIsDirtyAfterEditingStart(self):
         self.taskFile.tasks().append(self.task)

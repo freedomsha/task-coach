@@ -5,9 +5,11 @@
 """
 http://isometric.sixsided.org/_/gates_in_the_head/
 """
+from __future__ import print_function
 
 # pylint: disable-msg=F0401,E1101
 
+from builtins import str
 import os
 
 # Win32 imports
@@ -86,7 +88,7 @@ def _findShebang(filename):
 
     @return: a str representing another filename.
     """
-    f = open(filename, "ru")
+    f = file(filename, "ru")
     if f.read(2) == "#!":
         exe = f.readline(1024).strip("\n")
         return exe
@@ -160,34 +162,19 @@ class Process(_pollingfile._PollingTimer, BaseProcess):
         currentPid = win32api.GetCurrentProcess()
 
         tmp = win32api.DuplicateHandle(
-            currentPid,
-            self.hStdoutR,
-            currentPid,
-            0,
-            0,
-            win32con.DUPLICATE_SAME_ACCESS,
+            currentPid, self.hStdoutR, currentPid, 0, 0, win32con.DUPLICATE_SAME_ACCESS
         )
         win32file.CloseHandle(self.hStdoutR)
         self.hStdoutR = tmp
 
         tmp = win32api.DuplicateHandle(
-            currentPid,
-            self.hStderrR,
-            currentPid,
-            0,
-            0,
-            win32con.DUPLICATE_SAME_ACCESS,
+            currentPid, self.hStderrR, currentPid, 0, 0, win32con.DUPLICATE_SAME_ACCESS
         )
         win32file.CloseHandle(self.hStderrR)
         self.hStderrR = tmp
 
         tmp = win32api.DuplicateHandle(
-            currentPid,
-            self.hStdinW,
-            currentPid,
-            0,
-            0,
-            win32con.DUPLICATE_SAME_ACCESS,
+            currentPid, self.hStdinW, currentPid, 0, 0, win32con.DUPLICATE_SAME_ACCESS
         )
         win32file.CloseHandle(self.hStdinW)
         self.hStdinW = tmp
@@ -204,18 +191,16 @@ class Process(_pollingfile._PollingTimer, BaseProcess):
         # TODO: error detection here.
         def doCreate():
             self.job = win32job.CreateJobObject(None, str(time()))
-            self.hProcess, self.hThread, self.pid, dwTid = (
-                win32process.CreateProcess(
-                    command,
-                    cmdline,
-                    None,
-                    None,
-                    1,
-                    CREATE_SUSPENDED,
-                    env,
-                    path,
-                    StartupInfo,
-                )
+            self.hProcess, self.hThread, self.pid, dwTid = win32process.CreateProcess(
+                command,
+                cmdline,
+                None,
+                None,
+                1,
+                CREATE_SUSPENDED,
+                env,
+                path,
+                StartupInfo,
             )
             win32job.AssignProcessToJobObject(self.job, self.hProcess)
             win32process.ResumeThread(self.hThread)
@@ -250,14 +235,13 @@ class Process(_pollingfile._PollingTimer, BaseProcess):
                         if _invalidWin32App(pwte2):
                             raise OSError(
                                 "%r has an invalid shebang line: "
-                                "%r is not a valid executable"
-                                % (origcmd, sheb)
+                                "%r is not a valid executable" % (origcmd, sheb)
                             )
                         raise OSError(pwte2)
 
         win32file.CloseHandle(self.hThread)
 
-        # close handles which only the child will use
+        # Close handles which only the child will use
         win32file.CloseHandle(hStderrW)
         win32file.CloseHandle(hStdoutW)
         win32file.CloseHandle(hStdinR)
@@ -282,7 +266,7 @@ class Process(_pollingfile._PollingTimer, BaseProcess):
         for pipewatcher in self.stdout, self.stderr, self.stdin:
             self._addPollableResource(pipewatcher)
 
-        # notify protocol
+        # Notify protocol
         self.proto.makeConnection(self)
 
         self._addPollableResource(_Reaper(self))

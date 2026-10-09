@@ -15,171 +15,161 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import textwrap, changetypes, re
+# futurize +1 ligne
+# from builtins import object
+import textwrap
+import changetypes
+import re
 
 
 # Change (bugs fixed, features added, etc.) converters:
 
-
 class ChangeConverter(object):
     def convert(self, change):
         result = self.preProcess(change.description)
-        if hasattr(change, "url"):
-            result += " (%s)" % self.convertURL(change.url)
+        if hasattr(change, "url"):  # todo: 'url' -> 'urlpo' ?
+            result += ' (%s)' % self.converturl(change.url)
         if change.changeIds:
-            convertedIds = self.convertChangeIds(change)
-            result += " (%s)" % ", ".join(convertedIds)
-        return self.postProcess(result)
+            convertedids = self.convertchangeids(change)
+            result += ' (%s)' % ', '.join(convertedids)
+        return self.postprocess(result)
 
-    def preProcess(self, changeToBeConverted):
-        return changeToBeConverted
+    def preProcess(self, changetobeconverted):
+        return changetobeconverted
 
-    def postProcess(self, convertedChange):
-        return convertedChange
+    def postprocess(self, convertedchange):
+        return convertedchange
 
-    def convertChangeIds(self, change):
-        return [self.convertChangeId(change, id) for id in change.changeIds]
+    def convertchangeids(self, change):
+        # Shadows built-in name 'id'
+        return [self.convertchangeid(change, id) for id in change.changeIds]
 
-    def convertChangeId(self, change, changeId):
-        return changeId
+    def convertchangeid(self, change, changeid):
+        return changeid
 
-    def convertURL(self, url):
+    def converturl(self, url):
         return url
 
 
 class ChangeToTextConverter(ChangeConverter):
     def __init__(self):
-        self._textWrapper = textwrap.TextWrapper(
-            initial_indent="- ", subsequent_indent="  ", width=78
-        )
+        self._textWrapper = textwrap.TextWrapper(initial_indent='- ',
+                                                 subsequent_indent='  ', width=78)
         # Regular expression to remove multiple spaces, except when on
         # the start of a line:
-        self._multipleSpaces = re.compile(r"(?<!^) +", re.M)
-        self._initialSpaces = re.compile(r"^( *)(.*)$")
+        self._multipleSpaces = re.compile(r'(?<!^) +', re.M)
+        self._initialSpaces = re.compile(r'^( *)(.*)$')
 
-    def postProcess(self, convertedChange):
-        convertedChange = self._textWrapper.fill(convertedChange)
+    def postprocess(self, convertedchange):
+        convertedchange = self._textWrapper.fill(convertedchange)
         # Somehow the text wrapper introduces multiple spaces within
         # lines, this is a workaround (preserving the initial spaces):
 
         lines = []
 
-        for line in convertedChange.split("\n"):
+        for line in convertedchange.split('\n'):
             match = self._initialSpaces.match(line)
-            lines.append(
-                match.group(1) + self._multipleSpaces.sub(" ", match.group(2))
-            )
+            lines.append(match.group(1) + self._multipleSpaces.sub(' ', match.group(2)))
 
-        return "\n".join(lines)
+        return '\n'.join(lines)
 
-    def convertChangeId(self, change, changeId):
-        return changeId if changeId.startswith("http") else "SF#%s" % changeId
+    def convertchangeid(self, change, changeid):
+        return changeid if changeid.startswith('http') else 'SF#%s' % changeid
 
 
 class ChangeToDebianConverter(ChangeToTextConverter):
     def __init__(self):
         super(ChangeToDebianConverter, self).__init__()
-        self._textWrapper = textwrap.TextWrapper(
-            initial_indent="  * ", subsequent_indent="    ", width=78
-        )
+        self._textWrapper = textwrap.TextWrapper(initial_indent='  * ',
+                                                 subsequent_indent='    ', width=78)
 
-    def postProcess(self, convertedChange):
-        return (
-            super(ChangeToDebianConverter, self).postProcess(convertedChange)
-            + "\n"
-        )
+    def postprocess(self, convertedchange):
+        return super(ChangeToDebianConverter, self).postProcess(convertedchange) + '\n'
 
 
 class ChangeToHTMLConverter(ChangeConverter):
+    LinkToSourceForge = '<a href="https://sourceforge.net/tracker/index.php?func=detail&aid=%%(' \
+                        'id)s&group_id=130831&atid=%(atid)s">%%(id)s</a>'
+    LinkToSourceForgeBugReport = LinkToSourceForge % {'atid': '719134'}
+    LinkToSourceForgeBugReportv2 = '<a href="https://sourceforge.net/p/taskcoach/bugs/%(id)s/">%(id)s</a>'
+    LinkToSourceForgeFeatureRequest = LinkToSourceForge % {'atid': '719137'}
+    NoConversion = '%(id)s'
 
-    LinkToSourceForge = '<a href="https://sourceforge.net/tracker/index.php?func=detail&aid=%%(id)s&group_id=130831&atid=%(atid)s">%%(id)s</a>'
-    LinkToSourceForgeBugReport = LinkToSourceForge % {"atid": "719134"}
-    LinkToSourceForgeBugReportv2 = (
-        '<a href="https://sourceforge.net/p/taskcoach/bugs/%(id)s/">%(id)s</a>'
-    )
-    LinkToSourceForgeFeatureRequest = LinkToSourceForge % {"atid": "719137"}
-    NoConversion = "%(id)s"
+    def preProcess(self, changetobeconverted):
+        changetobeconverted = re.sub('<', '&lt;', changetobeconverted)
+        changetobeconverted = re.sub('>', '&gt;', changetobeconverted)
+        return changetobeconverted
 
-    def preProcess(self, changeToBeConverted):
-        changeToBeConverted = re.sub("<", "&lt;", changeToBeConverted)
-        changeToBeConverted = re.sub(">", "&gt;", changeToBeConverted)
-        return changeToBeConverted
+    def postprocess(self, convertedchange):
+        list_of_url_and_text_fragments = re.split('(http://[^\s()]+[^\s().])', convertedchange)
+        list_of_converted_urls_and_text_fragments = []
+        for fragment in list_of_url_and_text_fragments:
+            if fragment.startswith('http://'):
+                fragment = self.converturl(fragment)
+            list_of_converted_urls_and_text_fragments.append(fragment)
+        convertedchange = ''.join(list_of_converted_urls_and_text_fragments)
+        return '<li>%s</li>' % convertedchange
 
-    def postProcess(self, convertedChange):
-        listOfUrlAndTextFragments = re.split(
-            "(http://[^\s()]+[^\s().])", convertedChange
-        )
-        listOfConvertedUrlsAndTextFragments = []
-        for fragment in listOfUrlAndTextFragments:
-            if fragment.startswith("http://"):
-                fragment = self.convertURL(fragment)
-            listOfConvertedUrlsAndTextFragments.append(fragment)
-        convertedChange = "".join(listOfConvertedUrlsAndTextFragments)
-        return "<li>%s</li>" % convertedChange
-
-    def convertChangeId(self, change, changeId):
-        template = (
-            self.NoConversion
-        )  # URL's will be converted in postProcess()
-        if not changeId.startswith("http"):
+    def convertchangeid(self, change, changeid):
+        template = self.NoConversion  # URL's will be converted in postProcess()
+        if not changeid.startswith('http'):
             if isinstance(change, changetypes.Bugv2):
                 template = self.LinkToSourceForgeBugReportv2
             elif isinstance(change, changetypes.Bug):
                 template = self.LinkToSourceForgeBugReport
             elif isinstance(change, changetypes.Feature):
                 template = self.LinkToSourceForgeFeatureRequest
-        return template % {"id": changeId}
+        return template % {'id': changeid}
 
-    def convertURL(self, url):
+    def converturl(self, url):
         return '<a href="%s">%s</a>' % (url, url)
 
 
 # Release converters:
 
-
 class ReleaseConverter(object):
     def __init__(self):
         self._changeConverter = self.ChangeConverterClass()
 
-    def _addS(self, listToCount):
-        multiple = len(listToCount) > 1
-        return dict(s="s" if multiple else "", y="ies" if multiple else "y")
+    # @staticmethod ?
+    def _add_s(listtocount):
+        multiple = len(listtocount) > 1
+        return dict(s='s' if multiple else '',
+                    y='ies' if multiple else 'y')
 
-    def convert(self, release, greeting=""):
+    def convert(self, release, greeting=''):
         result = [self.summary(release, greeting)]
         if not greeting:
             result.insert(0, self.header(release))
-        for section, list in [
-            ("Team change%(s)s", release.teamChanges),
-            ("Bug%(s)s fixed", release.bugsFixed),
-            ("Feature%(s)s added", release.featuresAdded),
-            ("Feature%(s)s changed", release.featuresChanged),
-            ("Feature%(s)s removed", release.featuresRemoved),
-            ("Implementation%(s)s changed", release.implementationChanged),
-            ("Dependenc%(y)s changed", release.dependenciesChanged),
-            ("Distribution%(s)s changed", release.distributionsChanged),
-            ("Website change%(s)s", release.websiteChanges),
-        ]:
+        # Shadows built-in name 'list'
+        for section, list in [('Team change%(s)s', release.teamChanges),
+                              ('Bug%(s)s fixed', release.bugsFixed),
+                              ('Feature%(s)s added', release.featuresAdded),
+                              ('Feature%(s)s changed', release.featuresChanged),
+                              ('Feature%(s)s removed', release.featuresRemoved),
+                              ('Implementation%(s)s changed', release.implementationChanged),
+                              ('Dependenc%(y)s changed', release.dependenciesChanged),
+                              ('Distribution%(s)s changed', release.distributionsChanged),
+                              ('Website change%(s)s', release.websiteChanges)]:
             if list:
-                result.append(self.sectionHeader(section, list))
+                result.append(self.sectionheader(section, list))
                 for change in list:
                     result.append(self._changeConverter.convert(change))
-                result.append(self.sectionFooter(section, list))
+                result.append(self.sectionfooter(section, list))
         result = [line for line in result if line]
-        return "\n".join(result) + "\n\n"
+        return '\n'.join(result) + '\n\n'
 
     def header(self, release):
-        return "Release %s - %s" % (release.number, release.date)
+        return 'Release %s - %s' % (release.number, release.Date)
 
-    def summary(self, release, greeting=""):
-        return " ".join([text for text in (greeting, release.summary) if text])
+    def summary(self, release, greeting=''):
+        return ' '.join([text for text in (greeting, release.summary) if text])
 
-    def sectionHeader(self, section, list):
-        return "\n%s:" % (section % self._addS(list))
+    def sectionheader(self, section, list):
+        return '\n%s:' % (section % self._add_s(list))
 
-    def sectionFooter(self, section, list):
-        return ""
+    def sectionfooter(self, section, list):
+        return ''
 
 
 class ReleaseToTextConverter(ReleaseConverter):
@@ -187,14 +177,13 @@ class ReleaseToTextConverter(ReleaseConverter):
 
     def summary(self, *args, **kwargs):
         summary = super(ReleaseToTextConverter, self).summary(*args, **kwargs)
-        wrapper = textwrap.TextWrapper(
-            initial_indent="", subsequent_indent="", width=78
-        )
-        multipleSpaces = re.compile(r"(?<!^) +", re.M)
+        wrapper = textwrap.TextWrapper(initial_indent='',
+                                       subsequent_indent='', width=78)
+        multiplespaces = re.compile(r'(?<!^) +', re.M)
         summary = wrapper.fill(summary)
         # Somehow the text wrapper introduces multiple spaces within
         # lines, this is a workaround:
-        summary = multipleSpaces.sub(" ", summary)
+        summary = multiplespaces.sub(' ', summary)
         return summary
 
 
@@ -202,36 +191,31 @@ class ReleaseToDebianConverter(ReleaseConverter):
     ChangeConverterClass = ChangeToDebianConverter
 
     def summary(self, *args, **kwargs):
-        return ""
+        return ''
 
     def header(self, release):
-        return ""
+        return ''
 
-    def sectionHeader(self, section, list):
-        return ""
+    def sectionheader(self, section, list):
+        return ''
 
 
 class ReleaseToHTMLConverter(ReleaseConverter):
     ChangeConverterClass = ChangeToHTMLConverter
 
     def header(self, release):
-        return "<h2>Release %s <small>%s</small></h2>" % (
-            release.number,
-            release.date,
-        )
+        return '<h2>Release %s <small>%s</small></h2>' % (release.number, release.Date)
 
-    def sectionHeader(self, section, list):
-        return (
-            super(ReleaseToHTMLConverter, self).sectionHeader(section, list)
-            + "\n<ul>"
-        )
+    def sectionheader(self, section, list):
+        return super(ReleaseToHTMLConverter, self).sectionHeader(section,
+                                     list) + '\n<ul>'
 
-    def sectionFooter(self, section, list):
-        return "</ul>"
+    def sectionfooter(self, section, list):
+        return '</ul>'
 
-    def summary(self, release, greeting=""):
-        summaryText = super(ReleaseToHTMLConverter, self).summary(release)
-        if summaryText:
-            return "<p>%s</p>" % summaryText
+    def summary(self, release, greeting=''):
+        summarytext = super(ReleaseToHTMLConverter, self).summary(release)
+        if summarytext:
+            return '<p>%s</p>' % summarytext
         else:
-            return ""
+            return ''

@@ -14,6 +14,9 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Le méta-package contient des méta-informations sur Task Coach,
+telles que l'auteur, le numéro de version, etc.
 """
 
 from .data import *

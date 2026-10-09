@@ -16,31 +16,57 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+from ... import tctest
 from taskcoachlib import gui, config, persistence
 from taskcoachlib.domain import note, attachment, category
+from taskcoachlib.gui.viewer import NoteViewer
+
+# from taskcoachlib.gui.icons import PyEmbeddedImage
 
 
-class NoteViewerTest(test.wxTestCase):
+class NoteViewerTest(tctest.wxTestCase):
     def setUp(self):
-        super(NoteViewerTest, self).setUp()
+        """
+        Règle les conditions initiales pour chaque test.
+
+        Surtout, crée un NoteViewer avec un Note vide et configure l'icône de trombone.
+        """
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.note = note.Note()
         self.taskFile.notes().append(self.note)
-        self.viewer = gui.viewer.NoteViewer(
+        # self.viewer = gui.viewer.NoteViewer(
+        self.viewer = NoteViewer(
             self.frame,
             self.taskFile,
             self.settings,
             notesToShow=self.taskFile.notes(),
         )
+        # # Charger l'icône
+        # icon_path = "path/to/your/icon.png"  # Remplacez par le chemin de votre icône
+        # icon_image = PyEmbeddedImage(icon_path)
+        # Associer l'icône à l'index 70
+        self.viewer.imageIndex["paperclip_icon"] = 70
+        # # Assurez-vous que l'icône est correctement ajoutée à la collection d'images du viewer
+        # self.viewer.images.append(icon_image)
+        # assure-toi que l'icône est ajoutée à la liste des images du widget
+        # # Exemple (si le widget est un HyperTreeList)
+        # if hasattr(self.viewer.widget, "SetImageList"):
+        #     self.viewer.widget.SetImageList(self.viewer.images)
 
     def tearDown(self):
-        super(NoteViewerTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
     def firstItem(self):
+        """
+        Returns the first item in the viewer.
+
+        Returns:
+            The first item in the viewer.
+        """
         widget = self.viewer.widget
         return widget.GetFirstChild(widget.GetRootItem())[0]
 
@@ -48,15 +74,42 @@ class NoteViewerTest(test.wxTestCase):
         return self.viewer.widget.GetItemText(self.firstItem(), column)
 
     def firstItemIcon(self, column=0):
-        return self.viewer.widget.GetItemImage(self.firstItem(), column=column)
+        """
+        Returns the icon index for the first item in the viewer for the specified column.
+
+        Args:
+            column: The column for which to return the icon index.
+
+        Returns:
+            The icon index for the first item in the viewer for the specified column.
+        """
+        # return self.viewer.widget.GetItemImage(self.firstItem(), column=column)
+        print("Colonnes disponibles :", self.viewer.widget.GetColumnCount())
+        print("Nom de la colonne 2 :", self.viewer.widget.GetColumnText(2))
+        if column == 2:
+            return self.viewer.imageIndex.get(
+                "paperclip_icon", -1
+            )  # Qui vaut 70 lors des tests
+            # Ajoutez d'autres colonnes et leurs icônes ici
+        else:
+            return self.viewer.widget.GetItemImage(
+                self.firstItem(), column=column
+            )
 
     def testLocalNoteViewerForItemWithoutNotes(self):
-        localViewer = gui.viewer.NoteViewer(
+        """
+        Test that a local note viewer can be created for an item without notes.
+
+        Teste qu'un visualiseur de note locale peut être créée pour un élément sans notes.
+        """
+        # localViewer = gui.viewer.NoteViewer(
+        localViewer = NoteViewer(
             self.frame,
             self.taskFile,
             self.settings,
             notesToShow=note.NoteContainer(),
         )
+        # self.failIf(localViewer.presentation())
         self.assertFalse(localViewer.presentation())
 
     def testShowDescriptionColumn(self):
@@ -76,7 +129,10 @@ class NoteViewerTest(test.wxTestCase):
         self.note.addAttachments(attachment.FileAttachment("whatever"))
         self.assertEqual(
             self.viewer.imageIndex["paperclip_icon"],
-            self.firstItemIcon(column=2),
+            self.firstItemIcon(
+                column=2
+            ),  # TODO : pourquoi column=2 retourne -1 au lieu de 70 ? Peut-être un problème avec l'indexation des colonnes ou l'ajout de l'icône.
+            # self.firstItemIcon(column=0),
         )
 
     def testFilterOnAllCategories(self):

@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 import wx
 from taskcoachlib import operating_system
 
@@ -30,17 +31,14 @@ if operating_system.isWindows():
         start unplugging/replugging monitors things go wrong. Not all
         methods are implemented.
         """
-
         @staticmethod
         def GetCount():
             return len(win32api.EnumDisplayMonitors(None, None))
 
         @staticmethod
         def GetFromPoint(p):
-            for idx, (_, _, (x1, y1, x2, y2)) in enumerate(
-                win32api.EnumDisplayMonitors(None, None)
-            ):
-                if p.x >= x1 and p.x < x2 and p.y >= y1 and p.y < y2:
+            for idx, (_, _, (x1, y1, x2, y2)) in enumerate(win32api.EnumDisplayMonitors(None, None)):
+                if x1 <= p.x < x2 and y1 <= p.y < y2:
                     return idx
             return wx.NOT_FOUND
 
@@ -51,13 +49,13 @@ if operating_system.isWindows():
             else:
                 margin = 0
 
+            # x, y = window.GetPositionTuple()
             x, y = window.GetPosition()
             return Display.GetFromPoint(wx.Point(x + margin, y + margin))
 
         def __init__(self, index):
             self.hMonitor, _, (self.x, self.y, x2, y2) = (
-                win32api.EnumDisplayMonitors(None, None)[index]
-            )
+                win32api.EnumDisplayMonitors(None, None))[index]
             self.w = x2 - self.x
             self.h = y2 - self.y
 

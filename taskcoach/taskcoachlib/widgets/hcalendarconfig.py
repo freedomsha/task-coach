@@ -16,6 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import division
+# from builtins import str
+# from builtins import map
+# from past.utils import old_div
 from taskcoachlib.tools import wxhelper
 import wx
 import wx.lib.colourselect as csel
@@ -34,13 +38,14 @@ class HierarchicalCalendarConfigDialog(sized_controls.SizedDialog):
     def __init__(self, settings, settingsSection, *args, **kwargs):
         self._settings = settings
         self._settingsSection = settingsSection
-        super(HierarchicalCalendarConfigDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         pane = self.GetContentsPane()
         pane.SetSizerType("form")
         self.createInterior(pane)
         buttonSizer = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
         self.SetButtonSizer(buttonSizer)
         self.Fit()
+        # buttonSizer.GetAffirmativeButton().bind(wx.EVT_BUTTON, self.ok)
         wxhelper.getButtonFromStdDialogButtonSizer(buttonSizer, wx.ID_OK).Bind(
             wx.EVT_BUTTON, self.ok
         )
@@ -52,83 +57,66 @@ class HierarchicalCalendarConfigDialog(sized_controls.SizedDialog):
         self.createColorEntry(pane)
 
     def createHeaderEntry(self, pane):
-        label = wx.StaticText(pane, label=_("Headers"))
-        label.SetSizerProps(valign="center")
-        hdr = self._settings.getint(self._settingsSection, "headerformat")
+        label = wx.StaticText(pane, label=_('Headers'))
+        label.SetSizerProps(valign='center')
+        hdr = self._settings.getint(self._settingsSection, 'headerformat')
         panel = sized_controls.SizedPanel(pane)
-        panel.SetSizerType("vertical")
-        self._weekNumber = wx.CheckBox(panel, label=_("Week number"))
+        panel.SetSizerType('vertical')
+        self._weekNumber = wx.CheckBox(panel, label=_('Week number'))
         self._weekNumber.SetValue(hdr & 1)
-        self._weekNumber.SetSizerProps(valign="center")
-        self._dates = wx.CheckBox(panel, label=_("Date"))
+        self._weekNumber.SetSizerProps(valign='center')
+        self._dates = wx.CheckBox(panel, label=_('Date'))
         self._dates.SetValue(hdr & 2)
-        self._dates.SetSizerProps(valign="center")
-        panel.SetSizerProps(valign="center")
+        self._dates.SetSizerProps(valign='center')
+        panel.SetSizerProps(valign='center')
         panel.Fit()
 
     def createPeriodEntry(self, pane):
-        label = wx.StaticText(pane, label=_("Calendar span"))
-        label.SetSizerProps(valign="center")
-        periods = (_("Week"), _("Work week"), _("Month"))
-        self._spanType = wx.Choice(
-            pane, choices=periods
-        )  # pylint: disable=W0201
-        self._spanType.SetSizerProps(valign="center")
-        self._spanType.SetSelection(
-            self._settings.getint(self._settingsSection, "calendarformat")
-        )
+        label = wx.StaticText(pane, label=_('Calendar span'))
+        label.SetSizerProps(valign='center')
+        periods = (_('Week'), _('Work week'), _('Month'))
+        self._spanType = wx.Choice(pane, choices=periods)  # pylint: disable=W0201
+        self._spanType.SetSizerProps(valign='center')
+        self._spanType.SetSelection(self._settings.getint(self._settingsSection, 'calendarformat'))
 
     def createLineEntry(self, pane):
-        label = wx.StaticText(
-            pane, label=_("Draw a line showing the current time")
-        )
-        label.SetSizerProps(valign="center")
+        label = wx.StaticText(pane,
+                              label=_('Draw a line showing the current time'))
+        label.SetSizerProps(valign='center')
         self._shownow = wx.CheckBox(pane)  # pylint: disable=W0201
-        self._shownow.SetSizerProps(valign="center")
-        self._shownow.SetValue(
-            self._settings.getboolean(self._settingsSection, "drawnow")
-        )
+        self._shownow.SetSizerProps(valign='center')
+        self._shownow.SetValue(self._settings.getboolean(self._settingsSection, 'drawnow'))
 
     def createColorEntry(self, pane):
-        label = wx.StaticText(
-            pane, label=_("Color used to highlight the current day")
-        )
-        label.SetSizerProps(valign="center")
-        hcolor = self._settings.get(self._settingsSection, "todaycolor")
+        label = wx.StaticText(pane, label=_('Color used to highlight the current day'))
+        label.SetSizerProps(valign='center')
+        hcolor = self._settings.get(self._settingsSection, 'todaycolor')
         if not hcolor:
             # The highlight color is too dark
             color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
-            color = wx.Colour(
-                int((color.Red() + 255) / 2),
-                int((color.Green() + 255) / 2),
-                int((color.Blue() + 255) / 2),
-            )
+            # color = wx.Colour(int(old_div((color.Red() + 255), 2)),
+            #                  int(old_div((color.Green() + 255), 2)),
+            #                  int(old_div((color.Blue() + 255), 2)))
+            color = wx.Colour(int((color.Red() + 255) // 2),
+                              int((color.Green() + 255) // 2),
+                              int((color.Blue() + 255) // 2))
         else:
-            color = wx.Colour(
-                *tuple(map(int, hcolor.split(",")))
-            )  # pylint: disable=W0141
-        self._highlight = csel.ColourSelect(
-            pane, size=(100, 20)
-        )  # pylint: disable=W0201
-        label.SetSizerProps(valign="center")
+            color = wx.Colour(*tuple(map(int, hcolor.split(','))))  # pylint: disable=W0141
+        self._highlight = csel.ColourSelect(pane, size=(100, 20))  # pylint: disable=W0201
+        label.SetSizerProps(valign='center')
         self._highlight.SetColour(color)
 
     def ok(self, event=None):  # pylint: disable=W0613
         settings, section = self._settings, self._settingsSection
-        settings.set(
-            section, "calendarformat", str(self._spanType.GetSelection())
-        )
-        settings.set(section, "drawnow", str(self._shownow.GetValue()))
+        settings.set(section, 'calendarformat', str(self._spanType.GetSelection()))
+        settings.set(section, 'drawnow', str(self._shownow.GetValue()))
         color = self._highlight.GetColour()
-        settings.set(
-            section,
-            "todaycolor",
-            "%d,%d,%d" % (color.Red(), color.Green(), color.Blue()),
-        )
+        settings.set(section, 'todaycolor',
+                     '%d,%d,%d' % (color.Red(), color.Green(), color.Blue()))
         hdr = 0
         if self._weekNumber.GetValue():
             hdr |= 1
         if self._dates.GetValue():
             hdr |= 2
-        settings.set(section, "headerformat", str(hdr))
+        settings.set(section, 'headerformat', str(hdr))
         self.EndModal(wx.ID_OK)

@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
+# from . import ical
 from taskcoachlib.persistence.icalendar import ical
 from taskcoachlib.domain import task
 from taskcoachlib import meta
@@ -30,13 +32,11 @@ def extendedWithAncestors(selection):
     return extendedSelection
 
 
-class iCalendarWriter(object):
+class iCalendarWriter(object):  # création nouvelle classe
     def __init__(self, fd, filename=None):
         self.__fd = fd
 
-    def write(
-        self, viewer, settings, selectionOnly=False
-    ):  # pylint: disable=W0613
+    def write(self, viewer, settings, selectionOnly=False):  # pylint: disable=W0613
         items = viewer.visibleItems()
         if selectionOnly:
             selection = viewer.curselection()
@@ -46,7 +46,7 @@ class iCalendarWriter(object):
         return self.writeItems(items)
 
     def writeItems(self, items):
-        self.__fd.write("BEGIN:VCALENDAR\r\n")
+        self.__fd.write("BEGIN:VCALENDAR\r\n", )
         self._writeMetaData()
         count = 0
         for item in items:
@@ -55,15 +55,13 @@ class iCalendarWriter(object):
                 if isinstance(item, task.Task)
                 else ical.VCalFromEffort
             )
-            self.__fd.write(transform(item, encoding=False))
+            self.__fd.write(transform(item, encoding=False), )
             count += 1
-        self.__fd.write("END:VCALENDAR\r\n")
+        self.__fd.write("END:VCALENDAR\r\n", )
         return count
 
     def _writeMetaData(self):
-        self.__fd.write("VERSION:2.0\r\n")
+        self.__fd.write("VERSION:2.0\r\n", )
         domain = meta.url[len("http://") :].strip("/")
-        self.__fd.write(
-            "PRODID:-//%s//NONSGML %s V%s//EN\r\n"
-            % (domain, meta.name, meta.version)
-        )
+        self.__fd.write("PRODID:-//%s//NONSGML %s V%s//EN\r\n"
+                        % (domain, meta.name, meta.version), )

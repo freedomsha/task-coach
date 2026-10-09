@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from builtins import str
 from taskcoachlib import (
     meta,
     patterns,
@@ -26,24 +27,39 @@ from taskcoachlib import (
 )
 from taskcoachlib.domain import date
 from taskcoachlib.i18n import _
-from taskcoachlib.thirdparty.pubsub import pub
+
+# try:
+#    from taskcoachlib.thirdparty.pubsub import pub
+# except ImportError:
+#    from wx.lib.pubsub import pub
+from pubsub import pub
 from wx.lib import sized_controls
 import subprocess
 import wx
 
 
-class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
-    def __init__(self, task, taskList, effortList, settings, *args, **kwargs):
+# class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
+class ReminderDialog(patterns.Observer, wx.Dialog):
+    """
+    Reminder dialog with proper tab navigation.
+
+    Uses wx.GridBagSizer for layout to ensure all controls are tabbable.
+    Tab order: OK, then left-to-right, top-to-bottom.
+    """
+
+    def __init__(
+        self, task, task_list, effort_list, settings, parent, *args, **kwargs
+    ):
         kwargs["title"] = _("%(name)s reminder - %(task)s") % dict(
             name=meta.name, task=task.subject(recursive=True)
         )
-        super(ReminderDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.SetIcon(
             wx.ArtProvider.GetIcon("taskcoach", wx.ART_FRAME_ICON, (16, 16))
         )
         self.task = task
-        self.taskList = taskList
-        self.effortList = effortList
+        self.taskList = task_list
+        self.effortList = effort_list
         self.settings = settings
         self.registerObserver(
             self.onTaskRemoved,
@@ -56,6 +72,7 @@ class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
         )
         pub.subscribe(self.onTrackingChanged, task.trackingChangedEventType())
         self.openTaskAfterClose = self.ignoreSnoozeOption = False
+
         pane = self.GetContentsPane()
         pane.SetSizerType("form")
 
@@ -75,7 +92,7 @@ class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
         panel.SetSizerAndFit(sizer)
 
         for label in (
-            _("Reminder date/time") + ":",
+            _("Reminder Date/time") + ":",
             render.dateTime(self.task.reminder()),
             _("Snooze") + ":",
         ):
@@ -121,7 +138,7 @@ class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
         buttonSizer.Add(self.markCompleted, flag=wx.ALIGN_CENTER_VERTICAL)
         self.SetButtonSizer(buttonSizer)
         self.Bind(wx.EVT_CLOSE, self.onClose)
-        self.Bind(wx.EVT_BUTTON, self.onOK, id=self.GetAffirmativeId())
+        self.Bind(wx.EVT_BUTTON, self.onOk, id=self.GetAffirmativeId())
         self.Fit()
         self.RequestUserAttention()
         if self.settings.getboolean("feature", "sayreminder"):
@@ -169,6 +186,13 @@ class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
 
     def onClose(self, event):
         event.Skip()
+        # Safety check - verify controls exist before accessing
+        if (
+            not hasattr(self, "replaceDefaultSnoozeTime")
+            or self.replaceDefaultSnoozeTime is None
+        ):
+            self.removeInstance()
+            return
         replace_default_snooze_time = self.replaceDefaultSnoozeTime.GetValue()
         if replace_default_snooze_time:
             # pylint: disable=E1101
@@ -180,6 +204,6 @@ class ReminderDialog(patterns.Observer, sized_controls.SizedDialog):
         )
         self.removeInstance()
 
-    def onOK(self, event):
+    def onOk(self, event):
         event.Skip()
         self.Close()

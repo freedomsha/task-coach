@@ -16,22 +16,26 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import time, string, datetime, re  # pylint: disable=W0402
-from datetime import timedelta
+import string
+import time
+import datetime
+import re
+
+# import timedelta  # pylint: disable=W0402
+from taskcoachlib.domain.date import timedelta
 from taskcoachlib import patterns
 from .fix import StrftimeFix
-
 
 infinite = datetime.date.max
 
 
 class RealDate(StrftimeFix, datetime.date):
     def __add__(self, delta):
-        newdate = super(RealDate, self).__add__(delta)
+        newdate = super().__add__(delta)
         return RealDate(newdate.year, newdate.month, newdate.day)
 
     def __sub__(self, other):
-        newdate = super(RealDate, self).__sub__(other)
+        newdate = super().__sub__(other)
         if isinstance(newdate, datetime.timedelta):
             return timedelta.TimeDelta(
                 newdate.days, newdate.seconds, newdate.microseconds
@@ -42,8 +46,11 @@ class RealDate(StrftimeFix, datetime.date):
 
 class InfiniteDate(datetime.date, metaclass=patterns.Singleton):
     def __new__(self):
-        return super(InfiniteDate, self).__new__(
-            InfiniteDate, infinite.year, infinite.month, infinite.day
+        return super().__new__(
+            InfiniteDate,
+            infinite.year,
+            infinite.month,
+            infinite.day,
         )
 
     def _getyear(self):
@@ -80,7 +87,9 @@ class InfiniteDate(datetime.date, metaclass=patterns.Singleton):
 
 def parseDate(dateString, default=None):
     try:
-        return Date(*[string.atoi(part) for part in dateString.split("-")])
+        # return Date(*[int(part) for part in dateString.split('-')])
+        return Date(*[int(part) for part in dateString.split("-")])
+        # return Date(*[string.atoi(part) for part in dateString.split("-")])
     except ValueError:
         if default:
             return default

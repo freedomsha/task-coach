@@ -16,14 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+import io
 from taskcoachlib import persistence, config
 from taskcoachlib.domain import task, date
-import test
-import os
-from unittests import dummy
+from .. import dummy
+from ... import tctest
 
 
-class AutoExporterTestCase(test.TestCase):
+class AutoExporterTestCase(tctest.TestCase):
     def setUp(self):
         task.Task.settings = self.settings = config.Settings(load=False)
         self.exporter = persistence.AutoImporterExporter(self.settings)
@@ -33,7 +34,7 @@ class AutoExporterTestCase(test.TestCase):
         self.taskFile.setFilename(self.tskFilename)
 
     def tearDown(self):
-        super(AutoExporterTestCase, self).tearDown()
+        super().tearDown()
         del self.exporter
         for filename in (
             self.tskFilename,
@@ -53,9 +54,9 @@ class AutoExporterTestCase(test.TestCase):
         theTask = task.Task(subject="Some task")
         self.taskFile.tasks().append(theTask)
         autosaver.on_idle(dummy.Event())
+        # self.assertEqual('Some task tcid:%s\n' % theTask.id(), file(self.txtFilename, 'r').read())
         self.assertEqual(
-            "Some task tcid:%s\n" % theTask.id(),
-            open(self.txtFilename, "r").read(),
+            "Some task tcid:%s\n" % theTask.id(), io.open(self.txtFilename, "r").read()
         )
 
     def testAddOneTaskAndSaveManually(self):
@@ -63,25 +64,25 @@ class AutoExporterTestCase(test.TestCase):
         theTask = task.Task(subject="Whatever")
         self.taskFile.tasks().append(theTask)
         self.taskFile.save()
+        # self.assertEqual('Whatever tcid:%s\n' % theTask.id(), file(self.txtFilename, 'r').read())
         self.assertEqual(
-            "Whatever tcid:%s\n" % theTask.id(),
-            open(self.txtFilename, "r").read(),
+            "Whatever tcid:%s\n" % theTask.id(), io.open(self.txtFilename, "r").read()
         )
 
     def testImportOneTaskWhenSavingManually(self):
         self.settings.set("file", "autoimport", '["Todo.txt"]')
-        with open(self.txtFilename, "w") as todoTxtFile:
+        # with file(self.txtFilename, 'w') as todoTxtFile:
+        with io.open(self.txtFilename, "w") as todoTxtFile:
             todoTxtFile.write("Imported task\n")
         self.taskFile.save()
-        self.assertEqual(
-            "Imported task", list(self.taskFile.tasks())[0].subject()
-        )
+        self.assertEqual("Imported task", list(self.taskFile.tasks())[0].subject())
 
     def testImportOneTaskWhenAutoSaving(self):
         self.settings.set("file", "autoimport", '["Todo.txt"]')
         self.settings.set("file", "autosave", "True")
         autosaver = persistence.AutoSaver(self.settings)
-        with open(self.txtFilename, "w") as todoTxtFile:
+        # with file(self.txtFilename, 'w') as todoTxtFile:
+        with io.open(self.txtFilename, "w") as todoTxtFile:
             todoTxtFile.write("Imported task\n")
         self.taskFile.tasks().append(task.Task(subject="Some task"))
         autosaver.on_idle(dummy.Event())
@@ -90,12 +91,11 @@ class AutoExporterTestCase(test.TestCase):
     def testImportAfterReadingTaskFile(self):
         self.taskFile.save()
         self.settings.set("file", "autoimport", '["Todo.txt"]')
-        with open(self.txtFilename, "w") as todoTxtFile:
+        # with file(self.txtFilename, 'w') as todoTxtFile:
+        with io.open(self.txtFilename, "w") as todoTxtFile:
             todoTxtFile.write("Imported task\n")
         self.taskFile.load()
-        self.assertEqual(
-            "Imported task", list(self.taskFile.tasks())[0].subject()
-        )
+        self.assertEqual("Imported task", list(self.taskFile.tasks())[0].subject())
 
     def testSaveWithAutoImportWhenFileToImportDoesNotExist(self):
         self.settings.set("file", "autoimport", '["Todo.txt"]')

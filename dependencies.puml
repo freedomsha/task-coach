@@ -1,0 +1,7 @@
+@startuml
+skinparam rankdir LR
+"pymake" --> "setup"
+"release" --> "setup"
+"tests-py2.releasetests.EmptyFileTest" --> "setup"
+"tests-py2.releasetests.LineEndingsTest" --> "setup"
+@enduml

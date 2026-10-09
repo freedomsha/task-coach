@@ -16,17 +16,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from future import standard_library
+# from builtins import object
 import io
-import test
 from taskcoachlib import persistence, gui, config, render
 from taskcoachlib.domain import task, effort, date
+from ... import tctest
+
+# standard_library.install_aliases()
 
 
-class CSVWriterTestCase(test.wxTestCase):
+class CSVWriterTestCase(tctest.wxTestCase):
     treeMode = "Subclass responsibility"
 
     def setUp(self):
-        super(CSVWriterTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         self.fd = io.StringIO()
         self.writer = persistence.CSVWriter(self.fd)
@@ -36,20 +40,16 @@ class CSVWriterTestCase(test.wxTestCase):
         self.createViewer()
 
     def tearDown(self):
-        super(CSVWriterTestCase, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
     def createViewer(self):
         self.settings.set("taskviewer", "treemode", self.treeMode)
         # pylint: disable=W0201
-        self.viewer = gui.viewer.TaskViewer(
-            self.frame, self.taskFile, self.settings
-        )
+        self.viewer = gui.viewer.TaskViewer(self.frame, self.taskFile, self.settings)
 
-    def __writeAndRead(
-        self, selectionOnly, separateDateAndTimeColumns, columns
-    ):
+    def __writeAndRead(self, selectionOnly, separateDateAndTimeColumns, columns):
         self.writer.write(
             self.viewer,
             self.settings,
@@ -66,12 +66,8 @@ class CSVWriterTestCase(test.wxTestCase):
         separateDateAndTimeColumns=False,
         columns=None,
     ):
-        csv = self.__writeAndRead(
-            selectionOnly, separateDateAndTimeColumns, columns
-        )
-        self.assertTrue(
-            csvFragment in csv, "%s not in %s" % (csvFragment, csv)
-        )
+        csv = self.__writeAndRead(selectionOnly, separateDateAndTimeColumns, columns)
+        self.failUnless(csvFragment in csv, "%s not in %s" % (csvFragment, csv))
 
     def expectNotInCSV(
         self,
@@ -80,10 +76,8 @@ class CSVWriterTestCase(test.wxTestCase):
         separateDateAndTimeColumns=False,
         columns=None,
     ):
-        csv = self.__writeAndRead(
-            selectionOnly, separateDateAndTimeColumns, columns
-        )
-        self.assertFalse(csvFragment in csv, "%s in %s" % (csvFragment, csv))
+        csv = self.__writeAndRead(selectionOnly, separateDateAndTimeColumns, columns)
+        self.failIf(csvFragment in csv, "%s in %s" % (csvFragment, csv))
 
     def selectItem(self, items):
         self.viewer.select(items)
@@ -114,10 +108,7 @@ class TaskTestsMixin(object):
         self.task.setPlannedStartDateTime(plannedStartDateTime)
         self.expectInCSV(
             ",".join(
-                (
-                    render.date(plannedStartDateTime),
-                    render.time(plannedStartDateTime),
-                )
+                (render.date(plannedStartDateTime), render.time(plannedStartDateTime))
             ),
             separateDateAndTimeColumns=True,
         )
@@ -127,10 +118,7 @@ class TaskTestsMixin(object):
         self.task.setPlannedStartDateTime(plannedStartDateTime)
         self.expectInCSV(
             ",".join(
-                (
-                    render.date(plannedStartDateTime),
-                    render.time(plannedStartDateTime),
-                )
+                (render.date(plannedStartDateTime), render.time(plannedStartDateTime))
             ),
             separateDateAndTimeColumns=True,
         )
@@ -140,10 +128,7 @@ class TaskTestsMixin(object):
         self.task.setPlannedStartDateTime(plannedStartDateTime)
         self.expectInCSV(
             " ".join(
-                (
-                    render.date(plannedStartDateTime),
-                    render.time(plannedStartDateTime),
-                )
+                (render.date(plannedStartDateTime), render.time(plannedStartDateTime))
             ),
             separateDateAndTimeColumns=False,
         )
@@ -151,18 +136,14 @@ class TaskTestsMixin(object):
     def testDontWriteDefaultDateTimes(self):
         defaultDateTime = date.DateTime()
         self.expectNotInCSV(
-            " ".join(
-                [render.date(defaultDateTime), render.time(defaultDateTime)]
-            ),
+            " ".join([render.date(defaultDateTime), render.time(defaultDateTime)]),
             separateDateAndTimeColumns=False,
         )
 
     def testDontWriteDefaultDateTimesWithSeparatedDateAndTimeColumns(self):
         defaultDateTime = date.DateTime()
         self.expectNotInCSV(
-            ",".join(
-                [render.date(defaultDateTime), render.time(defaultDateTime)]
-            ),
+            ",".join([render.date(defaultDateTime), render.time(defaultDateTime)]),
             separateDateAndTimeColumns=True,
         )
 
@@ -322,25 +303,21 @@ class TaskTestsMixin(object):
 
     def testMissingCreationDateTime(self):
         self.viewer.showColumnByName("creationDateTime")
-        self.taskFile.tasks().append(
-            task.Task(creationDateTime=date.DateTime.min)
-        )
+        self.taskFile.tasks().append(task.Task(creationDateTime=date.DateTime.min))
         self.taskFile.tasks().remove(self.task)
-        self.expectInCSV(",,,")  # No 1/1/1 for the missing creation date
+        self.expectInCSV(",,,")  # No 1/1/1 for the missing creation Date
 
     def testModificationDateTime(self):
         self.viewer.showColumnByName("modificationDateTime")
         self.task.setModificationDateTime(date.DateTime(2013, 1, 1, 12, 0, 0))
         self.expectInCSV(
-            render.dateTime(
-                self.task.modificationDateTime(), humanReadable=False
-            )
+            render.dateTime(self.task.modificationDateTime(), humanReadable=False)
         )
 
     def testMissingModificationDateTime(self):
         self.viewer.showColumnByName("modificationDateTime")
         self.task.setModificationDateTime(date.DateTime.min)
-        self.expectInCSV(",,,")  # No 1/1/1 for the missing creation date
+        self.expectInCSV(",,,")  # No 1/1/1 for the missing creation Date
 
 
 class CSVListWriterTest(TaskTestsMixin, CSVWriterTestCase):
@@ -363,18 +340,14 @@ class CSVTreeWriterTest(TaskTestsMixin, CSVWriterTestCase):
 
 class EffortWriterTest(CSVWriterTestCase):
     def setUp(self):
-        super(EffortWriterTest, self).setUp()
+        super().setUp()
         now = date.DateTime.now()
-        self.effort = effort.Effort(
-            self.task, start=now, stop=now + date.ONE_SECOND
-        )
+        self.effort = effort.Effort(self.task, start=now, stop=now + date.ONE_SECOND)
         self.task.addEffort(self.effort)
 
     def createViewer(self):
         # pylint: disable=W0201
-        self.viewer = gui.viewer.EffortViewer(
-            self.frame, self.taskFile, self.settings
-        )
+        self.viewer = gui.viewer.EffortViewer(self.frame, self.taskFile, self.settings)
 
     def testTaskSubject(self):
         self.expectInCSV("Task subject,")
@@ -383,30 +356,22 @@ class EffortWriterTest(CSVWriterTestCase):
         self.expectInCSV(",0:00:01")
 
     def testEffortPerDay(self):
-        self.settings.settext(
-            self.viewer.settingsSection(), "aggregation", "day"
-        )
+        self.settings.settext(self.viewer.settingsSection(), "aggregation", "day")
         self.expectInCSV("Total")
 
     def testEffortPerDay_SelectionOnly_EmptySelection(self):
-        self.settings.settext(
-            self.viewer.settingsSection(), "aggregation", "day"
-        )
+        self.settings.settext(self.viewer.settingsSection(), "aggregation", "day")
         self.expectNotInCSV("Total", selectionOnly=True)
 
     def testEffortPerDay_SelectionOnly_SelectAll(self):
-        self.settings.settext(
-            self.viewer.settingsSection(), "aggregation", "day"
-        )
+        self.settings.settext(self.viewer.settingsSection(), "aggregation", "day")
         self.viewer.widget.select_all()
         self.viewer.updateSelection()
         self.expectInCSV("Total", selectionOnly=True)
 
     def testExportAllColumns_NoSplit(self):
         self.expectInCSV(
-            render.dateTimePeriod(
-                self.effort.getStart(), self.effort.getStop()
-            ),
+            render.dateTimePeriod(self.effort.getStart(), self.effort.getStop()),
             columns=self.viewer.selectableColumns(),
         )
 
@@ -414,9 +379,9 @@ class EffortWriterTest(CSVWriterTestCase):
         self.expectInCSV(
             "%s,%s,%s,%s"
             % (
-                render.date(self.effort.getStart().date()),
+                render.date(self.effort.getStart().Date()),
                 render.time(self.effort.getStart().time()),
-                render.date(self.effort.getStop().date()),
+                render.date(self.effort.getStop().Date()),
                 render.time(self.effort.getStop().time()),
             ),
             separateDateAndTimeColumns=True,
@@ -427,33 +392,25 @@ class EffortWriterTest(CSVWriterTestCase):
 class EffortWriterRenderTest(CSVWriterTestCase):
     def createViewer(self):
         # pylint: disable=W0201
-        self.viewer = gui.viewer.EffortViewer(
-            self.frame, self.taskFile, self.settings
-        )
+        self.viewer = gui.viewer.EffortViewer(self.frame, self.taskFile, self.settings)
 
     def testToday(self):
         midnight = date.Now().startOfDay()
         self.task.addEffort(
-            effort.Effort(
-                self.task, start=midnight, stop=midnight + date.TWO_HOURS
-            )
+            effort.Effort(self.task, start=midnight, stop=midnight + date.TWO_HOURS)
         )
         self.expectNotInCSV("Today")
 
     def testTomorrow(self):
         midnight = date.Tomorrow().startOfDay()
         self.task.addEffort(
-            effort.Effort(
-                self.task, start=midnight, stop=midnight + date.TWO_HOURS
-            )
+            effort.Effort(self.task, start=midnight, stop=midnight + date.TWO_HOURS)
         )
         self.expectNotInCSV("Tomorrow")
 
     def testYesterday(self):
         midnight = date.Yesterday().startOfDay()
         self.task.addEffort(
-            effort.Effort(
-                self.task, start=midnight, stop=midnight + date.TWO_HOURS
-            )
+            effort.Effort(self.task, start=midnight, stop=midnight + date.TWO_HOURS)
         )
         self.expectNotInCSV("Today")

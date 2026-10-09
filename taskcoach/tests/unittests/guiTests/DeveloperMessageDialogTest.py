@@ -16,12 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from ... import tctest
 from taskcoachlib import config
 from taskcoachlib.gui.dialog import developer_message
-import test
 
 
-class DeveloperMessageDialogTest(test.TestCase):
+class DeveloperMessageDialogTest(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
         self.dialog = developer_message.MessageDialog(
@@ -36,8 +36,5 @@ class DeveloperMessageDialogTest(test.TestCase):
     def testDialogContainsURL(self):
         self.assertEqual(
             "http://a.b",
-            self.dialog.GetChildren()[0]
-            .GetChildren()[1]
-            .GetChildren()[1]
-            .GetURL(),
+            self.dialog.GetChildren()[0].GetChildren()[1].GetChildren()[1].GetURL(),
         )

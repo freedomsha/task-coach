@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Cleanup the htdocs subdirectory where the buildbot stores the
 # distribution files (only keep 2 latest versions). Run from cron.
 
-import os, re
+import os
+import re
 
 
 def cleanup(path, rx):

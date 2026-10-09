@@ -17,27 +17,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import wx
-import test
-from unittests import dummy
-from taskcoachlib import gui, config
+from ... import tctest
+from .. import dummy
+from taskcoachlib import gui as gui
+from taskcoachlib import config
+import taskcoachlib.gui.toolbar
 
 
 class ToolBar(gui.toolbar.ToolBar):
+
     def uiCommands(self, cache=True):
         return []
 
 
-class ToolBarTest(test.wxTestCase):
+class ToolBarTest(tctest.wxTestCase):
+    def setUp(self):
+        """
+        Initialisation de l'application et de la fenêtre
+
+        Returns :
+
+        """
+        # app = wx.App(False)
+        # self.frame = wx.Frame(None)
+        gui.init()  # Créer l'application wxPython et une fenêtre
+        self.settings = config.Settings(load=False)
+        # Création d'une instance de la classe 'ToolBar'
+        self.toolbar = ToolBar(self.frame, self.settings)
+
     def testAppendUICommand(self):
-        gui.init()
-        settings = config.Settings(load=False)
-        toolbar = ToolBar(self.frame, settings)
+        # gui.init()
+        # settings = config.Settings(load=False)
+        # toolbar = ToolBar(self.frame, settings)
+
+        # Ajouter une assertion supplémentaire pour vérifier que l'outil a été ajouté avec succés
         uiCommand = dummy.DummyUICommand(menuText="undo", bitmap="undo")
-        toolId = toolbar.appendUICommand(uiCommand)
-        self.assertNotEqual(wx.NOT_FOUND, toolbar.GetToolPos(toolId))
+        toolId = self.toolbar.appendUICommand(uiCommand)
+        self.assertNotEqual(wx.NOT_FOUND, toolId, "L'outil n'a pas été correctement ajouté à la barre d'outils")
+
+        # Vérifiez si l'outil est effectivement ajouté
+        pos = self.toolbar.GetToolPos(toolId)
+        self.assertNotEqual(pos, wx.NOT_FOUND, f"L'outil avec l'ID {toolId} "
+                                               f"n'a pas été trouvé dans le barre d'outils")
+
+        self.assertNotEqual(wx.NOT_FOUND, self.toolbar.GetToolPos(toolId))
 
 
-class ToolBarSizeTest(test.wxTestCase):
+class ToolBarSizeTest(tctest.wxTestCase):
     def testSizeDefault(self):
         self.createToolBarAndTestSize(None, (32, 32))
 
@@ -61,13 +87,13 @@ class ToolBarSizeTest(test.wxTestCase):
         self.assertEqual(wx.Size(*expectedSize), toolbar.GetToolBitmapSize())
 
 
-class ToolBarPerspectiveTest(test.wxTestCase):
+class ToolBarPerspectiveTest(tctest.wxTestCase):
     def setUp(self):
         class NoBitmapUICommand(dummy.DummyUICommand):
             def appendToToolBar(self, toolbar):
                 pass
 
-        class TestFrame(test.TestCaseFrame):
+        class TestFrame(tctest.TestCaseFrame):
             def createToolBarUICommands(self):
                 class Test1(NoBitmapUICommand):
                     pass

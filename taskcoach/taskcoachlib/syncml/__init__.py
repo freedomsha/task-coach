@@ -14,9 +14,6 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-"""
 
 Classes for synchronization with a SyncML server (tested with
 Funambol). This makes use of a Python wrapper for the Funambol C++ API

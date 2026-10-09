@@ -17,12 +17,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import tempfile
-import test
+from ... import tctest
 from taskcoachlib import persistence, config
 from taskcoachlib.domain import task, category, date
 
 
-class CSVReaderTestCase(test.TestCase):
+class CSVReaderTestCase(tctest.TestCase):
     def setUp(self):
         task.Task.settings = config.Settings(load=False)
         self.taskList = task.TaskList()
@@ -38,19 +38,17 @@ class CSVReaderTestCase(test.TestCase):
 
     def createCSVFile(self, contents):
         with tempfile.NamedTemporaryFile(delete=False) as tmpFile:
-            tmpFile.write(contents)
+            tmpFile.write(contents)  # TypeError: a bytes-like object is required, not 'str'
         return tmpFile.name
 
     def testTwoTasksWithSubject(self):
         filename = self.createCSVFile("Subject 1\nSubject 2\n")
         self.reader.read(
-            filename=filename,
-            mappings={0: "Subject"},
-            **self.defaultReaderKwArgs
+            filename=filename, mappings={0: "Subject"}, **self.defaultReaderKwArgs
         )
+        # self.assertEqual(set(['Subject 1', 'Subject 2']),
         self.assertEqual(
-            set(["Subject 1", "Subject 2"]),
-            set([t.subject() for t in self.taskList]),
+            {"Subject 1", "Subject 2"}, set([t.subject() for t in self.taskList])
         )
 
     def testTwoTasksWithSubjectAndDescription(self):
@@ -62,13 +60,9 @@ class CSVReaderTestCase(test.TestCase):
             mappings={0: "Subject", 1: "Description"},
             **self.defaultReaderKwArgs
         )
+        # self.assertEqual(set([('Subject 1', 'Description 1\n'),
         self.assertEqual(
-            set(
-                [
-                    ("Subject 1", "Description 1\n"),
-                    ("Subject 2", "Description 2\n"),
-                ]
-            ),
+            {("Subject 1", "Description 1\n"), ("Subject 2", "Description 2\n")},
             set([(t.subject(), t.description()) for t in self.taskList]),
         )
 
@@ -76,7 +70,7 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,2011-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Planned start date"},
+            mappings={0: "Subject", 1: "Planned start Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
@@ -88,7 +82,7 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,2011-6-30 12:00\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Planned start date"},
+            mappings={0: "Subject", 1: "Planned start Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
@@ -100,18 +94,16 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Planned start date"},
+            mappings={0: "Subject", 1: "Planned start Date"},
             **self.defaultReaderKwArgs
         )
-        self.assertEqual(
-            date.DateTime(), list(self.taskList)[0].plannedStartDateTime()
-        )
+        self.assertEqual(date.DateTime(), list(self.taskList)[0].plannedStartDateTime())
 
     def testTaskWithActualStartDate(self):
         filename = self.createCSVFile("Subject,2011-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Actual start date"},
+            mappings={0: "Subject", 1: "Actual start Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
@@ -123,7 +115,7 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,2011-6-30 12:00\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Actual start date"},
+            mappings={0: "Subject", 1: "Actual start Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
@@ -135,42 +127,38 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Actual start date"},
+            mappings={0: "Subject", 1: "Actual start Date"},
             **self.defaultReaderKwArgs
         )
-        self.assertEqual(
-            date.DateTime(), list(self.taskList)[0].actualStartDateTime()
-        )
+        self.assertEqual(date.DateTime(), list(self.taskList)[0].actualStartDateTime())
 
     def testTaskWithDueDate(self):
         filename = self.createCSVFile("Subject,2011-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Due date"},
+            mappings={0: "Subject", 1: "Due Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
-            date.DateTime(2011, 6, 30, 23, 59, 59),
-            list(self.taskList)[0].dueDateTime(),
+            date.DateTime(2011, 6, 30, 23, 59, 59), list(self.taskList)[0].dueDateTime()
         )
 
     def testTaskWithDueDateTime(self):
         filename = self.createCSVFile("Subject,2011-6-30 1:34:01 pm\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Due date"},
+            mappings={0: "Subject", 1: "Due Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
-            date.DateTime(2011, 6, 30, 13, 34, 1),
-            list(self.taskList)[0].dueDateTime(),
+            date.DateTime(2011, 6, 30, 13, 34, 1), list(self.taskList)[0].dueDateTime()
         )
 
     def testTaskWithCompletionDate(self):
         filename = self.createCSVFile("Subject,2011-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Completion date"},
+            mappings={0: "Subject", 1: "Completion Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
@@ -182,7 +170,7 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,1:33 am 2011-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Completion date"},
+            mappings={0: "Subject", 1: "Completion Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
@@ -194,24 +182,22 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("Subject,2012-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Reminder date"},
+            mappings={0: "Subject", 1: "Reminder Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
-            date.DateTime(2012, 6, 30, 0, 0, 0),
-            list(self.taskList)[0].reminder(),
+            date.DateTime(2012, 6, 30, 0, 0, 0), list(self.taskList)[0].reminder()
         )
 
     def testTaskWithReminderDateTime(self):
         filename = self.createCSVFile("Subject,12:31 2012-6-30\n")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Reminder date"},
+            mappings={0: "Subject", 1: "Reminder Date"},
             **self.defaultReaderKwArgs
         )
         self.assertEqual(
-            date.DateTime(2012, 6, 30, 12, 31, 0),
-            list(self.taskList)[0].reminder(),
+            date.DateTime(2012, 6, 30, 12, 31, 0), list(self.taskList)[0].reminder()
         )
 
     def testTaskWithHourMinuteBudget(self):
@@ -286,7 +272,7 @@ class CSVReaderTestCase(test.TestCase):
         )
         newTask = list(self.taskList)[0]
         self.assertEqual(100, newTask.percentageComplete())
-        self.assertTrue(newTask.completed())
+        self.failUnless(newTask.completed())
 
     def testTwoTasksWithPriority(self):
         filename = self.createCSVFile("Subject 1,123\nSubject 2,-3")
@@ -301,9 +287,7 @@ class CSVReaderTestCase(test.TestCase):
         )
 
     def testTwoTasksWithTheSameCategory(self):
-        filename = self.createCSVFile(
-            "Subject 1,Category\nSubject 2,Category\n"
-        )
+        filename = self.createCSVFile("Subject 1,Category\nSubject 2,Category\n")
         self.reader.read(
             filename=filename,
             mappings={0: "Subject", 1: "Category"},
@@ -311,9 +295,9 @@ class CSVReaderTestCase(test.TestCase):
         )
         self.assertEqual(1, len(self.categoryList))
         newCategory = list(self.categoryList)[0]
+        # self.assertEqual([set([newCategory]), set([newCategory])],
         self.assertEqual(
-            [set([newCategory]), set([newCategory])],
-            [t.categories() for t in self.taskList],
+            [{newCategory}, {newCategory}], [t.categories() for t in self.taskList]
         )
 
     def testTwoTasksWithCategoryAndSubcategory(self):
@@ -328,17 +312,13 @@ class CSVReaderTestCase(test.TestCase):
         self.assertEqual(2, len(self.categoryList))
         parentCategory = [c for c in self.categoryList if not c.parent()][0]
         childCategory = parentCategory.children()[0]
-        self.assertEqual(
-            "Subject 1", list(childCategory.categorizables())[0].subject()
-        )
+        self.assertEqual("Subject 1", list(childCategory.categorizables())[0].subject())
         self.assertEqual(
             "Subject 2", list(parentCategory.categorizables())[0].subject()
         )
 
     def testHierarchy(self):
-        filename = self.createCSVFile(
-            "Subject 1,1\nSubject 1.1,1.1\nSubject 1.2,1.2\n"
-        )
+        filename = self.createCSVFile("Subject 1,1\nSubject 1.1,1.1\nSubject 1.2,1.2\n")
         self.reader.read(
             filename=filename,
             mappings={0: "Subject", 1: "ID"},
@@ -351,21 +331,19 @@ class CSVReaderTestCase(test.TestCase):
         filename = self.createCSVFile("T1,30-6-2011\nT2,1-1-2011\nT3,4-4-2011")
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Due date"},
+            mappings={0: "Subject", 1: "Due Date"},
             **self.defaultReaderKwArgs
         )
-        self.assertEqual(
-            set([1, 4, 6]), set(t.dueDateTime().month for t in self.taskList)
-        )
+        # self.assertEqual(set([1,4,6]), set(t.dueDateTime().month for t in self.taskList))
+        self.assertEqual({1, 4, 6}, set(t.dueDateTime().month for t in self.taskList))
 
     def testMonthFirstDates(self):
         filename = self.createCSVFile("T1,3-6-2011\nT2,1-1-2011\nT3,4-20-2011")
         self.defaultReaderKwArgs["dayfirst"] = False
         self.reader.read(
             filename=filename,
-            mappings={0: "Subject", 1: "Due date"},
+            mappings={0: "Subject", 1: "Due Date"},
             **self.defaultReaderKwArgs
         )
-        self.assertEqual(
-            set([1, 3, 4]), set(t.dueDateTime().month for t in self.taskList)
-        )
+        # self.assertEqual(set([1,3,4]), set(t.dueDateTime().month for t in self.taskList))
+        self.assertEqual({1, 3, 4}, set(t.dueDateTime().month for t in self.taskList))

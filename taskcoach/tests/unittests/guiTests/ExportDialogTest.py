@@ -16,10 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
-from taskcoachlib.gui import dialog
-from taskcoachlib import config
+# from builtins import object
 from wx.lib import sized_controls
+from ... import tctest
+from taskcoachlib import config
+from taskcoachlib.gui import dialog
 
 
 class DummyColumn(object):
@@ -30,7 +31,8 @@ class DummyColumn(object):
         return self.__name
 
     def header(self):
-        return 'dummy column "%s"' % self.__name
+        # return 'dummy column "%s"' % self.__name
+        return f'dummy column "{self.__name}"'
 
 
 class DummyViewer(object):
@@ -65,14 +67,14 @@ class DummyViewerContainer(object):
             raise IndexError
 
 
-class ExportDialogTest(test.wxTestCase):
+class ExportDialogTest(tctest.wxTestCase):
     def testCreate(self):
         self.frame.viewer = DummyViewerContainer()
         settings = config.Settings(load=False)
         dialog.export.ExportAsHTMLDialog(self.frame, settings=settings)
 
 
-class ColumnPickerTest(test.wxTestCase):
+class ColumnPickerTest(tctest.wxTestCase):
     def testCreate(self):
         panel = sized_controls.SizedPanel(self.frame)
         dialog.export.ColumnPicker(panel, DummyViewer())

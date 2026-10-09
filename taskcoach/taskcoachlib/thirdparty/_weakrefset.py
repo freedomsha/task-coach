@@ -2,7 +2,11 @@
 # This code is separated-out because it is needed
 # by abc.py to load everything else at startup.
 
-from _weakref import ref
+# from builtins import object
+# from _weakref import ref
+from weakref import ref
+
+# from weakref import WeakSet
 
 __all__ = ["WeakSet"]
 
@@ -52,10 +56,10 @@ class WeakSet(object):
             self.update(data)
 
     def _commit_removals(self):
-        l = self._pending_removals
+        to_remove = self._pending_removals
         discard = self.data.discard
-        while l:
-            discard(l.pop())
+        while to_remove:
+            discard(to_remove.pop())
 
     def __iter__(self):
         with _IterationGuard(self):

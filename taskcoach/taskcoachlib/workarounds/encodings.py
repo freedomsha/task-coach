@@ -21,15 +21,12 @@ import codecs
 
 def encalias(oldname, newname):
     old = codecs.lookup(oldname)
-    new = codecs.CodecInfo(
-        old.encode,
-        old.decode,
-        streamreader=old.streamreader,
-        streamwriter=old.streamwriter,
-        incrementalencoder=old.incrementalencoder,
-        incrementaldecoder=old.incrementaldecoder,
-        name=newname,
-    )
+    new = codecs.CodecInfo(old.encode, old.decode,
+                           streamreader=old.streamreader,
+                           streamwriter=old.streamwriter,
+                           incrementalencoder=old.incrementalencoder,
+                           incrementaldecoder=old.incrementaldecoder,
+                           name=newname)
 
     def searcher(aname):
         if aname == newname:

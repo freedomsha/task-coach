@@ -16,10 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 from win32file import *
 from win32con import *
 from win32event import *
-import os, threading
+import os
+import threading
+# from . import base
 from taskcoachlib.filesystem import base
 
 
@@ -31,40 +34,30 @@ class DirectoryWatcher(object):
     RENAMED_NEW = 5
 
     def __init__(self, path):
-        super(DirectoryWatcher, self).__init__()
+        super().__init__()
 
-        self.dirHandle = CreateFile(
-            path,
-            GENERIC_READ,
-            FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
-            None,
-            OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-            0,
-        )
+        self.dirHandle = CreateFile(path,
+                                    GENERIC_READ,
+                                    FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
+                                    None,
+                                    OPEN_EXISTING,
+                                    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+                                    0)
         self.buffer = AllocateReadBuffer(8192)
         self.overlapped = OVERLAPPED()
         self.overlapped.hEvent = CreateEvent(None, False, False, None)
 
     def wait(self, recurse=False, timeout=INFINITE):
-        ReadDirectoryChangesW(
-            self.dirHandle,
-            self.buffer,
-            recurse,
-            FILE_NOTIFY_CHANGE_FILE_NAME
-            | FILE_NOTIFY_CHANGE_DIR_NAME
-            | FILE_NOTIFY_CHANGE_ATTRIBUTES
-            | FILE_NOTIFY_CHANGE_SIZE
-            | FILE_NOTIFY_CHANGE_LAST_WRITE,
-            self.overlapped,
-        )
+        ReadDirectoryChangesW(self.dirHandle, self.buffer, recurse,
+                              FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
+                              FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
+                              FILE_NOTIFY_CHANGE_LAST_WRITE,
+                              self.overlapped)
 
         rc = WaitForSingleObject(self.overlapped.hEvent, timeout)
         if rc == WAIT_OBJECT_0:
             try:
-                size = GetOverlappedResult(
-                    self.dirHandle, self.overlapped, True
-                )
+                size = GetOverlappedResult(self.dirHandle, self.overlapped, True)
             except Exception as e:
                 if e.args[0] == 995:
                     return None
@@ -80,7 +73,7 @@ class DirectoryWatcher(object):
 
 class FilesystemNotifier(base.NotifierBase):
     def __init__(self):
-        super(FilesystemNotifier, self).__init__()
+        super().__init__()
 
         self.watcher = None
         self.thread = None
@@ -94,11 +87,12 @@ class FilesystemNotifier(base.NotifierBase):
                 self.thread.join()
                 self.watcher = None
                 self.thread = None
-            super(FilesystemNotifier, self).setFilename(filename)
+            super().setFilename(filename)
             if self._filename:
                 self.watcher = DirectoryWatcher(self._path)
                 self.thread = threading.Thread(target=self._run)
-                self.thread.setDaemon(True)
+                # self.thread.setDaemon(True)  # setDaemon() is deprecated, set the daemon attribute instead
+                self.thread.daemon = True  # du coup, j'ajoute ceci.
                 self.thread.start()
         finally:
             self.lock.release()
@@ -116,7 +110,7 @@ class FilesystemNotifier(base.NotifierBase):
 
     def saved(self):
         with self.lock:
-            super(FilesystemNotifier, self).saved()
+            super().saved()
 
     def onFileChanged(self):
         raise NotImplementedError

@@ -102,7 +102,7 @@ modification follow.</p>
 
 <p>&ldquo;Copyright&rdquo; also means copyright-like laws that apply to other kinds of
 works, such as semiconductor masks.</p>
- 
+
 
 <p>&ldquo;The Program&rdquo; refers to any copyrightable work licensed under this
 License.  Each licensee is addressed as &ldquo;you&rdquo;.  &ldquo;Licensees&rdquo; and
@@ -240,7 +240,7 @@ terms of section 4, provided that you also meet all of these conditions:</p>
 
 <ul>
 <li>a) The work must carry prominent notices stating that you modified
-    it, and giving a relevant date.</li>
+    it, and giving a relevant Date.</li>
 
 <li>b) The work must carry prominent notices stating that it is
     released under this License and any conditions added under section
@@ -449,7 +449,7 @@ paragraph of section 11).</p>
 license from a particular copyright holder is reinstated (a)
 provisionally, unless and until the copyright holder explicitly and
 finally terminates your license, and (b) permanently, if the copyright
-holder fails to notify you of the violation by some reasonable means
+holder fails to Notify you of the violation by some reasonable means
 prior to 60 days after the cessation.</p>
 
 <p>Moreover, your license from a particular copyright holder is
@@ -543,7 +543,7 @@ covered work in a country, or your recipient's use of the covered work
 in a country, would infringe one or more identifiable patents in that
 country that you have reason to believe are valid.</p>
 
-  
+
 <p>If, pursuant to or in connection with a single transaction or
 arrangement, you convey, or propagate by procuring conveyance of, a
 covered work, and grant a patent license to some of the parties
@@ -708,7 +708,8 @@ into proprietary programs.  If your program is a subroutine library, you
 may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
-&lt;<a href="http://www.gnu.org/philosophy/why-not-lgpl.html">http://www.gnu.org/philosophy/why-not-lgpl.html</a>&gt;.</p>
+&lt;<a href="http://www.gnu.org/philosophy/why-not-lgpl.html">
+http://www.gnu.org/philosophy/why-not-lgpl.html</a>&gt;.</p>
 
 
 </body></html>
@@ -930,7 +931,7 @@ produce it from the Program, in the form of source code under the
 terms of section 4, provided that you also meet all of these conditions:
 
     a) The work must carry prominent notices stating that you modified
-    it, and giving a relevant date.
+    it, and giving a relevant Date.
 
     b) The work must carry prominent notices stating that it is
     released under this License and any conditions added under section
@@ -1134,7 +1135,7 @@ paragraph of section 11).
 license from a particular copyright holder is reinstated (a)
 provisionally, unless and until the copyright holder explicitly and
 finally terminates your license, and (b) permanently, if the copyright
-holder fails to notify you of the violation by some reasonable means
+holder fails to Notify you of the violation by some reasonable means
 prior to 60 days after the cessation.
 
   Moreover, your license from a particular copyright holder is

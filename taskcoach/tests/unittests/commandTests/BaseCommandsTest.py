@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from __future__ import absolute_import
+
 from taskcoachlib import patterns, command
 from taskcoachlib.domain import task, date
 from .CommandTestCase import CommandTestCase
@@ -23,7 +25,7 @@ from .CommandTestCase import CommandTestCase
 
 class DeleteCommandTest(CommandTestCase):
     def setUp(self):
-        super(DeleteCommandTest, self).setUp()
+        super().setUp()
         self.item = task.Task()
         self.items = patterns.List([self.item])
 
@@ -33,16 +35,12 @@ class DeleteCommandTest(CommandTestCase):
 
     def testDeleteItem_WithoutSelection(self):
         self.deleteItem()
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual([self.item], self.items)
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual([self.item], self.items))
 
     def testDeleteItem_WithSelection(self):
         self.deleteItem([self.item])
-        self.assertDoUndoRedo(
-            lambda: self.assertEqual([], self.items),
-            lambda: self.assertEqual([self.item], self.items),
-        )
+        self.assertDoUndoRedo(lambda: self.assertEqual([], self.items),
+                              lambda: self.assertEqual([self.item], self.items))
 
     def testItemsAreNotNew(self):
         self.assertFalse(command.DeleteCommand(self.items, []).items_are_new())
@@ -53,15 +51,15 @@ class EditSubjectTestCase(CommandTestCase):
     ContainerClass = task.TaskList
 
     def setUp(self):
-        super(EditSubjectTestCase, self).setUp()
+        super().setUp()
         self.item1 = self.ItemClass(subject="item1")
         self.item2 = self.ItemClass(subject="item2")
         self.container = self.ContainerClass([self.item1, self.item2])
 
     def editSubject(self, newSubject, *items):
-        editSubjectCommand = command.EditSubjectCommand(
-            self.container, items, newValue=newSubject
-        )
+        editSubjectCommand = command.EditSubjectCommand(self.container,
+                                                        items,
+                                                        newValue=newSubject)
         editSubjectCommand.do()
 
     def testEditSubject(self):
@@ -106,15 +104,14 @@ class EditDescriptionTestCase(CommandTestCase):
     ContainerClass = task.TaskList
 
     def setUp(self):
-        super(EditDescriptionTestCase, self).setUp()
+        super().setUp()
         self.item1 = self.ItemClass(description="item1")
         self.item2 = self.ItemClass(description="item2")
         self.container = self.ContainerClass([self.item1, self.item2])
 
     def edit_description(self, new_description, *items):
-        edit_subject = command.EditDescriptionCommand(
-            self.container, items, newValue=new_description
-        )
+        edit_subject = command.EditDescriptionCommand(self.container, items,
+                                                      newValue=new_description)
         edit_subject.do()
 
     def testEditSubject(self):

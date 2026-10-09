@@ -20,15 +20,15 @@ import wx
 
 
 class CheckListBox(wx.CheckListBox):
-    """The wx.CheckListBox does not support client data on all platforms,
-    so we do it ourselves."""
-
+    """ The wx.CheckListBox does not support client data on all platforms,
+        so we do it ourselves. """
+    
     def __init__(self, *args, **kwargs):
-        super(CheckListBox, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__clientData = dict()
-
+    
     def Append(self, item, clientData=None):
-        index = super(CheckListBox, self).Append(item)
+        index = super().Append(item)
         if clientData:
             self.__clientData[index] = clientData
         return index
@@ -40,9 +40,9 @@ class CheckListBox(wx.CheckListBox):
         return self.__clientData[index] if index in self.__clientData else None
 
     def Clear(self, *args, **kwargs):
-        super(CheckListBox, self).Clear(*args, **kwargs)
+        super().Clear(*args, **kwargs)
         self.__clientData.clear()
 
     def Delete(self, *args, **kwargs):
-        """We don't need this at the moment."""
+        """ We don't need this at the moment. """
         raise NotImplementedError

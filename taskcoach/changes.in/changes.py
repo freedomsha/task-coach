@@ -277,7 +277,7 @@ of Twisted (<11).""",
             ),
             Bugv2("""Fix Todo.txt export""", "1274"),
             Bugv2("""Performance improvements."""),
-            Bugv2("""In some circumstances, balloon tips would not close."""),
+            Bugv2("""In some circumstances, balloon tips would not Close."""),
             Bugv2("""Locking would fail on SSHFS""", "1509"),
             Bugv2("""Fix CSV export for some setups.""", "1510"),
         ],
@@ -460,7 +460,7 @@ enabled, one could not delete tasks or change some task dates""",
         bugsFixed=[
             Bugv2(
                 """Don't prevent shutdown on Windows if the minimize on
-close option is set."""
+Close option is set."""
             ),
             Bugv2(
                 """Prevent a PyGTK warning on recent Linux distributions.""",
@@ -803,7 +803,7 @@ format preferences.""",
             ),
             Bugv2(
                 """When cancelling application shutdown, the window would
-close nonetheless.""",
+Close nonetheless.""",
                 "1346",
             ),
             Bugv2(
@@ -935,8 +935,8 @@ old one.""",
         featuresAdded=[
             Feature("""New, hopefully more intuitive date/time control."""),
             Feature(
-                """Display dates in human-readable form in viewers (today,
-yesterday, tomorrow)."""
+                """Display dates in human-readable form in viewers (Today,
+Yesterday, Tomorrow)."""
             ),
             Feature("""Startup and shutdown performance improvements."""),
             Feature("""Autosave is now on by default."""),
@@ -1071,23 +1071,23 @@ main window. The link will disappear when the campaign is over."""
 lie between the dates of its parent task. Previously, if the start date of a 
 child task would be made earlier than the start date of its parent task, 
 Task Coach would silently make the start of the parent task equal to the 
-start date of the child task. The same for the due date: setting the due
-date of the parent task earlier than the due date of a child task would 
-silently change the due date of the child tasks if their due date would 
-otherwise become later than the due date of the parent task.
+start Date of the child task. The same for the due Date: setting the due
+Date of the parent task earlier than the due Date of a child task would 
+silently change the due Date of the child tasks if their due Date would 
+otherwise become later than the due Date of the parent task.
 
 When viewing tasks in the task tree viewer, collapsing a task with child tasks 
 will show recursive dates when relevant. This means that the planned start 
-date column will show the earliest start date of the task itself and all of
-its child tasks. If the earliest start date is the start date of one of the 
-child tasks, the date will be shown between brackets. Likewise, the actual 
-start date column will show the earliest actual start date of the task and all 
-of its child tasks. The due date column and the completion date column will 
-show the latest date of the parent and child tasks combined. 
+Date column will show the earliest start Date of the task itself and all of
+its child tasks. If the earliest start Date is the start Date of one of the 
+child tasks, the Date will be shown between brackets. Likewise, the actual 
+start Date column will show the earliest actual start Date of the task and all 
+of its child tasks. The due Date column and the completion Date column will 
+show the latest Date of the parent and child tasks combined. 
 
-When sorting on a date column, the recursive value is used for sorting. So when
-sorting ascending by due date a parent task without due date but with a child
-task due today will sort before a task that is due tomorrow.
+When sorting on a Date column, the recursive value is used for sorting. So when
+sorting ascending by due Date a parent task without due Date but with a child
+task due Today will sort before a task that is due Tomorrow.
 
 This change makes the date behavior consistent with priorities and other 
 attributes."""
@@ -1925,7 +1925,7 @@ changes made in other dialogs.""",
                 "1152561",
             ),
             Bug(
-                """Don't close the edit dialog when dragging and dropping 
+                """Don't Close the edit dialog when dragging and dropping 
 an item.""",
                 "3424138",
             ),
@@ -1970,7 +1970,7 @@ as inactive before showing them as active.""",
             Bug("""Only "preset" dates on new tasks."""),
             Bug(
                 """When changing a date/time inline, hitting enter in the date part
-of the control would close the inline control, but not change the date.""",
+of the control would Close the inline control, but not change the date.""",
                 "3428503",
             ),
             Bug(
@@ -2884,7 +2884,7 @@ Task Coach while the main window is minimized.""",
                 """In addition to hiding all completed tasks, it is now also
 possible to hide completed tasks but keep recently completed tasks visible for
 a limited amount of time. This can be done by hiding tasks that were completed 
-before today, before yesterday, before the current week or before the current 
+before Today, before Yesterday, before the current week or before the current 
 month, using the View->Filter menu.""",
                 "http://uservoice.com/a/lZ8ss",
             ),
@@ -2892,7 +2892,7 @@ month, using the View->Filter menu.""",
                 """In addition to hiding all future tasks, it is now also
 possible to hide future tasks but still show future tasks that will become
 active in a short while. This can be done by hiding future tasks that start 
-today, tomorrow, next week or next month, using the View->Filter menu."""
+Today, Tomorrow, next week or next month, using the View->Filter menu."""
             ),
         ],
         featuresChanged=[
@@ -3339,7 +3339,7 @@ dependent task is inactive. The task tree viewer has two extra columns,
 one for showing prerequisite tasks and one for showing dependent tasks. 
 Prerequisite tasks can be selected in the Prerequisites tab of the task edit 
 dialog. Dependent tasks cannot be selected explicitly but are simply derived
-from the prerequisite tasks. For example, if task B can be started only after 
+from the prerequisite tasks. For example, if task B can be Started only after 
 task A has been completed, task A is called a prerequisite for task B and 
 task B is called a dependency of task A."""
             )
@@ -3496,7 +3496,7 @@ wxPython 2.8.9.1.""",
                 "3054431",
             ),
             Bug(
-                """Only close edit dialogs when the edited item is really deleted,
+                """Only Close edit dialogs when the edited item is really deleted,
 not when the item is hidden by a filter.""",
                 "3042880",
             ),
@@ -3683,7 +3683,7 @@ a while.""",
                 "2560895",
             ),
             Bug(
-                """Refresh filter for tasks due today/tomorrow/etc. at midnight.""",
+                """Refresh filter for tasks due Today/Tomorrow/etc. at midnight.""",
                 "3035384",
             ),
             Bug(
@@ -3793,7 +3793,7 @@ Edit->Paste as subitem and made it work for categories and notes too."""
         bugsFixed=[
             Bug(
                 """When starting iconized on Mac OS X, the application window
-would close.""",
+would Close.""",
                 "2992764",
             ),
             Bug(
@@ -4243,7 +4243,7 @@ would be fired.""",
             ),
             Bug(
                 """Don't start in-line editing of subjects when an item is double
-clicked. Properly close the subject edit text control, e.g. when sort order
+clicked. Properly Close the subject edit text control, e.g. when sort order
 is changed.""",
                 "2896654",
                 "2899913",
@@ -5949,7 +5949,7 @@ time' of tasks."""
         ],
         bugsFixed=[
             Bug(
-                """The reminder dialog didn't close when opening the task from
+                """The reminder dialog didn't Close when opening the task from
 the reminder dialog. If the user had entered a snooze option in the reminder
 dialog, that snooze option would be overwritten when closing the task 
 editor.""",
@@ -6136,7 +6136,7 @@ platforms.""",
                 "1803085",
             ),
             Bug(
-                """Don't notify of new version when the user has just installed 
+                """Don't Notify of new version when the user has just installed 
 that version."""
             ),
             Bug(
@@ -6201,7 +6201,7 @@ case sensitive or case insensitive."""
             Feature(
                 """Each viewer/tab has its own settings for sort order
 and visible columns. Viewers can be renamed. This makes it possible to
-e.g. create a 'Todo today'."""
+e.g. create a 'Todo Today'."""
             ),
             Feature(
                 """The search control on the toolbar can (optionally) include
@@ -6715,7 +6715,7 @@ Shift-Ctrl-Insert.""",
                 "1463316",
             ),
             Bug(
-                """Don't close the current file when user cancels opening another
+                """Don't Close the current file when user cancels opening another
 file.""",
                 "1475473",
             ),
@@ -6894,7 +6894,7 @@ a column header in the effort view."""
             ),
             Feature(
                 """Added option to minimize the window when you attempt
-to close the application via the close button on the window title bar or 
+to Close the application via the Close button on the window title bar or 
 the system menu. See 'Edit' -> 'Preferences' -> 'Window behavior'."""
             ),
         ],
@@ -6936,7 +6936,7 @@ loading a .tsk file. Patch provided by Maciej Malycha."""
 now the number of days between the completion date and the due 
 date. This prevents that the number of days left of completed tasks keeps 
 decreasing, i.e. becoming more negative. For uncompleted tasks, the number
-of days left is still the number of days between today and the due date, 
+of days left is still the number of days between Today and the due date, 
 of course. Patch provided by Maciej Malycha."""
             ),
             Bug(
@@ -7204,7 +7204,7 @@ Negative numbers are allowed""",
         ],
         featuresChanged=[
             Feature(
-                """Default start date of new subtasks is today
+                """Default start date of new subtasks is Today
 (used to be the start date of the parent task)"""
             ),
             Feature(
@@ -7446,7 +7446,7 @@ replacing it is a bit easier.""",
         "April 11, 2005",
         bugsFixed=[
             Bug(
-                "More than one task due today would crash Task Coach.",
+                "More than one task due Today would crash Task Coach.",
                 "1180641",
             )
         ],

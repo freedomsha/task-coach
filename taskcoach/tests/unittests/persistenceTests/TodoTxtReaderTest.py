@@ -16,12 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, io
+# from future import standard_library
+from ... import tctest
+import io
 from taskcoachlib import persistence, config
 from taskcoachlib.domain import task, category, date
+# standard_library.install_aliases()
 
 
-class TodoTxtReaderTestCase(test.TestCase):
+class TodoTxtReaderTestCase(tctest.TestCase):
     def setUp(self):
         task.Task.settings = config.Settings(load=False)
         self.tasks = task.TaskList()
@@ -35,33 +38,22 @@ class TodoTxtReaderTestCase(test.TestCase):
         self.assertEqual(set(subjects), set(t.subject() for t in self.tasks))
 
     def assertCategorySubject(self, *subjects):
-        self.assertEqual(
-            set(subjects), set(c.subject() for c in self.categories)
-        )
+        self.assertEqual(set(subjects), set(c.subject() for c in self.categories))
 
     def assertPriority(self, priority):
         self.assertEqual(priority, list(self.tasks)[0].priority())
 
     def assertStartDate(self, *dateTimeArgs):
-        self.assertEqual(
-            date.DateTime(*dateTimeArgs),
-            list(self.tasks)[0].plannedStartDateTime(),
-        )
+        self.assertEqual(date.DateTime(*dateTimeArgs),
+                         list(self.tasks)[0].plannedStartDateTime())
 
     def assertCompletionDate(self, *dateTimeArgs, **kwargs):
-        expectedDateTime = (
-            kwargs["dateTime"]
-            if "dateTime" in kwargs
-            else date.DateTime(*dateTimeArgs)
-        )
-        self.assertEqual(
-            expectedDateTime, list(self.tasks)[0].completionDateTime()
-        )
+        expectedDateTime = kwargs['dateTime'] if 'dateTime' in kwargs else date.DateTime(*dateTimeArgs)
+        self.assertEqual(expectedDateTime, list(self.tasks)[0].completionDateTime())
 
     def assertDueDate(self, *dateTimeArgs):
-        self.assertEqual(
-            date.DateTime(*dateTimeArgs), list(self.tasks)[0].dueDateTime()
-        )
+        self.assertEqual(date.DateTime(*dateTimeArgs),
+                         list(self.tasks)[0].dueDateTime())
 
     def assertTaskIsCompleted(self):
         self.assertTrue(list(self.tasks)[0].completed())
@@ -71,170 +63,177 @@ class TodoTxtReaderTestCase(test.TestCase):
         self.assertFalse(self.tasks)
 
     def testReadOneTask(self):
-        self.read("Get milk\n")
-        self.assertTaskSubject("Get milk")
+        self.read('Get milk\n')
+        self.assertTaskSubject('Get milk')
 
     def testReadTwoTasks(self):
-        self.read("Get milk\nDo laundry\n")
-        self.assertTaskSubject("Get milk", "Do laundry")
+        self.read('Get milk\nDo laundry\n')
+        self.assertTaskSubject('Get milk', 'Do laundry')
 
     def testTaskWithPriority(self):
-        self.read("(A) Get milk\n")
+        self.read('(A) Get milk\n')
         self.assertPriority(1)
-        self.assertTaskSubject("Get milk")
+        self.assertTaskSubject('Get milk')
 
     def testTaskWithStartDate(self):
-        self.read("2011-01-31 Get milk\n")
+        self.read('2011-01-31 Get milk\n')
         self.assertStartDate(2011, 1, 31)
 
     def testTaskWithStartDateWithoutLeadingZero(self):
-        self.read("2011-1-31 Get milk\n")
+        self.read('2011-1-31 Get milk\n')
         self.assertStartDate(2011, 1, 31)
 
     def testTaskWithPriorityAndStartDate(self):
-        self.read("(Z) 2011-01-31 Get milk\n")
+        self.read('(Z) 2011-01-31 Get milk\n')
         self.assertPriority(26)
         self.assertStartDate(2011, 1, 31)
 
     def testCompletedTaskWithoutCompletionDate(self):
         now = date.Now()
-        self.read("x Do dishes\n", now=lambda: now)
+        self.read('x Do dishes\n', now=lambda: now)
         self.assertTaskIsCompleted()
         self.assertCompletionDate(dateTime=now)
 
     def testCompletedTaskWithCompletionDate(self):
-        self.read("X 2011-02-22 Do dishes\n")
+        self.read('X 2011-02-22 Do dishes\n')
         self.assertTaskIsCompleted()
         self.assertCompletionDate(2011, 2, 22)
 
     def testTaskWithStartAndCompletionDate(self):
-        self.read("X 2011-2-22 2011-2-21 Do dishes\n")
+        self.read('X 2011-2-22 2011-2-21 Do dishes\n')
         self.assertTaskIsCompleted()
         self.assertCompletionDate(2011, 2, 22)
         self.assertStartDate(2011, 2, 21)
 
     def testTaskWithSimpleContext(self):
-        self.read("Order pizza @phone\n")
-        self.assertCategorySubject(("@phone"))
+        self.read('Order pizza @phone\n')
+        self.assertCategorySubject(('@phone'))
         phone = list(self.categories)[0]
         pizza = list(self.tasks)[0]
-        self.assertEqual(set([pizza]), phone.categorizables())
-        self.assertEqual(set([phone]), pizza.categories())
+        # self.assertEqual(set([pizza]), phone.categorizables())
+        self.assertEqual({pizza}, phone.categorizables())
+        # self.assertEqual(set([phone]), pizza.categories())
+        self.assertEqual({phone}, pizza.categories())
 
     def testTaskWithSimpleProject(self):
-        self.read("Order pizza +phone\n")
-        self.assertCategorySubject(("+phone"))
+        self.read('Order pizza +phone\n')
+        self.assertCategorySubject(('+phone'))
         phone = list(self.categories)[0]
         pizza = list(self.tasks)[0]
-        self.assertEqual(set([pizza]), phone.categorizables())
-        self.assertEqual(set([phone]), pizza.categories())
+        # self.assertEqual(set([pizza]), phone.categorizables())
+        self.assertEqual({pizza}, phone.categorizables())
+        # self.assertEqual(set([phone]), pizza.categories())
+        self.assertEqual({phone}, pizza.categories())
 
     def testTaskWithPlusSign(self):
-        self.read("Order pizza + drink\n")
-        self.assertTaskSubject("Order pizza + drink")
+        self.read('Order pizza + drink\n')
+        self.assertTaskSubject('Order pizza + drink')
         self.assertFalse(self.categories)
 
     def testTaskWithAtSign(self):
-        self.read("Mail frank@niessink.com\n")
-        self.assertTaskSubject("Mail frank@niessink.com")
+        self.read('Mail frank@niessink.com\n')
+        self.assertTaskSubject('Mail frank@niessink.com')
         self.assertFalse(self.categories)
 
     def testTwoTasksWithTheSameContext(self):
-        self.read("Order pizza @phone\nCall mom @phone\n")
+        self.read('Order pizza @phone\nCall mom @phone\n')
         self.assertEqual(1, len(self.categories))
         phone = list(self.categories)[0]
         self.assertEqual(set(self.tasks), phone.categorizables())
-        self.assertEqual(
-            [set([phone]), set([phone])], [t.categories() for t in self.tasks]
-        )
+        # self.assertEqual([set([phone]), set([phone])],
+        self.assertEqual([{phone}, {phone}],
+                         [t.categories() for t in self.tasks])
 
     def testTaskWithSubcategoryAsContext(self):
-        self.read("Order pizza @home->phone\n")
+        self.read('Order pizza @home->phone\n')
         home = [c for c in self.categories if not c.parent()][0]
-        self.assertEqual("@home", home.subject())
+        self.assertEqual('@home', home.subject())
         phone = home.children()[0]
-        self.assertEqual("phone", phone.subject())
+        self.assertEqual('phone', phone.subject())
         pizza = list(self.tasks)[0]
-        self.assertEqual(set([pizza]), phone.categorizables())
-        self.assertEqual(set([phone]), pizza.categories())
+        # self.assertEqual(set([pizza]), phone.categorizables())
+        self.assertEqual({pizza}, phone.categorizables())
+        # self.assertEqual(set([phone]), pizza.categories())
+        self.assertEqual({phone}, pizza.categories())
 
     def testTwoTasksWithTheSameSubcategory(self):
-        self.read("Order pizza @home->phone\nOrder flowers @home->phone\n")
+        self.read('Order pizza @home->phone\nOrder flowers @home->phone\n')
         home = [c for c in self.categories if not c.parent()][0]
-        self.assertEqual("@home", home.subject())
+        self.assertEqual('@home', home.subject())
         phone = home.children()[0]
-        self.assertEqual("phone", phone.subject())
+        self.assertEqual('phone', phone.subject())
         self.assertEqual(set(self.tasks), phone.categorizables())
         for eachTask in self.tasks:
-            self.assertEqual(set([phone]), eachTask.categories())
+            # self.assertEqual(set([phone]), eachTask.categories())
+            self.assertEqual({phone}, eachTask.categories())
 
     def testTaskWithMultipleContexts(self):
-        self.read("Order pizza @phone @food\n")
+        self.read('Order pizza @phone @food\n')
         self.assertEqual(2, len(self.categories))
         pizza = list(self.tasks)[0]
         self.assertEqual(set(self.categories), pizza.categories())
 
     def testContextBeforeTask(self):
-        self.read("@phone Order pizza\n")
+        self.read('@phone Order pizza\n')
         self.assertEqual(1, len(self.categories))
 
     def testProjectBeforeTask(self):
-        self.read("+phone Order pizza\n")
+        self.read('+phone Order pizza\n')
         self.assertEqual(1, len(self.categories))
 
     def testPriorityAndContextBeforeTask(self):
-        self.read("(A) @phone thank Mom for the meatballs")
+        self.read('(A) @phone thank Mom for the meatballs')
         self.assertEqual(1, len(self.categories))
-        self.assertCategorySubject("@phone")
+        self.assertCategorySubject('@phone')
         phone = list(self.categories)[0]
         thankMom = list(self.tasks)[0]
-        self.assertEqual(set([thankMom]), phone.categorizables())
-        self.assertEqual(set([phone]), thankMom.categories())
+        # self.assertEqual(set([thankMom]), phone.categorizables())
+        self.assertEqual({thankMom}, phone.categorizables())
+        # self.assertEqual(set([phone]), thankMom.categories())
+        self.assertEqual({phone}, thankMom.categories())
 
     def testPriorityAndProjectAndContextBeforeTask(self):
-        self.read("(B) +GarageSale @phone schedule Goodwill pickup")
+        self.read('(B) +GarageSale @phone schedule Goodwill pickup')
         self.assertEqual(2, len(self.categories))
 
     def testAutomaticallyCreateParentTask(self):
-        self.read("Project->Activity")
+        self.read('Project->Activity')
         self.assertEqual(2, len(self.tasks))
         parent = [t for t in self.tasks if not t.parent()][0]
-        self.assertEqual("Project", parent.subject())
-        self.assertEqual("Activity", parent.children()[0].subject())
+        self.assertEqual('Project', parent.subject())
+        self.assertEqual('Activity', parent.children()[0].subject())
 
     def testAutomaticallyCreateParentTask_WithSpaces(self):
-        self.read("Project -> Activity")
+        self.read('Project -> Activity')
         self.assertEqual(2, len(self.tasks))
         parent = [t for t in self.tasks if not t.parent()][0]
-        self.assertEqual("Project", parent.subject())
-        self.assertEqual("Activity", parent.children()[0].subject())
+        self.assertEqual('Project', parent.subject())
+        self.assertEqual('Activity', parent.children()[0].subject())
 
     def testFirstChildAndThenParent(self):
-        self.read("Project->Activity\nProject\n")
+        self.read('Project->Activity\nProject\n')
         self.assertEqual(2, len(self.tasks))
         parent = [t for t in self.tasks if not t.parent()][0]
-        self.assertEqual("Project", parent.subject())
-        self.assertEqual("Activity", parent.children()[0].subject())
+        self.assertEqual('Project', parent.subject())
+        self.assertEqual('Activity', parent.children()[0].subject())
 
     def testIgnoreEmptyLine(self):
-        self.read("\n")
-        self.assertFalse(self.tasks)
+        self.read('\n')
+        self.failIf(self.tasks)
 
     def testDueDate(self):
-        self.read("Import due date due:2011-03-05\n")
-        self.assertEqual("Import due date", list(self.tasks)[0].subject())
-        self.assertEqual(
-            date.DateTime(2011, 3, 5, 0, 0, 0),
-            list(self.tasks)[0].dueDateTime(),
-        )
+        self.read('Import due Date due:2011-03-05\n')
+        self.assertEqual('Import due Date', list(self.tasks)[0].subject())
+        self.assertEqual(date.DateTime(2011, 3, 5, 0, 0, 0),
+                         list(self.tasks)[0].dueDateTime())
 
     def testDueDateBeforeProject(self):
-        self.read("Import due date due:2011-03-05 +TaskCoach\n")
-        self.assertTaskSubject("Import due date")
+        self.read('Import due Date due:2011-03-05 +TaskCoach\n')
+        self.assertTaskSubject('Import due Date')
         self.assertDueDate(2011, 3, 5)
-        self.assertCategorySubject("+TaskCoach")
+        self.assertCategorySubject('+TaskCoach')
 
     def testTrailingJunk(self):
-        taskWithJunk = "Test +this_is_not_a_project due to trailing junk"
+        taskWithJunk = 'Test +this_is_not_a_project due to trailing junk'
         self.read(taskWithJunk)
         self.assertTaskSubject(taskWithJunk)

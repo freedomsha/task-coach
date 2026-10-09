@@ -20,14 +20,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# TODO: code à revoir
+import logging
+
+# from builtins import zip
+# from builtins import str
+# from builtins import range
+# from builtins import object
 from taskcoachlib import meta, widgets, notify, operating_system, render
+
+# from taskcoachlib.application.application import detect_dark_theme
 from taskcoachlib.domain import date, task
 from taskcoachlib.gui import artprovider
 from taskcoachlib.meta import data
 from taskcoachlib.i18n import _
 from wx.lib.agw.hyperlink import HyperLinkCtrl
+
+# try:
+#     from wx import combo as adv
+# except ImportError:
+#     from wx import adv
 from wx.adv import BitmapComboBox
-import wx, calendar
+import wx
+import calendar
+
+log = logging.getLogger(__name__)
 
 
 class FontColorSyncer(object):
@@ -62,7 +79,7 @@ class FontColorSyncer(object):
 
 class SettingsPageBase(widgets.BookPage):
     def __init__(self, *args, **kwargs):
-        super(SettingsPageBase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._booleanSettings = []
         self._choiceSettings = []
         self._multipleChoiceSettings = []
@@ -88,6 +105,7 @@ class SettingsPageBase(widgets.BookPage):
         choiceCtrls = []
         currentValue = self.gettext(section, setting)
         sep = kwargs.pop("sep", "_")
+        # zip ? => list(zip()) ?
         for choices, currentValuePart in zip(
             listsOfChoices, currentValue.split(sep)
         ):
@@ -194,9 +212,7 @@ class SettingsPageBase(widgets.BookPage):
         default_font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         native_info_string = self.gettext(section, setting)
         current_font = (
-            wx.FontFromNativeInfoString(native_info_string)
-            if native_info_string
-            else None
+            wx.Font(native_info_string) if native_info_string else None
         )
         font_button = widgets.FontPickerCtrl(
             self, font=current_font or default_font, colour=(0, 0, 0, 255)
@@ -208,7 +224,8 @@ class SettingsPageBase(widgets.BookPage):
             flags=(
                 wx.ALL | wx.ALIGN_CENTER_VERTICAL,
                 wx.ALL
-                | wx.ALIGN_CENTER_VERTICAL,  # wx.EXPAND causes the button to be top aligned on Mac OS X
+                | wx.ALIGN_CENTER_VERTICAL,  # wx.EXPAND causes the button to be top aligned
+                # on Mac OS X
             ),
         )
         self._fontSettings.append((section, setting, font_button))
@@ -241,16 +258,13 @@ class SettingsPageBase(widgets.BookPage):
         bgColorButton = wx.ColourPickerCtrl(self, colour=currentBgColor)
         defaultFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         nativeInfoString = self.gettext(fontSection, fontSetting)
-        currentFont = (
-            wx.FontFromNativeInfoString(nativeInfoString)
-            if nativeInfoString
-            else None
-        )
+        currentFont = wx.Font(nativeInfoString) if nativeInfoString else None
         fontButton = widgets.FontPickerCtrl(
             self, font=currentFont or defaultFont, colour=currentFgColor
         )
         fontButton.SetBackgroundColour(currentBgColor)
-        iconEntry = BitmapComboBox(self, style=wx.CB_READONLY)
+        # iconEntry = wx.combo.BitmapComboBox(self, style=wx.CB_READONLY)
+        iconEntry = wx.adv.BitmapComboBox(self, style=wx.CB_READONLY)
         imageNames = sorted(artprovider.chooseableItemImages.keys())
         for imageName in imageNames:
             label = artprovider.chooseableItemImages[imageName]
@@ -272,7 +286,8 @@ class SettingsPageBase(widgets.BookPage):
                 wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL,
                 wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL,
                 wx.ALL
-                | wx.ALIGN_CENTER_VERTICAL,  # wx.EXPAND causes the button to be top aligned on Mac OS X
+                | wx.ALIGN_CENTER_VERTICAL,  # wx.EXPAND causes the button to be top aligned
+                # on Mac OS X
                 wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL,
             ),
         )
@@ -404,7 +419,7 @@ class SettingsPageBase(widgets.BookPage):
 class SettingsPage(SettingsPageBase):
     def __init__(self, settings=None, *args, **kwargs):
         self.settings = settings
-        super(SettingsPage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def addEntry(self, text, *controls, **kwargs):  # pylint: disable=W0221
         helpText = kwargs.pop("helpText", "")
@@ -420,7 +435,7 @@ class SettingsPage(SettingsPageBase):
             )
         if helpText:
             controls = controls + (helpText,)
-        super(SettingsPage, self).addEntry(text, *controls, **kwargs)
+        super().addEntry(text, *controls, **kwargs)
 
     def get(self, section, name):
         return self.settings.get(section, name)
@@ -467,7 +482,7 @@ class SavePage(SettingsPage):
     pageIcon = "save"
 
     def __init__(self, *args, **kwargs):
-        super(SavePage, self).__init__(columns=3, *args, **kwargs)
+        super().__init__(columns=3, *args, **kwargs)
         self.addBooleanSetting(
             "file", "autosave", _("Auto save after every change")
         )
@@ -535,9 +550,7 @@ class WindowBehaviorPage(SettingsPage):
     pageIcon = "windows"
 
     def __init__(self, *args, **kwargs):
-        super(WindowBehaviorPage, self).__init__(
-            columns=2, growableColumn=-1, *args, **kwargs
-        )
+        super().__init__(columns=2, growableColumn=-1, *args, **kwargs)
         self.addBooleanSetting(
             "window", "splash", _("Show splash screen on startup")
         )
@@ -557,7 +570,7 @@ class WindowBehaviorPage(SettingsPage):
         )
         self.addBooleanSetting(
             "version",
-            "notify",
+            "Notify",
             _("Check for new version " "of %(name)s on startup")
             % meta.data.metaDict,
         )
@@ -588,7 +601,7 @@ class LanguagePage(SettingsPage):
     pageIcon = "person_talking_icon"
 
     def __init__(self, *args, **kwargs):
-        super(LanguagePage, self).__init__(columns=3, *args, **kwargs)
+        super().__init__(columns=3, *args, **kwargs)
         languages = [
             ("ar", "الْعَرَبيّة (Arabic)"),
             ("eu_ES", "Euskal Herria (Basque)"),
@@ -687,14 +700,14 @@ class LanguagePage(SettingsPage):
         )
         sizer.Add(text)
         url = meta.i18n_url
-        urlCtrl = HyperLinkCtrl(panel, -1, label=url, URL=url)
+        urlCtrl = wx.adv.HyperlinkCtrl(panel, -1, label=url, url=url)
         sizer.Add(urlCtrl)
         panel.SetSizerAndFit(sizer)
         self.addText(_("Language not found?"), panel)
         self.fit()
 
     def ok(self):
-        super(LanguagePage, self).ok()
+        super().ok()
         self.set("view", "language", self.get("view", "language_set_by_user"))
 
 
@@ -704,9 +717,7 @@ class TaskAppearancePage(SettingsPage):
     pageIcon = "palette_icon"
 
     def __init__(self, *args, **kwargs):
-        super(TaskAppearancePage, self).__init__(
-            columns=9, growableColumn=-1, *args, **kwargs
-        )
+        super().__init__(columns=9, growableColumn=-1, *args, **kwargs)
         self.addAppearanceHeader()
         for status in task.Task.possibleStatuses():
             setting = "%stasks" % status
@@ -737,9 +748,7 @@ class FeaturesPage(SettingsPage):
     pageIcon = "cogwheel_icon"
 
     def __init__(self, *args, **kwargs):
-        super(FeaturesPage, self).__init__(
-            columns=3, growableColumn=-1, *args, **kwargs
-        )
+        super().__init__(columns=3, growableColumn=-1, *args, **kwargs)
         self.addEntry(
             _(
                 "All settings on this tab require a restart of %s "
@@ -843,7 +852,7 @@ class FeaturesPage(SettingsPage):
         self.fit()
 
     def ok(self):
-        super(FeaturesPage, self).ok()
+        super().ok()
         calendar.setfirstweekday(
             dict(monday=0, sunday=6)[self.get("view", "weekstart")]
         )
@@ -855,9 +864,7 @@ class TaskDatesPage(SettingsPage):
     pageIcon = "calendar_icon"
 
     def __init__(self, *args, **kwargs):
-        super(TaskDatesPage, self).__init__(
-            columns=4, growableColumn=-1, *args, **kwargs
-        )
+        super().__init__(columns=4, growableColumn=-1, *args, **kwargs)
         self.addBooleanSetting(
             "behavior",
             "markparentcompletedwhenallchildrencompleted",
@@ -958,15 +965,18 @@ class TaskDatesPage(SettingsPage):
         self.fit()
 
     def __add_help_text(self):
-        """Add help text for the default date and time settings."""
+        """Add help text for the default Date and time settings."""
         help_text = wx.StaticText(
             self,
             label=_(
-                """New tasks start with "Preset" dates and times filled in and checked. "Proposed" dates and times are filled in, but not checked.
+                """New tasks start with "Preset" dates and times filled in and checked. 
+        "Proposed" dates and times are filled in, but not checked.
 
-"Start of day" is midnight and "End of day" is just before midnight. When using these, task viewers hide the time and show only the date.
+"Start of day" is midnight and "End of day" is just before midnight.
+ When using these, task viewers hide the time and show only the Date.
 
-"Start of working day" and "End of working day" use the working day as set in the Features tab of this preferences dialog."""
+"Start of working day" and "End of working day" use the working day as set
+ in the Features tab of this preferences dialog."""
             )
             % meta.data.metaDict,
         )
@@ -980,9 +990,7 @@ class TaskReminderPage(SettingsPage):
     pageIcon = "clock_alarm_icon"
 
     def __init__(self, *args, **kwargs):
-        super(TaskReminderPage, self).__init__(
-            columns=3, growableColumn=-1, *args, **kwargs
-        )
+        super().__init__(columns=3, growableColumn=-1, *args, **kwargs)
         names = []  # There's at least one, the universal one
         for name in notify.AbstractNotifier.names():
             names.append((name, name))
@@ -1076,7 +1084,8 @@ class EditorPage(SettingsPage):
         self.fit()
 
     def ok(self):
-        super(EditorPage, self).ok()
+        """Définit la valeur de ok même pour mac."""
+        super().ok()
         widgets.MultiLineTextCtrl.CheckSpelling = self.settings.getboolean(
             "editor", "maccheckspelling"
         )
@@ -1088,7 +1097,7 @@ class OSXPage(SettingsPage):
     pageIcon = "mac"
 
     def __init__(self, *args, **kwargs):
-        super(OSXPage, self).__init__(columns=3, *args, **kwargs)
+        super().__init__(columns=3, *args, **kwargs)
 
         self.addBooleanSetting(
             "os_darwin",
@@ -1107,7 +1116,7 @@ class LinuxPage(SettingsPage):
     pageIcon = "linux"
 
     def __init__(self, *args, **kwargs):
-        super(LinuxPage, self).__init__(columns=3, *args, **kwargs)
+        super().__init__(columns=3, *args, **kwargs)
 
         self.addBooleanSetting(
             "os_linux",
@@ -1150,13 +1159,12 @@ class Preferences(widgets.NotebookDialog):
 
     def __init__(self, settings=None, *args, **kwargs):
         self.settings = settings
-        super(Preferences, self).__init__(
-            bitmap="wrench_icon", *args, **kwargs
-        )
+        super().__init__(bitmap="wrench_icon", *args, **kwargs)
         if operating_system.isMac():
             self.CentreOnParent()
 
     def addPages(self):
+        """Ajoute les pages au Notebook, en respectant l'ordre défini."""
         self._interior.SetMinSize((950, 550))
         for page_name in self.allPageNames:
             if self.__should_create_page(page_name):
@@ -1174,6 +1182,7 @@ class Preferences(widgets.NotebookDialog):
             return True
 
     def createPage(self, pageName):
+        """Crée une nouvelle instance de page à partir de son nom."""
         return self.pages[pageName](
             parent=self._interior, settings=self.settings
         )

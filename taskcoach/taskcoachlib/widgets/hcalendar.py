@@ -16,17 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .wxevents import (
-    CalendarCanvas,
-    CalendarPrintout,
-    EVT_EVENT_SELECTION_CHANGED,
-    EVT_EVENT_DATES_CHANGED,
-)
+# from __future__ import absolute_import
+# from __future__ import division
+#
+# from past.utils import old_div
+from .wxevents import CalendarCanvas, CalendarPrintout, EVT_EVENT_SELECTION_CHANGED, EVT_EVENT_DATES_CHANGED
 from taskcoachlib.domain import date
 from taskcoachlib.widgets import draganddrop
 from taskcoachlib import command, render
+from taskcoachlib.i18n import _  # Utilisé dans GetPrintout ! A la fin du fichier
 from . import tooltip
-import wx, datetime
+import wx
+import datetime
 
 
 class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
@@ -55,15 +56,11 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
         self.__drawNow = True
         self.__adapter = parent
         self.getItemTooltipData = parent.getItemTooltipData
-        super(HierarchicalCalendar, self).__init__(parent, **kwargs)
-        self.SetCalendarFormat(
-            self.__calFormat
-        )  # This calls _Invalidate() so no need to call SetHeaderFormat
+        super().__init__(parent, **kwargs)
+        self.SetCalendarFormat(self.__calFormat)  # This calls _Invalidate() so no need to call SetHeaderFormat
 
         self.__tip = tooltip.SimpleToolTip(self)
-        self.__dropTarget = draganddrop.DropTarget(
-            self.OnDropURL, self.OnDropFiles, self.OnDropMail
-        )
+        self.__dropTarget = draganddrop.DropTarget(self.OnDropURL, self.OnDropFiles, self.OnDropMail)
         self.SetDropTarget(self.__dropTarget)
 
         EVT_EVENT_SELECTION_CHANGED(self, self._OnSelectionChanged)
@@ -82,11 +79,11 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
         end = date.DateTime.fromDateTime(event.end)
 
         if task.plannedStartDateTime() != start:
-            command.EditPlannedStartDateTimeCommand(
-                items=[task], newValue=start
-            ).do()
+            command.EditPlannedStartDateTimeCommand(items=[task],
+                                                    newValue=start).do()
         if task.dueDateTime() != end:
-            command.EditDueDateTimeCommand(items=[task], newValue=end).do()
+            command.EditDueDateTimeCommand(items=[task],
+                                           newValue=end).do()
 
     def _OnLeftDClick(self, event):
         hit = self.HitTest(event.GetX(), event.GetY())
@@ -176,10 +173,10 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
 
     def SetTodayColor(self, xxx_todo_changeme):
         (r, g, b) = xxx_todo_changeme
-        super(HierarchicalCalendar, self).SetTodayColor(wx.Colour(r, g, b))
+        super().SetTodayColor(wx.Colour(r, g, b))
 
     def TodayColor(self):
-        color = super(HierarchicalCalendar, self).TodayColor()
+        color = super().TodayColor()
         return color.Red(), color.Green(), color.Blue()
 
     # Navigation
@@ -191,9 +188,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
             start += ts
             end += ts
         elif self.__calFormat == self.CAL_MONTHLY:
-            start = date.DateTime.fromDateTime(
-                start.endOfMonth()
-            ).startOfDay() + date.TimeDelta(days=1)
+            start = date.DateTime.fromDateTime(start.endOfMonth()).startOfDay() + date.TimeDelta(days=1)
             end = start.endOfMonth()
         self.SetViewSpan(start, end)
 
@@ -204,9 +199,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
             start -= ts
             end -= ts
         elif self.__calFormat == self.CAL_MONTHLY:
-            start = (
-                date.DateTime.fromDateTime(start) - date.TimeDelta(days=1)
-            ).startOfMonth()
+            start = (date.DateTime.fromDateTime(start) - date.TimeDelta(days=1)).startOfMonth()
             end = start.endOfMonth()
         self.SetViewSpan(start, end)
 
@@ -236,7 +229,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
 
     def _DrawNow(self, gc, h):
         if self.__drawNow:
-            super(HierarchicalCalendar, self)._DrawNow(gc, h)
+            super()._DrawNow(gc, h)
 
     def GetRootEvents(self):
         return self.__adapter.getRootItems()
@@ -266,6 +259,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
     def GetProgress(self, task):
         p = task.percentageComplete(recursive=True)
         if p:
+            # return old_div(1.0 * p, 100)
             return 1.0 * p / 100
         return None
 
@@ -290,7 +284,7 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
         self.__Drop(x, y, filenames, self.__onDropFilesCallback)
 
     def OnDropMail(self, x, y, mail):
-        self.__Drop(x, y, filenames, self.__onDropMailCallback)
+        self.__Drop(x, y, mail, self.__onDropMailCallback)
 
     def __Drop(self, x, y, objects, callback):
         if callback is not None:
@@ -298,16 +292,9 @@ class HierarchicalCalendar(tooltip.ToolTipMixin, CalendarCanvas):
             if hit.event is not None:
                 callback(hit.event, objects)
             else:
-                callback(
-                    None,
-                    objects,
-                    plannedStartDateTime=date.DateTime.fromDateTime(
-                        hit.dateTime
-                    ).startOfDay(),
-                    dueDateTime=date.DateTime.fromDateTime(
-                        hit.dateTime
-                    ).endOfDay(),
-                )
+                callback(None, objects,
+                         plannedStartDateTime=date.DateTime.fromDateTime(hit.dateTime).startOfDay(),
+                         dueDateTime=date.DateTime.fromDateTime(hit.dateTime).endOfDay())
 
     def GetPrintout(self, settings):
         return CalendarPrintout(self, settings, _("Tasks"))

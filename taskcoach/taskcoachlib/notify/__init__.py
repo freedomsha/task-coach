@@ -18,13 +18,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from taskcoachlib import operating_system
 
-
+# TODO: changer les import !
 if operating_system.isWindows():
     from .notifier_windows import *
-    from .notifier_growl import *
+    from .notifier_growl import GrowlNotifier
 elif operating_system.isMac():
-    from .notifier_growl import *
+    from .notifier_growl import GrowlNotifier
 
-from .notifier_universal import *
+# Todo : 
+# get selection ("wx" or "tk") if available
+try:
+    from taskcoachlib.config.arguments import get_gui  # may raise during early import
+except Exception:
+    def get_gui() -> Any:  # fallback if config not importable yet
+        return None
+# Si wx
+if get_gui() == "wx":
+    from .notifier_universal import *
+# Si tk
+elif get_gui() == "tk":
+    from .notifier_universaltk import *
 
-from .notifier import *
+from .notifier import AbstractNotifier

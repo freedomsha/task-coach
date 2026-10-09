@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test
+# from builtins import object
+from ... import tctest
 from taskcoachlib import gui, config, persistence, operating_system
 from taskcoachlib.domain import attachment
 
@@ -26,20 +27,16 @@ class DummyEvent(object):
         pass
 
 
-class AttachmentEditorTest(test.wxTestCase):
+class AttachmentEditorTest(tctest.wxTestCase):
     def setUp(self):
-        super(AttachmentEditorTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         self.attachment = attachment.FileAttachment("Attachment")
         self.attachments = attachment.AttachmentList()
         self.attachments.append(self.attachment)
         self.editor = gui.dialog.editor.AttachmentEditor(
-            self.frame,
-            self.attachments,
-            self.settings,
-            self.attachments,
-            self.taskFile,
+            self.frame, self.attachments, self.settings, self.attachments, self.taskFile
         )
 
     def tearDown(self):
@@ -82,6 +79,4 @@ class AttachmentEditorTest(test.wxTestCase):
     def testAddNote(self):
         viewer = self.editor._interior[1].viewer
         viewer.newItemCommand(viewer.presentation()).do()
-        self.assertEqual(
-            1, len(self.attachment.notes())
-        )  # pylint: disable=E1101
+        self.assertEqual(1, len(self.attachment.notes()))  # pylint: disable=E1101

@@ -16,8 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 import wx
-from taskcoachlib import persistence, gui
+from taskcoachlib import persistence
+from taskcoachlib.gui.uicommand import base_uicommand
+from taskcoachlib.gui.viewer import base as viewer_base
 
 
 class Event(object):
@@ -27,7 +30,7 @@ class Event(object):
 
 class DummyWidget(wx.Frame):
     def __init__(self, viewer):
-        super(DummyWidget, self).__init__(viewer)
+        super().__init__(viewer)
         self.viewer = viewer
 
     def RefreshItems(self, *items):
@@ -58,18 +61,29 @@ class DummyWidget(wx.Frame):
         pass
 
 
-class DummyUICommand(gui.uicommand.UICommand):  # pylint: disable=W0223
+class DummyUICommand(base_uicommand.UICommand):  # pylint: disable=W0223
     bitmap = "undo"
     section = "view"
     setting = "setting"
 
-    def onCommandActivate(self, event):
+    def __init__(self, menuText="", helpText="", bitmap="nobitmap",
+                 kind=wx.ITEM_NORMAL, id=None, bitmap2=None,
+                 *args, **kwargs):
+        super().__init__(menuText, helpText, bitmap, kind, id, bitmap2, args, kwargs)
+        self.activated = None
+
+    # def onCommandActivate(self, event):
+    def onCommandActivate(self, event, *args, **kwargs):
         self.activated = True  # pylint: disable=W0201
 
 
-class ViewerWithDummyWidget(gui.viewer.base.Viewer):  # pylint: disable=W0223
+class ViewerWithDummyWidget(viewer_base.Viewer):  # pylint: disable=W0223
     defaultTitle = "ViewerWithDummyWidget"
     defaultBitmap = ""
+
+    def __init__(self, parent, taskFile, settings, *args, **kwargs):
+        super().__init__(parent, taskFile, settings, args, kwargs)
+        self._columns = None
 
     def domainObjectsToView(self):
         return self.taskFile.tasks()
@@ -92,5 +106,6 @@ class TaskFile(persistence.TaskFile):
     merge = save = saveas = load
 
 
-class MainWindow:  # pylint: disable=W0232
+class MainWindow(object):  # pylint: disable=W0232
+    # class MainWindow:  # pylint: disable=W0232
     showFindDialog = None

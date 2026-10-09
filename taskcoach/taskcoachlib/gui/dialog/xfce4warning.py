@@ -24,9 +24,8 @@ from taskcoachlib.widgets import dialog
 class XFCE4WarningDialog(dialog.Dialog):
     def __init__(self, parent, settings):
         self.__settings = settings
-        super(XFCE4WarningDialog, self).__init__(
-            parent, _("Warning"), buttonTypes=wx.OK
-        )
+        super().__init__(parent, _('Warning'),
+                         buttonTypes=wx.OK)
 
     def createInterior(self):
         return wx.Panel(self._panel)
@@ -34,25 +33,15 @@ class XFCE4WarningDialog(dialog.Dialog):
     def fillInterior(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(
-            wx.StaticText(
-                self._interior,
-                label=_(
-                    "Task Coach has known issues with XFCE4 session management.\n"
-                )
-                + _(
-                    'If you experience random freeze at startup, please uncheck\nthe "Use X11 session management" in the Features tab of the preferences.\n'
-                ),
-            )
-        )
-        self._checkbox = wx.CheckBox(
-            self._interior, label=_("Do not show this dialog at startup")
-        )  # pylint: disable=W0201
+            wx.StaticText(self._interior, label=_('Task Coach has known issues with XFCE4 session management.\n') + _(
+                'If you experience random freeze at startup, please uncheck\n'
+                'the "Use X11 session management" in the Features tab of the preferences.\n')))
+        self._checkbox = wx.CheckBox(self._interior,
+                                     label=_('Do not show this dialog at startup'))  # pylint: disable=W0201
         self._checkbox.SetValue(True)
         sizer.Add(self._checkbox)
         self._interior.SetSizer(sizer)
 
     def ok(self, event=None):
-        self.__settings.setboolean(
-            "feature", "showsmwarning", not self._checkbox.GetValue()
-        )
-        super(XFCE4WarningDialog, self).ok(event)
+        self.__settings.setboolean('feature', 'showsmwarning', not self._checkbox.GetValue())
+        super().ok(event)

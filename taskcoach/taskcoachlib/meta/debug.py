@@ -16,16 +16,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import str
 import sys
 
 
 def log_call(traceback_depth):
-    """Decorator for function calls that prints the function name,
-    arguments and result to stdout. Usage:
+    """ Decorator for function calls that prints the function name,
+        arguments and result to stdout. Usage:
 
-    @log_call(traceback_depth)
-    def function(arg):
-        ...
+        @log_call(traceback_depth)
+        def function(arg):
+            ...
     """
     # Import here instead of at the module level to prevent unnecessary
     # inclusion of the inspect module when packaging the application:
@@ -40,14 +41,12 @@ def log_call(traceback_depth):
             write("%s\n" % signature(func, args, kwargs, result))
             write("===\n")
             return result
-
         return inner
-
     return outer
 
 
 def time_call(func):
-    """Decorator for function calls that times the call."""
+    """ Decorator for function calls that times the call. """
 
     import time
 
@@ -60,36 +59,38 @@ def time_call(func):
             % (signature(func, args, kwargs, result), stop - start)
         )
         return result
-
     return inner
 
 
 def profile_call(func):
-    """Docorator for profiling a specific function. I'm not sure what
-    happens if you decorate a recursive function..."""
+    """ Docorator for profiling a specific function. I'm not sure what
+        happens if you decorate a recursive function... """
 
-    import hotshot
+    import hotshot  # no module named -> à changer !
 
     def inner(*args, **kwargs):
         profiler = hotshot.Profile(".profile")
         return profiler.runcall(func, *args, **kwargs)
-
     return inner
 
 
 def signature(func, args, kwargs, result):
     func = func.__name__
     result = str(result)
+    # TODO : à vérifier
     try:
-        return "%s(%s, %s) -> %s" % (func, str(args), str(kwargs), result)
-    except:
-        return "%s(...) -> %s" % (func, result)  # pylint: disable=W0702
+        # return "%s(%s, %s) -> %s" % (func, str(args), str(kwargs), result)
+        return f"{func}({str(args)}, {str(kwargs)}) -> {result}"
+    except Exception:
+        # return "%s(...) -> %s" % (func, result)  # pylint: disable=W0702
+        return f"{func}(...) -> {result}"  # pylint: disable=W0702
 
 
 def format_traceback(frame):
     result = []
     filename, lineno, caller, context = frame[1:5]
-    result.append('  File "%s", line %s, in %s' % (filename, lineno, caller))
+    # result.append('  File "%s", line %s, in %s' % (filename, lineno, caller))
+    result.append(f"  File '{filename}', line {lineno}, in {caller}")
     for line in context:
         result.append(line[:-1])
     return "\n".join(result) + "\n"

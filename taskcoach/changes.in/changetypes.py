@@ -15,7 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+# futurize ajoute 1 ligne :
+from builtins import object
+# Unused import statement 'import textwrap'
 import textwrap
 
 
@@ -49,12 +51,13 @@ class Release:
         self.teamChanges = teamChanges or []
 
 
-class Change(object):
+class Change(object):  # nouvelle classe mère
     def __init__(self, description, *changeIds):
         self.description = description
         self.changeIds = changeIds
 
 
+# classes enfants de change :
 class Bug(Change):
     pass
 
@@ -81,6 +84,7 @@ class Distribution(Change):
 
 class Website(Change):
     def __init__(self, description, url, *changeIds):
+        # super(Website, self).__init__(description, *changeIds)
         super(Website, self).__init__(description, *changeIds)
         self.url = url
 

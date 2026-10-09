@@ -16,8 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 from ctypes import *
-import os, tempfile, threading
+import os
+import tempfile
+import threading
+# from . import base
 from taskcoachlib.filesystem import base
 
 _libc = CDLL("libc.dylib")
@@ -40,10 +44,10 @@ NOTE_LINK = 0x00000010
 NOTE_RENAME = 0x00000020
 NOTE_REVOKE = 0x00000040
 
+
 # Structures
 
-
-class keventstruct(Structure):
+class keventstruct(Structure):  # Class names should use CamelCase convention
     _fields_ = [
         ("ident", c_ulong),
         ("filter", c_int16),
@@ -59,29 +63,21 @@ class keventstruct(Structure):
 opendir = CFUNCTYPE(c_void_p, c_char_p)(("opendir", _libc))
 closedir = CFUNCTYPE(c_int, c_void_p)(("closedir", _libc))
 open_ = CFUNCTYPE(c_int, c_char_p, c_int)(("open", _libc))
-close = CFUNCTYPE(c_int, c_int)(("close", _libc))
+close = CFUNCTYPE(c_int, c_int)(("Close", _libc))
 
 # dirfd seems to be defined as a macro. Let's assume the fd field is
 # the first one in the structure.
-
 
 def dirfd(p):
     return cast(p, POINTER(c_int)).contents.value
 
 
 kqueue = CFUNCTYPE(c_int)(("kqueue", _libc))
-kevent = CFUNCTYPE(
-    c_int,
-    c_int,
-    POINTER(keventstruct),
-    c_int,
-    POINTER(keventstruct),
-    c_int,
-    c_void_p,
-)(("kevent", _libc))
+kevent = CFUNCTYPE(c_int, c_int, POINTER(keventstruct), c_int, POINTER(keventstruct), c_int, c_void_p)(
+    ("kevent", _libc))
+
 
 # Macros
-
 
 def EV_SET(kev, ident, filter_, flags, fflags, data, udata):
     kev.ident = ident
@@ -107,10 +103,9 @@ def traceEvents(fflags):
 
 # Higher-evel API
 
-
 class FileMonitor(object):
     def __init__(self, filename, callback):
-        super(FileMonitor, self).__init__()
+        super().__init__()
 
         self.callback = callback
 
@@ -145,40 +140,19 @@ class FileMonitor(object):
             event = keventstruct()
             changes = (keventstruct * 2)()
 
-            EV_SET(
-                changes[0],
-                self.dirfd,
-                EVFILT_VNODE,
-                EV_ADD | EV_ENABLE | EV_ONESHOT,
-                NOTE_WRITE | NOTE_EXTEND,
-                0,
-                0,
-            )
+            EV_SET(changes[0], self.dirfd, EVFILT_VNODE, EV_ADD | EV_ENABLE | EV_ONESHOT,
+                   NOTE_WRITE | NOTE_EXTEND, 0, 0)
             if self.fd is not None:
-                EV_SET(
-                    changes[1],
-                    self.fd,
-                    EVFILT_VNODE,
-                    EV_ADD | EV_ENABLE | EV_ONESHOT,
-                    NOTE_WRITE
-                    | NOTE_EXTEND
-                    | NOTE_DELETE
-                    | NOTE_ATTRIB
-                    | NOTE_LINK
-                    | NOTE_RENAME
-                    | NOTE_REVOKE,
-                    0,
-                    0,
-                )
+                EV_SET(changes[1], self.fd, EVFILT_VNODE, EV_ADD | EV_ENABLE | EV_ONESHOT,
+                       NOTE_WRITE | NOTE_EXTEND | NOTE_DELETE | NOTE_ATTRIB |
+                       NOTE_LINK | NOTE_RENAME | NOTE_REVOKE, 0, 0)
 
             while True:
                 if kevent(kq, changes, self.state, byref(event), 1, None) > 0:
                     if self.cancelled:
                         break
                     if self.state == 2:
-                        if event.ident == self.fd and event.fflags & (
-                            NOTE_DELETE | NOTE_RENAME
-                        ):
+                        if event.ident == self.fd and event.fflags & (NOTE_DELETE | NOTE_RENAME):
                             # File deleted.
                             close(self.fd)
                             self.fd = None
@@ -191,24 +165,10 @@ class FileMonitor(object):
                             # File was re-created
                             self.fd = open_(self._filename, O_EVTONLY)
                             if self.fd < 0:
-                                raise OSError(
-                                    'Could not open "%s"' % self._filename
-                                )
-                            EV_SET(
-                                changes[1],
-                                self.fd,
-                                EVFILT_VNODE,
-                                EV_ADD | EV_ENABLE | EV_ONESHOT,
-                                NOTE_WRITE
-                                | NOTE_EXTEND
-                                | NOTE_DELETE
-                                | NOTE_ATTRIB
-                                | NOTE_LINK
-                                | NOTE_RENAME
-                                | NOTE_REVOKE,
-                                0,
-                                0,
-                            )
+                                raise OSError('Could not open "%s"' % self._filename)
+                            EV_SET(changes[1], self.fd, EVFILT_VNODE, EV_ADD | EV_ENABLE | EV_ONESHOT,
+                                   NOTE_WRITE | NOTE_EXTEND | NOTE_DELETE | NOTE_ATTRIB |
+                                   NOTE_LINK | NOTE_RENAME | NOTE_REVOKE, 0, 0)
                             self.state = 2
                             self.onFileChanged()
         finally:
@@ -236,7 +196,7 @@ class FileMonitor(object):
 
 class FilesystemNotifier(base.NotifierBase):
     def __init__(self):
-        super(FilesystemNotifier, self).__init__()
+        super().__init__()
 
         self.monitor = None
         self.thread = None
@@ -248,14 +208,15 @@ class FilesystemNotifier(base.NotifierBase):
             if self.monitor is not None:
                 self.monitor.stop()
                 self.thread.join()
-                self.monitor.close()
+                self.monitor.Close()
                 self.monitor = None
                 self.thread = None
-            super(FilesystemNotifier, self).setFilename(filename)
+            super().setFilename(filename)
             if self._filename:
                 self.monitor = FileMonitor(self._filename, self._onFileChanged)
                 self.thread = threading.Thread(target=self._run)
-                self.thread.setDaemon(True)
+                # self.thread.setDaemon(True)  # setDaemon() is deprecated, set the daemon attribute instead
+                self.thread.daemon = True  # du coup, j'ajoute ceci.
                 self.thread.start()
         finally:
             self.lock.release()
@@ -266,7 +227,7 @@ class FilesystemNotifier(base.NotifierBase):
             if self.monitor is not None:
                 self.monitor.stop()
                 self.thread.join()
-                self.monitor.close()
+                self.monitor.Close()
                 self.monitor = None
                 self.thread = None
         finally:
@@ -279,7 +240,7 @@ class FilesystemNotifier(base.NotifierBase):
 
     def saved(self):
         with self.lock:
-            super(FilesystemNotifier, self).saved()
+            super().saved()
 
     def onFileChanged(self):
         raise NotImplementedError

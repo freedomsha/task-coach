@@ -16,10 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
 import wx
-import test
 from taskcoachlib import gui, config, persistence, operating_system
 from taskcoachlib.domain import category, attachment
+from ... import tctest
 
 
 class DummyEvent(object):
@@ -27,7 +28,7 @@ class DummyEvent(object):
         pass
 
 
-class CategoryEditorTest(test.wxTestCase):
+class CategoryEditorTest(tctest.wxTestCase):
     def setUp(self):
         super(CategoryEditorTest, self).setUp()
         self.settings = config.Settings(load=False)
@@ -47,7 +48,7 @@ class CategoryEditorTest(test.wxTestCase):
         # calls are dealt with, otherwise they'll turn up in other tests
         if operating_system.isGTK():
             wx.Yield()  # pragma: no cover
-        super(CategoryEditorTest, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -80,8 +81,7 @@ class CategoryEditorTest(test.wxTestCase):
 
     def testCreate(self):
         self.assertEqual(
-            "Category to edit",
-            self.editor._interior[0]._subjectEntry.GetValue(),
+            "Category to edit", self.editor._interior[0]._subjectEntry.GetValue()
         )
 
     def testEditSubject(self):
@@ -93,16 +93,14 @@ class CategoryEditorTest(test.wxTestCase):
         self.assertEqual("Description", self.category.description())
 
     def testAddAttachment(self):
-        self.editor._interior[2].viewer.onDropFiles(
-            self.category, ["filename"]
+        self.editor._interior[2].viewer.onDropFiles(self.category, ["filename"])
+        print(f"🛠️ DEBUG - Création d'une tâche avec attachements: {self.attachments}")
+
+        self.assertTrue(
+            "filename" in [att.location() for att in self.category.attachments()]
         )
         self.assertTrue(
-            "filename"
-            in [att.location() for att in self.category.attachments()]
-        )
-        self.assertTrue(
-            "filename"
-            in [att.subject() for att in self.category.attachments()]
+            "filename" in [att.subject() for att in self.category.attachments()]
         )
 
     def testRemoveAttachment(self):

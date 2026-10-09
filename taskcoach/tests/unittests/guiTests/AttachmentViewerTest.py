@@ -16,23 +16,20 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import test, wx
+import wx
 from taskcoachlib import gui, config, persistence
 from taskcoachlib.domain import attachment
+from ... import tctest
 
 
-class AttachmentViewerTest(test.wxTestCase):
+class AttachmentViewerTest(tctest.wxTestCase):
     def setUp(self):
         settings = config.Settings(load=False)
         self.taskFile = persistence.TaskFile()
         attachments = attachment.AttachmentList()
-        self.viewer = gui.viewer.AttachmentViewer(
-            self.frame,
-            self.taskFile,
-            settings,
-            attachmentsToShow=attachments,
-            settingsSection="attachmentviewer",
-        )
+        self.viewer = gui.viewer.AttachmentViewer(self.frame, self.taskFile, 
+                                                  settings, attachmentsToShow=attachments,
+                                                  settingsSection='attachmentviewer')
 
     def tearDown(self):
         super(AttachmentViewerTest, self).tearDown()
@@ -40,29 +37,21 @@ class AttachmentViewerTest(test.wxTestCase):
         self.taskFile.stop()
 
     def assertIcon(self, expectedIcon, anAttachment, **kwargs):
-        self.assertEqual(
-            self.viewer.imageIndex[expectedIcon],
-            self.viewer.typeImageIndices(anAttachment, **kwargs)[
-                wx.TreeItemIcon_Normal
-            ],
-        )
-
+        self.assertEqual(self.viewer.imageIndex[expectedIcon],
+                         self.viewer.typeImageIndices(anAttachment, **kwargs)[wx.TreeItemIcon_Normal])
+        
     def testTypeImageIndex_WhenFileDoesNotExist(self):
-        fileAttachment = attachment.FileAttachment("whatever")
-        self.assertIcon("fileopen_red", fileAttachment)
-
+        fileAttachment = attachment.FileAttachment('whatever')
+        self.assertIcon('fileopen_red', fileAttachment, exists=lambda filename: False)
+        
     def testTypeImageIndex_WhenFileDoesExist(self):
-        fileAttachment = attachment.FileAttachment("whatever")
-        self.assertIcon(
-            "fileopen", fileAttachment, exists=lambda filename: True
-        )
+        fileAttachment = attachment.FileAttachment('whatever')
+        self.assertIcon('fileopen', fileAttachment, exists=lambda filename: True)
 
     def testTypeImageIndex_UriAttachment(self):
-        uriAttachment = attachment.URIAttachment("http://whatever.we")
-        self.assertIcon("earth_blue_icon", uriAttachment)
-
+        uriAttachment = attachment.URIAttachment('http://whatever.we')
+        self.assertIcon('earth_blue_icon', uriAttachment)
+        
     def testTypeImgeIndex_MailAttachment(self):
-        mailAttachment = attachment.MailAttachment(
-            "", readMail=lambda location: ("", "")
-        )
-        self.assertIcon("envelope_icon", mailAttachment)
+        mailAttachment = attachment.MailAttachment('', readMail=lambda location: ('', ''))
+        self.assertIcon('envelope_icon', mailAttachment)

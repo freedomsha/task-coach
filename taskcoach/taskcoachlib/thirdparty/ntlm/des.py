@@ -12,64 +12,69 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this library.  If not, see <http://www.gnu.org/licenses/> or <http://www.gnu.org/licenses/lgpl.txt>.
+# License along with this library.
+# If not, see <http://www.gnu.org/licenses/> or <http://www.gnu.org/licenses/lgpl.txt>.
 
-import des_c
+import six
+import logging
+
+from . import des_c
+
+log = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------
 class DES:
-
     des_c_obj = None
 
-    # -----------------------------------------------------------------
     def __init__(self, key_str):
-        """"""
         k = str_to_key56(key_str)
         k = key56_to_key64(k)
+
+        # key_str = b''
         key_str = ""
         for i in k:
-            key_str += chr(i & 0xFF)
+            key_str += six.int2byte(i & 0xFF)
+            # key_str += chr(i & 0xFF)
+
         self.des_c_obj = des_c.DES(key_str)
 
-    # -----------------------------------------------------------------
     def encrypt(self, plain_text):
-        """"""
         return self.des_c_obj.encrypt(plain_text)
 
-    # -----------------------------------------------------------------
     def decrypt(self, crypted_text):
-        """"""
         return self.des_c_obj.decrypt(crypted_text)
 
 
-# ---------------------------------------------------------------------
 # Some Helpers
-# ---------------------------------------------------------------------
 
 DESException = "DESException"
 
 
-# ---------------------------------------------------------------------
 def str_to_key56(key_str):
-    """"""
-    if type(key_str) != type(""):
+
+    # if not type(key_str) == six.binary_type:
+    #    # TODO rsanders high - figure out how to make this not necessary
+    #    key_str = key_str.encode('ascii')
+    # if type(key_str) != type(""):
+    if not isinstance(key_str, str):
         # rise DESException, 'ERROR. Wrong key type.'
         pass
+
     if len(key_str) < 7:
+        # key_str = key_str + b'\000\000\000\000\000\000\000'[:(7 - len(key_str))]
         key_str = (
             key_str + "\000\000\000\000\000\000\000"[: (7 - len(key_str))]
         )
     key_56 = []
+    # for i in six.iterbytes(key_str[:7]):
     for i in key_str[:7]:
+        # key_56.append(i)
         key_56.append(ord(i))
 
     return key_56
 
 
-# ---------------------------------------------------------------------
 def key56_to_key64(key_56):
-    """"""
     key = []
     for i in range(8):
         key.append(0)
@@ -88,9 +93,8 @@ def key56_to_key64(key_56):
     return key
 
 
-# ---------------------------------------------------------------------
 def set_key_odd_parity(key):
-    """"""
+    bit = 0
     for i in range(len(key)):
         for k in range(7):
             bit = 0

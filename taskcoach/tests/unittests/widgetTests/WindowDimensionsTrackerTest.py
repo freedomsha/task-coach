@@ -17,32 +17,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import wx
-import test
-from taskcoachlib import gui, config, operating_system
+from ... import tctest
+from taskcoachlib.gui.windowdimensionstracker import WindowDimensionsTracker
+from taskcoachlib import config, operating_system
 
 
-class WindowDimensionsTrackerTest(test.wxTestCase):
+class WindowDimensionsTrackerTest(tctest.wxTestCase):
     def setUp(self):
-        super(WindowDimensionsTrackerTest, self).setUp()
+        super().setUp()
         self.settings = config.Settings(load=False)
         self.section = "window"
         self.settings.setvalue(self.section, "position", (50, 50))
         self.settings.setvalue(self.section, "starticonized", "Never")
         if operating_system.isWindows():
             self.frame.Show()
-        self.tracker = gui.windowdimensionstracker.WindowDimensionsTracker(
-            self.frame, self.settings
-        )
+        # self.tracker = gui.windowdimensionstracker.WindowDimensionsTracker(
+        self.tracker = WindowDimensionsTracker(self.frame, self.settings)
 
     def test_initial_position(self):
         self.assertEqual(
             self.settings.getvalue(self.section, "position"),
+            # self.frame.GetPositionTuple())
             self.frame.GetPosition(),
         )
 
     def test_initial_size(self):
         # See MainWindowTest...
-        width, height = self.frame.GetSize()
+        width, height = self.frame.GetSizeTuple()
         if operating_system.isMac():  # pragma: no cover
             width, height = self.frame.GetClientSize()
             height -= 18
@@ -50,7 +51,7 @@ class WindowDimensionsTrackerTest(test.wxTestCase):
             (width, height), self.settings.getvalue(self.section, "size")
         )
 
-    @test.skipOnPlatform("__WXGTK__")
+    @tctest.skipOnPlatform("__WXGTK__")
     def test_maximize(self):
         for maximized in [True, False]:
             self.frame.Maximize(maximized)
@@ -59,16 +60,30 @@ class WindowDimensionsTrackerTest(test.wxTestCase):
                 maximized, self.settings.getboolean(self.section, "maximized")
             )
 
+    @tctest.skipOnPlatform("__WXGTK__")  # Impossible avec wayland
     def test_change_size(self):
         self.frame.Maximize(False)
         if operating_system.isMac():
             self.frame.SetClientSize((123, 200))
         else:
-            self.frame.ProcessEvent(wx.SizeEvent((123, 200)))
+            self.frame.ProcessEvent(
+                wx.SizeEvent((123, 200))
+            )  # <--- C'est ici que ça coince, valeur inférieure à la valeur minimale admise
         self.assertEqual(
             (123, 200), self.settings.getvalue(self.section, "size")
         )
+        # self.assertEqual(
+        #     (900, 500), self.settings.getvalue(self.section, "size")
+        # )
+        if operating_system.isMac():
+            self.frame.SetClientSize((700, 500))
+        else:
+            self.frame.ProcessEvent(wx.SizeEvent((700, 50)))
+        self.assertEqual(
+            (700, 500), self.settings.getvalue(self.section, "size")
+        )
 
+    @tctest.skipOnPlatform("__WXGTK__")  # Impossible avec wayland
     def test_move(self):
         self.frame.Maximize(False)
         self.frame.Iconize(False)

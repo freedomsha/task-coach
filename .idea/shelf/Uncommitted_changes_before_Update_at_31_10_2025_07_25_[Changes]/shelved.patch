@@ -1,0 +1,832 @@
+Index: taskcoach/taskcoachlib/application/application.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># -*- coding: utf-8 -*-\n\"\"\"\nTask Coach - Your friendly task manager\nCopyright (C) 2004-2016 Task Coach developers <developers@taskcoach.org>\n\nTask Coach is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nTask Coach is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.\n\nProgramme Principal\n\nModule: application\n\nCe module fait partie de l'application Task Coach et contient\nla logique principale de l'application,\ny compris l'initialisation,\nla configuration et\nla boucle d'événements principale.\n\nClasses:\n    Application: Gère l'initialisation et l'exécution de l'application Task Coach.\n\nFunctions:\n    start():\n        Démarre l'application Task Coach.\n\n    showHelp(parser):\n        Affiche le message d'aide et quitte.\n\n    showVersion():\n        Affiche la version actuelle de l'application Task Coach et quitte.\n\n    __init__(self, options, args):\n        Initialise l'application avec les options et arguments de ligne de commande donnés.\n\n    init(self, **kwargs):\n        Initialise divers composants de l'application, tels que les paramètres, le contrôleur io\n        , les fichiers de tâches, etc.\n\n    __init_config(self, loadSettings):\n        Initialise les paramètres de configuration de l'application.\n\n    run(self):\n        Exécute la boucle d'événements principale de l'application.\n\n    stop(self):\n        Arrête l'application et effectue le nettoyage nécessaire.\n\nAttributes:\n\n    _instance: Instance singleton de la classe Application.\n\n    _options: Options de ligne de commande analysées à partir des arguments.\n\n    _args: Arguments supplémentaires transmis à l’application.\n\n    iocontroller: Gère les opérations d’entrée/sortie.\n\n    taskfiles: Liste des fichiers de tâches gérés par l'application.\n\n    settings: Paramètres de l'application.\n\n    mainwindow: La fenêtre principale de l'application Task Coach.\n\nUsage:\n    Ce module est utilisé pour initialiser et exécuter l'application Task Coach.\n    Il gère les arguments de ligne de commande, configure la configuration\n    et démarre la boucle d'événements principale.\n\n    Example:\n        from taskcoachlib.application import application\n        app = application.Application(options, args)\n        app.run()\n\nDependencies:\n    - wx: wxPython pour les composants GUI.\n    - taskcoachlib.config: Gestion de la configuration.\n    - taskcoachlib.iocontroller: Contrôleur d'entrée/sortie.\n    - taskcoachlib.domain.task: Modèle de domaine de tâches.\n    - taskcoachlib.gui.mainwindow: Fenêtre principale de l'application.\n\"\"\"\n\n# Ce module contourne les bugs des modules tiers, principalement en appliquant des correctifs singe,\n# alors importez-le d'abord\n# 2 ajouts de futurize : map et object\n# from builtins import map  # Unused import statement 'from builtins import map'\n# from builtins import object\n\nimport calendar\nimport locale\nimport logging  # Attendre avant son implantation\nimport os\nimport re\nimport sys\nimport threading  # Unused import\nimport traceback\nimport time\nimport wx\n# try:\nfrom pubsub import pub\n# except ImportError:\n#    try:\n#       # from ..thirdparty.pubsub import pub\n#    except ImportError:\n#        from wx.lib.pubsub import pub\nfrom io import open\n\n# from taskcoachlib import workarounds  # pylint: disable=W0611  unused import statement\nfrom taskcoachlib import patterns, operating_system\n\n# nouveau :\nfrom taskcoachlib.i18n import _\nfrom taskcoachlib.config import Settings\nfrom taskcoachlib import gui, persistence\n\nlog = logging.getLogger(__name__)\n\n\nclass RedirectedOutput(object):\n    \"\"\"Classe objet de redirection de la sortie.\"\"\"\n\n    # TODO : A VERIFIER si la virgule est nécessaire\n    _rx_ignore = [\n        re.compile(\"RuntimeWarning: PyOS_InputHook\",)\n    ]\n\n    def __init__(self):\n        \"\"\"Fonction qui initialise l'argument du fichier à utiliser et l'argument du chemin du fichier taskcoachlog.txt\"\"\"\n        # Argument fichier à utiliser\n        self.__handle = None\n        # chemin de taskcoachlog.txt\n        self.__path = os.path.join(Settings.pathToDocumentsDir(), \"taskcoachlog.txt\")\n\n    def write(self, bf):\n        \"\"\"Fonction-méthode pour ouvrir puis écrire la Date et l'heure actuelle et bf dans taskcoachlog.txt\"\"\"\n        for rx in self._rx_ignore:\n            if rx.search(bf):\n                return\n\n        # Ancien code:\n        # Si l'argument-fichier à utiliser n'existe pas\n        if self.__handle is None:\n            # le définir comme l'ouverture pour écriture du fichier taskcoachlog.txt\n            # self.__handle = file(self.__path, 'a+')\n            self.__handle = open(self.__path, \"a+\")\n            # écrire la Date et l'heure actuelle dans taskcoachlog.txt\n            # self.__handle.write(\"============= %s\\n\" % time.ctime())\n            # self.__handle.write(\"============= {}\\n\".format(time.ctime()))\n            # self.__handle.write(f\"============= {time.ctime()}\\n\")\n            # Écriture de l'horodatage et du contenu dans le fichier\n            timestamp = time.strftime(\"%Y-%m-%d %H:%M:%S\")\n            # if bf != \"\" or \" \":\n            # self.__handle.write(\"[%s] %s\\n\" % (timestamp, bf))\n            self.__handle.write(f\"[{timestamp}] {bf}\\n\")\n\n        # écrire bf dans taskcoachlog.txt\n        # self.__handle.write(bf)\n\n    def flush(self):\n        pass\n\n    def close(self):\n        \"\"\"Fonction-méthode pour fermer taskcoachlig.txt\"\"\"\n        # si l'Argument-fichier à utiliser existe, le fermer et le rendre inaccessible.\n        if self.__handle is not None:\n            self.__handle.close()\n            self.__handle = None\n            # self.__path = None\n\n    def summary(self):\n        \"\"\"Fonction-méthode pour afficher une info sur ce qu'il vient d'être écrit dans taskcoachlog.txt\"\"\"\n        if self.__handle is not None:\n            self.close()  # fermer RedirectionOutput\n            # if operating_system.isWindows():\n            #     wx.MessageBox(\n            #         _(\n            #             'Errors have occured. Please see \"taskcoachlog.txt\" in your \"My Documents\" folder.'\n            #         ),\n            #         _(\"Error\"),\n            #         wx.OK,\n            #     )\n            # else:\n            wx.MessageBox(\n                _('Errors have occured. Please see \"%s\"') % self.__path,\n                _(\"Error\"),\n                wx.OK,\n                )\n            # wx.MessageBox(_('Errors have occured. Please see \"{}\"'.format(self.__path)), _('Error'), wx.OK)\n            # wx.MessageBox(_(f'Errors have occured. Please see \"{self.__path}\"'), _('Error'), wx.OK)\n\n\n# pylint: disable=W0404\n\nclass wxApp(wx.App):\n    \"\"\"Classe App pour wxpython\"\"\"\n\n    # {AttributeError}AttributeError(\"'ArtProvider' object has no attribute '_Application__wx_app'\")\n    # Pour pouvoir lancer un interface graphique wxPython,\n    # on doit obligatoirement passer par un objet chargé de créer l'instance de la classe principale de l'interface (le Top Level).\n    # Cet objet doit lui-même être construit et dériver de la classe wx.App\n\n    def __init__(self, sessionCallback, reopenCallback, *args, **kwargs):\n        self.sessionCallback = sessionCallback\n        self.reopenCallback = reopenCallback\n        self.__shutdownInProgress = False\n        # super(wxApp, self).__init__(*args, **kwargs)\n        super().__init__(*args, **kwargs)\n\n    def MacReopenApp(self):\n        \"\"\"Fonction-méthode pour rouvrir l'application sur Mac.\"\"\"\n        self.reopenCallback()\n\n    def OnInit(self):\n        # La classe wx.App est initialisée différemment des classes Python classiques.\n        # Ce n'est pas la méthode __init__() qui doit être implémentée,\n        # mais une méthode OnInit() sans paramètre (sauf le mot clé self qui lui permet de s'auto-référencer).\n        \"\"\"Fonction-méthode wxPython qui gère la sortie standard renvoie true sur l'initialisation.\n\n        Initialise l'application et gère la redirection de sortie standard sur des plates-formes spécifiques.\n\n        - Binds to `wx.EVT_QUERY_END_ SESSION` on Windows to manage session ending.\n        - Redirects standard output to `sys.stderr` if running a frozen executable or not in a terminal.\n\n        Returns :\n            (bool) : True on successful initialization.\n        \"\"\"\n        # La séquence d'initialisation de la méthode OnInit() est alors toujours la même :\n        #    fen = Bonjour(\"Exemple 1\")  # Création d'une instance de la fenêtre principale.\n        #    fen.Show(True)  # Affichage de la fenêtre par la méthode Show() dérivée de la classe wx.Window.\n        #    self.SetTopWindow(fen)  # Désignation de la fenêtre en tant que principale par la méthode SetTopWindow() spécifique à la classe wx.App\n        #    return True  # Retour de la valeur True marquant la fin de l'initialisation\n        # voir https://docs.python.org/fr/3.11/library/sys.html#sys.stdout\n        # if operating_system.isWindows():\n        #     self.Bind(wx.EVT_QUERY_END_SESSION, self.onQueryEndSession)\n\n        try:\n            isatty = sys.stdout.isatty()  # isatty is False !\n        except AttributeError:\n            isatty = False\n\n        if (\n            operating_system.isWindows()\n            and hasattr(sys, \"frozen\")\n            and not isatty\n        ) or not isatty:\n            sys.stdout = sys.stderr = RedirectedOutput()\n\n        return True\n\n    def onQueryEndSession(self, event=None):\n        \"\"\"\n        Gère la session se terminant gracieusement, en appelant `sessionCallback` une seule fois.\n\n        Args :\n            event (wx.Event, optional) : L'objet événement si disponible. La valeur par défaut est None.\n        \"\"\"\n        if not self.__shutdownInProgress:\n            self.__shutdownInProgress = True\n            self.sessionCallback()\n\n        if event is not None:\n            event.Skip()\n\n    # disparition de :\n    def ProcessIdle(self):\n        \"\"\"\n        Conservée pour des raisons de compatibilité avec les tests existants et `quitApplication`.\n\n        Cette méthode peut être utile pour le traitement inactif personnalisé dans votre application.\n        Cependant, son implémentation spécifique dépend de vos besoins.\n        \"\"\"\n        pass\n\n    # dans le fichier application.py pourtant elle est utilisée dans les tests et dans quitApplication\n\n\n# class Application(object):\n#     __metaclass__ = patterns.Singleton\n# class Application(metaclass=patterns.Singleton):\nclass Application(object, metaclass=patterns.Singleton):\n    \"\"\"Classe principale de l'application TaskCoach.\n\n    Gère le lancement et l'arrêt de l'application,\n    ainsi que l'initialisation de ses différents composants.\n\n    La méthode initTwisted initialise et lance le réacteur Twisted,\n    qui permet de gérer les événements asynchrones de l'application.\n\n    La méthode start lance l'application en affichant la fenêtre principale\n    et en démarrant la boucle d'événements de Twisted.\n\n    La méthode quitApplication permet de quitter l'application\n    en sauvegardant les paramètres et l'état de l'application.\"\"\"\n\n    def __init__(self, options=None, args=None, **kwargs):\n        \"\"\"La méthode init est appelée avant le démarrage de l'application.\n\n        Elle configure divers aspects de l'application, notamment la langue, le correcteur orthographique,\n        la gestion des signaux et la création d'icônes de barre des tâches.\"\"\"\n        # ... (initialisation des attributs d'instance)\n        # nouveaux Attributs d'instance :\n        #   # Défini dans start\n        self.__message_checker = None\n        self.__version_checker = None\n        # Défini dans self.init :\n        self.mainwindow = None\n        self.iocontroller = None\n        self.__auto_backup = None\n        self.__auto_exporter = None\n        self.__auto_saver = None\n        self.taskFile = None\n\n        self._options = options\n        self._args = args\n        # Initialisation de Twisted (1-3/5)\n        # self.initTwisted()\n        try:\n            self.initTwisted()\n        except Exception as e:\n            log.exception(f\"application.py: Error initializing Twisted: {str(e)}\", exc_info=True)\n            # print(f\"application.py: Error initializing Twisted: {e}\")\n            # wx.MessageBox(f\"application.py Application.__init__: Error initializing Twisted: {e}\",\n            #               \"Error\", wx.OK | wx.ICON_ERROR)\n        # print(\"application.Application.__init__: Twisted initialized\")\n        log.info(\"Application : Twisted initialisé avec succès.\")\n\n        # wx-1-Create a new app, don't redirect stdout/stderr to a window.\n        self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=False)\n        # myapp = MyApp() # functions normally. Stdio is redirected to its own window\n        # myapp = MyApp(0) #does not redirect stdout. Tracebacks will show up at the console.\n        # myapp = MyApp(1, 'filespec') #redirects stdout to the file 'filespec'\n        # # NOTE: These are named parameters, so you can do this for improved readability:\n        # myapp = MyApp(redirect = 1, filename = 'filespec') # will redirect stdout to 'filespec'\n        # myapp = MyApp(redirect = 0) #stdio will stay at the console...\n        # self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=1, filename=RedirectedOutput().__path)\n        # Après cela, wx-2-création d'une Frame !(-> voir Dans init)\n\n        # print(\"application.Application.__init__: self.__wx_app défini !\")\n        # log.debug(\"Application wxApp créée.\")\n\n        # Twisted (4/5) Enregistrement de l'application dans Twisted\n        self.registerApp()\n        # print(\"application.Application.__init__: self.registerApp() !\")\n        # wx-2 :\n        # log.debug(\"Appel de la Méthode init().\")\n        self.init(**kwargs)  # passe mais n'atteint pas la suite ! goto l540\n        # print(\"application.Application.__init__: self.init() !\")\n        # log.debug(\"Méthode init() appelée.\")\n\n        # self est Application (tclib.application.application.Application)\n        # # Attributs d'instance définis en dehors de __init__ , nécessaires dans start:\n        # # __version_checker, __message_checker\n        # # taskFile, __auto_saver, __auto_exporter, __auto_backup, iocontroller, mainwindow\n        # # 6 nouveaux paramètres nécessaires dans init\n        # self.__version_checker = None\n        # self.__message_checker = None\n        # # Instance attribute taskFile, __auto_saver, __auto_exporter, __auto_backup, iocontroller, mainwindow\n        # # defined outside __init__\n        # # 6 nouveaux paramètres nécessaires dans init :\n        # self.taskFile = None\n        # self.__auto_saver = None\n        # self.__auto_exporter = None\n        # self.__auto_backup = None\n        # self.iocontroller = None\n        # self.mainwindow = None\n\n        if operating_system.isGTK():\n            if self.settings.getboolean(\"feature\", \"usesm2\"):\n                from taskcoachlib.powermgt import xsm\n\n                class LinuxSessionMonitor(xsm.SessionMonitor):\n                    def __init__(self, callback):\n                        super().__init__()\n                        self._callback = callback\n                        self.setProperty(xsm.SmCloneCommand, sys.argv)\n                        self.setProperty(xsm.SmRestartCommand, sys.argv)\n                        self.setProperty(xsm.SmCurrentDirectory, os.getcwd())\n                        self.setProperty(xsm.SmProgram, sys.argv[0])\n                        self.setProperty(xsm.SmRestartStyleHint, xsm.SmRestartNever)\n\n                    def saveYourself(\n                        self, saveType, shutdown, interactStyle, fast\n                    ):  # pylint: disable=W0613\n                        if shutdown:\n                            wx.CallAfter(self._callback)\n                        self.saveYourselfDone(True)\n\n                    def die(self):\n                        pass\n\n                    def saveComplete(self):\n                        pass\n\n                    def shutdownCancelled(self):\n                        pass\n\n                self.sessionMonitor = LinuxSessionMonitor(\n                    self.on_end_session\n                )  # pylint: disable=W0201\n            else:\n                self.sessionMonitor = None\n\n        # print(\"application.Application.__init__: isGTK? !\")\n        calendar.setfirstweekday(\n            dict(monday=0, sunday=6)[self.settings.get(\"view\", \"weekstart\")]\n        )\n\n    def initTwisted(self):\n        \"\"\"Fonction-méthode pour initialiser et lancer Twisted.\n\n        Initialise et lance le réacteur Twisted, qui permet de gérer les événements asynchrones de l'application.\n        Centralise aussi tous les logs (Twisted inclus).\n        \"\"\"\n        # voir peut-être https://docs.twisted.org/en/stable/core/howto/design.html\n        # et https://docs.twisted.org/en/stable/core/howto/process.html\n        # et pour python 3 : https://docs.twisted.org/en/stable/core/howto/python3.html\n        # https://docs.twisted.org/en/stable/core/howto/choosing-reactor.html\n        # Twisted (1/5) to use Twisted\n        from twisted.internet import wxreactor\n\n        # twisted.python.log s'est sensiblement déplacé vers le texte des str\n        # à partir de lignes d'octets.\n        # Événements d'exploitation forestière,\n        # en particulier ceux produits par un Appel comme msg(\"foo\"),\n        # doit maintenant être des chaînes de texte.\n        # Par conséquent, sur Python 3, les dictionnaires d'événements\n        # passés aux enregistrements de journaliser\n        # confulent une chaîne de texte où\n        # elles contenaient précédemment des chaînes d'octets.\n        # twisted.python.filepath.FilePath n'a pas changé.\n        # Il ne supporte que des lignes d'octets.\n        # Cela nécessitera probablement des demandes pour\n        # mettre à jour leur utilisation de FilePath,\n        # au moins pour passer un octet explicite littérales de chaîne\n        # plutôt que \"native\" littérales de chaîne (qui sont du texte sur Python 3).\n\n        # Twisted (2/5)\n        wxreactor.install()\n\n        # Monkey-patching older versions because of https://twistedmatrix.com/trac/ticket/3948\n        # J'ai deux alternatives à :\n        #         if map(int, twisted.__version__.split('.')) < (11,):\n        #             from twisted.internet import reactor\n        #             if wxreactor.WxReactor.callFromThread is not None:\n        #                 oldStop = wxreactor.WxReactor.stop\n        #                 def stopFromThread(self):\n        #                     self.callFromThread(oldStop, self)\n        #                 wxreactor.WxReactor.stop = stopFromThread\n        # celle généré par futurize:\n        # import twisted  # Unused import\n\n        # if list(map(int, twisted.__version__.split('.'))) < (11,):\n        # if list(twisted.__version__.split(\".\")) < ['11', ]:\n        # if tuple(map(int, twisted.__version__.split(\".\"))) < (11,):\n        # ValueError: invalid literal for int() with base 10: '0rc1'\n        # Est-ce nécessaire ?\n        # Twisted (3/5), when Wxapp has been created :\n        # from twisted.internet import wxreactor, threads  # unused import\n        from twisted.internet import wxreactor\n\n        # TODO: retrouver dans twisted de quoi remplacer callFromThread\n        # une piste sur https://stackoverflow.com/questions/4081578/python-twisted-with-callinthread\n        # https://docs.twistedmatrix.com/en/stable/core/howto/threading.html#getting-results\n        if wxreactor.WxReactor.callFromThread is not None:\n            # if threads.deferToThread is not None:\n            oldStop = wxreactor.WxReactor.stop\n\n            def stopFromThread(self):\n                self.callFromThread(oldStop, self)\n                # self.deferToThread(oldStop, self)\n                # ou\n                # self.blockingCallFromThread(oldStop, self)\n\n            wxreactor.WxReactor.stop = stopFromThread\n            # wxreactor.WxReactor.stop = wxreactor.WxReactor.callFromThread(wxreactor.WxReactor.stop, self)  # Ne fonctionne pas !\n            # <taskcoachlib.application.application.Application object at 0x7c07fff70110> is not callable\n        # ou\n        # import twisted\n        # print(list(twisted.__version__.split('.')))\n        # if list(twisted.__version__.split('.')) < ['11', '0']:\n        #    # essayer list seul sinon list(map())\n        #    # from twisted.internet import reactor  # doublon soit-disant déjà installé\n        #    if wxreactor.WxReactor.callFromThread is not None:\n        #        oldStop = wxreactor.WxReactor.stop\n        #        def stopFromThread(self):\n        #            self.callFromThread(oldStop, self)\n        #        wxreactor.WxReactor.stop = stopFromThread\n        #        # ou essayer avec https://www.programcreek.com/python/example/117947/twisted.internet.error\n        #        # .ReactorAlreadyInstalledError\n\n        # Centraliser tous les logs (Twisted inclus) :\n        from twisted.python import log as twisted_log\n        twisted_log.startLoggingWithObserver(lambda msg: log.info(msg.get('message')))\n        # msg(\"Log opened.\")\n\n    def stopTwisted(self):\n        \"\"\"Fonction-méthode pour arrêter twisted-reactor\"\"\"\n        # voir https://stackoverflow.com/questions/6526923/stop-twisted-reactor-on-a-condition\n        # from twisted.internet import reactor, error\n        from twisted.internet import reactor, error\n\n        log.debug(\"Application.stopTwisted : Essaie d'arrêter reactor.\")\n        try:\n            reactor.stop()  # cannot find stop in reactor, but don't use yourApp.ExitMainLoop()\n            log.debug(\"Application.stopTwisted : A lancé reactorstop().\")\n        except error.ReactorNotRunning as e:\n            # Happens on Fedora 14 when running unit tests. Old Twisted ?\n            # in Arch, reference 'stop' not find in 'reactor.py'\n            log.error(\"Application.stopTwisted : Reactor n'a pas démarré !\", exc_info=True, stack_info=True)\n            pass\n        # Arrêter les threads workers\n        log.debug(\"Application.stopTwisted : Essaie d'arrêter les threads workers\")\n        try:\n            reactor.getThreadPool().stop()\n            log.debug(\"Application.stopTwisted : avec la méthode getThreadPool().stop().\")\n        except AttributeError:\n            # Certains réacteurs n'ont pas de threadpool explicite\n            try:\n                reactor.threadpool.stop()\n                log.debug(\"Application.stopTwisted : avec la méthode threadpool().stop().\")\n            except AttributeError:\n                log.debug(\"Application.stopTwisted : aucune méthode ne fonctionne pour arrêter les workers.\")\n        time.sleep(0.1)  # Donne un peu de temps au worker pour s'arrêter\n\n    def registerApp(self):\n        \"\"\"Fonction-méthode pour Enregistrez l'instance d'application avec Twisted:\"\"\"\n        # try:\n        # Twisted (3/5), when Wxapp has been created :\n        from twisted.internet import reactor\n\n        # voir peut-etre aussi twisted.internet.wxreactor.WxReactor !\n        # Twisted (4/5) : (5/5) est dans start !\n        reactor.registerWxApp(self.__wx_app)\n        # except ModuleNotFoundError:\n        #     from twisted.internet import wxreactor\n        #     # https://docs.twistedmatrix.com/en/stable/api/twisted.internet.wxreactor.WxReactor.html#registerWxApp\n        #     wxreactor.WxReactor.registerWxApp(self.__wx_app)\n        # except TypeError:\n        #     print(\"registerWxApp missing 1 argument\")\n        #     pass\n\n    def start(self):\n        \"\"\"Fonction-méthode d'Appel pour démarrer l'application.\n\n        Lance l'application en affichant la fenêtre principale et en démarrant la boucle d'événements de Twisted.\n\n        \"\"\"\n        # pylint: disable=W0201\n        from taskcoachlib import meta\n\n        log.info(\"Application.start : Lancement de la fenêtre principale\")\n        if self.settings.getboolean(\"version\", \"notify\"):\n            self.__version_checker = meta.VersionChecker(self.settings)\n            self.__version_checker.start()\n        if self.settings.getboolean(\"view\", \"developermessages\"):\n            self.__message_checker = meta.DeveloperMessageChecker(self.settings)\n            self.__message_checker.start()\n        self.__copy_default_templates()\n\n        # Show the frame.\n        # self.mainwindow.Show()  # ligne qui devrait être la 2e dans OnInit, ou en 3e après frame !\n        self.mainwindow.Show(True)\n        # Ensuite, il devrait y avoir self.__wx_app.MainLoop() !\n        # Ici, c'est remplacé par twisted.reactor.\n\n        # vieux code\n        #  from twisted.internet import reactor\n        #         reactor.run()\n        # Twisted (3/5) :\n        from twisted.internet import reactor\n\n        # Twisted (4/5) : est dans RegisterApp\n\n        # voir https://github.com/twisted/twisted/blob/63df84e454978bd7a2d57ed292913384ca352e1a/src/twisted/internet/wxreactor.py#L74\n        # start the event loop:\n        # Démarre la boucle des événements:\n        # Twisted (5/5):\n        # reactor.run()\n        try:\n            reactor.run()\n        except Exception as e:\n            # logging.error(\"application.py: Error running Twisted reactor: %s\", str(e))\n            # wx.MessageBox(f\"application.py: Error running Twisted reactor: {e}\",\n            #               \"Error\", wx.OK | wx.ICON_ERROR)\n            wx.MessageDialog(self, message=f\"application.py: Error running Twisted reactor: {e}\", caption=\"Error\", style=wx.OK | wx.ICON_ERROR)\n            # Gérer l'erreur de manière appropriée (par exemple, afficher un message à l'utilisateur)\n        # IMPORTANT: tests will fail when run under this reactor. This is\n        # expected and probably does not reflect on the reactor's ability to run\n        # real applications.\n        #\n        # ou essayer :\n        # from twisted.internet.interfaces import IReactorCore\n        # ou twisted.internet.wxreactor.WxReactor.run\n        # IReactorCore.run()\n        # https://docs.twisted.org/en/stable/api/nameIndex.html#R\n        # twisted.application.app.ApplicationRunner.run\n        # twisted.application.app.AppProfiler.run\n        # twisted.application.app.CProfileRunner.run\n        # twisted.application.app.ProfileRunner.run\n        # twisted.application.app.run\n        # twisted.conch.scripts.cftp.run\n        # twisted.conch.scripts.ckeygen.run\n        # twisted.conch.scripts.conch.run\n        # twisted.conch.scripts.tkconch.run\n        # twisted.internet.asyncioreactor.AsyncioSelectorReactor.run\n        # twisted.internet.base.ReactorBase.run\n        # twisted.internet.interfaces.IReactorCore.run\n        # twisted.internet.testing.MemoryReactor.run\n        # twisted.internet.wxreactor.WxReactor.run\n        # twisted.internet.wxsupport.wxRunner.run\n        log.info(\"Application.start : Terminé.\")\n\n    def __copy_default_templates(self):\n        \"\"\"Copie les modèles par défaut qui n'existent pas encore dans le répertoire de modèles de l'utilisateur.\"\"\"\n\n        # class getDefaultTemplates créé par templates.in/make.py\n        from taskcoachlib.persistence import getDefaultTemplates\n        # créé par templates.in/make\n\n        template_dir = self.settings.pathToTemplatesDir()\n        if (\n            len(\n                [name for name in os.listdir(template_dir) if name.endswith(\".tsktmpl\")]\n            )\n            == 0\n        ):\n            for name, template in getDefaultTemplates():\n                filename = os.path.join(template_dir, name + \".tsktmpl\")\n                if not os.path.exists(filename):\n                    # ouverture du fichier filename en mode bytes !!! et y écrire template\n                    # file(filename, \"wb\").write(template)\n                    open(filename, \"wb\").write(template)\n\n    def init(self, loadSettings=True, loadTaskFile=True):\n        \"\"\"Initialiser l'application.\n\n        Appelé par __init__.\n        Doit être appelé avant Application.start().\n\n        Args:\n            loadSettings (bool, optional): Charger les paramètres de l'application. Defaults to True.\n            loadTaskFile (bool, optional): Charger le fichier de tâches. Defaults to True.\n        \"\"\"\n        log.info(\"Application.init: Initialisation des composants de l'application.\")\n\n        # try:\n        # Attributs d'instance:\n        self.__init_config(loadSettings)\n        self.__init_language()\n        #  Fournir aux objets de domaine pertinents un accès aux paramètres :\n        # log.info(\"Application.init: Fournir aux objets de domaine pertinents un accès aux paramètres :\")\n        self.__init_domain_objects()  # Passe directement à l556 !? après avoir affiché 6 lignes debug image handler for\n        self.__init_application()  # Réglage des paramètres nom et auteurs de l'application.\n        # Problème de doublon d'image ! : réglé, double entrée de .mainwindow dans gui/init.py\n        # print(\"application.Application.init : attributs ok !\")\n        # from taskcoachlib import gui, persistence  # TODO : à mettre au début !\n\n        gui.init()  # goto gui.artprovider.init : Initialise l'ArtProvider\n        # print(\"application.Application.init : gui.init(), Problème de doublons ? C'était MainWindow en double dans gui/init.py\")\n        show_splash_screen = self.settings.getboolean(\"window\", \"splash\")  # = True puis l560\n        splash = gui.SplashScreen() if show_splash_screen else None\n        # pylint: disable=W0201\n        self.taskFile = persistence.LockedTaskFile(\n            poll=not self.settings.getboolean(\"file\", \"nopoll\")\n        )  # Application.taskFile puis passe à l160 flush . Pourquoi ? Parce que persistence.LockedTaskFile plante.\n\n        self.__auto_saver = persistence.AutoSaver(self.settings)\n        self.__auto_exporter = persistence.AutoImporterExporter(self.settings)\n        self.__auto_backup = persistence.AutoBackup(self.settings)\n        self.iocontroller = gui.IOController(\n            self.taskFile, self.displayMessage, self.settings, splash\n        )\n\n        # wx-2-Création d'une instance de la fenêtre Principale (objet de gui.mainwindow.MainWindow, wx.Frame):\n        # ligne qui devrait être la première dans OnInit (ou en tout cas juste après self.__wx_app = wxApp() dans __init__):\n        log.info(\"Application.init: Initialisation de la fenêtre principale.\")\n        self.mainwindow = gui.mainwindow.MainWindow(\n            self.iocontroller, self.taskFile, self.settings, splash=splash\n        )  # A Frame is a top-level window.\n        # log.info(f\"Application : self.mainwindow.winId = {self.mainwindow.winId}\")\n        # Après il devrait y avoir self.mainwindow.Show(true) !(Voir start())\n\n        # Désignation de la fenêtre en tant que principale par la méthode SetTopWindow() spécifique à la classe wx.App\n        # ligne qui devrait être en 3e position dans OnInit:\n        log.info(\"Application.init: Fenêtre principale mise en avant.\")\n        # Notre classe dérivée de WXApp normale, comme d'habitude (même avec wx.lib.agw.aui).\n        self.__wx_app.SetTopWindow(self.mainwindow)\n        # Ensuite : frame.Show()\n\n        self.__init_spell_checking()  # Attention changements\n        if not self.settings.getboolean(\"file\", \"inifileloaded\"):\n            self.__close_splash(splash)\n            self.__warn_user_that_ini_file_was_not_loaded()\n        log.info(\"Application.init : loadTaskFile est coché ?\")\n        # Si loadTaskFile est configuré sur True ouvrir le fichier de self._args avec openAfterStart:\n        if loadTaskFile:\n            log.info(f\"Oui, Application.init ouvre un fichier grâce à _args={self._args}.\")\n            self.iocontroller.openAfterStart(self._args)\n        else:\n            log.info(\"Non, Application.init n'ouvre pas de fichier.\")\n        # self.__register_signal_handlers()  # Est-elle bien implémentée ?\n        self.__create_mutex()\n        self.__create_task_bar_icon()\n        # wxPython ferme l'écran splash.\n        wx.CallAfter(self.__close_splash, splash)\n        # wxPython affiche un écran Tips.\n        wx.CallAfter(self.__show_tips)\n        # except Exception as e:\n        #     print(\n        #         \"application.py: Erreur lors de l'initialisation de l'application: %s\",\n        #         str(e),\n        #     )\n        #     logging.error(\n        #         \"application.py: Erreur lors de l'initialisation de l'application: %s\",\n        #         str(e),\n        #     )\n        #     return False\n        # self.mainwindow.Show()  # Ré-affiche la fenêtre principale pour éviter de voir les scintillements ! Ne fonctionne pas !\n        log.info(\"Application.init : Composants de l'application initialisés. ✅Terminé\")\n\n    def __init_config(self, load_settings):\n        \"\"\"Fonction-méthode d'initialisation de la configuration.\n\n        Args :\n            load_settings (bool) : Charger les paramètres de l'application.\n        \"\"\"\n        try:\n            from taskcoachlib import config\n\n            ini_file = self._options.inifile if self._options else None\n            # est-ce qu'il existe un fichier inifile ? si non load_settings is False !\n            # AttributeError: 'Values' object has no attribute 'inifile'\n            # AttributeError: 'Namespace' object has no attribute 'inifile'\n            # pylint: disable=W0201\n            self.settings = config.Settings(load_settings, ini_file)  #\n            # TODO : ini_file is None !\n        except IOError or Exception as e:\n            # print(\n            #     \"application.py: Erreur lors de la lecture du fichier de configuration: %s\",\n            #     str(e),\n            # )\n            log.error(\n                \"Application.__init_config :  Erreur lors de la lecture du fichier de configuration: %s\",\n                str(e),\n            )\n            raise\n\n    def __init_language(self):\n        \"\"\"Initialisez la traduction actuelle.\"\"\"\n        try:\n            from taskcoachlib import i18n\n\n            i18n.Translator(self.determine_language(self._options, self.settings))\n        except Exception as e:\n            # print(\n            #     \"application.py: Erreur lors de l'initialisation de la langue: %s\",\n            #     str(e),\n            # )\n            log.error(\n                \"Application.__init_language : Erreur lors de l'initialisation de la langue: %s\",\n                str(e),\n            )\n\n    @staticmethod\n    def determine_language(options, settings, locale=locale):  # pylint: disable=W0621\n        # Shadows name 'locale' from outer scope\n        \"\"\"Détermine la langue locale utilisée.\n\n        Args :\n            options : Options de la ligne de commande.\n            settings : Paramètres de l'application.\n            locale : Module locale (par défaut, le module locale standard).\n\n        Returns :\n            str : La langue locale à utiliser.\n        \"\"\"\n        language = None\n        if options:\n            # User specified language or .po file on command line\n            language = options.pofile or options.language\n        if not language:\n            # Get language as set by the user via the preferences dialog\n            language = settings.get(\"view\", \"language_set_by_user\")\n        if not language:\n            # Get language as set by the user or externally (e.g. PortableApps)\n            language = settings.get(\"view\", \"language\")\n        if not language:\n            # Use the user's locale\n            language = locale.getdefaultlocale()[0]\n            # language = locale.getlocale()[0]\n            if language == \"C\":\n                # TODO: essayer:\n                # locale.setlocale(locale.LC_ALL, \"C\")\n                # language = locale.setlocale(locale.LC_ALL, \"C\")\n                language = None\n        if not language:\n            # Fall back on what the majority of our users use\n            language = \"en_US\"\n        return language\n\n    def __init_domain_objects(self):\n        \"\"\"Fonction-méthode qui fournit aux objets de domaine pertinents\n        un accès aux paramètres.\n        \"\"\"\n        from taskcoachlib.domain import task, attachment\n\n        task.Task.settings = self.settings\n        attachment.Attachment.settings = self.settings\n\n    def __init_application(self):\n        \"\"\"Fonction-méthode qui règle les paramètres nom et auteurs de l'application.\"\"\"\n        from taskcoachlib import meta\n        # Attributs d'instance\n        self.__wx_app.SetAppName(meta.name)\n        self.__wx_app.SetVendorName(meta.author)\n\n    def __init_spell_checking(self):\n        \"\"\"Fonction-méthode qui règle-initialise.\"\"\"\n        log.debug(\"Vérification orthographique initialisée\")\n\n        self.on_spell_checking(self.settings.getboolean(\"editor\", \"maccheckspelling\"))\n        pub.subscribe(self.on_spell_checking, \"settings.editor.maccheckspelling\")\n\n    def on_spell_checking(self, value):\n        \"\"\"Fonction-méthode qui utilise SystemOptions qui stocke les paires option/valeur que wxWidgets lui-même\n        ou les applications peuvent utiliser pour modifier le comportement au moment de l'exécution.\n        \"\"\"\n        # SystemOptions stocke les paires option/valeur que wxWidgets lui-même ou les applications\n        # peuvent utiliser pour modifier le comportement au moment de l'exécution.\n        if (\n            operating_system.isMac()\n            and not operating_system.isMacOsXMountainLion_OrNewer()\n        ):\n            # wx.SystemOptions.SetOptionInt(\"mac.textcontrol-use-spell-checker\", value)\n            wx.SystemOptions.SetOption(\"mac.textcontrol-use-spell-checker\", value)\n\n    def __register_signal_handlers(self):\n        \"\"\"Fonction-méthode pour quitter à cause d'un signal.\"\"\"\n        # if operating_system.isWindows():\n        #     import win32api  # pylint: disable=F0401\n        #\n        #     def quit_adapter(*args):\n        #         # Parameter 'args' value is not used\n        #         # Le gestionnaire est appelé depuis quelque chose qui n'est pas le thread principal,\n        #         # nous ne pouvons donc pas faire grand-chose en rapport avec wx.\n        #         event = threading.Event()\n        #\n        #         def quit():\n        #             # Shadows built-in name 'quit'\n        #             try:\n        #                 self.quitApplication()\n        #             finally:\n        #                 event.set()\n        #\n        #         wx.CallAfter(quit)\n        #         event.wait()\n        #         return True\n        #\n        #     win32api.SetConsoleCtrlHandler(quit_adapter, True)\n        # else:\n        import signal\n\n        log.debug(\"Application.__register_signal_handlers : Quitter à cause d'un signal !\")\n\n        def quit_adapter(*args):\n            # Parameter 'args' value is not used\n            log.debug(\"Application.__register_signal_handlers.quit_adapter : Retourne la fonction pour quitter l'application.\")\n            return self.quitApplication()\n        log.debug(\"Application.__register_signal_handlers : Signale pour quitter l'application.\")\n        signal.signal(signal.SIGTERM, quit_adapter)\n        if hasattr(signal, \"SIGHUP\"):\n            # forced_quit = lambda *args: self.quitApplication(force=True)\n            def forced_quit(*args):\n                # Parameter 'args' value is not used\n                log.debug(\"Application.__register_signal_handlers.forced_quit : Force à quitter l'application.\")\n                return self.quitApplication(force=True)\n            log.debug(\"Application.__register_signal_handlers : Signale de forçage pour quitter l'application.\")\n            signal.signal(signal.SIGHUP, forced_quit)  # pylint: disable=E1101\n\n    @staticmethod\n    def __create_mutex():\n        \"\"\"Sous Windows, crée un mutex pour qu'InnoSetup puisse vérifier si l'application est en cours d'exécution.\"\"\"\n        if operating_system.isWindows():\n            import ctypes\n            from taskcoachlib import meta\n\n            ctypes.windll.kernel32.CreateMutexA(None, False, meta.filename)\n\n    def __create_task_bar_icon(self):\n        \"\"\"Fonction-Méthode pour créer une icône avec menu dans la barre de tâche.\"\"\"\n        # Le problème est effectivement que TaskBarIcon n'est pas\n        # une sous-classe de wx.Window, et les menus wxPython\n        # (comme ceux gérés par UICommandContainerMixin)\n        # sont conçus pour être associés à des wx.Window.\n        if self.__can_create_task_bar_icon():\n            from taskcoachlib.gui import taskbaricon, menu\n\n            self.taskBarIcon = taskbaricon.TaskBarIcon(\n                self.mainwindow,  # pylint: disable=W0201\n                self.taskFile.tasks(),\n                self.settings,\n            )\n            # self.taskBarIcon.setPopupMenu(\n            #     menu.TaskBarMenu(\n            #         self.taskBarIcon,\n            #         self.settings,\n            #         self.taskFile,\n            #         self.mainwindow.viewer,\n            #     )\n            # )\n            self.taskBarIcon.setPopupMenu(\n                menu.TaskBarMenu(\n                    self.mainwindow,  # Passer self.mainwindow au lieu de self.taskBarIcon.\n                    self.settings,\n                    self.taskFile,\n                    self.mainwindow.viewer,\n                )\n            )\n            # En passant self.mainwindow à TaskBarMenu,\n            # nous fournissons au menu une référence à une instance de wx.Window,\n            # ce qui satisfait les exigences de wx.Menu et UICommandContainerMixin.\n            # L'affichage du menu est toujours géré correctement par TaskBarIcon\n            # en utilisant self.PopupMenu(), car c'est la manière appropriée\n            # d'afficher un menu contextuel pour une icône de barre des tâches.\n            # Cohérence : S'Assurer que l'utilisation de self._window dans Menu\n            # et UICommandContainerMixin est cohérente avec le fait\n            # qu'il peut maintenant s'agir de la fenêtre principale\n            # et non de l'icône de la barre des tâches.\n\n    # @staticmethod\n    def __can_create_task_bar_icon(self):\n        \"\"\"Fonction qui définit si une icône de barre de tâche peut être créée.\n\n        Returns :\n            bool\n        \"\"\"\n        # Le problème est effectivement que TaskBarIcon n'est pas\n        # une sous-classe de wx.Window, et les menus wxPython\n        # (comme ceux gérés par UICommandContainerMixin)\n        # sont conçus pour être associés à des wx.Window.\n        try:\n            from taskcoachlib.gui import taskbaricon  # pylint: disable=W0612  # noqa: F401\n\n            return True\n            # except:\n        except ImportError:\n            return False  # pylint: disable=W0702\n\n    @staticmethod\n    def __close_splash(splash):\n        \"\"\"Fonction-méthode si splash, ferme et le détruit.\"\"\"\n        if splash:\n            splash.Destroy()\n\n    def __show_tips(self):\n        \"\"\"Fonction-méthode d'affichage des fenêtres d'astuces.\"\"\"\n        if self.settings.getboolean(\"window\", \"tips\"):\n            from taskcoachlib import help  # pylint: disable=W0622\n\n            help.showTips(self.mainwindow, self.settings)\n\n    def __warn_user_that_ini_file_was_not_loaded(self):\n        \"\"\"Fonction-méthode pour avertir l'utilisateur que le fichier ini n'a pas été démarré.\"\"\"\n        from taskcoachlib import meta\n\n        reason = self.settings.get(\"file\", \"inifileloaderror\")\n        log.warning(\"Fichier ini non chargé : %s\", reason)\n        wx.MessageBox(\n            _(\"Couldn't load settings from TaskCoach.ini:\\n%s\") % reason,\n            # _(f\"Couldn't load settings from TaskCoach.ini:\\n{reason}\"),\n            _(\"%s file error\") % meta.name,\n            style=wx.OK | wx.ICON_ERROR,\n        )\n        # _(f\"{meta.name} file error\"), style=wx.OK | wx.ICON_ERROR)\n        self.settings.setboolean(\"file\", \"inifileloaded\", True)  # Reset\n\n    def displayMessage(self, message):\n        \"\"\"Fonction-méthode pour afficher le message.\"\"\"\n        self.mainwindow.displayMessage(message)\n\n    def on_end_session(self):\n        \"\"\"Fonction de fin de session.\n\n        Termine la session de l'application en sauvegardant les paramètres et l'état avant la fermeture.\n\n        Raises :\n            Exception : Une exception peut être levée si la fermeture de l'application échoue.\n        \"\"\"\n        # self.mainwindow.setShutdownInProgress()\n        # self.quitApplication(force=True)\n        log.debug(\"Application.on_end_session : Essaie de terminer la session et fermer l'application.\")\n        try:\n            self.mainwindow.setShutdownInProgress()\n            self.quitApplication(force=True)\n        except Exception as e:\n            # print(\n            #     \"application.py: Erreur lors de la fermeture de la session: %s\", str(e)\n            # )\n            log.exception(f\"Application : Erreur lors de la fermeture de la session : {e}\")\n\n    def on_reopen_app(self):\n        \"\"\"Fonction-méthode pour rouvrir l'application.\"\"\"\n        self.taskBarIcon.onTaskbarClick(None)\n\n    def quitApplication(self, force=False):\n        \"\"\"Fonction-méthode pour quitter l'application.\n\n        Quitte l'application en sauvegardant les paramètres et l'état de l'application.\n\n        Args :\n            force (bool) : Si True, force l'arrêt de l'application sans demander de confirmation.\n\n        Returns :\n            bool : True si l'application a été arrêtée avec succès, False sinon.\n        \"\"\"\n        # Voir https://pythonhosted.org/wxPython/window_deletion_overview.html#window-deletion\n        log.info(\"Application.quitApplication : Début de la Fermeture de l'application\")\n\n        if not self.iocontroller.close(force=force):\n            return False\n        # Rappelez-vous sur quoi l'utilisateur travaillait :\n        self.settings.set(\"file\", \"lastfile\", self.taskFile.lastFilename())\n        self.mainwindow.save_settings()\n        self.settings.save()\n        if self.taskFile:\n            self.taskFile.stop()\n        log.info(\"Avant suppression de l'icône barre de tâches\")\n        if hasattr(self, \"taskBarIcon\"):\n            self.taskBarIcon.RemoveIcon()\n        if self.mainwindow.bonjourRegister is not None:\n            self.mainwindow.bonjourRegister.stop()\n        from taskcoachlib.domain import date\n\n        date.Scheduler().shutdown()\n        # self.__wx_app.ProcessIdle()  # wxApp/ProcessIdle is not in application.py but used in tests !\n        wx.GUIEventLoop.GetActive().ProcessIdle()  # wxApp/ProcessIdle is not in application.py but used in tests !\n\n        # For PowerStateMixin\n        log.info(\"Avant appel à mainwindow.OnQuit\")\n        self.mainwindow.OnQuit()\n\n        if operating_system.isGTK() and self.sessionMonitor is not None:\n            self.sessionMonitor.stop()\n\n        if isinstance(sys.stdout, RedirectedOutput):\n            sys.stdout.summary()\n\n        log.info(\"Avant appel stopTwisted()\")\n        log.debug(\"Application.quitApplication : Essaie d'arrêter Twisted.\")\n        try:\n            self.stopTwisted()\n        except Exception as e:\n            # print(\n            #     \"application.py:Erreur lors de l'arrêt de Twisted: %s\", str(e)\n            # )\n            log.error(\n                f\"Application.quitApplication : Erreur lors de l'arrêt de Twisted: {str(e)}\", exc_info=True\n            )\n\n        log.info(\"Avant appel sys.exit()\")\n        if self.mainwindow:\n            try:\n                self.mainwindow.Destroy()\n            except Exception as e:\n                log.error(f\"Erreur lors de la destruction de la fenêtre principale: {e}\")\n        log.info(\"Fenêtre principale détruite, appel de sys.exit()\")\n        log.info(\"Threads actifs avant sys.exit(): %s\", threading.enumerate())\n        for t in threading.enumerate():\n            log.debug(f\"Thread: {t.name}, Daemon: {t.daemon}, Class: {type(t)}\")\n            log.debug(f\"Stack for thread {t.name}:\\n{''.join(traceback.format_stack(sys._current_frames()[t.ident])) if t.is_alive() else 'Thread not alive'}\")\n        log.debug(\"Application.quitApplication : Essaie de quitter proprement l'application avec sys.exit().\")\n        # sys.exit()  # Quitter proprement l'application\n        #\n        # Toutes les étapes avant sys.exit() doivent être exécutées sans erreur (fermeture du fichier de tâches, sauvegarde des paramètres, suppression de l’icône de la barre, etc).\n        # Si iocontroller.close(force=force) retourne False, la méthode quitte sans jamais appeler sys.exit().\n        # Si une exception est levée avant d’atteindre sys.exit(), la fermeture peut échouer.\n        # S’il existe des threads ou des boucles événementielles Twisted encore actives, la fermeture peut être bloquée.\n        # Raisons fréquentes pour lesquelles la fenêtre ne se ferme pas :\n        #\n        #     iocontroller.close(force=force) retourne False\n        #     Cela signifie que la fermeture a été annulée (ex : dialogue de confirmation, fichier non sauvegardé, etc).\n        #\n        #     Un bug ou une exception dans la séquence de fermeture\n        #     Si une exception est levée, elle peut empêcher l’appel à sys.exit().\n        #\n        #     La boucle d’événements Twisted/Wx n’est pas arrêtée\n        #     Si le réacteur Twisted ne s’arrête pas, la fenêtre principale peut rester ouverte.\n        #\n        #     Le bouton \"Quitter\" n’appelle pas vraiment quitApplication.\n        #     Il faut vérifier que l’action du bouton \"Quitter\" déclenche bien cette méthode.\n\n        # Même si tu appelles sys.exit(), il existe des situations (notamment sous Linux/GTK) où :\n        #\n        #     Le process ne se termine pas si la boucle d’événements wxPython n’est pas proprement arrêtée.\n        #     Un thread, timer, ou callback wx/Twisted reste actif et garde le process vivant.\n\n        # 1. Problème d’intégration wxPython/Twisted\n        #\n        # Même si tu appelles sys.exit(), il existe des situations (notamment sous Linux/GTK) où :\n        #\n        #     Le process ne se termine pas si la boucle d’événements wxPython n’est pas proprement arrêtée.\n        #     Un thread, timer, ou callback wx/Twisted reste actif et garde le process vivant.\n        #\n        # 2. sys.exit() dans un callback wx\n        #\n        # Si tu appelles sys.exit() dans un contexte qui n’est pas le thread principal, ou dans un callback wx, cela peut ne pas tuer le process (ou lever une exception SystemExit qui est attrapée “quelque part”).\n        # Il est parfois recommandé d’appeler directement à la place de sys.exit():\n        # --- Fermeture forcée du process ---\n        # Nous utilisons os._exit(0) au lieu de sys.exit() pour garantir une terminaison immédiate du process.\n        # En effet, Twisted crée un thread worker interne non-daemon (\"Thread-4 (work)\") qui reste vivant\n        # même après reactor.stop() et threadpool.stop(). Tant qu'il existe, sys.exit() ne termine pas\n        # le process Python (car tous les threads non-daemon doivent être morts pour cela).\n        # Comme tout nettoyage/sauvegarde a déjà été fait à ce stade, il n'y a pas de risque de fuite.\n        # Voir : https://github.com/freedomsha/taskcoach/issues/<ton-issue> pour le détail du diagnostic.\n        os._exit(0)  # TODO : Attention, c'est brutal ! Revenir à sys.exit() dès que possible.\n\n        # Si ça ferme tout instantanément,\n        # c’est bien un problème de threads/boucles non stoppés proprement dans wx/Twisted.\n        # 3. Destruction de la fenêtre wx\n        #\n        # Si la fenêtre principale n’est pas explicitement détruite avant la fin du process, wxPython peut garder le process vivant.\n        # Tu as ajouté mainwindow.Destroy(), c’est bien, mais parfois il faut forcer la destruction :\n        # Python\n        #\n        # if self.mainwindow:\n        #     self.mainwindow.Close(True)\n        #     self.mainwindow.Destroy()\n\n        # 4. Threads ou timers en arrière-plan\n        #\n        # Des threads Python ou des timers wx peuvent garder le process vivant. Vérifie si tu utilises des threads, timers, ou des callbacks récurrents dans Task Coach.\n        return True  # This code is unreachable\n\n    def delete_instance(self):\n        pass\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/taskcoach/taskcoachlib/application/application.py b/taskcoach/taskcoachlib/application/application.py
+--- a/taskcoach/taskcoachlib/application/application.py	(revision 45920d6a8a16dc5f0576b26acd5a67adf6b37352)
++++ b/taskcoach/taskcoachlib/application/application.py	(date 1760511824435)
+@@ -88,6 +88,11 @@
+     - taskcoachlib.domain.task: Modèle de domaine de tâches.
+     - taskcoachlib.gui.mainwindow: Fenêtre principale de l'application.
+ """
++# Cependant, pour obtenir une application pleinement fonctionnelle, vous devrez :
++#
++#     Réimplémenter toutes les classes et fonctions de taskcoachlib (par exemple, gui.IOController, gui.MainWindow, persistence.LockedTaskFile) pour qu'elles utilisent tkinter au lieu de wxPython.
++#
++#     Trouver des solutions alternatives pour les fonctionnalités qui ne sont pas natives à tkinter, comme l'icône de la barre des tâches ou les gestionnaires de sessions spécifiques à la plateforme.
+ 
+ # Ce module contourne les bugs des modules tiers, principalement en appliquant des correctifs singe,
+ # alors importez-le d'abord
+@@ -95,15 +100,18 @@
+ # from builtins import map  # Unused import statement 'from builtins import map'
+ # from builtins import object
+ 
+-import calendar
+-import locale
+-import logging  # Attendre avant son implantation
+ import os
+-import re
+ import sys
++import time
++import tkinter as tk
++from tkinter import messagebox
++from tkinter import Menu
+ import threading  # Unused import
++import re
++import locale
++import calendar
++import logging  # Attendre avant son implantation
+ import traceback
+-import time
+ import wx
+ # try:
+ from pubsub import pub
+@@ -114,13 +122,17 @@
+ #        from wx.lib.pubsub import pub
+ from io import open
+ 
++import taskcoachlib.gui
++# Importer les classes nécessaires de votre bibliothèque d'application.
++# Notez que ces modules sont supposés avoir été mis à jour pour fonctionner avec tkinter.
+ # from taskcoachlib import workarounds  # pylint: disable=W0611  unused import statement
+-from taskcoachlib import patterns, operating_system
++from taskcoachlib import meta, patterns, operating_system
+ 
+ # nouveau :
+ from taskcoachlib.i18n import _
+ from taskcoachlib.config import Settings
+-from taskcoachlib import gui, persistence
++from taskcoachlib.domain import date
++from taskcoachlib import gui, guitk, persistence
+ 
+ log = logging.getLogger(__name__)
+ 
+@@ -130,7 +142,7 @@
+ 
+     # TODO : A VERIFIER si la virgule est nécessaire
+     _rx_ignore = [
+-        re.compile("RuntimeWarning: PyOS_InputHook",)
++        re.compile("RuntimeWarning: PyOS_InputHook"),
+     ]
+ 
+     def __init__(self):
+@@ -166,6 +178,7 @@
+         # self.__handle.write(bf)
+ 
+     def flush(self):
++        # Assure que la sortie est bien vidée
+         pass
+ 
+     def close(self):
+@@ -189,16 +202,88 @@
+             #         wx.OK,
+             #     )
+             # else:
+-            wx.MessageBox(
+-                _('Errors have occured. Please see "%s"') % self.__path,
+-                _("Error"),
+-                wx.OK,
+-                )
++            # wx.MessageBox(
++            #     _('Errors have occured. Please see "%s"') % self.__path,
++            #     _("Error"),
++            #     wx.OK,
++            #     )
+             # wx.MessageBox(_('Errors have occured. Please see "{}"'.format(self.__path)), _('Error'), wx.OK)
+             # wx.MessageBox(_(f'Errors have occured. Please see "{self.__path}"'), _('Error'), wx.OK)
++            # Utiliser messagebox de tkinter au lieu de wx.MessageBox
++            messagebox.showerror('Erreur',
++                f'Des erreurs se sont produites. Veuillez consulter le fichier "{self.__path}".')
+ 
+ 
+ # pylint: disable=W0404
++# class TkApp:
++#     """
++#     Classe principale de l'application utilisant Tkinter.
++#     """
++#     # # La classe Application originale utilisait un métaclass Singleton.
++#     # # On la simule ici.
++#     # __instance = None
++#     #
++#     # def __new__(cls, *args, **kwargs):
++#     #     if TkApp.__instance is None:
++#     #         TkApp.__instance = object.__new__(cls)
++#     #     return TkApp.__instance
++#
++#     def __init__(self, sessionCallback, reopenCallback, *args, **kwargs):
++#         self.sessionCallback = sessionCallback
++#         self.reopenCallback = reopenCallback
++#         self.__shutdownInProgress = False
++#
++#         self.root = tk.Tk()
++#         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
++#         # self.root = tk.Tk()
++#         # self.protocol("WM_DELETE_WINDOW", self.on_close)
++#
++#         # Initialisation de l'application
++#         self.on_init()
++#
++#     def mac_reopen_app(self):
++#         """Fonction-méthode pour rouvrir l'application sur Mac."""
++#         self.reopenCallback()
++#
++#     def on_init(self):
++#         """Identique à wxApp.on_init_. Fonction-méthode tkinter qui gère la sortie standard et renvoie True sur l'initialisation."""
++#         # identique à wxApp.on_init !
++#         try:
++#             isatty = sys.stdout.isatty()
++#         except AttributeError:
++#             isatty = False
++#
++#         if (hasattr(sys, "frozen") and not isatty) or not isatty:
++#             # sys.stdout = sys.stderr = self.RedirectedOutput()  # Utilisation de la version TkApp.
++#             sys.stdout = sys.stderr = RedirectedOutput()  # Utilisation de l'ancienne version.
++#
++#         # # Exemple de création d'une fenêtre principale
++#         # self.main_window = tk.Toplevel(self.root)
++#         # self.main_window.title("Exemple 1")
++#
++#     def on_close(self):
++#         """Gère la fermeture de la fenêtre."""
++#         if not self.__shutdownInProgress:
++#             self.__shutdownInProgress = True
++#             self.sessionCallback()
++#         self.root.destroy()
++#
++#     def redirected_output(self):
++#         """Classe pour rediriger la sortie standard."""
++#         class RedirectedOutput:
++#             def write(self, text):
++#                 # Redirige la sortie vers stderr
++#                 sys.stderr.write(text)
++#
++#             def flush(self):
++#                 # Assure que la sortie est bien vidée
++#                 sys.stderr.flush()
++#
++#         return RedirectedOutput()
++#
++#     def run(self):
++#         """Démarre la boucle principale de l'application tkinter."""
++#         self.root.mainloop()
+ 
+ class wxApp(wx.App):
+     """Classe App pour wxpython"""
+@@ -278,10 +363,9 @@
+         Cette méthode peut être utile pour le traitement inactif personnalisé dans votre application.
+         Cependant, son implémentation spécifique dépend de vos besoins.
+         """
++        # dans le fichier application.py, pourtant elle est utilisée dans les tests et dans quitApplication.
+         pass
+ 
+-    # dans le fichier application.py pourtant elle est utilisée dans les tests et dans quitApplication
+-
+ 
+ # class Application(object):
+ #     __metaclass__ = patterns.Singleton
+@@ -299,7 +383,8 @@
+     et en démarrant la boucle d'événements de Twisted.
+ 
+     La méthode quitApplication permet de quitter l'application
+-    en sauvegardant les paramètres et l'état de l'application."""
++    en sauvegardant les paramètres et l'état de l'application.
++    """
+ 
+     def __init__(self, options=None, args=None, **kwargs):
+         """La méthode init est appelée avant le démarrage de l'application.
+@@ -333,8 +418,11 @@
+         # print("application.Application.__init__: Twisted initialized")
+         log.info("Application : Twisted initialisé avec succès.")
+ 
++        # Dans wxPython, l'application est généralement une instance de wx.App.
++        # Dans Tkinter, vous utiliserez Tk de la bibliothèque tkinter.
+         # wx-1-Create a new app, don't redirect stdout/stderr to a window.
+-        self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=False)
++        if self._options.gui_name == "wx":
++            self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=False)
+         # myapp = MyApp() # functions normally. Stdio is redirected to its own window
+         # myapp = MyApp(0) #does not redirect stdout. Tracebacks will show up at the console.
+         # myapp = MyApp(1, 'filespec') #redirects stdout to the file 'filespec'
+@@ -343,6 +431,10 @@
+         # myapp = MyApp(redirect = 0) #stdio will stay at the console...
+         # self.__wx_app = wxApp(self.on_end_session, self.on_reopen_app, redirect=1, filename=RedirectedOutput().__path)
+         # Après cela, wx-2-création d'une Frame !(-> voir Dans init)
++        if self._options.gui_name == "tk":
++            # self.__wx_app = TkApp(self.on_end_session, self.on_reopen_app, redirect=False)  # Utilisation de l'ancienne version
++            # self.__tk_app = TkApp(sessionCallback=session_callback, reopenCallback=reopen_callback)
++            pass
+ 
+         # print("application.Application.__init__: self.__wx_app défini !")
+         # log.debug("Application wxApp créée.")
+@@ -373,6 +465,7 @@
+         # self.iocontroller = None
+         # self.mainwindow = None
+ 
++        # Initialisation du sessionMonitor :
+         if operating_system.isGTK():
+             if self.settings.getboolean("feature", "usesm2"):
+                 from taskcoachlib.powermgt import xsm
+@@ -413,6 +506,7 @@
+         calendar.setfirstweekday(
+             dict(monday=0, sunday=6)[self.settings.get("view", "weekstart")]
+         )
++        log.error("ERREUR APRES :")
+ 
+     def initTwisted(self):
+         """Fonction-méthode pour initialiser et lancer Twisted.
+@@ -617,6 +711,8 @@
+         # twisted.internet.testing.MemoryReactor.run
+         # twisted.internet.wxreactor.WxReactor.run
+         # twisted.internet.wxsupport.wxRunner.run
++
++        # self.mainwindow.Hide()  # Cache la fenêtre principale pour éviter les scintillements !
+         log.info("Application.start : Terminé.")
+ 
+     def __copy_default_templates(self):
+@@ -657,18 +753,28 @@
+         self.__init_config(loadSettings)
+         self.__init_language()
+         #  Fournir aux objets de domaine pertinents un accès aux paramètres :
+-        # log.info("Application.init: Fournir aux objets de domaine pertinents un accès aux paramètres :")
++        log.info("Application.init: Fournir aux objets de domaine pertinents un accès aux paramètres :")
+         self.__init_domain_objects()  # Passe directement à l556 !? après avoir affiché 6 lignes debug image handler for
+         self.__init_application()  # Réglage des paramètres nom et auteurs de l'application.
+         # Problème de doublon d'image ! : réglé, double entrée de .mainwindow dans gui/init.py
+         # print("application.Application.init : attributs ok !")
+         # from taskcoachlib import gui, persistence  # TODO : à mettre au début !
+ 
+-        gui.init()  # goto gui.artprovider.init : Initialise l'ArtProvider
+-        # print("application.Application.init : gui.init(), Problème de doublons ? C'était MainWindow en double dans gui/init.py")
+-        show_splash_screen = self.settings.getboolean("window", "splash")  # = True puis l560
+-        splash = gui.SplashScreen() if show_splash_screen else None
+-        # pylint: disable=W0201
++        if self._options.gui_name == "wx":
++            log.info("Application.init: Initialisation en wx.")
++            gui.init()  # goto gui.artprovider.init : Initialise l'ArtProvider
++            # print("application.Application.init : gui.init(), Problème de doublons ? C'était MainWindow en double dans gui/init.py")
++            show_splash_screen = self.settings.getboolean("window", "splash")  # = True puis l560
++            splash = gui.SplashScreen() if show_splash_screen else None
++            self.gui_used = "wx"
++            # pylint: disable=W0201
++        elif self._options.gui_name == "tk":
++            log.info("Application.init: Initialisation en tk.")
++            guitk.init()  # initialise l'ArtProvider de tk !
++            show_splash_screen = self.settings.getboolean("window", "splash")
++            splash = guitk.splashtk.SplashScreen() if show_splash_screen else None
++            self.gui_used = "tk"
++
+         self.taskFile = persistence.LockedTaskFile(
+             poll=not self.settings.getboolean("file", "nopoll")
+         )  # Application.taskFile puis passe à l160 flush . Pourquoi ? Parce que persistence.LockedTaskFile plante.
+@@ -676,26 +782,39 @@
+         self.__auto_saver = persistence.AutoSaver(self.settings)
+         self.__auto_exporter = persistence.AutoImporterExporter(self.settings)
+         self.__auto_backup = persistence.AutoBackup(self.settings)
+-        self.iocontroller = gui.IOController(
+-            self.taskFile, self.displayMessage, self.settings, splash
+-        )
++
++        # if use_wxPython is True:
++        if self.gui_used == "wx":
++            self.iocontroller = gui.IOController(
++                self.taskFile, self.displayMessage, self.settings, splash
++            )
+ 
+-        # wx-2-Création d'une instance de la fenêtre Principale (objet de gui.mainwindow.MainWindow, wx.Frame):
+-        # ligne qui devrait être la première dans OnInit (ou en tout cas juste après self.__wx_app = wxApp() dans __init__):
+-        log.info("Application.init: Initialisation de la fenêtre principale.")
+-        self.mainwindow = gui.mainwindow.MainWindow(
+-            self.iocontroller, self.taskFile, self.settings, splash=splash
+-        )  # A Frame is a top-level window.
+-        # log.info(f"Application : self.mainwindow.winId = {self.mainwindow.winId}")
+-        # Après il devrait y avoir self.mainwindow.Show(true) !(Voir start())
++            # wx-2-Création d'une instance de la fenêtre Principale (objet de gui.mainwindow.MainWindow, wx.Frame):
++            # ligne qui devrait être la première dans OnInit (ou en tout cas juste après self.__wx_app = wxApp() dans __init__):
++            log.info("Application.init: Initialisation de la fenêtre principale.")
++            self.mainwindow = gui.mainwindow.MainWindow(
++                self.iocontroller, self.taskFile, self.settings, splash=splash
++            )  # A Frame is a top-level window.
++            # log.info(f"Application : self.mainwindow.winId = {self.mainwindow.winId}")
++            # Après il devrait y avoir self.mainwindow.Show(true) !(Voir start())
+ 
+-        # Désignation de la fenêtre en tant que principale par la méthode SetTopWindow() spécifique à la classe wx.App
+-        # ligne qui devrait être en 3e position dans OnInit:
+-        log.info("Application.init: Fenêtre principale mise en avant.")
+-        # Notre classe dérivée de WXApp normale, comme d'habitude (même avec wx.lib.agw.aui).
+-        self.__wx_app.SetTopWindow(self.mainwindow)
+-        # Ensuite : frame.Show()
++            # Désignation de la fenêtre en tant que principale par la méthode SetTopWindow() spécifique à la classe wx.App
++            # ligne qui devrait être en 3e position dans OnInit:
++            log.info("Application.init: Fenêtre principale mise en avant.")
++            # Notre classe dérivée de WXApp normale, comme d'habitude (même avec wx.lib.agw.aui).
++            self.__wx_app.SetTopWindow(self.mainwindow)
++            # Ensuite : frame.Show()
+ 
++            # elif use_tk is True:
++        elif self.gui_used == "tk":
++            self.iocontroller = guitk.IOController(
++                self.taskFile, self.displayMessage, self.settings, self.root, splash
++            )
++            log.info("Application.init: Initialisation de la fenêtre principale.")
++            self.mainwindow = tk.Toplevel(guitk.mainwindowtk.MainWindow(
++                self.iocontroller, self.taskFile, self.settings, splash=splash
++            ))  # A Frame is a top-level window.
++
+         self.__init_spell_checking()  # Attention changements
+         if not self.settings.getboolean("file", "inifileloaded"):
+             self.__close_splash(splash)
+@@ -733,15 +852,19 @@
+         Args :
+             load_settings (bool) : Charger les paramètres de l'application.
+         """
++        log.info("Application.__init_config : Initialisation de la config.")
+         try:
+             from taskcoachlib import config
+ 
+             ini_file = self._options.inifile if self._options else None
++            log.debug(f"Application.__init_config : ini_file = {ini_file}")
+             # est-ce qu'il existe un fichier inifile ? si non load_settings is False !
+             # AttributeError: 'Values' object has no attribute 'inifile'
+             # AttributeError: 'Namespace' object has no attribute 'inifile'
+             # pylint: disable=W0201
+-            self.settings = config.Settings(load_settings, ini_file)  #
++            # self.settings = config.Settings(load_settings, ini_file)  #
++            # self.settings = config.Settings(load_settings, ini_file, self.gui_used)  #
++            self.settings = Settings(load_settings, ini_file, self.gui_used)  #
+             # TODO : ini_file is None !
+         except IOError or Exception as e:
+             # print(
+@@ -753,9 +876,11 @@
+                 str(e),
+             )
+             raise
++        log.info("Application.__init_config : Configuration initialisé.")
+ 
+     def __init_language(self):
+         """Initialisez la traduction actuelle."""
++        log.info("Application.__init_language : Initialisation de la traduction.")
+         try:
+             from taskcoachlib import i18n
+ 
+@@ -871,6 +996,8 @@
+ 
+         log.debug("Application.__register_signal_handlers : Quitter à cause d'un signal !")
+ 
++        # Ajouter les @ pour les methodes internes sans self ! @staticmethod
++        @staticmethod
+         def quit_adapter(*args):
+             # Parameter 'args' value is not used
+             log.debug("Application.__register_signal_handlers.quit_adapter : Retourne la fonction pour quitter l'application.")
+@@ -879,6 +1006,7 @@
+         signal.signal(signal.SIGTERM, quit_adapter)
+         if hasattr(signal, "SIGHUP"):
+             # forced_quit = lambda *args: self.quitApplication(force=True)
++            @staticmethod
+             def forced_quit(*args):
+                 # Parameter 'args' value is not used
+                 log.debug("Application.__register_signal_handlers.forced_quit : Force à quitter l'application.")
+@@ -1007,8 +1135,12 @@
+             # )
+             log.exception(f"Application : Erreur lors de la fermeture de la session : {e}")
+ 
++    def reopen_callback(self):
++        self.on_reopen_app()
++
+     def on_reopen_app(self):
+         """Fonction-méthode pour rouvrir l'application."""
++        print("Réouverture de l'application")
+         self.taskBarIcon.onTaskbarClick(None)
+ 
+     def quitApplication(self, force=False):
+@@ -1041,8 +1173,10 @@
+         from taskcoachlib.domain import date
+ 
+         date.Scheduler().shutdown()
+-        # self.__wx_app.ProcessIdle()  # wxApp/ProcessIdle is not in application.py but used in tests !
+-        wx.GUIEventLoop.GetActive().ProcessIdle()  # wxApp/ProcessIdle is not in application.py but used in tests !
++        if self._options.gui_name == "wx":
++            # self.__wx_app.ProcessIdle()  # wxApp/ProcessIdle is not in application.py but used in tests !
++            wx.GUIEventLoop.GetActive().ProcessIdle()  # wxApp/ProcessIdle is not in application.py but used in tests !
++        # if self._options.gui_name == "tk":
+ 
+         # For PowerStateMixin
+         log.info("Avant appel à mainwindow.OnQuit")
+@@ -1066,6 +1200,13 @@
+                 f"Application.quitApplication : Erreur lors de l'arrêt de Twisted: {str(e)}", exc_info=True
+             )
+ 
++        # Essaie car utilisation de wx.lib.agw.aui :
++        # Désinitialiser le gestionnaire de trame(frame manager)
++        if self.manager :
++            self.manager.UnInit()
++            # event.Skip()
++
++
+         log.info("Avant appel sys.exit()")
+         if self.mainwindow:
+             try:
+@@ -1142,3 +1283,401 @@
+ 
+     def delete_instance(self):
+         pass
++
++
++class TkinterApplication:
++    """
++    Classe principale de l'application utilisant Tkinter.
++    """
++    # La classe Application originale utilisait un métaclass Singleton.
++    # On la simule ici.
++    __instance = None
++
++    def __new__(cls, *args, **kwargs):
++        if TkinterApplication.__instance is None:
++            TkinterApplication.__instance = object.__new__(cls)
++        return TkinterApplication.__instance
++
++    def __init__(self, options=None, args=None, **kwargs):
++        self.root = tk.Tk()
++        # self.root = taskcoachlib.guitk.MainWindow
++        self.root.title(meta.name)
++        self.root.protocol("WM_DELETE_WINDOW", self.on_end_session)
++
++        self._options = options
++        self._args = args
++        self.settings = None
++        self.taskFile = None
++        self.iocontroller = None
++        self.mainwindow = None
++        self.sessionMonitor = None
++        self.taskBarIcon = None
++
++        # Maquette de l'initialisation de Twisted.
++        # Dans tkinter, il faudrait utiliser un réacteur Twisted compatible avec tkinter.
++        # Un exemple serait `from twisted.internet.tkreactor import install; install()`
++        # mais la logique de cette classe est bien plus complexe.
++        # self.stoptwisted = lambda: print("Twisted a été arrêté (maquette)")
++        # self.initTwisted = lambda: print("Twisted a été initialisé (maquette)")
++        try:
++            self.initTwisted()
++        except Exception as e:
++            log.exception(f"application.py: Error initializing Twisted: {str(e)}", exc_info=True)
++            # print(f"application.py: Error initializing Twisted: {e}")
++            # wx.MessageBox(f"application.py Application.__init__: Error initializing Twisted: {e}",
++            #               "Error", wx.OK | wx.ICON_ERROR)
++        # print("application.Application.__init__: Twisted initialized")
++        log.info("Application : Twisted initialisé avec succès.")
++        # self.registerApp = lambda: print("L'application a été enregistrée auprès de Twisted (maquette)")
++
++        self.initTwisted()
++        # self.registerApp()
++        self.init(**kwargs)
++
++        # Remplacement de l'initialisation du sessionMonitor
++        if operating_system.isGTK():
++            self.sessionMonitor = None  # A remplacer par une solution compatible si nécessaire
++
++        # Remplacement de calendar.setfirstweekday
++        calendar.setfirstweekday(dict(monday=0, sunday=6).get(self.settings.get('view', 'weekstart'), 0))
++
++    def start(self):
++        """ Démarre l'application. """
++        # Remplacer les vérificateurs de version et de messages
++        if self.settings.getboolean('version', 'notify'):
++            print("Vérificateur de version démarré (maquette)")
++        if self.settings.getboolean('view', 'developermessages'):
++            print("Vérificateur de messages de développeur démarré (maquette)")
++
++        self.__copy_default_templates()
++        self.mainwindow.show() # On suppose que la classe MainWindow a une méthode show()
++        # démarrage de reactor
++        from twisted.internet import reactor
++
++        reactor.run()
++        # Mise en boucle de l'application
++        self.root.mainloop()
++
++    def initTwisted(self):
++        """Fonction-méthode pour initialiser et lancer Twisted.
++
++        Initialise et lance le réacteur Twisted, qui permet de gérer les événements asynchrones de l'application.
++        Centralise aussi tous les logs (Twisted inclus).
++        """
++        # voir peut-être https://docs.twisted.org/en/stable/core/howto/design.html
++        # et https://docs.twisted.org/en/stable/core/howto/process.html
++        # et pour python 3 : https://docs.twisted.org/en/stable/core/howto/python3.html
++        # https://docs.twisted.org/en/stable/core/howto/choosing-reactor.html
++        # Twisted (1/5) to use Twisted
++        from twisted.internet import tksupport, reactor
++
++        # twisted.python.log s'est sensiblement déplacé vers le texte des str
++        # à partir de lignes d'octets.
++        # Événements d'exploitation forestière,
++        # en particulier ceux produits par un Appel comme msg("foo"),
++        # doit maintenant être des chaînes de texte.
++        # Par conséquent, sur Python 3, les dictionnaires d'événements
++        # passés aux enregistrements de journaliser
++        # confulent une chaîne de texte où
++        # elles contenaient précédemment des chaînes d'octets.
++        # twisted.python.filepath.FilePath n'a pas changé.
++        # Il ne supporte que des lignes d'octets.
++        # Cela nécessitera probablement des demandes pour
++        # mettre à jour leur utilisation de FilePath,
++        # au moins pour passer un octet explicite littérales de chaîne
++        # plutôt que "native" littérales de chaîne (qui sont du texte sur Python 3).
++
++        # Twisted (2/5), Installation du support Reactor
++        tksupport.install(self.root)
++        # at this point build Tk app as usual using the root object,
++        # and start the program with "reactor.run()", and stop it
++        # with "reactor.stop()".
++
++        # Monkey-patching older versions because of https://twistedmatrix.com/trac/ticket/3948
++        # J'ai deux alternatives à :
++        #         if map(int, twisted.__version__.split('.')) < (11,):
++        #             from twisted.internet import reactor
++        #             if wxreactor.WxReactor.callFromThread is not None:
++        #                 oldStop = wxreactor.WxReactor.stop
++        #                 def stopFromThread(self):
++        #                     self.callFromThread(oldStop, self)
++        #                 wxreactor.WxReactor.stop = stopFromThread
++        # celle généré par futurize:
++        # import twisted  # Unused import
++
++        # if list(map(int, twisted.__version__.split('.'))) < (11,):
++        # if list(twisted.__version__.split(".")) < ['11', ]:
++        # if tuple(map(int, twisted.__version__.split("."))) < (11,):
++        # ValueError: invalid literal for int() with base 10: '0rc1'
++        # Est-ce nécessaire ?
++        # Twisted (3/5), when Wxapp has been created :
++        # from twisted.internet import wxreactor, threads  # unused import
++        # from twisted.internet import reactor
++
++        # TODO: retrouver dans twisted de quoi remplacer callFromThread
++        # une piste sur https://stackoverflow.com/questions/4081578/python-twisted-with-callinthread
++        # https://docs.twistedmatrix.com/en/stable/core/howto/threading.html#getting-results
++        if reactor.callFromThread is not None:
++            # if threads.deferToThread is not None:
++            oldStop = reactor.stop
++
++            def stopFromThread(self):
++                self.callFromThread(oldStop, self)
++                # self.deferToThread(oldStop, self)
++                # ou
++                # self.blockingCallFromThread(oldStop, self)
++
++            reactor.stop = stopFromThread
++            # wxreactor.WxReactor.stop = wxreactor.WxReactor.callFromThread(wxreactor.WxReactor.stop, self)  # Ne fonctionne pas !
++            # <taskcoachlib.application.application.Application object at 0x7c07fff70110> is not callable
++        # ou
++        # import twisted
++        # print(list(twisted.__version__.split('.')))
++        # if list(twisted.__version__.split('.')) < ['11', '0']:
++        #    # essayer list seul sinon list(map())
++        #    # from twisted.internet import reactor  # doublon soit-disant déjà installé
++        #    if wxreactor.WxReactor.callFromThread is not None:
++        #        oldStop = wxreactor.WxReactor.stop
++        #        def stopFromThread(self):
++        #            self.callFromThread(oldStop, self)
++        #        wxreactor.WxReactor.stop = stopFromThread
++        #        # ou essayer avec https://www.programcreek.com/python/example/117947/twisted.internet.error
++        #        # .ReactorAlreadyInstalledError
++
++        # Centraliser tous les logs (Twisted inclus) :
++        from twisted.python import log as twisted_log
++        twisted_log.startLoggingWithObserver(lambda msg: log.info(msg.get('message')))
++        # msg("Log opened.")
++
++    def stopTwisted(self):
++        """Fonction-méthode pour arrêter twisted-reactor"""
++        # voir https://stackoverflow.com/questions/6526923/stop-twisted-reactor-on-a-condition
++        # from twisted.internet import reactor, error
++        from twisted.internet import reactor, error
++
++        log.debug("Application.stopTwisted : Essaie d'arrêter reactor.")
++        try:
++            reactor.stop()  # cannot find stop in reactor, but don't use yourApp.ExitMainLoop()
++            log.debug("Application.stopTwisted : A lancé reactorstop().")
++        except error.ReactorNotRunning as e:
++            # Happens on Fedora 14 when running unit tests. Old Twisted ?
++            # in Arch, reference 'stop' not find in 'reactor.py'
++            log.error("Application.stopTwisted : Reactor n'a pas démarré !", exc_info=True, stack_info=True)
++            pass
++        # Arrêter les threads workers
++        log.debug("Application.stopTwisted : Essaie d'arrêter les threads workers")
++        try:
++            reactor.getThreadPool().stop()
++            log.debug("Application.stopTwisted : avec la méthode getThreadPool().stop().")
++        except AttributeError:
++            # Certains réacteurs n'ont pas de threadpool explicite
++            try:
++                reactor.threadpool.stop()
++                log.debug("Application.stopTwisted : avec la méthode threadpool().stop().")
++            except AttributeError:
++                log.debug("Application.stopTwisted : aucune méthode ne fonctionne pour arrêter les workers.")
++        time.sleep(0.1)  # Donne un peu de temps au worker pour s'arrêter
++
++    def __copy_default_templates(self):
++        """ Copier les modèles par défaut """
++        # Logique de la copie des modèles (maquettée)
++        print("Modèles par défaut copiés (maquette)")
++
++    def init(self, loadSettings=True, loadTaskFile=True):
++        """ Initialise l'application. """
++        self.__init_config(loadSettings)
++        self.__init_language()
++        self.__init_domain_objects()
++        self.__init_application()
++
++        # Maquette des classes gui et persistence
++        # class MockGUI:
++        #     def init(self): pass
++        #     class SplashScreen:
++        #         def __init__(self): print("Écran de démarrage affiché (maquette)")
++        #         def Destroy(self): print("Écran de démarrage détruit (maquette)")
++        class MockPersistence:
++            class LockedTaskFile:
++                def __init__(self, poll): pass
++            class AutoSaver:
++                def __init__(self, settings): pass
++            class AutoImporterExporter:
++                def __init__(self, settings): pass
++            class AutoBackup:
++                def __init__(self, settings): pass
++
++        # gui = MockGUI()
++        persistence = MockPersistence()
++
++        gui.init()  # Utilise init de Artprovider !!!
++        show_splash_screen = self.settings.getboolean('window', 'splash')
++        splash = gui.SplashScreen() if show_splash_screen else None
++
++        self.taskFile = persistence.LockedTaskFile(poll=not self.settings.getboolean('file', 'nopoll'))
++        self.__auto_saver = persistence.AutoSaver(self.settings)
++        self.__auto_exporter = persistence.AutoImporterExporter(self.settings)
++        self.__auto_backup = persistence.AutoBackup(self.settings)
++
++        # La classe IOController et MainWindow devraient être réécrites pour tkinter.
++        # Ici, nous les maquettes.
++        class MockIOController:
++            def __init__(self, taskFile, displayMessage, settings, splash): pass
++            def close(self, force): return True
++            def openAfterStart(self, args): pass
++
++        # class MockMainWindow:
++        #     def __init__(self, iocontroller, taskFile, settings, splash):
++        #         self.root = tk.Toplevel(self.root)
++        #         self.root.title("Fenêtre principale (maquette)")
++        #         self.root.protocol("WM_DELETE_WINDOW", iocontroller.close)
++        #     def show(self): pass
++        #     def saveSettings(self): pass
++        #     def setShutdownInProgress(self): pass
++        #     def displayMessage(self, message): print(f"Message affiché: {message}")
++        #     def OnQuit(self): pass
++        #     def create_menu(self):
++        #         menu_bar = Menu(self.root)
++        #         self.root.config(menu=menu_bar)
++        #         file_menu = Menu(menu_bar, tearoff=0)
++        #         menu_bar.add_cascade(label="Fichier", menu=file_menu)
++        #         file_menu.add_command(label="Quitter", command=self.on_quit)
++        #
++        #     def on_quit(self):
++        #         self.root.destroy()
++
++        self.iocontroller = MockIOController(self.taskFile, self.displayMessage, self.settings, splash)
++        # self.mainwindow = MainWindow(self.iocontroller, self.taskFile, self.settings, splash)
++
++        # self.__wx_app.SetTopWindow(self.mainwindow) n'a pas d'équivalent direct
++        self.__init_spell_checking()
++        if not self.settings.getboolean('file', 'inifileloaded'):
++            self.__close_splash(splash)
++            self.__warn_user_that_ini_file_was_not_loaded()
++        if loadTaskFile:
++            self.iocontroller.openAfterStart(self._args)
++        self.__register_signal_handlers()
++        self.__create_mutex()
++        self.__create_task_bar_icon()
++
++        # Remplacer wx.CallAfter par root.after_idle
++        self.root.after_idle(lambda: self.__close_splash(splash))
++        self.root.after_idle(self.__show_tips)
++
++
++    def __init_config(self, load_settings):
++        ini_file = self._options.inifile if self._options else None
++        self.settings = Settings(load_settings, ini_file)
++
++    def __init_language(self):
++        from taskcoachlib import i18n
++        i18n.Translator(self.determine_language(self._options, self.settings))
++
++    @staticmethod
++    def determine_language(options, settings, locale=locale):
++        # La logique de détermination de la langue est inchangée
++        language = None
++        if options:
++            language = options.pofile or options.language
++        if not language:
++            language = settings.get('view', 'language_set_by_user')
++        if not language:
++            language = settings.get('view', 'language')
++        if not language:
++            language = locale.getdefaultlocale()[0]
++            if language == 'C':
++                language = None
++        if not language:
++            language = 'en_US'
++        return language
++
++    def __init_domain_objects(self):
++        from taskcoachlib.domain import task, attachment
++        task.Task.settings = self.settings
++        attachment.Attachment.settings = self.settings
++
++    def __init_application(self):
++        # Tkinter n'a pas de SetAppName/SetVendorName
++        pass
++
++    def __init_spell_checking(self):
++        # Cette fonctionnalité est spécifique à macOS et wxPython.
++        # Elle est supprimée pour tkinter.
++        pass
++
++    def __register_signal_handlers(self):
++        # La gestion des signaux est spécifique au système d'exploitation et au toolkit.
++        # Cette logique devrait être réécrite si nécessaire.
++        pass
++
++    @staticmethod
++    def __create_mutex():
++        # La création d'un mutex est spécifique à Windows et non prise en charge par tkinter.
++        pass
++
++    def __create_task_bar_icon(self):
++        # La création d'une icône dans la barre des tâches n'est pas une fonctionnalité native de tkinter.
++        # Des bibliothèques tierces comme 'pystray' seraient nécessaires.
++        if self.__can_create_task_bar_icon():
++            print("Icône de la barre des tâches non créée car elle n'est pas prise en charge par tkinter.")
++        self.taskBarIcon = None
++
++    def __can_create_task_bar_icon(self):
++        return False
++
++    @staticmethod
++    def __close_splash(splash):
++        if splash:
++            splash.Destroy()
++
++    def __show_tips(self):
++        if self.settings.getboolean('window', 'tips'):
++            from taskcoachlib import help
++            help.showTips(self.mainwindow, self.settings)
++
++    def __warn_user_that_ini_file_was_not_loaded(self):
++        from taskcoachlib import meta
++        reason = self.settings.get('file', 'inifileloaderror')
++        # Utiliser messagebox de tkinter
++        messagebox.showerror(f'{meta.name} erreur de fichier',
++                             f"Impossible de charger les paramètres depuis TaskCoach.ini:\n{reason}")
++        self.settings.setboolean('file', 'inifileloaded', True)
++
++    def displayMessage(self, message):
++        self.mainwindow.displayMessage(message)
++
++    def on_end_session(self):
++        self.quitApplication(force=True)
++
++    def on_reopen_app(self):
++        # Cette fonctionnalité est liée à l'icône de la barre des tâches et n'est pas applicable.
++        print("La fonctionnalité de réouverture d'application n'est pas prise en charge.")
++
++    def quitApplication(self, force=False):
++        if not self.iocontroller.close(force=force):
++            return False
++
++        self.settings.set('file', 'lastfile', self.taskFile.lastFilename())
++        self.mainwindow.saveSettings()
++        self.settings.save()
++
++        # Suppression des composants wxPython
++        if hasattr(self, 'taskBarIcon') and self.taskBarIcon is not None:
++            # self.taskBarIcon.RemoveIcon()
++            pass
++        if self.mainwindow and hasattr(self.mainwindow, 'bonjourRegister') and self.mainwindow.bonjourRegister is not None:
++            self.mainwindow.bonjourRegister.stop()
++
++        date.Scheduler().shutdown()
++
++        self.mainwindow.OnQuit()
++
++        if operating_system.isGTK() and self.sessionMonitor is not None:
++            self.sessionMonitor.stop()
++
++        # Remplacement de RedirectedOutput.summary()
++        if isinstance(sys.stdout, RedirectedOutput):
++            sys.stdout.summary()
++
++        self.stoptwisted()
++        self.root.destroy()
++        return True

@@ -1,0 +1,329 @@
+2025-12-17 20:42:59,912 [INFO] __main__: Environnement non frozen détecté (mode développement)
+2025-12-17 20:42:59,912 [INFO] __main__: Lancement du programme Task Coach via taskcoach.py et les arguments d'ArgumentParser.
+2025-12-17 20:43:00,345 [INFO] __main__: Arguments analysés : options={'profile': False, 'skipstart': False, 'inifile': None, 'language': None, 'pofile': None, 'gui_name': 'tk'}, args=[]
+2025-12-17 20:43:00,402 [DEBUG] taskcoachlib.config.settings: --- Settings.__init__ entrée ---
+2025-12-17 20:43:00,402 [DEBUG] taskcoachlib.config.settings:   load: True
+2025-12-17 20:43:00,402 [DEBUG] taskcoachlib.config.settings:   iniFile (reçu par Settings): None
+2025-12-17 20:43:00,402 [DEBUG] taskcoachlib.config.settings:   *args (reçus par Settings): ()
+2025-12-17 20:43:00,402 [DEBUG] taskcoachlib.config.settings:   **kwargs (reçus par Settings): {}
+2025-12-17 20:43:00,411 [INFO] taskcoachlib.config.settings: Settings.__init__ terminé avec succès !
+2025-12-17 20:43:00,411 [INFO] taskcoachlib.application.tkapplication: init_config : passé avec succès !
+2025-12-17 20:43:00,455 [INFO] taskcoachlib.persistencetk.taskfile: Initialisation de TaskFile
+2025-12-17 20:43:00,458 [DEBUG] taskcoachlib.filesystem.fs_poller: FilesystemPollerNotifier.__init__ : initialisation du Notifier qui interroge le système de fichiers pour les modifications.
+2025-12-17 20:43:00,458 [INFO] taskcoachlib.filesystem.fs_poller: FilesystemPollerNotifier.run vérifie périodiquement si le fichier a été modifié.
+2025-12-17 20:43:00,458 [DEBUG] taskcoachlib.filesystem.fs_poller: FilesystemPollerNotifier.__init__ terminé !
+2025-12-17 20:43:00,465 [INFO] taskcoachlib.persistencetk.taskfile: TaskFile initialisé.
+2025-12-17 20:43:00,466 [INFO] taskcoachlib.guitk.mainwindowtk: ****************************************************
+2025-12-17 20:43:00,466 [INFO] taskcoachlib.guitk.mainwindowtk: * Début d'initialisation de MainWindow (Tkinter) *****
+2025-12-17 20:43:00,466 [INFO] taskcoachlib.guitk.mainwindowtk: ****************************************************
+2025-12-17 20:43:00,466 [INFO] taskcoachlib.guitk.mainwindowtk: MainWindow: Création et initialisation des composants de la fenêtre :
+2025-12-17 20:43:00,466 [DEBUG] taskcoachlib.guitk.mainwindowtk: MainWindow._create_window_components: Création du conteneur pour les visionneuses.
+2025-12-17 20:43:00,466 [DEBUG] taskcoachlib.guitk.mainwindowtk: MainWindow._create_viewer_container : utilise viewer.container.ViewerContainer pour créer le conteneur de visionneuses self.viewer.
+2025-12-17 20:43:00,466 [DEBUG] taskcoachlib.guitk.viewer.containertk: ViwerContainer.__init__ : Initialisation du conteneur de visionneuses.
+2025-12-17 20:43:00,467 [DEBUG] taskcoachlib.guitk.viewer.containertk: ViewerContainer.__init__ : Conteneur initialisé !
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.mainwindowtk: MainWindow._create_viewer_container : Conteneur .!mainwindow.!viewercontainer de visionneuses créé !
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.mainwindowtk: mainWindow._create_window_components : Lance une classe-méthode pour ajouter des viewers.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.factorytk: addViewers.__init__ : Ajoute des visualiseurs dans le viewer_container=.!mainwindow.!viewercontainer avec task_file= et settings=<taskcoachlib.config.settings.Settings object at 0x7ff1efd58c20>.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.factorytk: addViewers.__add_all_viewers : Ouvre toutes les visionneuses.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.factorytk: addViewers._add_viewer : Ajoute le visualiseur Taskviewer.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.tasktk: TaskViewer.__init__ : Initialisation du visualiseur de tâches.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.mixintk: ManualOrderingMixin.__init__ : initialisation de l'ordre manuel.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.__init__ : initialisation d'une visionneuse triable.
+2025-12-17 20:43:00,468 [DEBUG] taskcoachlib.guitk.viewer.basetk: ViewerWithColumns.__init__ : Initialisation Création de la visionneuse avec des colonnes.
+2025-12-17 20:43:00,469 [DEBUG] taskcoachlib.guitk.viewer.tasktk: BaseTaskTreeViewer.__init__ : Création du Visualiseur de tâches sous forme d'arborescence avec rafraîchissement automatique.
+2025-12-17 20:43:00,469 [DEBUG] taskcoachlib.guitk.viewer.tasktk: BaseTaskViewer : Création du Visualiseur de base pour les tâches.
+2025-12-17 20:43:00,469 [DEBUG] taskcoachlib.guitk.viewer.mixintk: FilterableViewerMixin.__init__ : initialisation d'une visionneuse filtrable.
+2025-12-17 20:43:00,469 [DEBUG] taskcoachlib.guitk.viewer.basetk: TreeViewer : Initialisation.
+2025-12-17 20:43:00,469 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.__init__ : Initialisation d'une nouvelle visionneuse self=Taskviewer.
+2025-12-17 20:43:00,469 [DEBUG] taskcoachlib.domain.base.filter: Filter.treeMode : renvoie le mode d'arborescence actuel de DeletedFilter: False.
+2025-12-17 20:43:00,470 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : N'a pas trouvé de treeMode dans .!mainwindow.!taskviewer.presentation.
+2025-12-17 20:43:00,470 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : Présentation non prête, lecture depuis les settings.
+2025-12-17 20:43:00,470 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : retourne self_settings = True pour self=Taskviewer, self.settings=<taskcoachlib.config.settings.Settings object at 0x7ff1efd58c20> et self.settingsSection=taskviewer contient bien treemode !
+2025-12-17 20:43:00,471 [DEBUG] taskcoachlib.domain.base.filter: Filter.treeMode : renvoie le mode d'arborescence actuel de CategoryFilter: True.
+2025-12-17 20:43:00,471 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : N'a pas trouvé de treeMode dans .!mainwindow.!taskviewer.presentation.
+2025-12-17 20:43:00,471 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : Présentation non prête, lecture depuis les settings.
+2025-12-17 20:43:00,471 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : retourne self_settings = True pour self=Taskviewer, self.settings=<taskcoachlib.config.settings.Settings object at 0x7ff1efd58c20> et self.settingsSection=taskviewer contient bien treemode !
+2025-12-17 20:43:00,509 [DEBUG] taskcoachlib.domain.base.filter: Filter.treeMode : renvoie le mode d'arborescence actuel de ViewFilter: True.
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : N'a pas trouvé de treeMode dans .!mainwindow.!taskviewer.presentation.
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : Présentation non prête, lecture depuis les settings.
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : retourne self_settings = True pour self=Taskviewer, self.settings=<taskcoachlib.config.settings.Settings object at 0x7ff1efd58c20> et self.settingsSection=taskviewer contient bien treemode !
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.domain.base.filter: Filter.treeMode : renvoie le mode d'arborescence actuel de SearchFilter: True.
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : N'a pas trouvé de treeMode dans .!mainwindow.!taskviewer.presentation.
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : Présentation non prête, lecture depuis les settings.
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.isTreeViewer : retourne self_settings = True pour self=Taskviewer, self.settings=<taskcoachlib.config.settings.Settings object at 0x7ff1efd58c20> et self.settingsSection=taskviewer contient bien treemode !
+2025-12-17 20:43:00,510 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.__init__ : crée le widget .!mainwindow.!taskviewer avec parent=.!mainwindow.
+2025-12-17 20:43:00,511 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.createWidget : crée et affiche le widget de l'arborescence des tâches.
+2025-12-17 20:43:00,528 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,529 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,530 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,531 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,532 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.mixintk: SortableViewerMixin.isSortBy : self.presentation(): Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])) pour self=Taskviewer.
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.tasktk: TaskViewer._createColumns : 25 colonnes créées : [<taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb45160>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efc834d0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efc83890>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efba8e90>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efba8fc0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb51a30>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efc796a0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efc7aad0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efcc9b50>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efcc9c50>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb2cd70>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb2ce60>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb2b930>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb2ba10>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efba4a10>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efcc5e50>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efcc5f10>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efcb3ac0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efcb3b70>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb711d0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb71270>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb713b0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb714f0>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb71590>, <taskcoachlib.widgetstk.itemctrltk.Column object at 0x7ff1efb71630>].
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.tasktk: BaseTaskTreeViewer.createTaskPopupMenu : Création du menu contextuel.
+2025-12-17 20:43:00,533 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,533 [INFO] taskcoachlib.guitk.menutk: TaskPopupMenu : Création du menu Popup de Tâche.
+2025-12-17 20:43:00,533 [INFO] taskcoachlib.guitk.menutk: Menu : Création du menu de base pour Tkinter. Initialisation de TaskPopupMenu
+2025-12-17 20:43:00,539 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin : La classe TaskPopupMenu initialise pour ajouter des commandes UI.
+2025-12-17 20:43:00,539 [DEBUG] taskcoachlib.guitk.menutk: Menu : self=TaskPopupMenu et self._window=MainWindow
+2025-12-17 20:43:00,539 [INFO] taskcoachlib.guitk.menutk: Menu : Fin d'Initialisation de Menu ! (self est TaskPopupMenu)
+2025-12-17 20:43:00,539 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,539 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand Cu&t	Ctrl+X au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu Cu&t	Ctrl+X d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': 'Cu&t\tCtrl+X', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditCut object at 0x7ff1efb45400>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : Cu&t	Ctrl+X
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de 'Cu&t	Ctrl+X' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': 'Cu&t\tCtrl+X', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditCut object at 0x7ff1efb45400>>, 'state': 'disabled'}
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,540 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.EditCut object at 0x7ff1efb45400> !
+2025-12-17 20:43:00,541 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,541 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Copy	Ctrl+C au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Copy	Ctrl+C d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Copy\tCtrl+C', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditCopy object at 0x7ff1efb45550>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Copy	Ctrl+C
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Copy	Ctrl+C' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Copy\tCtrl+C', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditCopy object at 0x7ff1efb45550>>, 'state': 'disabled'}
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.EditCopy object at 0x7ff1efb45550> !
+2025-12-17 20:43:00,541 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,541 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Paste	Ctrl+V au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Paste	Ctrl+V d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Paste\tCtrl+V', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditPaste object at 0x7ff1efb456a0>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Paste	Ctrl+V
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Paste	Ctrl+V' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Paste\tCtrl+V', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditPaste object at 0x7ff1efb456a0>>, 'state': 'disabled'}
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,541 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.EditPaste object at 0x7ff1efb456a0> !
+2025-12-17 20:43:00,541 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,542 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand P&aste as subitem	Shift+Ctrl+V au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu P&aste as subitem	Shift+Ctrl+V d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': 'P&aste as subitem\tShift+Ctrl+V', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditPasteAsSubItem object at 0x7ff1efb457f0>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : P&aste as subitem	Shift+Ctrl+V
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de 'P&aste as subitem	Shift+Ctrl+V' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': 'P&aste as subitem\tShift+Ctrl+V', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.EditPasteAsSubItem object at 0x7ff1efb457f0>>, 'state': 'disabled'}
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.EditPasteAsSubItem object at 0x7ff1efb457f0> !
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,542 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,542 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Edit...	RETURN au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Edit...	RETURN d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Edit...\tRETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.Edit object at 0x7ff1efb45940>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Edit...	RETURN
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Edit...	RETURN' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Edit...\tRETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.Edit object at 0x7ff1efb45940>>, 'state': 'disabled'}
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.Edit object at 0x7ff1efb45940> !
+2025-12-17 20:43:00,542 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,542 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Delete	Ctrl+DEL au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Delete	Ctrl+DEL d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Delete\tCtrl+DEL', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.Delete object at 0x7ff1efb45a90>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Delete	Ctrl+DEL
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Delete	Ctrl+DEL' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Delete\tCtrl+DEL', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.Delete object at 0x7ff1efb45a90>>, 'state': 'disabled'}
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,542 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.Delete object at 0x7ff1efb45a90> !
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,543 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,543 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Add attachment...	Shift-Ctrl-A au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Add attachment...	Shift-Ctrl-A d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Add attachment...\tShift-Ctrl-A', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.AddAttachment object at 0x7ff1efb45be0>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Add attachment...	Shift-Ctrl-A
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Add attachment...	Shift-Ctrl-A' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Add attachment...\tShift-Ctrl-A', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.AddAttachment object at 0x7ff1efb45be0>>, 'state': 'disabled'}
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.AddAttachment object at 0x7ff1efb45be0> !
+2025-12-17 20:43:00,543 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,543 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Open all attachments...	Shift+Ctrl+O au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Open all attachments...	Shift+Ctrl+O d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Open all attachments...\tShift+Ctrl+O', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.OpenAllAttachments object at 0x7ff1efb45d30>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Open all attachments...	Shift+Ctrl+O
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Open all attachments...	Shift+Ctrl+O' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Open all attachments...\tShift+Ctrl+O', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.OpenAllAttachments object at 0x7ff1efb45d30>>, 'state': 'disabled'}
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.OpenAllAttachments object at 0x7ff1efb45d30> !
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,543 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,543 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand Add &note...	Ctrl+B au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu Add &note...	Ctrl+B d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': 'Add &note...\tCtrl+B', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.AddNote object at 0x7ff1efb45e80>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : Add &note...	Ctrl+B
+2025-12-17 20:43:00,543 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de 'Add &note...	Ctrl+B' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': 'Add &note...\tCtrl+B', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.AddNote object at 0x7ff1efb45e80>>, 'state': 'disabled'}
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.AddNote object at 0x7ff1efb45e80> !
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Open all notes...	Shift+Ctrl+B au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Open all notes...	Shift+Ctrl+B d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Open all notes...\tShift+Ctrl+B', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.OpenAllNotes object at 0x7ff1efb45fd0>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Open all notes...	Shift+Ctrl+B
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Open all notes...	Shift+Ctrl+B' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Open all notes...\tShift+Ctrl+B', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.OpenAllNotes object at 0x7ff1efb45fd0>>, 'state': 'disabled'}
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.OpenAllNotes object at 0x7ff1efb45fd0> !
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand &Mail...	Ctrl-M au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu &Mail...	Ctrl-M d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': '&Mail...\tCtrl-M', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.Mail object at 0x7ff1efb46120>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : &Mail...	Ctrl-M
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de '&Mail...	Ctrl-M' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': '&Mail...\tCtrl-M', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.Mail object at 0x7ff1efb46120>>, 'state': 'disabled'}
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.Mail object at 0x7ff1efb46120> !
+2025-12-17 20:43:00,544 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: Création du menu Toggle Catégorie.
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: DynamicMenu : Création du menu Dynamique pour Tkinter.
+2025-12-17 20:43:00,544 [INFO] taskcoachlib.guitk.menutk: Menu : Création du menu de base pour Tkinter. Initialisation de ToggleCategoryMenu
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin : La classe ToggleCategoryMenu initialise pour ajouter des commandes UI.
+2025-12-17 20:43:00,545 [WARNING] taskcoachlib.guitk.uicommand.uicommandcontainertk: ToggleCategoryMenu doit être de type tk.Tk ou tk.Frame !
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.menutk: Menu : self=ToggleCategoryMenu et self._window=Taskviewer
+2025-12-17 20:43:00,545 [INFO] taskcoachlib.guitk.menutk: Menu : Fin d'Initialisation de Menu ! (self est ToggleCategoryMenu)
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.menutk: Menu.clearMenu : Tous les éléments et observateurs ont été supprimés.
+2025-12-17 20:43:00,545 [INFO] taskcoachlib.guitk.menutk: Menu Toggle Catégorie initialisé.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.menutk: appendMenu : Ajout du sous-menu &Toggle category à la liste des menus de TaskPopupMenu et la méthode add_cascade avec l'icône None.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.menutk: appendMenu : Sous-menu &Toggle category ajouté.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.menutk: appendMenu : Sous-menu accelerator &Toggle category ajouté.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,545 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,545 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand Mark task &inactive	Ctrl+Alt+RETURN au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu Mark task &inactive	Ctrl+Alt+RETURN d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': 'Mark task &inactive\tCtrl+Alt+RETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkInactive object at 0x7ff1efb463c0>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : Mark task &inactive	Ctrl+Alt+RETURN
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de 'Mark task &inactive	Ctrl+Alt+RETURN' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': 'Mark task &inactive\tCtrl+Alt+RETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkInactive object at 0x7ff1efb463c0>>, 'state': 'disabled'}
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,545 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkInactive object at 0x7ff1efb463c0> !
+2025-12-17 20:43:00,546 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,546 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand Mark task &active	Alt+RETURN au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu Mark task &active	Alt+RETURN d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': 'Mark task &active\tAlt+RETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkActive object at 0x7ff1efb46510>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : Mark task &active	Alt+RETURN
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de 'Mark task &active	Alt+RETURN' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': 'Mark task &active\tAlt+RETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkActive object at 0x7ff1efb46510>>, 'state': 'disabled'}
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkActive object at 0x7ff1efb46510> !
+2025-12-17 20:43:00,546 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand called
+2025-12-17 20:43:00,546 [INFO] taskcoachlib.guitk.menutk: Menu.appendUICommand ajoute l' uiCommand Mark task &completed	Ctrl+RETURN au menu TaskPopupMenu délégué à uiCommand.addToMenu.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: 💥UICommand.addToMenu essaye d'ajouter le sous-menu Mark task &completed	Ctrl+RETURN d'ID=None dans le menu .!mainwindow.!taskviewer.!taskpopupmenu à la position None.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: UICommand.addToMenu : création de menu_item_options={'label': 'Mark task &completed\tCtrl+RETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkCompleted object at 0x7ff1efb46660>>, 'state': 'disabled'}.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Vérification de self.kind=normal qui doit être 'normal', 'checkbutton' ou 'radiobutton'
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Add normal Command : Mark task &completed	Ctrl+RETURN
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Utilisation de menu.add_command
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Ajout de 'Mark task &completed	Ctrl+RETURN' au menu .!mainwindow.!taskviewer.!taskpopupmenu avec options={'label': 'Mark task &completed\tCtrl+RETURN', 'command': <bound method UICommand.onCommandActivate of <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkCompleted object at 0x7ff1efb46660>>, 'state': 'disabled'}
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le premier menu de .!mainwindow.!taskviewer.!taskpopupmenu est Cu&t	Ctrl+X.
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.base_uicommandtk: Le menu .!mainwindow.!taskviewer.!taskpopupmenu est référencé dans [<taskcoachlib.guitk.menutk.TaskPopupMenu object .!mainwindow.!taskviewer.!taskpopupmenu>].
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.menutk: Menu.appendUICommand : Le conteneur self=TaskPopupMenu a les accelerateurs [].
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute la commande <taskcoachlib.guitk.uicommand.uicommandtk.TaskMarkCompleted object at 0x7ff1efb46660> !
+2025-12-17 20:43:00,546 [DEBUG] taskcoachlib.guitk.uicommand.uicommandcontainertk: UICommandContainerMixin.appendUICommands : ajoute un séparateur !
+2025-12-17 20:43:00,546 [ERROR] taskcoachlib.guitk.viewer.tasktk: BaseTaskTreeViewer.createTaskPopupMenu : Erreur lors de la création du menu contextuel: TaskPriorityMenu.__init__() missing 1 required positional argument: 'viewerContainer'
+2025-12-17 20:43:00,546 [WARNING] taskcoachlib.guitk.viewer.tasktk: Impossible de créer le menu contextuel de colonnes: module 'taskcoachlib.guitk' has no attribute 'menu'
+2025-12-17 20:43:00,547 [ERROR] taskcoachlib.guitk.viewer.tasktk: Erreur lors de la création du widget: 'Taskviewer' object has no attribute '_Taskviewer__visibleColumns'
+2025-12-17 20:43:00,552 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.createWidget : Le widget de l'arborescence des tâches est sensé être affiché !
+2025-12-17 20:43:00,553 [DEBUG] taskcoachlib.guitk.viewer.tasktk: Taskviewer.createWidget : Widget créé.
+2025-12-17 20:43:00,554 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.initLayout : Initialisation de la mise en page de la visionneuse Taskviewer title:Tâches.
+2025-12-17 20:43:00,554 [DEBUG] taskcoachlib.guitk.toolbarttk: Initializing ToolBar in parent widget: Frame, controller window: Taskviewer, size: (16, 16)
+2025-12-17 20:43:00,554 [DEBUG] taskcoachlib.guitk.toolbarttk: ToolBar.load_perspective: Loading toolbar perspective: TaskNew,NewSubItem,TaskNewFromTemplateButton,Separator,Edit,Delete,Separator,TaskMarkInactive,TaskMarkActive,TaskMarkCompleted,Separator,EffortStart,EffortStop,Separator,Spacer,ViewerHideTasks_completed,ViewerHideTasks_inactive,ResetFilter,TaskViewerTreeOrListChoice,Search
+2025-12-17 20:43:00,554 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).
+2025-12-17 20:43:00,555 [DEBUG] taskcoachlib.guitk.viewer.basetk: Viewer.presentation : renvoie les objets de domaine que la visionneuse Taskviewer affiche actuellement : Sorter(<class 'taskcoachlib.domain.task.sorter.Sorter'>([])).

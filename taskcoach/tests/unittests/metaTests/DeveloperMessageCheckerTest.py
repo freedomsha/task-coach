@@ -16,10 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from taskcoachlib import config, meta
-from unittests import dummy
+# from future import standard_library
 import io
-import test
+from taskcoachlib import config, meta
+from ...unittests import dummy
+
+# standard_library.install_aliases()
+from ... import tctest
 
 
 class DeveloperMessageCheckerUnderTest(meta.DeveloperMessageChecker):
@@ -27,7 +30,7 @@ class DeveloperMessageCheckerUnderTest(meta.DeveloperMessageChecker):
         self.message_file_contents = "Message|http://a.b\n"
         kwargs["urlopen"] = self.urlopen
         kwargs["call_after"] = self.call_after
-        super(DeveloperMessageCheckerUnderTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def call_after(function, *args, **kwargs):
@@ -38,7 +41,7 @@ class DeveloperMessageCheckerUnderTest(meta.DeveloperMessageChecker):
         return io.StringIO(self.message_file_contents)
 
 
-class DeveloperMessageCheckerTest(test.TestCase):
+class DeveloperMessageCheckerTest(tctest.TestCase):
     def setUp(self):
         self.settings = config.Settings(load=False)
         self.checker = DeveloperMessageCheckerUnderTest(self.settings)
@@ -67,7 +70,7 @@ class DeveloperMessageCheckerTest(test.TestCase):
 
     def testCommentFollowedWithMessage(self):
         self.checker.message_file_contents = (
-            "# This is a comment\n" "This is the message|url\n"
+            "# This is a comment\n" "This is the message|urlpo\n"
         )
         dialog = self.checker.run(show=False)
         self.assertEqual("This is the message", dialog.current_message())

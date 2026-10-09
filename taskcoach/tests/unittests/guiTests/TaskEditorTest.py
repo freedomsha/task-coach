@@ -18,12 +18,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import object
+import wx
+from ... import tctest
+from .. import dummy
 from taskcoachlib import gui, config, persistence, operating_system
 from taskcoachlib.domain import task, effort, date, note, attachment
 from taskcoachlib.gui import uicommand
-from unittests import dummy
-import test
-import wx
 
 
 class TaskEditorSetterMixin(object):
@@ -40,27 +41,23 @@ class TaskEditorSetterMixin(object):
         return page
 
     def setPlannedStartDateTime(self, dateTime):
-        self.setDateTime(
-            self.editor._interior[1]._plannedStartDateTimeEntry, dateTime
-        )
+        self.setDateTime(self.editor._interior[1]._plannedStartDateTimeEntry,
+                         dateTime)
 
     def setDueDateTime(self, dateTime):
         self.setDateTime(self.editor._interior[1]._dueDateTimeEntry, dateTime)
 
     def setActualStartDateTime(self, dateTime):
-        self.setDateTime(
-            self.editor._interior[1]._actualStartDateTimeEntry, dateTime
-        )
+        self.setDateTime(self.editor._interior[1]._actualStartDateTimeEntry,
+                         dateTime)
 
     def setCompletionDateTime(self, dateTime):
-        self.setDateTime(
-            self.editor._interior[1]._completionDateTimeEntry, dateTime
-        )
+        self.setDateTime(self.editor._interior[1]._completionDateTimeEntry,
+                         dateTime)
 
     def setReminder(self, dateTime):
-        self.setDateTime(
-            self.editor._interior[1]._reminderDateTimeEntry, dateTime
-        )
+        self.setDateTime(self.editor._interior[1]._reminderDateTimeEntry,
+                         dateTime)
 
     def setDateTime(self, entry, dateTime):
         entry.SetValue(dateTime)
@@ -76,24 +73,16 @@ class TaskEditorSetterMixin(object):
 
 class TaskEditorBySettingFocusMixin(TaskEditorSetterMixin):
     def setSubject(self, newSubject):
-        page = super(TaskEditorBySettingFocusMixin, self).setSubject(
-            newSubject
-        )
+        page = super().setSubject(newSubject)
         if operating_system.isGTK():
-            page._subjectSync.onAttributeEdited(
-                dummy.Event()
-            )  # pragma: no cover
+            page._subjectSync.onAttributeEdited(dummy.Event())  # pragma: no cover
         else:
             page._descriptionEntry.SetFocus()  # pragma: no cover
 
     def setDescription(self, newDescription):
-        page = super(TaskEditorBySettingFocusMixin, self).setDescription(
-            newDescription
-        )
+        page = super().setDescription(newDescription)
         if operating_system.isGTK():
-            page._descriptionSync.onAttributeEdited(
-                dummy.Event()
-            )  # pragma: no cover
+            page._descriptionSync.onAttributeEdited(dummy.Event())  # pragma: no cover
         else:
             page._subjectEntry.SetFocus()  # pragma: no cover
 
@@ -109,12 +98,12 @@ class TaskEditorWithPerspective(gui.dialog.editor.TaskEditor):
     EditBookClass = TaskEditBookWithPerspective
 
 
-class TaskEditorTestCase(test.wxTestCase):
+class TaskEditorTestCase(tctest.wxTestCase):
     extraSettings = list()
     editorClass = gui.dialog.editor.TaskEditor
 
     def setUp(self):
-        super(TaskEditorTestCase, self).setUp()
+        super().setUp()
         task.Task.settings = self.settings = config.Settings(load=False)
         for section, name, value in self.extraSettings:
             self.settings.set(section, name, value)
@@ -130,7 +119,7 @@ class TaskEditorTestCase(test.wxTestCase):
             self.getItems(),
             self.settings,
             self.taskList,
-            self.taskFile,
+            self.taskFile
         )
 
     def tearDown(self):
@@ -138,7 +127,7 @@ class TaskEditorTestCase(test.wxTestCase):
         # calls are dealt with, otherwise they'll turn up in other tests
         if operating_system.isGTK():
             wx.Yield()  # pragma: no cover
-        super(TaskEditorTestCase, self).tearDown()
+        super().tearDown()
         self.taskFile.close()
         self.taskFile.stop()
 
@@ -160,9 +149,9 @@ class EditorDisplayTest(TaskEditorTestCase):
         self.task = task.Task("Task to edit")
         self.stop_datetime = date.DateTime(2012, 12, 12, 12, 12)
         self.task.setRecurrence(
-            date.Recurrence(
-                "daily", amount=1, stop_datetime=self.stop_datetime
-            )
+            date.Recurrence("daily",
+                            amount=1,
+                            stop_datetime=self.stop_datetime)
         )
         return [self.task]
 
@@ -173,8 +162,7 @@ class EditorDisplayTest(TaskEditorTestCase):
 
     def testDueDateTime(self):
         self.assertEqual(
-            date.DateTime(),
-            self.editor._interior[1]._dueDateTimeEntry.GetValue(),
+            date.DateTime(), self.editor._interior[1]._dueDateTimeEntry.GetValue()
         )
 
     def testActualStartDateTime(self):
@@ -184,21 +172,15 @@ class EditorDisplayTest(TaskEditorTestCase):
         )
 
     def testRecurrenceUnit(self):
-        choice = self.editor._interior[
-            1
-        ]._recurrenceEntry._recurrencePeriodEntry
+        choice = self.editor._interior[1]._recurrenceEntry._recurrencePeriodEntry
         self.assertEqual("Daily", choice.GetString(choice.GetSelection()))
 
     def testRecurrenceFrequency(self):
-        freq = self.editor._interior[
-            1
-        ]._recurrenceEntry._recurrenceFrequencyEntry
+        freq = self.editor._interior[1]._recurrenceEntry._recurrenceFrequencyEntry
         self.assertEqual(1, freq.GetValue())
 
     def testRecurrenceStopDateTime(self):
-        stop = self.editor._interior[
-            1
-        ]._recurrenceEntry._recurrenceStopDateTimeEntry
+        stop = self.editor._interior[1]._recurrenceEntry._recurrenceStopDateTimeEntry
         self.assertEqual(self.stop_datetime, stop.GetValue())
 
 
@@ -234,9 +216,7 @@ class EditTaskTestMixin(object):
     def testSetDueDateTime(self):
         self.setDueDateTime(self.tomorrow)
         self.assertAlmostEqual(
-            self.tomorrow.toordinal(),
-            self.task.dueDateTime().toordinal(),
-            places=2,
+            self.tomorrow.toordinal(), self.task.dueDateTime().toordinal(), places=2
         )
 
     def testSetActualStartDateTime(self):
@@ -293,13 +273,11 @@ class EditTaskTestMixin(object):
 
     def testSetRecurrenceSameWeekday(self):
         self.setRecurrence(date.Recurrence("monthly", sameWeekday=True))
-        self.assertTrue(self.task.recurrence().sameWeekday)
+        self.failUnless(self.task.recurrence().sameWeekday)
 
     def testPriority(self):
         self.editor._interior[0]._priorityEntry.SetValue(45)
-        self.assertEqual(
-            45, self.editor._interior[0]._priorityEntry.GetValue()
-        )
+        self.assertEqual(45, self.editor._interior[0]._priorityEntry.GetValue())
 
     def testSetNegativePriority(self):
         self.editor._interior[0]._priorityEntry.SetValue(-1)
@@ -308,9 +286,7 @@ class EditTaskTestMixin(object):
 
     def testSetHourlyFee(self):
         self.editor._interior[5]._hourlyFeeEntry.SetValue(100)
-        self.editor._interior[5]._hourlyFeeSync.onAttributeEdited(
-            dummy.Event()
-        )
+        self.editor._interior[5]._hourlyFeeSync.onAttributeEdited(dummy.Event())
         self.assertEqual(100, self.task.hourlyFee())
 
     def testSetFixedFee(self):
@@ -322,9 +298,7 @@ class EditTaskTestMixin(object):
         page = self.editor._interior[3]
         page._shouldMarkCompletedEntry.SetStringSelection("Yes")
         page._shouldMarkCompletedSync.onAttributeEdited(dummy.Event())
-        self.assertEqual(
-            True, self.task.shouldMarkCompletedWhenAllChildrenCompleted()
-        )
+        self.assertEqual(True, self.task.shouldMarkCompletedWhenAllChildrenCompleted())
 
     def testAddAttachment(self):
         self.editor._interior[8].viewer.onDropFiles(self.task, ["filename"])
@@ -408,9 +382,7 @@ class EditTaskWithChildrenMixin(object):
 
 
 class EditTaskWithChildrenTestBySettingFocus(
-    TaskEditorBySettingFocusMixin,
-    EditTaskWithChildrenMixin,
-    TaskEditorTestCase,
+    TaskEditorBySettingFocusMixin, EditTaskWithChildrenMixin, TaskEditorTestCase
 ):
     pass
 
@@ -425,9 +397,7 @@ class EditTaskWithEffortTest(TaskEditorTestCase):
         return [self.task]
 
     def testEffortIsShown(self):
-        self.assertEqual(
-            1, self.editor._interior[6].viewer.widget.GetItemCount()
-        )
+        self.assertEqual(1, self.editor._interior[6].viewer.widget.GetItemCount())
 
 
 class FocusTest(TaskEditorTestCase):
@@ -440,9 +410,7 @@ class FocusTest(TaskEditorTestCase):
 
     def testFocus(self):
         # pylint: disable=W0212
-        self.assertEqual(
-            self.editor._interior[0]._subjectEntry, wx.Window_FindFocus()
-        )
+        self.assertEqual(self.editor._interior[0]._subjectEntry, wx.Window_FindFocus())
 
     def testSelection(self):
         # pylint: disable=W0212
@@ -515,9 +483,7 @@ class DatesDueStartBase(DatesTestBase):
         self.setDueDateTime(self.today)
         self.setDueDateTime(self.yesterday)
         self.assertAlmostEqual(
-            self.editor._interior[1]
-            ._plannedStartDateTimeEntry.GetValue()
-            .toordinal(),
+            self.editor._interior[1]._plannedStartDateTimeEntry.GetValue().toordinal(),
             self.twodaysago.toordinal(),
             places=2,
         )
@@ -539,9 +505,7 @@ class DatesTest(DatesTestBase):
         self.setDueDateTime(self.today)
         self.setDueDateTime(self.yesterday)
         self.assertAlmostEqual(
-            self.editor._interior[1]
-            ._plannedStartDateTimeEntry.GetValue()
-            .toordinal(),
+            self.editor._interior[1]._plannedStartDateTimeEntry.GetValue().toordinal(),
             self.yesterday.toordinal(),
             places=2,
         )

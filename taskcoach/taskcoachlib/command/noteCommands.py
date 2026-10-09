@@ -16,9 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# from builtins import zip
 from taskcoachlib import patterns
 from taskcoachlib.i18n import _
-from taskcoachlib.domain import note
+from taskcoachlib.domain.note import Note
 from . import base
 
 
@@ -30,9 +31,9 @@ class NewNoteCommand(base.NewItemCommand):
         description = kwargs.pop("description", "")
         attachments = kwargs.pop("attachments", [])
         categories = kwargs.get("categories", None)
-        super(NewNoteCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.items = self.notes = [
-            note.Note(
+            Note(
                 subject=subject,
                 description=description,
                 categories=categories,
@@ -50,7 +51,9 @@ class NewSubNoteCommand(base.NewSubItemCommand):
         description = kwargs.pop("description", "")
         attachments = kwargs.pop("attachments", [])
         categories = kwargs.get("categories", None)
-        super(NewSubNoteCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        # Store parent notes before overwriting self.items
+        self.__parents = self.items[:]
         self.items = self.notes = [
             parent.newChild(
                 subject=subject,
@@ -58,9 +61,27 @@ class NewSubNoteCommand(base.NewSubItemCommand):
                 categories=categories,
                 attachments=attachments,
             )
-            for parent in self.items
+            # for parent in self.items
+            for parent in self.__parents
         ]
         self.save_modification_datetimes()
+
+    @patterns.eventSource
+    def do_command(self, event=None):
+        # Add subnotes to parent notes as children. The parent's addChild
+        # handles the parent-child relationship. We also need to add to the
+        # container for the viewer to see them, but CompositeCollection.extend
+        # will handle both adding to the container AND calling addChild via
+        # _addCompositesToParent, so we just call the parent implementation.
+        base.NewItemCommand.do_command(self, event=event)
+
+    @patterns.eventSource
+    def undo_command(self, event=None):
+        base.NewItemCommand.undo_command(self, event=event)
+
+    @patterns.eventSource
+    def redo_command(self, event=None):
+        base.NewItemCommand.redo_command(self, event=event)
 
 
 class DeleteNoteCommand(base.DeleteCommand):
@@ -74,16 +95,29 @@ class DragAndDropNoteCommand(base.OrderingDragAndDropCommand):
 
 
 class AddNoteCommand(base.BaseCommand):
+    """Command to add notes to an owner (task, category, etc.).
+
+    If the 'notes' keyword argument is provided, those notes are added.
+    Otherwise, new empty notes are created. This allows the command to be
+    used both for creating new notes and for paste operations.
+    """
+
     plural_name = _("Add note")
     singular_name = _('Add note to "%s"')
 
     def __init__(self, *args, **kwargs):
         self.owners = []
-        super(AddNoteCommand, self).__init__(*args, **kwargs)
+        self.__notes = kwargs.pop("notes", None)
+        super().__init__(*args, **kwargs)
         self.owners = self.items
-        self.items = self.__notes = [
-            note.Note(subject=_("New note")) for dummy in self.items
-        ]
+        # self.items = self.__notes = [
+        #     Note(subject=_("New note")) for dummy in self.items
+        # ]
+        if self.__notes is None:
+            self.__notes = [
+                Note(subject=_("New note")) for dummy in self.items
+            ]
+        self.items = self.__notes
         self.save_modification_datetimes()
 
     def modified_items(self):
@@ -97,8 +131,9 @@ class AddNoteCommand(base.BaseCommand):
 
     @patterns.eventSource
     def addNotes(self, event=None):
-        for owner, note in zip(
-            self.owners, self.__notes
+        # for owner, note in zip(
+        for owner, note in list(
+            zip(self.owners, self.__notes)
         ):  # pylint: disable=W0621
             owner.addNote(note, event=event)
 
@@ -110,15 +145,15 @@ class AddNoteCommand(base.BaseCommand):
             owner.removeNote(note, event=event)
 
     def do_command(self):
-        super(AddNoteCommand, self).do_command()
+        super().do_command()
         self.addNotes()
 
     def undo_command(self):
-        super(AddNoteCommand, self).undo_command()
+        super().undo_command()
         self.removeNotes()
 
     def redo_command(self):
-        super(AddNoteCommand, self).redo_command()
+        super().redo_command()
         self.addNotes()
 
 
@@ -129,12 +164,12 @@ class AddSubNoteCommand(base.BaseCommand):
     def __init__(self, *args, **kwargs):
         self.__owner = kwargs.pop("owner")
         self.__parents = []
-        super(AddSubNoteCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.__parents = self.items
         self.__notes = kwargs.get(
             "notes",
             [
-                note.Note(subject=_("New subnote"), parent=parent)
+                Note(subject=_("New subnote"), parent=parent)
                 for parent in self.__parents
             ],
         )
@@ -148,24 +183,29 @@ class AddSubNoteCommand(base.BaseCommand):
     def addNotes(self, event=None):
         for parent, subnote in zip(self.__parents, self.__notes):
             parent.addChild(subnote, event=event)
-            self.__owner.addNote(subnote, event=event)
+            # self.__owner.addNote(subnote, event=event)
+        # Notify the owner that notes changed so the viewer refreshes.
+        # The viewer will pick up the subnote from parent.children().
+        self.__owner.notesChangedEvent(event, *self.__notes)
 
     @patterns.eventSource
     def removeNotes(self, event=None):
         for parent, subnote in zip(self.__parents, self.__notes):
             parent.removeChild(subnote, event=event)
-            self.__owner.removeNote(subnote, event=event)
+            # self.__owner.removeNote(subnote, event=event)
+        # Notify the owner that notes changed so the viewer refreshes.
+        self.__owner.notesChangedEvent(event, *self.__notes)
 
     def do_command(self):
-        super(AddSubNoteCommand, self).do_command()
+        super().do_command()
         self.addNotes()
 
     def undo_command(self):
-        super(AddSubNoteCommand, self).undo_command()
+        super().undo_command()
         self.removeNotes()
 
     def redo_command(self):
-        super(AddSubNoteCommand, self).redo_command()
+        super().redo_command()
         self.addNotes()
 
 
@@ -175,7 +215,7 @@ class RemoveNoteCommand(base.BaseCommand):
 
     def __init__(self, *args, **kwargs):
         self.__notes = kwargs.pop("notes")
-        super(RemoveNoteCommand, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @patterns.eventSource
     def addNotes(self, event=None):
@@ -194,13 +234,13 @@ class RemoveNoteCommand(base.BaseCommand):
             item.removeNotes(*self.__notes, **kwargs)
 
     def do_command(self):
-        super(RemoveNoteCommand, self).do_command()
+        super().do_command()
         self.removeNotes()
 
     def undo_command(self):
-        super(RemoveNoteCommand, self).undo_command()
+        super().undo_command()
         self.addNotes()
 
     def redo_command(self):
-        super(RemoveNoteCommand, self).redo_command()
+        super().redo_command()
         self.removeNotes()

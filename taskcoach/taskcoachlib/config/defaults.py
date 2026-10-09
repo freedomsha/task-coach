@@ -18,9 +18,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import wx
+from builtins import str
+import wx  # TODO : a changer pour la compatibilité avec tkinter
 from taskcoachlib import meta
-
 
 defaults = {
     "balloontips": {
@@ -34,7 +34,7 @@ defaults = {
     },
     "view": {
         "statusbar": "True",
-        "toolbar": "(22, 22)",
+        "toolbar": "(22, 22)",  # TODO : provoque une erreur !
         "toolbarperspective": "FileOpen,Print,Separator,EditUndo,EditRedo,Separator,EffortStartButton,EffortStop",
         # Index of the active effort viewer in task editor:
         "effortviewerintaskeditor": "0",
@@ -246,6 +246,16 @@ defaults = {
         "highlightcolor": "",
         "shownow": "True",
     },
+    # --- AJOUTER À PARTIR D'ICI ---
+    "calendar_light": {
+        "other_month_bg_system": "True",
+        "other_month_bg": "(240, 240, 240)",
+    },
+    "calendar_dark": {
+        "other_month_bg_system": "True",
+        "other_month_bg": "(50, 50, 50)",
+    },
+    # ------------------------------
     "categoryviewer": {
         "title": "",
         "toolbarperspective": "CategoryNew,NewSubItem,Separator,Edit,Delete,Spacer,ResetFilter,Search",
@@ -543,7 +553,7 @@ defaults = {
         "duesoontasks": "led_orange_icon",
     },
     "editor": {
-        "descriptionfont": "",  # Font to use in the desciption field of editors
+        "descriptionfont": "",  # Font to use in the description field of editors
         "maccheckspelling": "True",
     },
     "os_darwin": {"getmailsubject": "False"},
@@ -554,7 +564,7 @@ defaults = {
         "pythonfrozen": "",  # Idem
         "current": meta.data.version,
         "notified": meta.data.version,
-        "notify": "True",
+        "Notify": "True",
     },
     "behavior": {
         "markparentcompletedwhenallchildrencompleted": "False",
@@ -595,7 +605,9 @@ defaults = {
         "margin_bottom": "0",
         "margin_right": "0",
         "paper_id": "0",
-        "orientation": str(wx.PORTRAIT),
+        "orientation": str(
+            wx.PORTRAIT
+        ),  # TODO : A changer pour le rendre compatible tk ! side="top" ou sticky="n"
     },
     "export": {
         "html_selectiononly": "False",

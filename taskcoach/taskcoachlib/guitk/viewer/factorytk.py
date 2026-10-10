@@ -349,9 +349,7 @@ class addViewers:
         #     # configSection=config_section,
         #     # newItemType=new_item_type
         # )
-        log.debug(
-            f"addViewers._add_viewer : Le visualiseur {viewer_class.__name__} a été ajouté au conteneur {self.__viewer_container} !"
-        )
+        log.debug(f"addViewers._add_viewer : Le visualiseur {viewer_class.__name__} a été ajouté au conteneur {self.__viewer_container} !")
 
     def addViewersToContainer(self):
         """

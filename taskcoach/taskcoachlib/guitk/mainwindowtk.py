@@ -667,6 +667,7 @@ class MainWindow(
         )
         # viewer.factorytk.addViewers(self.viewer, self.taskFile, self.settings)
         factorytk.addViewers(
+            # self.viewer, self.taskFile, self.settings
             self.viewer_container, self.taskFile, self.settings
         )  # Ajoute les visualiseurs
         # add_viewers_strategy = addViewers(viewer_container, mock_task_file, mock_settings)
@@ -733,6 +734,7 @@ class MainWindow(
         log.debug(
             f"MainWindow._create_viewer_container : création de self.viewer avec parent_widget={self} et self.settings {self.settings}."
         )
+        # self.viewer = containertk.ViewerContainer(
         self.viewer_container = containertk.ViewerContainer(
             self, self.settings
         )
@@ -1268,6 +1270,7 @@ class MainWindow(
         )
 
         # Sauvegarder dans les settings
+        # Logique spécifique à AUI/wxPython à réimplémenter pour Tkinter.
         # # self.settings.set("view", "perspective", "perspective_data")
         # # # perspective = self.manager.SavePerspective()
         # # # perspective = self.main_frame.grid_info()
